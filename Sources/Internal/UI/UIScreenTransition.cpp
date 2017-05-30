@@ -12,6 +12,7 @@
 #include "Logger/Logger.h"
 #include "Reflection/ReflectionRegistrator.h"
 #include "UI/Update/UIUpdateComponent.h"
+#include "UI/Render/UIRenderSystem.h"
 
 namespace DAVA
 {
@@ -26,7 +27,6 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIScreenTransition)
 UIScreenTransition::UIScreenTransition()
 {
     interpolationFunc = Interpolation::GetFunction(Interpolation::EASY_IN_EASY_OUT);
-    SetFillBorderOrder(UIScreen::FILL_BORDER_AFTER_DRAW);
     GetOrCreateComponent<UIUpdateComponent>();
 }
 
@@ -78,14 +78,16 @@ void UIScreenTransition::SetSourceScreen(UIControl* prevScreen, bool updateScree
 {
     DVASSERT(renderTargetPrevScreen && renderTargetNextScreen);
 
-    UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(prevScreen, renderTargetPrevScreen->GetTexture(), true, updateScreen);
+    UIScreenshoter* screenshoter = UIControlSystem::Instance()->GetRenderSystem()->GetScreenshoter();
+    screenshoter->MakeScreenshot(prevScreen, renderTargetPrevScreen->GetTexture(), true, updateScreen);
 }
 
 void UIScreenTransition::SetDestinationScreen(UIControl* nextScreen, bool updateScreen)
 {
     DVASSERT(renderTargetPrevScreen && renderTargetNextScreen);
 
-    UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(nextScreen, renderTargetNextScreen->GetTexture(), true, updateScreen);
+    UIScreenshoter* screenshoter = UIControlSystem::Instance()->GetRenderSystem()->GetScreenshoter();
+    screenshoter->MakeScreenshot(nextScreen, renderTargetNextScreen->GetTexture(), true, updateScreen);
 }
 
 void UIScreenTransition::EndTransition()

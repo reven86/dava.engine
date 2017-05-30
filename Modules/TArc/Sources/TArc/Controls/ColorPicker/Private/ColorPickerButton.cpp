@@ -12,19 +12,13 @@ namespace DAVA
 namespace TArc
 {
 ColorPickerButton::ColorPickerButton(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QToolButton>(ControlDescriptor(params.fields), wrappersProcessor, model, parent)
-    , ui(params.ui)
-    , wndKey(params.wndKey)
-    , contextAccessor(params.accessor)
+    : ControlProxyImpl<QToolButton>(params, ControlDescriptor(params.fields), wrappersProcessor, model, parent)
 {
     SetupControl();
 }
 
 ColorPickerButton::ColorPickerButton(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QToolButton>(ControlDescriptor(params.fields), accessor, model, parent)
-    , ui(params.ui)
-    , wndKey(params.wndKey)
-    , contextAccessor(params.accessor)
+    : ControlProxyImpl<QToolButton>(params, ControlDescriptor(params.fields), accessor, model, parent)
 {
     DVASSERT(accessor == params.accessor);
     SetupControl();
@@ -82,7 +76,7 @@ void ColorPickerButton::ButtonReleased()
         return;
     }
 
-    ColorPickerDialog cp(contextAccessor, this);
+    ColorPickerDialog cp(controlParams.accessor, this);
     cp.setWindowTitle("Select color");
 
     Color prevValue = cachedColor.Get<Color>();

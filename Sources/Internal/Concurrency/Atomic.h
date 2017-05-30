@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_ATOMIC_H__
-#define __DAVAENGINE_ATOMIC_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/Platform.h"
@@ -12,7 +11,7 @@
 namespace DAVA
 {
 //-----------------------------------------------------------------------------
-//Atomic template class.
+//Atomic template class. DEPRECATED use std::atomic<T>
 //-----------------------------------------------------------------------------
 template <typename T>
 class Atomic
@@ -151,5 +150,3 @@ bool Atomic<T>::CompareAndSwap(T expected, T desired) DAVA_NOEXCEPT
 } //  namespace DAVA
 
 #endif
-
-#endif //  __DAVAENGINE_ATOMIC_H__

@@ -111,6 +111,11 @@ void PlatformCore::Quit()
     quitGameThread = true;
 }
 
+void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
+{
+    androidBridge->SetScreenTimeoutEnabled(enabled);
+}
+
 WindowBackend* PlatformCore::ActivityOnCreate()
 {
     Window* primaryWindow = engineBackend->InitializePrimaryWindow();

@@ -102,7 +102,6 @@ private:
      */
     void SetTimeout(CURL* easyHandle);
 
-    static bool isCURLInit;
     bool isDownloadInterrupting;
     uint8 currentDownloadPartsCount;
     Vector<DownloadPart*> downloadParts;

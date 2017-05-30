@@ -955,7 +955,18 @@ bool WindowBackend::OnSysCommand(int sysCommand)
     // Ignore 'Move' and 'Size' commands from system menu as handling them takes more efforts than brings profit.
     // Window still can be moved and sized by mouse.
     // Also prevent system menu from showing triggered by keyboard (Alt+Space).
-    return sysCommand == SC_MOVE || sysCommand == SC_SIZE || sysCommand == SC_KEYMENU;
+    if (sysCommand == SC_MOVE || sysCommand == SC_SIZE || sysCommand == SC_KEYMENU)
+    {
+        return true;
+    }
+
+    // If screen timeout is disabled and window is visible, do not show screen saver
+    if (sysCommand == SC_SCREENSAVE && window->IsVisible() && !engineBackend->IsScreenTimeoutEnabled())
+    {
+        return true;
+    }
+
+    return false;
 }
 
 LRESULT WindowBackend::OnDestroy()

@@ -796,6 +796,25 @@ public final class DavaActivity extends Activity
         return null;
     }
 
+    void setScreenTimeoutEnabled(final boolean enabled)
+    {
+        runOnUiThread(new Runnable()
+        {
+            @Override
+            public void run() 
+            {
+                if (enabled)
+                {
+                    getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                }
+                else
+                {
+                    getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                }
+            }
+        });
+    }
+
     ////////////////////////////////////////////////////////////////////////////////////////////////////
 
     // View.OnSystemUiVisibilityChangeListener interface

@@ -467,6 +467,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/UI/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Update/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Render/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UnitTests/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Utils/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Job/*.cpp) \

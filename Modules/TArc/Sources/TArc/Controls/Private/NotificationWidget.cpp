@@ -65,7 +65,7 @@ NotificationWidget::NotificationWidget(const NotificationParams& params, QWidget
 
     QDesktopWidget* desktop = QApplication::desktop();
     QRect geometry = desktop->availableGeometry(parent);
-    setFixedWidth(geometry.width() / 5);
+    setFixedWidth(500.0f);
     setMaximumHeight(geometry.height() / 3);
 }
 

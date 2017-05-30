@@ -148,8 +148,8 @@ SceneEditor2::SceneEditor2()
     materialSystem = new EditorMaterialSystem(this);
     AddSystem(materialSystem, MAKE_COMPONENT_MASK(DAVA::Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
-    wayEditSystem = new WayEditSystem(this, collisionSystem);
-    AddSystem(wayEditSystem, MAKE_COMPONENT_MASK(DAVA::Component::WAYPOINT_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT);
+    wayEditSystem = new WayEditSystem(this);
+    AddSystem(wayEditSystem, MAKE_COMPONENT_MASK(DAVA::Component::WAYPOINT_COMPONENT) | MAKE_COMPONENT_MASK(DAVA::Component::TRANSFORM_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT);
     structureSystem->AddDelegate(wayEditSystem);
 
     pathSystem = new PathSystem(this);

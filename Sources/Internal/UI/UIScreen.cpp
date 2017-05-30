@@ -27,7 +27,6 @@ UIScreen::UIScreen(const Rect& rect)
     appScreens.push_back(this);
     groupIdCounter--;
     isLoaded = false;
-    fillBorderOrder = FILL_BORDER_AFTER_DRAW;
 }
 
 UIScreen::~UIScreen()
@@ -47,61 +46,6 @@ void UIScreen::SystemScreenSizeChanged(const Rect& newFullScreenRect)
 {
     SetSize(newFullScreenRect.GetSize());
     UIControl::SystemScreenSizeChanged(newFullScreenRect);
-}
-
-void UIScreen::SetFillBorderOrder(UIScreen::eFillBorderOrder fillOrder)
-{
-    fillBorderOrder = fillOrder;
-}
-
-void UIScreen::SystemDraw(const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
-{
-    if (fillBorderOrder == FILL_BORDER_BEFORE_DRAW)
-    {
-        FillScreenBorders(geometricData);
-        UIControl::SystemDraw(geometricData, parentBackground);
-    }
-    else if (fillBorderOrder == FILL_BORDER_AFTER_DRAW)
-    {
-        UIControl::SystemDraw(geometricData, parentBackground);
-        FillScreenBorders(geometricData);
-    }
-    else
-    {
-        UIControl::SystemDraw(geometricData, parentBackground);
-    }
-}
-
-void UIScreen::FillScreenBorders(const UIGeometricData& geometricData)
-{
-    static auto drawColor(Color::Black);
-
-    UIGeometricData drawData;
-    drawData.position = relativePosition;
-    drawData.size = size;
-    drawData.pivotPoint = GetPivotPoint();
-    drawData.scale = scale;
-    drawData.angle = angle;
-    drawData.AddGeometricData(geometricData);
-
-    Rect drawRect = drawData.GetUnrotatedRect();
-    Rect fullRect = UIControlSystem::Instance()->vcs->GetFullScreenVirtualRect();
-    Vector2 virtualSize = Vector2(static_cast<float32>(UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dx),
-                                  static_cast<float32>(UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy));
-    if (fullRect.x < 0)
-    {
-        auto rect1 = Rect(fullRect.x, 0, -fullRect.x, virtualSize.y);
-        RenderSystem2D::Instance()->FillRect(rect1, drawColor);
-        auto rect2 = Rect(fullRect.dx - fullRect.x, 0, fullRect.x, virtualSize.y);
-        RenderSystem2D::Instance()->FillRect(rect2, drawColor);
-    }
-    else
-    {
-        auto rect1 = Rect(0, fullRect.y, virtualSize.x + 1, -fullRect.y);
-        RenderSystem2D::Instance()->FillRect(rect1, drawColor);
-        auto rect2 = Rect(0, fullRect.dy, virtualSize.x + 1, -fullRect.y);
-        RenderSystem2D::Instance()->FillRect(rect2, drawColor);
-    }
 }
 
 void UIScreen::LoadGroup()

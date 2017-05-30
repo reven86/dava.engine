@@ -3,13 +3,14 @@
 #include "Base/BaseTypes.h"
 #include "DLCManager/DLCManager.h"
 #include "Compression/Compressor.h"
+#include "DLCManager/DLCDownloader.h"
 
 namespace DAVA
 {
 class DLCManagerImpl;
 
 /**
-	Downdload several files
+	Download several files with one request
 */
 class PackRequest : public DLCManager::IRequest
 {
@@ -68,7 +69,7 @@ private:
         uint64 sizeOfCompressedFile = 0;
         uint64 sizeOfUncompressedFile = 0;
         uint64 downloadedFileSize = 0;
-        uint32 taskId = 0;
+        DLCDownloader::Task* taskId = nullptr;
         Compressor::Type compressionType = Compressor::Type::Lz4HC;
         Status status = Wait;
     };
@@ -84,7 +85,7 @@ private:
                                FileRequest& fileRequest);
 
     static void DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest);
-    void DisableRequestingAndFireSignalNoSpaceLeft(PackRequest::FileRequest& fileRequest);
+    void DisableRequestingAndFireSignalNoSpaceLeft(FileRequest& fileRequest) const;
     bool UpdateFileRequests();
 
     DLCManagerImpl* packManagerImpl = nullptr;
@@ -96,7 +97,7 @@ private:
 
     uint32 numOfDownloadedFile = 0;
 
-    // if this fild is false, you can check fileIndexes
+    // if this field is false, you can check fileIndexes
     // else fileIndexes maybe empty and wait initialization
     bool delayedRequest = true;
 };

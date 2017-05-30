@@ -13,7 +13,7 @@ class LogWidget;
 
 class DeviceLogController : public QObject,
                             public DAVA::Net::NetService,
-                            public std::enable_shared_from_this<DAVA::Net::NetService>
+                            public std::enable_shared_from_this<DeviceLogController>
 {
     Q_OBJECT
 

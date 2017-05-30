@@ -73,6 +73,8 @@ public:
     Signal<size_t, size_t> initializeFinished;
     /** signal per user request */
     Signal<const IRequest&> requestUpdated;
+    /** signal just before start loading request */
+    Signal<const IRequest&> requestStartLoading;
     /**
 	    Tells that some file error occurred during downloading process.
 	    First parameter is a full path to the file which couldn't be created or written,
@@ -95,6 +97,8 @@ public:
         uint32 numOfThreadsPerFileDownload = 1; //!< this value passed to DownloadManager
         uint32 timeoutForDownload = 30; //!< this value passed to DownloadManager
         uint32 retriesCountForDownload = 3; //!< this value passed to DownloadManager
+        uint32 downloaderMaxHandles = 4; //!< play with any values you like from 1 to max open file per process
+        uint32 downloaderChankBufSize = 1024 * 1024; //!< 1Mb RAM buffer for one handle, you can set any value in bytes
     };
 
     /** Start complex initialization process. You can call it again if need.

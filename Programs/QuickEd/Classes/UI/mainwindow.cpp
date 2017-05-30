@@ -32,7 +32,7 @@ REGISTER_PREFERENCES_ON_START(MainWindow,
 
 Q_DECLARE_METATYPE(const InspMember*);
 
-MainWindow::MainWindow(DAVA::TArc::ContextAccessor* accessor, QWidget* parent)
+MainWindow::MainWindow(DAVA::TArc::ContextAccessor* accessor, DAVA::TArc::UI* tarcUi, QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow())
 #if defined(__DAVAENGINE_MACOS__)
@@ -43,8 +43,11 @@ MainWindow::MainWindow(DAVA::TArc::ContextAccessor* accessor, QWidget* parent)
     setObjectName("QuickEd"); //we need to support old names to save window settings
 
     ui->libraryWidget->SetAccessor(accessor);
+    ui->libraryWidget->SetUI(tarcUi);
     ui->propertiesWidget->SetAccessor(accessor);
+    ui->propertiesWidget->SetUI(tarcUi);
     ui->packageWidget->SetAccessor(accessor);
+    ui->packageWidget->SetUI(tarcUi);
 
     setWindowIcon(QIcon(":/icon.ico"));
     DebugTools::ConnectToUI(ui.get());

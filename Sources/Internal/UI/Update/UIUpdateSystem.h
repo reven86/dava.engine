@@ -20,6 +20,15 @@ class UIUpdateSystem : public UISystem
 public:
     ~UIUpdateSystem() override;
 
+private:
+    struct UpdateBind
+    {
+        UpdateBind(UIUpdateComponent* uc, UICustomUpdateDeltaComponent* cdc);
+        const UIUpdateComponent* updateComponent = nullptr;
+        UICustomUpdateDeltaComponent* customDeltaComponent = nullptr;
+        bool updated = false;
+    };
+
     void RegisterControl(UIControl* control) override;
     void UnregisterControl(UIControl* control) override;
     void RegisterComponent(UIControl* control, UIComponent* component) override;
@@ -29,15 +38,9 @@ public:
     void OnControlInvisible(UIControl* control) override;
 
     void Process(float32 elapsedTime) override;
+    void ForceProcessControl(float32 elapsedTime, UIControl* control) override;
 
-private:
-    struct UpdateBind
-    {
-        UpdateBind(UIUpdateComponent* uc, UICustomUpdateDeltaComponent* cdc);
-        const UIUpdateComponent* updateComponent = nullptr;
-        UICustomUpdateDeltaComponent* customDeltaComponent = nullptr;
-        bool updated = false;
-    };
+    void ProcessControlHierarchy(float32 elapsedTime, UIControl* control);
 
     List<UpdateBind> binds;
     bool modified = false;

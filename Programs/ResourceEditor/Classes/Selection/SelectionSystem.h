@@ -43,7 +43,7 @@ public:
     void AddObjectToSelection(Selectable::Object* entity);
     void AddGroupToSelection(const SelectableGroup& entities);
 
-    void ExcludeEntityFromSelection(Selectable::Object* entity);
+    void ExcludeEntityFromSelection(Selectable::Object* entity, bool forceRemove);
     void ExcludeSelection(const SelectableGroup& entities);
 
     void Clear();

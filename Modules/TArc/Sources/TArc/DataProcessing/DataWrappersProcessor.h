@@ -14,6 +14,8 @@ public:
 
     void Shoutdown();
 
+    void SetDebugName(const String& debugName);
+
     DataWrapper CreateWrapper(const ReflectedType* type, DataContext* ctx);
     DataWrapper CreateWrapper(const DataWrapper::DataAccessor& accessor, DataContext* ctx);
 
@@ -24,6 +26,7 @@ private:
     Vector<DataWrapper> wrappers;
     Vector<DataWrapper> justCreatedWrappers;
     bool recursiveSyncGuard = false;
+    String debugName;
 };
 }
 }

@@ -444,7 +444,7 @@ void TextFieldStbImpl::SystemDraw(const UIGeometricData& d)
     UIGeometricData staticGeometric = staticText->GetLocalGeometricData();
     staticGeometric.AddGeometricData(d);
     staticGeometric.position += staticTextOffset * scale;
-    staticText->SystemDraw(staticGeometric, nullptr);
+    staticText->Draw(staticGeometric);
 
     if (showCursor)
     {

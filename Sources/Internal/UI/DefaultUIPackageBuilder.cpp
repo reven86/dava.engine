@@ -78,7 +78,7 @@ UIPackage* DefaultUIPackageBuilder::FindInCache(const String& packagePath) const
     return cache->GetPackage(packagePath);
 }
 
-void DefaultUIPackageBuilder::BeginPackage(const FilePath& packagePath)
+void DefaultUIPackageBuilder::BeginPackage(const FilePath& packagePath, int32 version)
 {
     DVASSERT(!package.Valid());
     package = RefPtr<UIPackage>(new UIPackage());

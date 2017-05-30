@@ -10,6 +10,7 @@
 #include <Time/DateTime.h>
 #include <Utils/Utils.h>
 #include <DeviceManager/DeviceManager.h>
+#include <UI/Render/UIRenderSystem.h>
 
 #include "Infrastructure/TestListScreen.h"
 #include "Tests/NotificationTest.h"
@@ -237,7 +238,7 @@ void TestBed::OnWindowCreated(DAVA::Window* w)
 
     w->SetVirtualSize(vw, vh);
     w->GetUIControlSystem()->vcs->RegisterAvailableResourceSize(resW, resH, "Gfx");
-    w->GetUIControlSystem()->SetClearColor(Color::Black);
+    w->GetUIControlSystem()->GetRenderSystem()->SetClearColor(Color::Black);
 
     LocalizationSystem* ls = LocalizationSystem::Instance();
     ls->SetDirectory("~res:/Strings/");

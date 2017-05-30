@@ -44,6 +44,7 @@ public:
 
     const EngineContext* GetContext() const;
     Window* GetPrimaryWindow() const;
+    const Vector<Window*>& GetWindows() const;
     uint32 GetGlobalFrameIndex() const;
     int32 GetExitCode() const;
     const Vector<String>& GetCommandLine() const;
@@ -86,6 +87,9 @@ public:
     // Proxy method that calls SystemTimer::Adjust to prevent many friends to SystemTimer
     static void AdjustSystemTimer(int64 adjustMicro);
 
+    void SetScreenTimeoutEnabled(bool enabled);
+    bool IsScreenTimeoutEnabled() const;
+
     bool IsRunning() const;
 
 private:
@@ -111,6 +115,8 @@ private:
     void CreateSubsystems(const Vector<String>& modules);
     void DestroySubsystems();
 
+    void OnWindowVisibilityChanged(Window* window, bool visible);
+
     static void OnRenderingError(rhi::RenderingError err, void* param);
 
     // TODO: replace raw pointers with std::unique_ptr after work is done
@@ -123,7 +129,7 @@ private:
 
     Window* primaryWindow = nullptr;
     Set<Window*> justCreatedWindows; // Just created Window instances which do not have native windows yet
-    Set<Window*> aliveWindows; // Windows which have native windows and take part in update cycle
+    Vector<Window*> aliveWindows; // Windows which have native windows and take part in update cycle
     Set<Window*> dyingWindows; // Windows which will be deleted soon; native window may be already destroyed
 
     // Application-supplied functor which is invoked when user is trying to close window or application
@@ -141,6 +147,9 @@ private:
     uint32 globalFrameIndex = 1;
 
     bool isRunning = false;
+
+    bool atLeastOneWindowIsVisible = false;
+    bool screenTimeoutEnabled = true;
 
     static EngineBackend* instance;
 };
@@ -175,6 +184,11 @@ inline Window* EngineBackend::GetPrimaryWindow() const
     return primaryWindow;
 }
 
+inline const Vector<Window*>& EngineBackend::GetWindows() const
+{
+    return aliveWindows;
+}
+
 inline uint32 EngineBackend::GetGlobalFrameIndex() const
 {
     return globalFrameIndex;
@@ -203,6 +217,11 @@ inline MainDispatcher* EngineBackend::GetDispatcher() const
 inline PlatformCore* EngineBackend::GetPlatformCore() const
 {
     return platformCore;
+}
+
+inline bool EngineBackend::IsScreenTimeoutEnabled() const
+{
+    return screenTimeoutEnabled;
 }
 
 } // namespace Private

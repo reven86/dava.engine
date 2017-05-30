@@ -12,6 +12,7 @@
 #include "Autotesting/AutotestingDB.h"
 
 #include "Job/JobManager.h"
+#include "UI/Render/UIRenderSystem.h"
 
 namespace DAVA
 {
@@ -364,12 +365,13 @@ void AutotestingSystem::Draw()
 
     if (screenshotRequested && !screenshotSync.IsValid())
     {
-        UIScreen* currentScreen = UIControlSystem::Instance()->GetScreen();
+        UIControlSystem* controlSystem = UIControlSystem::Instance();
+        UIScreen* currentScreen = controlSystem->GetScreen();
         if (currentScreen)
         {
             screenshotSync = rhi::GetCurrentFrameSyncObject();
 
-            const Size2i& pScreenSize = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
+            const Size2i& pScreenSize = controlSystem->vcs->GetPhysicalScreenSize();
 
             RenderSystem2D::RenderTargetPassDescriptor desc;
             desc.colorAttachment = screenshotTexture->handle;
@@ -378,12 +380,12 @@ void AutotestingSystem::Draw()
             desc.width = uint32(pScreenSize.dx);
             desc.height = uint32(pScreenSize.dy);
             desc.priority = PRIORITY_SCREENSHOT + PRIORITY_MAIN_2D;
-            desc.clearTarget = UIControlSystem::Instance()->GetUI3DViewCount() == 0;
+            desc.clearTarget = controlSystem->GetRenderSystem()->GetUI3DViewCount() == 0;
             desc.clearColor = Color::Black;
             desc.transformVirtualToPhysical = true;
 
             RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
-            currentScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData(), nullptr);
+            controlSystem->ForceDrawControl(currentScreen);
             DrawTouches();
             RenderSystem2D::Instance()->FillRect(Rect(0.0f, 0.0f, float32(pScreenSize.dx), float32(pScreenSize.dy)), Color::White, RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL);
             RenderSystem2D::Instance()->EndRenderTargetPass();

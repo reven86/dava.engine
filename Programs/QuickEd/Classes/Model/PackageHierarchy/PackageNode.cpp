@@ -50,6 +50,10 @@ PackageNode::~PackageNode()
 
 int PackageNode::GetCount() const
 {
+    if (HasErrors())
+    {
+        return 0;
+    }
     return SECTION_COUNT;
 }
 

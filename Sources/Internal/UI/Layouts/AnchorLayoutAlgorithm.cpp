@@ -1,7 +1,8 @@
 #include "AnchorLayoutAlgorithm.h"
 
-#include "UIAnchorComponent.h"
-#include "UISizePolicyComponent.h"
+#include "UI/Layouts/UIAnchorComponent.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
+#include "UI/Layouts/SizeMeasuringAlgorithm.h"
 
 #include "UI/UIControl.h"
 
@@ -34,6 +35,20 @@ void AnchorLayoutAlgorithm::Apply(ControlLayoutData& data, Vector2::eAxis axis, 
             {
                 float32 size = data.GetSize(axis) * sizeHint->GetValueByAxis(axis) / 100.0f;
                 size = Clamp(size, sizeHint->GetMinValueByAxis(axis), sizeHint->GetMaxValueByAxis(axis));
+                childData.SetSize(axis, size);
+            }
+            else if (sizeHint != nullptr && sizeHint->GetPolicyByAxis(axis) == UISizePolicyComponent::FORMULA)
+            {
+                SizeMeasuringAlgorithm alg(layoutData, childData, axis, sizeHint);
+                alg.SetParentSize(data.GetSize(axis));
+                alg.SetParentRestSize(data.GetSize(axis));
+
+                float32 size = alg.Calculate();
+                if (size < 0.0f)
+                {
+                    size = 0.0f;
+                }
+
                 childData.SetSize(axis, size);
             }
 

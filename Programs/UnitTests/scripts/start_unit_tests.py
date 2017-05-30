@@ -153,7 +153,7 @@ elif sys.platform == "darwin":
 
     sub_process = subprocess.Popen(commandLine, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-app_exit_code = None
+app_exit_code = 0
 
 continue_process_stdout = True
 
@@ -168,7 +168,6 @@ while continue_process_stdout:
                 sys.stdout.flush()
             if line.find("Finish all tests.") != -1:    # this text marker helps to detect good \
                                                         #  finish tests on ios device (run with lldb)
-                app_exit_code = 0
                 if start_on_android:
                     # we want to exit from logcat process because sub_process.stdout.readline() will block
                     # current thread
@@ -221,7 +220,7 @@ if sys.platform == "darwin" and start_on_ios == False and start_on_android == Fa
 
     subprocess.call(params)
 
-if app_exit_code is None:
-    app_exit_code = sub_process.poll()
-
-sys.exit(app_exit_code)
+if app_exit_code == 1:
+    sys.exit(app_exit_code)
+else:
+    sys.exit(sub_process.returncode)

@@ -41,6 +41,7 @@ private:
     bool inverse = false;
     bool skipInvisible = true;
 
+    float32 currentSize = 0.0f;
     float32 fixedSize = 0.0f;
     float32 totalPercent = 0.0f;
 

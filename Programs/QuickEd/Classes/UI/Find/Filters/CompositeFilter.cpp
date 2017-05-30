@@ -11,20 +11,29 @@ CompositeFilter::CompositeFilter(const DAVA::Vector<std::shared_ptr<FindFilter>>
 {
 }
 
-bool CompositeFilter::CanAcceptPackage(const PackageInformation* package) const
+FindFilter::ePackageStatus CompositeFilter::AcceptPackage(const PackageInformation* package) const
 {
-    return std::any_of(filters.begin(), filters.end(),
-                       [&package](const std::shared_ptr<FindFilter>& filter)
-                       {
-                           return filter->CanAcceptPackage(package);
-                       });
+    ePackageStatus result = ePackageStatus::PACKAGE_FOUND;
+    for (const std::shared_ptr<FindFilter>& filter : filters)
+    {
+        ePackageStatus status = filter->AcceptPackage(package);
+        if (status == PACKAGE_NOT_INTERESTED)
+        {
+            return PACKAGE_NOT_INTERESTED;
+        }
+        if (status == PACKAGE_CAN_ACCEPT_CONTROLS)
+        {
+            result = PACKAGE_CAN_ACCEPT_CONTROLS;
+        }
+    }
+    return result;
 }
 
-bool CompositeFilter::CanAcceptControl(const ControlInformation* control) const
+bool CompositeFilter::AcceptControl(const ControlInformation* control) const
 {
     return std::all_of(filters.begin(), filters.end(),
                        [&control](const std::shared_ptr<FindFilter>& filter)
                        {
-                           return filter->CanAcceptControl(control);
+                           return filter->AcceptControl(control);
                        });
 }

@@ -19,7 +19,7 @@ namespace AssetCache
 {
 bool SendArchieve(Net::IChannel* channel, KeyedArchive* archieve);
 
-class Connection final : public Net::IChannelListener, public std::enable_shared_from_this<Net::IChannelListener>
+class Connection final : public Net::IChannelListener, public std::enable_shared_from_this<Connection>
 {
 public:
     static std::shared_ptr<Connection> MakeConnection(

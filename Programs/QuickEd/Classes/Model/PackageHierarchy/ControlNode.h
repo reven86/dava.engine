@@ -4,6 +4,8 @@
 #include "PackageBaseNode.h"
 #include "ControlsContainerNode.h"
 
+#include <Base/Result.h>
+
 namespace DAVA
 {
 class UIControlPackageContext;

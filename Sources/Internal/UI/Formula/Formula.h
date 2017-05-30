@@ -27,6 +27,11 @@ public:
     bool Parse(const String& str);
 
     /**
+     Reset internal state.
+     */
+    void Reset();
+
+    /**
      Indicates that formula is parsed and ready to evaluation.
      */
     bool IsValid() const;

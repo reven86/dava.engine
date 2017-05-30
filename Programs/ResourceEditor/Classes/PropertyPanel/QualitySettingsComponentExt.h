@@ -5,7 +5,7 @@
 class QualitySettingsChildCreator : public DAVA::TArc::ChildCreatorExtension
 {
 public:
-    void ExposeChildren(const std::shared_ptr<const DAVA::TArc::PropertyNode>& parent, DAVA::Vector<std::shared_ptr<DAVA::TArc::PropertyNode>>& children) const override;
+    void ExposeChildren(const std::shared_ptr<DAVA::TArc::PropertyNode>& parent, DAVA::Vector<std::shared_ptr<DAVA::TArc::PropertyNode>>& children) const override;
 };
 
 class QualitySettingsEditorCreator : public DAVA::TArc::EditorComponentExtension

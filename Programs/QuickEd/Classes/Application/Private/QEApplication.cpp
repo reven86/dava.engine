@@ -68,9 +68,12 @@ void QEApplication::Init(const DAVA::EngineContext* engineContext)
 #endif
     PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
 
-    ParticleEmitter::FORCE_DEEP_CLONE = true;
-
+    FileSystem* fs = engineContext->fileSystem;
+    fs->SetCurrentDocumentsDirectory(fs->GetUserDocumentsPath() + "QuickEd/");
+    fs->CreateDirectory(fs->GetCurrentDocumentsDirectory(), true);
     engineContext->logger->SetLogFilename("QuickEd.txt");
+
+    ParticleEmitter::FORCE_DEEP_CLONE = true;
 
     UIControlSystem* uiControlSystem = engineContext->uiControlSystem;
     uiControlSystem->GetLayoutSystem()->SetAutoupdatesEnabled(true);
@@ -85,10 +88,6 @@ void QEApplication::Init(const DAVA::EngineContext* engineContext)
 
     inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::TAB), UIInputSystem::ACTION_FOCUS_NEXT);
     inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::TAB, eModifierKeys::SHIFT), UIInputSystem::ACTION_FOCUS_PREV);
-
-    FileSystem* fs = engineContext->fileSystem;
-    fs->SetCurrentDocumentsDirectory(fs->GetUserDocumentsPath() + "QuickEd/");
-    fs->CreateDirectory(fs->GetCurrentDocumentsDirectory(), true);
 
     const char* settingsPath = "QuickEdSettings.archive";
     FilePath localPrefrencesPath(fs->GetCurrentDocumentsDirectory() + settingsPath);

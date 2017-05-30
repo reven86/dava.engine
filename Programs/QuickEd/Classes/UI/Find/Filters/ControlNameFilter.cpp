@@ -9,12 +9,12 @@ ControlNameFilter::ControlNameFilter(const DAVA::String& pattern, bool caseSensi
 {
 }
 
-bool ControlNameFilter::CanAcceptPackage(const PackageInformation* package) const
+FindFilter::ePackageStatus ControlNameFilter::AcceptPackage(const PackageInformation* package) const
 {
-    return true;
+    return PACKAGE_CAN_ACCEPT_CONTROLS;
 }
 
-bool ControlNameFilter::CanAcceptControl(const ControlInformation* control) const
+bool ControlNameFilter::AcceptControl(const ControlInformation* control) const
 {
     return regExp.exactMatch(control->GetName().c_str());
 }
