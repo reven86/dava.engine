@@ -6,6 +6,9 @@
 #include "Base/GlobalEnum.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/Linux/DeviceInfoLinux.h"
+#include "Utils/UTF8Utils.h"
+
+#include <sys/utsname.h>
 
 namespace DAVA
 {
@@ -23,6 +26,13 @@ String DeviceInfoPrivate::GetPlatformString()
 
 String DeviceInfoPrivate::GetVersion()
 {
+    struct utsname buf
+    {
+    };
+    if (uname(&buf) == 0)
+    {
+        return String(buf.release);
+    }
     return String();
 }
 
@@ -83,6 +93,13 @@ String DeviceInfoPrivate::GetUDID()
 
 WideString DeviceInfoPrivate::GetName()
 {
+    struct utsname buf
+    {
+    };
+    if (uname(&buf) == 0)
+    {
+        return UTF8Utils::EncodeToWideString(buf.nodename);
+    }
     return WideString();
 }
 
