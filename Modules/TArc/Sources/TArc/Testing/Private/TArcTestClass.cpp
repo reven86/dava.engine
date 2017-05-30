@@ -223,6 +223,11 @@ DataWrapper TestClass::CreateWrapper(const DAVA::ReflectedType* type)
     return core->GetCoreInterface()->CreateWrapper(type);
 }
 
+DAVA::TArc::UI* TestClass::GetUI()
+{
+    return core->GetUI();
+}
+
 ContextAccessor* TestClass::GetAccessor()
 {
     return core->GetCoreInterface();

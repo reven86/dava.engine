@@ -99,6 +99,7 @@ public:
     static void WarningToFile(const FilePath& customLogFileName, const char8* text, ...);
     static void InfoToFile(const FilePath& customLogFileName, const char8* text, ...);
     static void ErrorToFile(const FilePath& customLogFileName, const char8* text, ...);
+    static void LogToFile(const FilePath& customLogFileName, eLogLevel ll, const char8* text, ...);
 
     static void AddCustomOutput(DAVA::LoggerOutput* lo);
     static void RemoveCustomOutput(DAVA::LoggerOutput* lo);

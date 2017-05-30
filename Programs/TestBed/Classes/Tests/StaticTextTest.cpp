@@ -1,5 +1,6 @@
 #include "Tests/StaticTextTest.h"
 #include "UI/Focus/UIFocusComponent.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 
 using namespace DAVA;
 
@@ -86,7 +87,7 @@ void StaticTextTest::LoadResources()
     previewText->SetFont(bigFont);
     previewText->SetTextColor(Color::White);
     previewText->SetText(L"");
-    previewText->SetDebugDraw(true);
+    previewText->GetOrCreateComponent<UIDebugRenderComponent>();
     previewText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     previewText->SetTextUseRtlAlign(TextBlock::RTL_USE_BY_CONTENT);
     previewText->SetForceBiDiSupportEnabled(true);
@@ -103,7 +104,7 @@ void StaticTextTest::LoadResources()
     inputText->SetFont(bigFont);
     inputText->SetTextColor(Color::White);
     inputText->SetText(L"");
-    inputText->SetDebugDraw(true);
+    inputText->GetOrCreateComponent<UIDebugRenderComponent>();
     inputText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     inputText->SetTextUseRtlAlign(TextBlock::RTL_USE_BY_CONTENT);
     inputDelegate = new InputDelegate(this);
@@ -151,7 +152,7 @@ void StaticTextTest::LoadResources()
     requireTextSizeButton->SetStateFont(0xFF, font);
     requireTextSizeButton->SetStateFontColor(0xFF, Color::White);
     requireTextSizeButton->SetStateText(0xFF, L"On / Off");
-    requireTextSizeButton->SetDebugDraw(true);
+    requireTextSizeButton->GetOrCreateComponent<UIDebugRenderComponent>();
     requireTextSizeButton->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &StaticTextTest::OnRequireTextSizeButtonClick));
     AddControl(requireTextSizeButton);
 
@@ -215,7 +216,7 @@ void StaticTextTest::SetPreviewAlign(DAVA::int32 align)
     inputText->SetTextAlign(align);
     for (auto btn : alignButtons)
     {
-        btn->SetDebugDrawColor(btn->GetTag() == align ? GREEN : RED);
+        btn->GetOrCreateComponent<UIDebugRenderComponent>()->SetDrawColor(btn->GetTag() == align ? GREEN : RED);
     }
 }
 
@@ -224,7 +225,7 @@ void StaticTextTest::SetPreviewFitting(DAVA::int32 fitting)
     previewText->SetFittingOption(fitting);
     for (auto btn : fittingButtons)
     {
-        btn->SetDebugDrawColor(btn->GetTag() == fitting ? GREEN : RED);
+        btn->GetOrCreateComponent<UIDebugRenderComponent>()->SetDrawColor(btn->GetTag() == fitting ? GREEN : RED);
     }
 }
 
@@ -232,7 +233,7 @@ void StaticTextTest::SetPreviewRequiredTextSize(bool enable)
 {
     needRequiredSize = enable;
     SetPreviewText(previewText->GetText());
-    requireTextSizeButton->SetDebugDrawColor(needRequiredSize ? GREEN : RED);
+    requireTextSizeButton->GetOrCreateComponent<UIDebugRenderComponent>()->SetDrawColor(needRequiredSize ? GREEN : RED);
     requireTextSizeButton->SetStateText(0xFF, needRequiredSize ? L"On" : L"Off");
 }
 
@@ -241,7 +242,7 @@ void StaticTextTest::SetPreviewMultiline(int32 multilineType)
     previewText->SetMultilineType(multilineType);
     for (auto btn : multilineButtons)
     {
-        btn->SetDebugDrawColor(btn->GetTag() == multilineType ? GREEN : RED);
+        btn->GetOrCreateComponent<UIDebugRenderComponent>()->SetDrawColor(btn->GetTag() == multilineType ? GREEN : RED);
     }
 }
 
@@ -251,7 +252,7 @@ UIButton* StaticTextTest::CreateButton(const WideString& caption, const Rect& re
     button->SetStateFont(0xFF, font);
     button->SetStateFontColor(0xFF, Color::White);
     button->SetStateText(0xFF, caption);
-    button->SetDebugDraw(true);
+    button->GetOrCreateComponent<UIDebugRenderComponent>();
     button->AddEvent(UIButton::EVENT_TOUCH_DOWN, msg);
     button->SetTag(tag);
     AddControl(button);

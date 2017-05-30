@@ -1,6 +1,8 @@
 #include "Tests/UIScrollViewTest.h"
 
 #include "Render/2D/Sprite.h"
+#include "UI/Render/UIDebugRenderComponent.h"
+#include "UI/UIControlBackground.h"
 
 using namespace DAVA;
 
@@ -54,7 +56,7 @@ void UIScrollViewTest::LoadResources()
 
     UIControl* testControl4 = new UIControl(Rect(1200.f, 1400.f, 250.f, 250.f));
     UIControlBackground* testControl4Bg = testControl4->GetOrCreateComponent<UIControlBackground>();
-    testControl4->SetDebugDraw(true);
+    testControl4->GetOrCreateComponent<UIDebugRenderComponent>();
     testControl4Bg->SetColor(Color(0.3333f, 0.3333f, 0.5555f, 1.0000f));
     testControl4Bg->SetDrawType(UIControlBackground::DRAW_FILL);
     testControl4->SetName("CONTROL_4");
@@ -64,7 +66,7 @@ void UIScrollViewTest::LoadResources()
 
     UIControl* testControlChild = new UIControl(Rect(100.f, 100.f, 150.f, 150.f));
     UIControlBackground* testControlChildBg = testControlChild->GetOrCreateComponent<UIControlBackground>();
-    testControlChild->SetDebugDraw(true);
+    testControlChild->GetOrCreateComponent<UIDebugRenderComponent>();
     testControlChildBg->SetColor(Color(0.3333f, 0.3333f, 0.5555f, 1.0000f));
     testControlChildBg->SetDrawType(UIControlBackground::DRAW_FILL);
     testControlChild->SetName("CONTROL_3");
@@ -72,7 +74,7 @@ void UIScrollViewTest::LoadResources()
 
     UIControl* testControl = new UIControl(Rect(50.f, 0.f, 150.f, 150.f));
     UIControlBackground* testControlBg = testControl->GetOrCreateComponent<UIControlBackground>();
-    testControl->SetDebugDraw(true);
+    testControl->GetOrCreateComponent<UIDebugRenderComponent>();
     testControlBg->SetColor(Color(0.3333f, 0.6667f, 0.4980f, 1.0000f));
     testControlBg->SetDrawType(UIControlBackground::DRAW_FILL);
     testControl->SetName("CONTROL_2");
@@ -81,7 +83,7 @@ void UIScrollViewTest::LoadResources()
 
     UIButton* testButton = new UIButton(Rect(10.f, 50.f, 250.f, 100.f));
     testButton->CreateBackgroundForState(STATE_NORMAL);
-    testButton->SetDebugDraw(true);
+    testButton->GetOrCreateComponent<UIDebugRenderComponent>();
     testButton->SetStateFont(STATE_NORMAL, font);
     testButton->SetStateFontColor(STATE_NORMAL, Color::White);
     testButton->SetStateText(STATE_NORMAL, L"First button");
@@ -95,14 +97,14 @@ void UIScrollViewTest::LoadResources()
     // Check how controls with negative coodinates are pushed inside scrollContainer
     UIControl* testControl5 = new UIControl(Rect(-50.f, 500.f, 150.f, 150.f));
     UIControlBackground* testControl5Bg = testControl5->GetOrCreateComponent<UIControlBackground>();
-    testControl5->SetDebugDraw(true);
+    testControl5->GetOrCreateComponent<UIDebugRenderComponent>();
     testControl5Bg->SetColor(Color(0.3333f, 0.3333f, 0.5555f, 1.0000f));
     testControl5Bg->SetDrawType(UIControlBackground::DRAW_FILL);
     testControl5->SetName("CONTROL_5");
 
     UIControl* testControl6 = new UIControl(Rect(-50.f, -50.f, 25.f, 25.f));
     UIControlBackground* testControl6Bg = testControl6->GetOrCreateComponent<UIControlBackground>();
-    testControl6->SetDebugDraw(true);
+    testControl6->GetOrCreateComponent<UIDebugRenderComponent>();
     testControl6Bg->SetColor(Color(0.3333f, 0.6667f, 0.4980f, 1.0000f));
     testControl6Bg->SetDrawType(UIControlBackground::DRAW_FILL);
     testControl6->SetName("CONTROL_6");
@@ -111,7 +113,7 @@ void UIScrollViewTest::LoadResources()
 
     UIControl* testControl7 = new UIControl(Rect(-100.f, 15.f, 35.f, 35.f));
     UIControlBackground* testControl7Bg = testControl7->GetOrCreateComponent<UIControlBackground>();
-    testControl7->SetDebugDraw(true);
+    testControl7->GetOrCreateComponent<UIDebugRenderComponent>();
     testControl7Bg->SetColor(Color(0.6667f, 0.3333f, 0.7880f, 1.0000f));
     testControl7Bg->SetDrawType(UIControlBackground::DRAW_FILL);
     testControl7->SetName("CONTROL_7");
@@ -122,7 +124,7 @@ void UIScrollViewTest::LoadResources()
 
     UIControl* testControl8 = new UIControl(Rect(-70.f, 50.f, 25.f, 25.f));
     UIControlBackground* testControl8Bg = testControl8->GetOrCreateComponent<UIControlBackground>();
-    testControl8->SetDebugDraw(true);
+    testControl8->GetOrCreateComponent<UIDebugRenderComponent>();
     testControl8Bg->SetColor(Color(0.6667f, 0.3333f, 0.4980f, 1.0000f));
     testControl8Bg->SetDrawType(UIControlBackground::DRAW_FILL);
     testControl8->SetName("CONTROL_8");
@@ -151,7 +153,7 @@ void UIScrollViewTest::LoadResources()
     finishTestBtn->SetStateFontColor(0xFF, Color(1.0, 0.0, 0.0, 0.75));
     finishTestBtn->SetStateText(0xFF, L"Finish test");
 
-    finishTestBtn->SetDebugDraw(true);
+    finishTestBtn->GetOrCreateComponent<UIDebugRenderComponent>();
     finishTestBtn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UIScrollViewTest::ButtonPressed));
     AddControl(finishTestBtn);
 

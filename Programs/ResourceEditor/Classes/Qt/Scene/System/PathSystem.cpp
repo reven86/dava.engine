@@ -170,7 +170,7 @@ void PathSystem::RemoveEntity(DAVA::Entity* entity)
 
 void PathSystem::WillClone(DAVA::Entity* originalEntity)
 {
-    PathComponent* pc = GetPathComponent(originalEntity);
+    DAVA::PathComponent* pc = GetPathComponent(originalEntity);
     if (isEditingEnabled && pc != nullptr)
     {
         CollapsePathEntity(originalEntity, pc->GetName());
@@ -444,7 +444,7 @@ void PathSystem::EnablePathEdit(bool enable)
     {
         for (DAVA::Entity* pathEntity : pathes)
         {
-            PathComponent* path = GetPathComponent(pathEntity);
+            DAVA::PathComponent* path = GetPathComponent(pathEntity);
             DVASSERT(path != nullptr);
             entitiesForCollapse.emplace(pathEntity, path->GetName());
         }

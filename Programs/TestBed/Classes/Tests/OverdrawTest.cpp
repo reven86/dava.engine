@@ -81,7 +81,7 @@ void OverdrawTest::LoadResources()
     SetRect(screenRect);
 
     startButton = CreateButton(DAVA::Rect(5, 5, screenRect.dx, buttonHeight), L"Start");
-    startButton->SetDebugDraw(true);
+    startButton->GetOrCreateComponent<UIDebugRenderComponent>();
     startButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &OverdrawTest::OnStart));
     AddControl(startButton);
     bool isFormatSupported = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(OverdrawTestConfig::pixelFormat).isHardwareSupported;
@@ -93,7 +93,7 @@ void OverdrawTest::LoadResources()
     overdrawCountLabel->SetTextColor(Color::White);
     overdrawCountLabel->SetText(Format(L"%d", OverdrawTestConfig::overdrawScreensCount));
     overdrawCountLabel->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
-    overdrawCountLabel->SetDebugDraw(true);
+    overdrawCountLabel->GetOrCreateComponent<UIDebugRenderComponent>();
     AddControl(overdrawCountLabel);
     InitializeButtons(overdrawButtonsInfo, overdrawButtons, Message(this, &OverdrawTest::OnChangeOverdrawButtonClick), false);
 
@@ -103,7 +103,7 @@ void OverdrawTest::LoadResources()
     chartHeightLabel->SetTextColor(Color::White);
     chartHeightLabel->SetText(Format(L"%.3f", OverdrawTestConfig::chartHeight));
     chartHeightLabel->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
-    chartHeightLabel->SetDebugDraw(true);
+    chartHeightLabel->GetOrCreateComponent<UIDebugRenderComponent>();
     AddControl(chartHeightLabel);
     InitializeButtons(chartHeightButtonsInfo, chartHeightButtons, Message(this, &OverdrawTest::OnChangeChartHeightButtonClick), false);
 
@@ -113,7 +113,7 @@ void OverdrawTest::LoadResources()
     CreateLabel({ texturePixelFormatXOffset, texturePixelFormatYOffset - buttonHeight, buttonWidth, buttonHeight }, L"Tex format");
     InitializeButtons(texturePixelFormatButtonsInfo, texturePixelFormatButtons, Message(this, &OverdrawTest::OnTextureFormatButtonClick));
 
-    SetDebugDraw(false, false);
+    GetOrCreateComponent<UIDebugRenderComponent>()->SetEnabled(false);
 }
 
 void OverdrawTest::UnloadResources()
@@ -139,7 +139,7 @@ void OverdrawTest::CreateLabel(const DAVA::Rect&& rect, const WideString&& capti
     label->SetTextColor(Color::White);
     label->SetText(caption);
     label->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
-    label->SetDebugDraw(false);
+    label->GetOrCreateComponent<UIDebugRenderComponent>()->SetEnabled(false);
     AddControl(label);
 }
 
@@ -165,11 +165,11 @@ void OverdrawTest::OnResolutionButtonClick(BaseObject* sender, void* data, void*
     {
         if (btn.first->GetTag() == pickedButton->GetTag())
         {
-            btn.first->SetDebugDrawColor(Color::Green);
+            btn.first->GetOrCreateComponent<UIDebugRenderComponent>()->SetDrawColor(Color::Green);
             OverdrawTestConfig::textureResolution = btn.second.data;
         }
         else
-            btn.first->SetDebugDrawColor(Color::Red);
+            btn.first->GetOrCreateComponent<UIDebugRenderComponent>()->SetDrawColor(Color::Red);
     }
 }
 
@@ -181,14 +181,14 @@ void OverdrawTest::OnTextureFormatButtonClick(BaseObject* sender, void* data, vo
     {
         if (btn.first->GetTag() == pickedButton->GetTag())
         {
-            btn.first->SetDebugDrawColor(Color::Green);
+            btn.first->GetOrCreateComponent<UIDebugRenderComponent>()->SetDrawColor(Color::Green);
             OverdrawTestConfig::pixelFormat = static_cast<DAVA::PixelFormat>(btn.second.data);
 
             bool isFormatSupported = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(OverdrawTestConfig::pixelFormat).isHardwareSupported;
             startButton->SetVisibilityFlag(isFormatSupported);
         }
         else
-            btn.first->SetDebugDrawColor(Color::Red);
+            btn.first->GetOrCreateComponent<UIDebugRenderComponent>()->SetDrawColor(Color::Red);
     }
 }
 

@@ -145,10 +145,10 @@ struct MethodTestData : public ReflectionBase
             QHBoxLayout* lineLayout = new QHBoxLayout();
             lineLayout->addWidget(new QLabel("Print Plus Icon: ", parent));
 
-            ControlDescriptorBuilder<ReflectedButton::Fields> desr;
-            desr[ReflectedButton::Fields::Clicked] = "plusMethod";
-            desr[ReflectedButton::Fields::Icon] = "plusIcon";
-            ReflectedButton* button = new ReflectedButton(desr, accessor, Reflection::Create(data), parent);
+            ReflectedButton::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[ReflectedButton::Fields::Clicked] = "plusMethod";
+            params.fields[ReflectedButton::Fields::Icon] = "plusIcon";
+            ReflectedButton* button = new ReflectedButton(params, accessor, Reflection::Create(data), parent);
             lineLayout->addWidget(button->ToWidgetCast());
             boxLayout->addLayout(lineLayout);
         }
@@ -157,10 +157,10 @@ struct MethodTestData : public ReflectionBase
             QHBoxLayout* lineLayout = new QHBoxLayout();
             lineLayout->addWidget(new QLabel("Print Minus Text: ", parent));
 
-            ControlDescriptorBuilder<ReflectedButton::Fields> desr;
-            desr[ReflectedButton::Fields::Clicked] = "minusMethod";
-            desr[ReflectedButton::Fields::Text] = "minusText";
-            ReflectedButton* button = new ReflectedButton(desr, accessor, Reflection::Create(data), parent);
+            ReflectedButton::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[ReflectedButton::Fields::Clicked] = "minusMethod";
+            params.fields[ReflectedButton::Fields::Text] = "minusText";
+            ReflectedButton* button = new ReflectedButton(params, accessor, Reflection::Create(data), parent);
             lineLayout->addWidget(button->ToWidgetCast());
             boxLayout->addLayout(lineLayout);
         }
@@ -169,11 +169,11 @@ struct MethodTestData : public ReflectionBase
             QHBoxLayout* lineLayout = new QHBoxLayout();
             lineLayout->addWidget(new QLabel("Print Plus Text&Icon: ", parent));
 
-            ControlDescriptorBuilder<ReflectedButton::Fields> desr;
-            desr[ReflectedButton::Fields::Clicked] = "plusMethod";
-            desr[ReflectedButton::Fields::Icon] = "plusIcon";
-            desr[ReflectedButton::Fields::Text] = "plusText";
-            ReflectedButton* button = new ReflectedButton(desr, accessor, Reflection::Create(data), parent);
+            ReflectedButton::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[ReflectedButton::Fields::Clicked] = "plusMethod";
+            params.fields[ReflectedButton::Fields::Icon] = "plusIcon";
+            params.fields[ReflectedButton::Fields::Text] = "plusText";
+            ReflectedButton* button = new ReflectedButton(params, accessor, Reflection::Create(data), parent);
             lineLayout->addWidget(button->ToWidgetCast());
             boxLayout->addLayout(lineLayout);
         }
@@ -182,30 +182,30 @@ struct MethodTestData : public ReflectionBase
             QHBoxLayout* lineLayout = new QHBoxLayout();
             lineLayout->addWidget(new QLabel("Print Minus Icon AutoRize|Enabled: ", parent));
 
-            ControlDescriptorBuilder<ReflectedButton::Fields> desr;
-            desr[ReflectedButton::Fields::Clicked] = "minusMethod";
-            desr[ReflectedButton::Fields::Icon] = "minusIcon";
-            desr[ReflectedButton::Fields::AutoRaise] = "autoRaise";
-            desr[ReflectedButton::Fields::Enabled] = "enabled";
-            ReflectedButton* button = new ReflectedButton(desr, accessor, Reflection::Create(data), parent);
+            ReflectedButton::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[ReflectedButton::Fields::Clicked] = "minusMethod";
+            params.fields[ReflectedButton::Fields::Icon] = "minusIcon";
+            params.fields[ReflectedButton::Fields::AutoRaise] = "autoRaise";
+            params.fields[ReflectedButton::Fields::Enabled] = "enabled";
+            ReflectedButton* button = new ReflectedButton(params, accessor, Reflection::Create(data), parent);
             lineLayout->addWidget(button->ToWidgetCast());
             boxLayout->addLayout(lineLayout);
 
             {
                 // Read only check box
-                ControlDescriptorBuilder<CheckBox::Fields> descr;
-                descr[CheckBox::Fields::Checked] = "enabled";
-                descr[CheckBox::Fields::TextHint] = "enabledText";
-                CheckBox* checkBox = new CheckBox(descr, accessor, Reflection::Create(data), parent);
+                CheckBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+                params.fields[CheckBox::Fields::Checked] = "enabled";
+                params.fields[CheckBox::Fields::TextHint] = "enabledText";
+                CheckBox* checkBox = new CheckBox(params, accessor, Reflection::Create(data), parent);
                 boxLayout->addWidget(checkBox->ToWidgetCast());
             }
 
             {
                 // Read only check box
-                ControlDescriptorBuilder<CheckBox::Fields> descr;
-                descr[CheckBox::Fields::Checked] = "autoRaise";
-                descr[CheckBox::Fields::TextHint] = "autoRaiseText";
-                CheckBox* checkBox = new CheckBox(descr, accessor, Reflection::Create(data), parent);
+                CheckBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+                params.fields[CheckBox::Fields::Checked] = "autoRaise";
+                params.fields[CheckBox::Fields::TextHint] = "autoRaiseText";
+                CheckBox* checkBox = new CheckBox(params, accessor, Reflection::Create(data), parent);
                 boxLayout->addWidget(checkBox->ToWidgetCast());
             }
         }
@@ -214,12 +214,12 @@ struct MethodTestData : public ReflectionBase
             QHBoxLayout* lineLayout = new QHBoxLayout();
             lineLayout->addWidget(new QLabel("Inverse method: ", parent));
 
-            ControlDescriptorBuilder<ReflectedButton::Fields> desr;
-            desr[ReflectedButton::Fields::Clicked] = "inverseEnabled";
-            desr[ReflectedButton::Fields::Icon] = "minusIcon";
-            desr[ReflectedButton::Fields::Enabled] = "enabled";
-            desr[ReflectedButton::Fields::Result] = "enabledSetter";
-            ReflectedButton* button = new ReflectedButton(desr, accessor, Reflection::Create(data), parent);
+            ReflectedButton::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[ReflectedButton::Fields::Clicked] = "inverseEnabled";
+            params.fields[ReflectedButton::Fields::Icon] = "minusIcon";
+            params.fields[ReflectedButton::Fields::Enabled] = "enabled";
+            params.fields[ReflectedButton::Fields::Result] = "enabledSetter";
+            ReflectedButton* button = new ReflectedButton(params, accessor, Reflection::Create(data), parent);
             lineLayout->addWidget(button->ToWidgetCast());
             boxLayout->addLayout(lineLayout);
         }
@@ -274,17 +274,21 @@ struct CheckBoxTestData : public ReflectionBase
         r.layout = new QVBoxLayout();
         Reflection reflection = Reflection::Create(data);
 
-        ControlDescriptorBuilder<CheckBox::Fields> descr;
-        descr[CheckBox::Fields::Checked] = "value";
-        CheckBox* valueBox = new CheckBox(descr, accessor, reflection, parent); //->ToWidgetCast();
-        r.layout->addWidget(valueBox->ToWidgetCast());
+        {
+            CheckBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[CheckBox::Fields::Checked] = "value";
+            CheckBox* valueBox = new CheckBox(params, accessor, reflection, parent); //->ToWidgetCast();
+            r.layout->addWidget(valueBox->ToWidgetCast());
+        }
 
-        ControlDescriptorBuilder<CheckBox::Fields> valueInvertedDescr;
-        valueInvertedDescr[CheckBox::Fields::Checked] = "invertedValue";
-        valueInvertedDescr[CheckBox::Fields::TextHint] = "valueDescription";
-        valueInvertedDescr[CheckBox::Fields::IsReadOnly] = "value";
-        CheckBox* valueInvertedBox = new CheckBox(valueInvertedDescr, accessor, reflection, parent); //->ToWidgetCast();
-        r.layout->addWidget(valueInvertedBox->ToWidgetCast());
+        {
+            CheckBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[CheckBox::Fields::Checked] = "invertedValue";
+            params.fields[CheckBox::Fields::TextHint] = "valueDescription";
+            params.fields[CheckBox::Fields::IsReadOnly] = "value";
+            CheckBox* valueInvertedBox = new CheckBox(params, accessor, reflection, parent); //->ToWidgetCast();
+            r.layout->addWidget(valueInvertedBox->ToWidgetCast());
+        }
 
         return r;
     }
@@ -359,9 +363,9 @@ struct LineEditTestData : public ReflectionBase
             QHBoxLayout* lineLayout = new QHBoxLayout();
             lineLayout->addWidget(new QLabel("Meta read only : ", parent));
 
-            ControlDescriptorBuilder<LineEdit::Fields> desr;
-            desr[LineEdit::Fields::Text] = "readOnlyMetaText";
-            LineEdit* lineEdit = new LineEdit(desr, accessor, Reflection::Create(data), parent);
+            LineEdit::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[LineEdit::Fields::Text] = "readOnlyMetaText";
+            LineEdit* lineEdit = new LineEdit(params, accessor, Reflection::Create(data), parent);
             lineLayout->addWidget(lineEdit->ToWidgetCast());
             boxLayout->addLayout(lineLayout);
         }
@@ -370,9 +374,9 @@ struct LineEditTestData : public ReflectionBase
             QHBoxLayout* lineLayout = new QHBoxLayout();
             lineLayout->addWidget(new QLabel("Read only : ", parent));
 
-            ControlDescriptorBuilder<LineEdit::Fields> desr;
-            desr[LineEdit::Fields::Text] = "readOnlyText";
-            LineEdit* lineEdit = new LineEdit(desr, accessor, Reflection::Create(data), parent);
+            LineEdit::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[LineEdit::Fields::Text] = "readOnlyText";
+            LineEdit* lineEdit = new LineEdit(params, accessor, Reflection::Create(data), parent);
             lineLayout->addWidget(lineEdit->ToWidgetCast());
             boxLayout->addLayout(lineLayout);
         }
@@ -381,28 +385,28 @@ struct LineEditTestData : public ReflectionBase
             QHBoxLayout* lineLayout = new QHBoxLayout();
             lineLayout->addWidget(new QLabel("Editable : ", parent));
 
-            ControlDescriptorBuilder<LineEdit::Fields> desr;
-            desr[LineEdit::Fields::Text] = "text";
-            desr[LineEdit::Fields::PlaceHolder] = "placeholder";
-            desr[LineEdit::Fields::IsReadOnly] = "isTextReadOnly";
-            desr[LineEdit::Fields::IsEnabled] = "isTextEnabled";
-            LineEdit* lineEdit = new LineEdit(desr, accessor, Reflection::Create(data), parent);
+            LineEdit::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[LineEdit::Fields::Text] = "text";
+            params.fields[LineEdit::Fields::PlaceHolder] = "placeholder";
+            params.fields[LineEdit::Fields::IsReadOnly] = "isTextReadOnly";
+            params.fields[LineEdit::Fields::IsEnabled] = "isTextEnabled";
+            LineEdit* lineEdit = new LineEdit(params, accessor, Reflection::Create(data), parent);
             lineLayout->addWidget(lineEdit->ToWidgetCast());
             boxLayout->addLayout(lineLayout);
 
             {
                 // Read only check box
-                ControlDescriptorBuilder<CheckBox::Fields> descr;
-                descr[CheckBox::Fields::Checked] = "isTextReadOnly";
-                CheckBox* checkBox = new CheckBox(descr, accessor, Reflection::Create(data), parent);
+                CheckBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+                params.fields[CheckBox::Fields::Checked] = "isTextReadOnly";
+                CheckBox* checkBox = new CheckBox(params, accessor, Reflection::Create(data), parent);
                 boxLayout->addWidget(checkBox->ToWidgetCast());
             }
 
             {
                 // Is enabled
-                ControlDescriptorBuilder<CheckBox::Fields> descr;
-                descr[CheckBox::Fields::Checked] = "isTextEnabled";
-                CheckBox* checkBox = new CheckBox(descr, accessor, Reflection::Create(data), parent);
+                CheckBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+                params.fields[CheckBox::Fields::Checked] = "isTextEnabled";
+                CheckBox* checkBox = new CheckBox(params, accessor, Reflection::Create(data), parent);
 
                 QVBoxLayout* vbox = new QVBoxLayout(checkBox->ToWidgetCast());
                 boxLayout->addWidget(checkBox->ToWidgetCast());
@@ -470,9 +474,9 @@ struct PlainTextEditTestData : public ReflectionBase
             QHBoxLayout* lineLayout = new QHBoxLayout();
             lineLayout->addWidget(new QLabel("Meta read only : ", parent));
 
-            ControlDescriptorBuilder<PlainTextEdit::Fields> desr;
-            desr[PlainTextEdit::Fields::Text] = "readOnlyMetaText";
-            PlainTextEdit* textEdit = new PlainTextEdit(desr, accessor, Reflection::Create(data), parent);
+            PlainTextEdit::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[PlainTextEdit::Fields::Text] = "readOnlyMetaText";
+            PlainTextEdit* textEdit = new PlainTextEdit(params, accessor, Reflection::Create(data), parent);
             lineLayout->addWidget(textEdit->ToWidgetCast());
             boxLayout->addLayout(lineLayout);
         }
@@ -481,9 +485,9 @@ struct PlainTextEditTestData : public ReflectionBase
             QHBoxLayout* lineLayout = new QHBoxLayout();
             lineLayout->addWidget(new QLabel("Read only : ", parent));
 
-            ControlDescriptorBuilder<PlainTextEdit::Fields> desr;
-            desr[PlainTextEdit::Fields::Text] = "readOnlyText";
-            PlainTextEdit* textEdit = new PlainTextEdit(desr, accessor, Reflection::Create(data), parent);
+            PlainTextEdit::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[PlainTextEdit::Fields::Text] = "readOnlyText";
+            PlainTextEdit* textEdit = new PlainTextEdit(params, accessor, Reflection::Create(data), parent);
             lineLayout->addWidget(textEdit->ToWidgetCast());
             boxLayout->addLayout(lineLayout);
         }
@@ -492,11 +496,11 @@ struct PlainTextEditTestData : public ReflectionBase
             QHBoxLayout* lineLayout = new QHBoxLayout();
             lineLayout->addWidget(new QLabel("Short text : ", parent));
 
-            ControlDescriptorBuilder<PlainTextEdit::Fields> desr;
-            desr[PlainTextEdit::Fields::Text] = "shortText";
-            desr[PlainTextEdit::Fields::IsReadOnly] = "isTextReadOnly";
-            desr[PlainTextEdit::Fields::IsEnabled] = "isTextEnabled";
-            PlainTextEdit* textEdit = new PlainTextEdit(desr, accessor, Reflection::Create(data), parent);
+            PlainTextEdit::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[PlainTextEdit::Fields::Text] = "shortText";
+            params.fields[PlainTextEdit::Fields::IsReadOnly] = "isTextReadOnly";
+            params.fields[PlainTextEdit::Fields::IsEnabled] = "isTextEnabled";
+            PlainTextEdit* textEdit = new PlainTextEdit(params, accessor, Reflection::Create(data), parent);
             lineLayout->addWidget(textEdit->ToWidgetCast());
             boxLayout->addLayout(lineLayout);
         }
@@ -505,28 +509,28 @@ struct PlainTextEditTestData : public ReflectionBase
             QHBoxLayout* lineLayout = new QHBoxLayout();
             lineLayout->addWidget(new QLabel("Editable : ", parent));
 
-            ControlDescriptorBuilder<PlainTextEdit::Fields> desr;
-            desr[PlainTextEdit::Fields::Text] = "text";
-            desr[PlainTextEdit::Fields::PlaceHolder] = "placeholder";
-            desr[PlainTextEdit::Fields::IsReadOnly] = "isTextReadOnly";
-            desr[PlainTextEdit::Fields::IsEnabled] = "isTextEnabled";
-            PlainTextEdit* textEdit = new PlainTextEdit(desr, accessor, Reflection::Create(data), parent);
+            PlainTextEdit::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[PlainTextEdit::Fields::Text] = "text";
+            params.fields[PlainTextEdit::Fields::PlaceHolder] = "placeholder";
+            params.fields[PlainTextEdit::Fields::IsReadOnly] = "isTextReadOnly";
+            params.fields[PlainTextEdit::Fields::IsEnabled] = "isTextEnabled";
+            PlainTextEdit* textEdit = new PlainTextEdit(params, accessor, Reflection::Create(data), parent);
             lineLayout->addWidget(textEdit->ToWidgetCast());
             boxLayout->addLayout(lineLayout);
 
             {
                 // Read only check box
-                ControlDescriptorBuilder<CheckBox::Fields> descr;
-                descr[CheckBox::Fields::Checked] = "isTextReadOnly";
-                CheckBox* checkBox = new CheckBox(descr, accessor, Reflection::Create(data), parent);
+                CheckBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+                params.fields[CheckBox::Fields::Checked] = "isTextReadOnly";
+                CheckBox* checkBox = new CheckBox(params, accessor, Reflection::Create(data), parent);
                 boxLayout->addWidget(checkBox->ToWidgetCast());
             }
 
             {
                 // Is enabled
-                ControlDescriptorBuilder<CheckBox::Fields> descr;
-                descr[CheckBox::Fields::Checked] = "isTextEnabled";
-                CheckBox* checkBox = new CheckBox(descr, accessor, Reflection::Create(data), parent);
+                CheckBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+                params.fields[CheckBox::Fields::Checked] = "isTextEnabled";
+                CheckBox* checkBox = new CheckBox(params, accessor, Reflection::Create(data), parent);
 
                 QVBoxLayout* vbox = new QVBoxLayout(checkBox->ToWidgetCast());
                 boxLayout->addWidget(checkBox->ToWidgetCast());
@@ -660,84 +664,84 @@ struct ComboBoxTestData : public ReflectionBase
 
         QVBoxLayout* boxLayout = new QVBoxLayout();
 
-        auto addTest = [&](const QString& testName, const ControlDescriptorBuilder<ComboBox::Fields>& descriptor)
+        auto addTest = [&](const QString& testName, const ComboBox::Params& params)
         {
             QHBoxLayout* lineLayout = new QHBoxLayout();
             lineLayout->addWidget(new QLabel(testName, parent));
 
-            ComboBox* comboBox = new ComboBox(descriptor, accessor, dataModel, parent);
+            ComboBox* comboBox = new ComboBox(params, accessor, dataModel, parent);
             lineLayout->addWidget(comboBox->ToWidgetCast());
             boxLayout->addLayout(lineLayout);
         };
 
         // read only
         {
-            ControlDescriptorBuilder<ComboBox::Fields> desr;
-            desr[ComboBox::Fields::Value] = "valueMeta";
-            desr[ComboBox::Fields::IsReadOnly] = "readOnly";
-            addTest("Value[Meta][ReadOnly by field]:", desr);
+            ComboBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[ComboBox::Fields::Value] = "valueMeta";
+            params.fields[ComboBox::Fields::IsReadOnly] = "readOnly";
+            addTest("Value[Meta][ReadOnly by field]:", params);
         }
 
         {
-            ControlDescriptorBuilder<ComboBox::Fields> desr;
-            desr[ComboBox::Fields::Value] = "valueMetaReadOnly";
-            addTest("Value[Meta][ReadOnly]: ", desr);
+            ComboBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[ComboBox::Fields::Value] = "valueMetaReadOnly";
+            addTest("Value[Meta][ReadOnly]: ", params);
         }
 
         {
-            ControlDescriptorBuilder<ComboBox::Fields> desr;
-            desr[ComboBox::Fields::Value] = "methodMetaOnlyGetter";
-            addTest("Method[Meta][NoSetter == ReadOnly]: ", desr);
+            ComboBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[ComboBox::Fields::Value] = "methodMetaOnlyGetter";
+            addTest("Method[Meta][NoSetter == ReadOnly]: ", params);
         }
 
         {
-            ControlDescriptorBuilder<ComboBox::Fields> desr;
-            desr[ComboBox::Fields::Value] = "methodMeta";
-            addTest("Method[Meta]: ", desr);
+            ComboBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[ComboBox::Fields::Value] = "methodMeta";
+            addTest("Method[Meta]: ", params);
         }
 
         //enumerator
         {
-            ControlDescriptorBuilder<ComboBox::Fields> desr;
-            desr[ComboBox::Fields::Value] = "value";
-            desr[ComboBox::Fields::Enumerator] = "enumeratorValueMap";
-            addTest("Value[Enumerator]: ", desr);
+            ComboBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[ComboBox::Fields::Value] = "value";
+            params.fields[ComboBox::Fields::Enumerator] = "enumeratorValueMap";
+            addTest("Value[Enumerator]: ", params);
         }
 
         {
-            ControlDescriptorBuilder<ComboBox::Fields> desr;
-            desr[ComboBox::Fields::Value] = "value";
-            desr[ComboBox::Fields::Enumerator] = "enumeratorMethod";
-            addTest("Value[EnumeratorMethod]: ", desr);
+            ComboBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[ComboBox::Fields::Value] = "value";
+            params.fields[ComboBox::Fields::Enumerator] = "enumeratorMethod";
+            addTest("Value[EnumeratorMethod]: ", params);
         }
 
         {
-            ControlDescriptorBuilder<ComboBox::Fields> desr;
-            desr[ComboBox::Fields::Value] = "valueSize_t";
-            desr[ComboBox::Fields::Enumerator] = "enumeratorValueVector";
-            addTest("Value[EnumeratorVector]: ", desr);
+            ComboBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[ComboBox::Fields::Value] = "valueSize_t";
+            params.fields[ComboBox::Fields::Enumerator] = "enumeratorValueVector";
+            addTest("Value[EnumeratorVector]: ", params);
         }
 
         {
-            ControlDescriptorBuilder<ComboBox::Fields> desr;
-            desr[ComboBox::Fields::Value] = "method";
-            desr[ComboBox::Fields::Enumerator] = "enumeratorMethod";
-            addTest("Method[EnumeratorMethod]: ", desr);
+            ComboBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[ComboBox::Fields::Value] = "method";
+            params.fields[ComboBox::Fields::Enumerator] = "enumeratorMethod";
+            addTest("Method[EnumeratorMethod]: ", params);
         }
 
         {
-            ControlDescriptorBuilder<ComboBox::Fields> desr;
-            desr[ComboBox::Fields::Value] = "valueString";
-            desr[ComboBox::Fields::Enumerator] = "enumeratorMethodSet";
-            addTest("StringValue[EnumeratorSet]: ", desr);
+            ComboBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[ComboBox::Fields::Value] = "valueString";
+            params.fields[ComboBox::Fields::Enumerator] = "enumeratorMethodSet";
+            addTest("StringValue[EnumeratorSet]: ", params);
         }
 
         //readonly check box
         {
             //add read only check box
-            ControlDescriptorBuilder<CheckBox::Fields> descr;
-            descr[CheckBox::Fields::Checked] = "readOnly";
-            CheckBox* readOnlyBox = new CheckBox(descr, accessor, dataModel, parent);
+            CheckBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[CheckBox::Fields::Checked] = "readOnly";
+            CheckBox* readOnlyBox = new CheckBox(params, accessor, dataModel, parent);
             boxLayout->addWidget(readOnlyBox->ToWidgetCast());
         }
 
@@ -786,42 +790,42 @@ struct ComboBoxCheckableTestData : public ReflectionBase
 
         QVBoxLayout* boxLayout = new QVBoxLayout();
 
-        auto addTest = [&](const QString& testName, const ControlDescriptorBuilder<ComboBoxCheckable::Fields>& descriptor)
+        auto addTest = [&](const QString& testName, const ComboBoxCheckable::Params& params)
         {
             QHBoxLayout* lineLayout = new QHBoxLayout();
             lineLayout->addWidget(new QLabel(testName, parent));
 
-            ComboBoxCheckable* comboBox = new ComboBoxCheckable(descriptor, accessor, dataModel, parent);
+            ComboBoxCheckable* comboBox = new ComboBoxCheckable(params, accessor, dataModel, parent);
             lineLayout->addWidget(comboBox->ToWidgetCast());
             boxLayout->addLayout(lineLayout);
         };
 
         // read only
         {
-            ControlDescriptorBuilder<ComboBoxCheckable::Fields> desr;
-            desr[ComboBoxCheckable::Fields::Value] = "value";
-            desr[ComboBoxCheckable::Fields::IsReadOnly] = "readOnly";
-            addTest("Value[ReadOnly by field]:", desr);
+            ComboBoxCheckable::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[ComboBoxCheckable::Fields::Value] = "value";
+            params.fields[ComboBoxCheckable::Fields::IsReadOnly] = "readOnly";
+            addTest("Value[ReadOnly by field]:", params);
         }
 
         {
-            ControlDescriptorBuilder<ComboBoxCheckable::Fields> desr;
-            desr[ComboBoxCheckable::Fields::Value] = "value";
-            addTest("Value: ", desr);
+            ComboBoxCheckable::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[ComboBoxCheckable::Fields::Value] = "value";
+            addTest("Value: ", params);
         }
 
         {
-            ControlDescriptorBuilder<ComboBoxCheckable::Fields> desr;
-            desr[ComboBoxCheckable::Fields::Value] = "valueMetaReadOnly";
-            addTest("Value[ReadOnly by Meeta]:", desr);
+            ComboBoxCheckable::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[ComboBoxCheckable::Fields::Value] = "valueMetaReadOnly";
+            addTest("Value[ReadOnly by Meta]:", params);
         }
 
         //readonly check box
         {
             //add read only check box
-            ControlDescriptorBuilder<CheckBox::Fields> descr;
-            descr[CheckBox::Fields::Checked] = "readOnly";
-            CheckBox* readOnlyBox = new CheckBox(descr, accessor, dataModel, parent);
+            CheckBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[CheckBox::Fields::Checked] = "readOnly";
+            CheckBox* readOnlyBox = new CheckBox(params, accessor, dataModel, parent);
             boxLayout->addWidget(readOnlyBox->ToWidgetCast());
         }
 
@@ -875,16 +879,16 @@ struct IntSpinBoxTestData : public ReflectionBase
         Reflection reflection = Reflection::Create(data);
 
         {
-            ControlDescriptorBuilder<IntSpinBox::Fields> descr;
-            descr[IntSpinBox::Fields::Value] = "value";
-            IntSpinBox* spinBox = new IntSpinBox(descr, accessor, reflection, parent);
+            IntSpinBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[IntSpinBox::Fields::Value] = "value";
+            IntSpinBox* spinBox = new IntSpinBox(params, accessor, reflection, parent);
             layout->AddControl(spinBox);
         }
 
         {
-            ControlDescriptorBuilder<LineEdit::Fields> d;
-            d[LineEdit::Fields::Text] = "text";
-            layout->AddControl(new LineEdit(d, accessor, reflection, parent));
+            LineEdit::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[LineEdit::Fields::Text] = "text";
+            layout->AddControl(new LineEdit(params, accessor, reflection, parent));
         }
 
         return r;
@@ -946,28 +950,28 @@ struct DoubleSpinBoxTestData : public ReflectionBase
         Reflection reflection = Reflection::Create(data);
 
         {
-            ControlDescriptorBuilder<DoubleSpinBox::Fields> descr;
-            descr[DoubleSpinBox::Fields::Value] = "value";
-            layout->AddControl(new DoubleSpinBox(descr, accessor, reflection, parent));
+            DoubleSpinBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[DoubleSpinBox::Fields::Value] = "value";
+            layout->AddControl(new DoubleSpinBox(params, accessor, reflection, parent));
         }
 
         {
-            ControlDescriptorBuilder<DoubleSpinBox::Fields> descr;
-            descr[DoubleSpinBox::Fields::Value] = "value";
-            descr[DoubleSpinBox::Fields::Accuracy] = "accuracy";
-            layout->AddControl(new DoubleSpinBox(descr, accessor, reflection, parent));
+            DoubleSpinBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[DoubleSpinBox::Fields::Value] = "value";
+            params.fields[DoubleSpinBox::Fields::Accuracy] = "accuracy";
+            layout->AddControl(new DoubleSpinBox(params, accessor, reflection, parent));
         }
 
         {
-            ControlDescriptorBuilder<IntSpinBox::Fields> descr;
-            descr[IntSpinBox::Fields::Value] = "accuracy";
-            layout->AddControl(new IntSpinBox(descr, accessor, reflection, parent));
+            IntSpinBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[IntSpinBox::Fields::Value] = "accuracy";
+            layout->AddControl(new IntSpinBox(params, accessor, reflection, parent));
         }
 
         {
-            ControlDescriptorBuilder<LineEdit::Fields> d;
-            d[LineEdit::Fields::Text] = "text";
-            layout->AddControl(new LineEdit(d, accessor, reflection, parent));
+            LineEdit::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[LineEdit::Fields::Text] = "text";
+            layout->AddControl(new LineEdit(params, accessor, reflection, parent));
         }
 
         return r;
@@ -1016,9 +1020,7 @@ struct FilePathEditTestData : public ReflectionBase
             QtHBoxLayout* lineLayout = new QtHBoxLayout();
             lineLayout->addWidget(new QLabel("Meta read only : ", parent));
 
-            FilePathEdit::Params p;
-            p.ui = ui;
-            p.wndKey = DAVA::TArc::mainWindowKey;
+            FilePathEdit::Params p(accessor, ui, DAVA::TArc::mainWindowKey);
             p.fields[FilePathEdit::Fields::Value] = "readOnlyMetaText";
             lineLayout->AddControl(new FilePathEdit(p, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
@@ -1028,9 +1030,7 @@ struct FilePathEditTestData : public ReflectionBase
             QtHBoxLayout* lineLayout = new QtHBoxLayout();
             lineLayout->addWidget(new QLabel("Read only : ", parent));
 
-            FilePathEdit::Params p;
-            p.ui = ui;
-            p.wndKey = DAVA::TArc::mainWindowKey;
+            FilePathEdit::Params p(accessor, ui, DAVA::TArc::mainWindowKey);
             p.fields[FilePathEdit::Fields::Value] = "readOnlyText";
             lineLayout->AddControl(new FilePathEdit(p, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
@@ -1040,9 +1040,7 @@ struct FilePathEditTestData : public ReflectionBase
             QtHBoxLayout* lineLayout = new QtHBoxLayout();
             lineLayout->addWidget(new QLabel("Editable : ", parent));
 
-            FilePathEdit::Params p;
-            p.ui = ui;
-            p.wndKey = DAVA::TArc::mainWindowKey;
+            FilePathEdit::Params p(accessor, ui, DAVA::TArc::mainWindowKey);
             p.fields[FilePathEdit::Fields::Value] = "path";
             p.fields[FilePathEdit::Fields::PlaceHolder] = "placeholder";
             p.fields[FilePathEdit::Fields::IsReadOnly] = "isTextReadOnly";
@@ -1052,17 +1050,17 @@ struct FilePathEditTestData : public ReflectionBase
 
             {
                 // Read only check box
-                ControlDescriptorBuilder<CheckBox::Fields> descr;
-                descr[CheckBox::Fields::Checked] = "isTextReadOnly";
-                CheckBox* checkBox = new CheckBox(descr, accessor, Reflection::Create(data), parent);
+                CheckBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+                params.fields[CheckBox::Fields::Checked] = "isTextReadOnly";
+                CheckBox* checkBox = new CheckBox(params, accessor, Reflection::Create(data), parent);
                 boxLayout->addWidget(checkBox->ToWidgetCast());
             }
 
             {
                 // Is enabled
-                ControlDescriptorBuilder<CheckBox::Fields> descr;
-                descr[CheckBox::Fields::Checked] = "isTextEnabled";
-                CheckBox* checkBox = new CheckBox(descr, accessor, Reflection::Create(data), parent);
+                CheckBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+                params.fields[CheckBox::Fields::Checked] = "isTextEnabled";
+                CheckBox* checkBox = new CheckBox(params, accessor, Reflection::Create(data), parent);
 
                 QVBoxLayout* vbox = new QVBoxLayout(checkBox->ToWidgetCast());
                 boxLayout->addWidget(checkBox->ToWidgetCast());
@@ -1092,33 +1090,33 @@ struct SubPropertiesControlTest : public ReflectionBase
         Reflection model = Reflection::Create(data);
 
         {
-            ControlDescriptorBuilder<SubPropertiesEditor::Fields> descr;
-            descr[SubPropertiesEditor::Fields::Value] = "v2";
-            boxLayout->AddControl(new SubPropertiesEditor(descr, accessor, model));
+            SubPropertiesEditor::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[SubPropertiesEditor::Fields::Value] = "v2";
+            boxLayout->AddControl(new SubPropertiesEditor(params, accessor, model));
         }
 
         {
-            ControlDescriptorBuilder<SubPropertiesEditor::Fields> descr;
-            descr[SubPropertiesEditor::Fields::Value] = "v3";
-            boxLayout->AddControl(new SubPropertiesEditor(descr, accessor, model));
+            SubPropertiesEditor::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[SubPropertiesEditor::Fields::Value] = "v3";
+            boxLayout->AddControl(new SubPropertiesEditor(params, accessor, model));
         }
 
         {
-            ControlDescriptorBuilder<SubPropertiesEditor::Fields> descr;
-            descr[SubPropertiesEditor::Fields::Value] = "v4";
-            boxLayout->AddControl(new SubPropertiesEditor(descr, accessor, model));
+            SubPropertiesEditor::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[SubPropertiesEditor::Fields::Value] = "v4";
+            boxLayout->AddControl(new SubPropertiesEditor(params, accessor, model));
         }
 
         {
-            ControlDescriptorBuilder<SubPropertiesEditor::Fields> descr;
-            descr[SubPropertiesEditor::Fields::Value] = "rect";
-            boxLayout->AddControl(new SubPropertiesEditor(descr, accessor, model));
+            SubPropertiesEditor::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[SubPropertiesEditor::Fields::Value] = "rect";
+            boxLayout->AddControl(new SubPropertiesEditor(params, accessor, model));
         }
 
         {
-            ControlDescriptorBuilder<SubPropertiesEditor::Fields> descr;
-            descr[SubPropertiesEditor::Fields::Value] = "box";
-            boxLayout->AddControl(new SubPropertiesEditor(descr, accessor, model));
+            SubPropertiesEditor::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[SubPropertiesEditor::Fields::Value] = "box";
+            boxLayout->AddControl(new SubPropertiesEditor(params, accessor, model));
         }
 
         Result r;
@@ -1193,10 +1191,7 @@ struct ColorButtonTestData : public ReflectionBase
             QtHBoxLayout* lineLayout = new QtHBoxLayout();
             lineLayout->addWidget(new QLabel("Color: ", parent));
 
-            ColorPickerButton::Params params;
-            params.ui = ui;
-            params.wndKey = DAVA::TArc::mainWindowKey;
-            params.accessor = accessor;
+            ColorPickerButton::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
             params.fields[ColorPickerButton::Fields::Color] = "color";
             lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
@@ -1206,10 +1201,7 @@ struct ColorButtonTestData : public ReflectionBase
             QtHBoxLayout* lineLayout = new QtHBoxLayout();
             lineLayout->addWidget(new QLabel("ColorReadOnlyMeta: ", parent));
 
-            ColorPickerButton::Params params;
-            params.ui = ui;
-            params.wndKey = DAVA::TArc::mainWindowKey;
-            params.accessor = accessor;
+            ColorPickerButton::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
             params.fields[ColorPickerButton::Fields::Color] = "colorReadOnly";
             lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
@@ -1219,10 +1211,7 @@ struct ColorButtonTestData : public ReflectionBase
             QtHBoxLayout* lineLayout = new QtHBoxLayout();
             lineLayout->addWidget(new QLabel("Color Method: ", parent));
 
-            ColorPickerButton::Params params;
-            params.ui = ui;
-            params.wndKey = DAVA::TArc::mainWindowKey;
-            params.accessor = accessor;
+            ColorPickerButton::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
             params.fields[ColorPickerButton::Fields::Color] = "colorMethod";
             lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
@@ -1232,10 +1221,7 @@ struct ColorButtonTestData : public ReflectionBase
             QtHBoxLayout* lineLayout = new QtHBoxLayout();
             lineLayout->addWidget(new QLabel("Color Method ReadOnly: ", parent));
 
-            ColorPickerButton::Params params;
-            params.ui = ui;
-            params.wndKey = DAVA::TArc::mainWindowKey;
-            params.accessor = accessor;
+            ColorPickerButton::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
             params.fields[ColorPickerButton::Fields::Color] = "colorMethodReadOnly";
             lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
@@ -1245,10 +1231,7 @@ struct ColorButtonTestData : public ReflectionBase
             QtHBoxLayout* lineLayout = new QtHBoxLayout();
             lineLayout->addWidget(new QLabel("Color Meta Range: ", parent));
 
-            ColorPickerButton::Params params;
-            params.ui = ui;
-            params.wndKey = DAVA::TArc::mainWindowKey;
-            params.accessor = accessor;
+            ColorPickerButton::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
             params.fields[ColorPickerButton::Fields::Color] = "colorRange";
             lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
@@ -1258,10 +1241,7 @@ struct ColorButtonTestData : public ReflectionBase
             QtHBoxLayout* lineLayout = new QtHBoxLayout();
             lineLayout->addWidget(new QLabel("Color Range Field: ", parent));
 
-            ColorPickerButton::Params params;
-            params.ui = ui;
-            params.wndKey = DAVA::TArc::mainWindowKey;
-            params.accessor = accessor;
+            ColorPickerButton::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
             params.fields[ColorPickerButton::Fields::Color] = "color";
             params.fields[ColorPickerButton::Fields::Range] = "range";
             lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
@@ -1273,10 +1253,7 @@ struct ColorButtonTestData : public ReflectionBase
             lineLayout->addWidget(new QLabel("Color ReadOnly value: ", parent));
 
             {
-                ColorPickerButton::Params params;
-                params.ui = ui;
-                params.wndKey = DAVA::TArc::mainWindowKey;
-                params.accessor = accessor;
+                ColorPickerButton::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
                 params.fields[ColorPickerButton::Fields::Color] = "color";
                 params.fields[ColorPickerButton::Fields::IsReadOnly] = "readOnly";
                 lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
@@ -1284,9 +1261,9 @@ struct ColorButtonTestData : public ReflectionBase
 
             {
                 //add read only check box
-                ControlDescriptorBuilder<CheckBox::Fields> descr;
-                descr[CheckBox::Fields::Checked] = "readOnly";
-                lineLayout->AddControl(new CheckBox(descr, accessor, Reflection::Create(data), parent));
+                CheckBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+                params.fields[CheckBox::Fields::Checked] = "readOnly";
+                lineLayout->AddControl(new CheckBox(params, accessor, Reflection::Create(data), parent));
             }
             boxLayout->addLayout(lineLayout);
         }
@@ -1381,15 +1358,15 @@ struct MultiEditorsControlTest : public ReflectionBase
         Reflection model = Reflection::Create(data);
 
         {
-            ControlDescriptorBuilder<MultiDoubleSpinBox::Fields> descr;
-            descr[MultiDoubleSpinBox::Fields::FieldsList] = "list";
-            boxLayout->AddControl(new MultiDoubleSpinBox(descr, accessor, model));
+            MultiDoubleSpinBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[MultiDoubleSpinBox::Fields::FieldsList] = "list";
+            boxLayout->AddControl(new MultiDoubleSpinBox(params, accessor, model));
         }
 
         {
-            ControlDescriptorBuilder<CheckBox::Fields> descr;
-            descr[CheckBox::Fields::Checked] = "isReadOnly";
-            boxLayout->AddControl(new CheckBox(descr, accessor, model));
+            CheckBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[CheckBox::Fields::Checked] = "isReadOnly";
+            boxLayout->AddControl(new CheckBox(params, accessor, model));
         }
 
         Result r;
@@ -1460,9 +1437,9 @@ struct LabelTestData : public ReflectionBase
             QtHBoxLayout* lineLayout = new QtHBoxLayout();
             lineLayout->addWidget(new QLabel("String : ", parent));
 
-            ControlDescriptorBuilder<Label::Fields> desr;
-            desr[Label::Fields::Text] = "string";
-            lineLayout->AddControl(new Label(desr, accessor, Reflection::Create(data), parent));
+            Label::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[Label::Fields::Text] = "string";
+            lineLayout->AddControl(new Label(params, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 
@@ -1470,9 +1447,9 @@ struct LabelTestData : public ReflectionBase
             QtHBoxLayout* lineLayout = new QtHBoxLayout();
             lineLayout->addWidget(new QLabel("QString : ", parent));
 
-            ControlDescriptorBuilder<Label::Fields> desr;
-            desr[Label::Fields::Text] = "qstring";
-            lineLayout->AddControl(new Label(desr, accessor, Reflection::Create(data), parent));
+            Label::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[Label::Fields::Text] = "qstring";
+            lineLayout->AddControl(new Label(params, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 
@@ -1480,9 +1457,9 @@ struct LabelTestData : public ReflectionBase
             QtHBoxLayout* lineLayout = new QtHBoxLayout();
             lineLayout->addWidget(new QLabel("GetString : ", parent));
 
-            ControlDescriptorBuilder<Label::Fields> desr;
-            desr[Label::Fields::Text] = "getString";
-            lineLayout->AddControl(new Label(desr, accessor, Reflection::Create(data), parent));
+            Label::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[Label::Fields::Text] = "getString";
+            lineLayout->AddControl(new Label(params, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 
@@ -1490,9 +1467,9 @@ struct LabelTestData : public ReflectionBase
             QtHBoxLayout* lineLayout = new QtHBoxLayout();
             lineLayout->addWidget(new QLabel("GetQString : ", parent));
 
-            ControlDescriptorBuilder<Label::Fields> desr;
-            desr[Label::Fields::Text] = "getQString";
-            lineLayout->AddControl(new Label(desr, accessor, Reflection::Create(data), parent));
+            Label::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[Label::Fields::Text] = "getQString";
+            lineLayout->AddControl(new Label(params, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 
@@ -1500,9 +1477,9 @@ struct LabelTestData : public ReflectionBase
             QtHBoxLayout* lineLayout = new QtHBoxLayout();
             lineLayout->addWidget(new QLabel("Matrix2 : ", parent));
 
-            ControlDescriptorBuilder<Label::Fields> desr;
-            desr[Label::Fields::Text] = "matrix2";
-            lineLayout->AddControl(new Label(desr, accessor, Reflection::Create(data), parent));
+            Label::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[Label::Fields::Text] = "matrix2";
+            lineLayout->AddControl(new Label(params, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 
@@ -1510,9 +1487,9 @@ struct LabelTestData : public ReflectionBase
             QtHBoxLayout* lineLayout = new QtHBoxLayout();
             lineLayout->addWidget(new QLabel("Matrix3 : ", parent));
 
-            ControlDescriptorBuilder<Label::Fields> desr;
-            desr[Label::Fields::Text] = "matrix3";
-            lineLayout->AddControl(new Label(desr, accessor, Reflection::Create(data), parent));
+            Label::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[Label::Fields::Text] = "matrix3";
+            lineLayout->AddControl(new Label(params, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 
@@ -1520,9 +1497,9 @@ struct LabelTestData : public ReflectionBase
             QtHBoxLayout* lineLayout = new QtHBoxLayout();
             lineLayout->addWidget(new QLabel("Matrix4 : ", parent));
 
-            ControlDescriptorBuilder<Label::Fields> desr;
-            desr[Label::Fields::Text] = "matrix4";
-            lineLayout->AddControl(new Label(desr, accessor, Reflection::Create(data), parent));
+            Label::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+            params.fields[Label::Fields::Text] = "matrix4";
+            lineLayout->AddControl(new Label(params, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 
