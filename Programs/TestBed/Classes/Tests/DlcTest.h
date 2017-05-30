@@ -1,5 +1,6 @@
-#ifndef __TEST_SCREEN_H__
-#define __TEST_SCREEN_H__
+#pragma once
+
+#if !defined(__DAVAENGINE_LINUX__)
 
 #include "DAVAEngine.h"
 #include "DLC/DLC.h"
@@ -96,4 +97,4 @@ protected:
     DLCCrashTest crashTest;
 };
 
-#endif
+#endif // __DAVAENGINE_LINUX__

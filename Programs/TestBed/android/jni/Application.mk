@@ -18,6 +18,8 @@ APP_CPPFLAGS += -Qunused-arguments
 
 # Now testbed core v2 only
 APP_CPPFLAGS += -D__DAVAENGINE_COREV2__
+APP_CPPFLAGS += -D__DAVAENGINE_ANDROID__
+APP_CPPFLAGS += -D__DAVAENGINE_POSIX__
 
 APP_ABI += armeabi-v7a
 APP_ABI += x86

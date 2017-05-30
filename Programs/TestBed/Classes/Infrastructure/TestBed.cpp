@@ -347,7 +347,9 @@ void TestBed::RegisterTests()
     new DeviceManagerTest(*this);
 #endif
     new DeviceInfoTest(*this);
+#if !defined(__DAVAENGINE_LINUX__)
     new DlcTest(*this);
+#endif
     new OverdrawPerformanceTester::OverdrawTest(*this);
     new UIScrollViewTest(*this);
     new NotificationScreen(*this);
