@@ -4,14 +4,14 @@ namespace DAVA
 {
 namespace TArc
 {
-DoubleSpinBox::DoubleSpinBox(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent /*= nullptr*/)
-    : TBase(ControlDescriptor(fields), wrappersProcessor, model, parent)
+DoubleSpinBox::DoubleSpinBox(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent /*= nullptr*/)
+    : TBase(params, ControlDescriptor(params.fields), wrappersProcessor, model, parent)
 {
     setDecimals(6);
 }
 
-DoubleSpinBox::DoubleSpinBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent /*= nullptr*/)
-    : TBase(ControlDescriptor(fields), accessor, model, parent)
+DoubleSpinBox::DoubleSpinBox(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent /*= nullptr*/)
+    : TBase(params, ControlDescriptor(params.fields), accessor, model, parent)
 {
     setDecimals(6);
 }
@@ -40,6 +40,11 @@ void DoubleSpinBox::UpdateControl(const ControlDescriptor& changedFields)
 
 bool DoubleSpinBox::FromText(const QString& input, double& output) const
 {
+    if (input == ".")
+    {
+        output = 0.0;
+        return true;
+    }
     bool isOk = false;
     output = input.toDouble(&isOk);
     return isOk;
@@ -71,29 +76,6 @@ QValidator::State DoubleSpinBox::TypeSpecificValidate(const QString& input) cons
         {
             return QValidator::Intermediate;
         }
-
-        if (inputSize < 3)
-        {
-            return QValidator::Acceptable;
-        }
-
-        if (input[1].digitValue() == 0 && input[2] != QChar('.'))
-        {
-            return QValidator::Invalid;
-        }
-    }
-    else
-    {
-        if (input.size() >= 2 && input[0].digitValue() == 0 && input[1] != QChar('.'))
-        {
-            return QValidator::Invalid;
-        }
-    }
-
-    int pointIndex = input.indexOf('.');
-    if (pointIndex != -1 && (input.size() - pointIndex) > decimals() + 1)
-    {
-        return QValidator::Invalid;
     }
 
     return QValidator::Acceptable;

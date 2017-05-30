@@ -88,28 +88,28 @@ public:
         DAVA::Reflection reflectedModel = DAVA::Reflection::Create(&dataSource);
 
         {
-            ControlDescriptorBuilder<ReflectedButton::Fields> desr;
-            desr[ReflectedButton::Fields::Clicked] = "newValue";
-            desr[ReflectedButton::Fields::Icon] = "icon";
-            desr[ReflectedButton::Fields::Text] = "text";
-            desr[ReflectedButton::Fields::AutoRaise] = "autoRaise";
-            desr[ReflectedButton::Fields::Result] = "value";
+            ReflectedButton::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[ReflectedButton::Fields::Clicked] = "newValue";
+            params.fields[ReflectedButton::Fields::Icon] = "icon";
+            params.fields[ReflectedButton::Fields::Text] = "text";
+            params.fields[ReflectedButton::Fields::AutoRaise] = "autoRaise";
+            params.fields[ReflectedButton::Fields::Result] = "value";
 
-            ReflectedButton* button = new ReflectedButton(desr, GetAccessor(), reflectedModel);
+            ReflectedButton* button = new ReflectedButton(params, GetAccessor(), reflectedModel);
             button->SetObjectName("ReflectedButton_enabled");
             layout->AddControl(button);
         }
 
         {
-            ControlDescriptorBuilder<ReflectedButton::Fields> desr;
-            desr[ReflectedButton::Fields::Clicked] = "newValue";
-            desr[ReflectedButton::Fields::Icon] = "icon";
-            desr[ReflectedButton::Fields::Text] = "text";
-            desr[ReflectedButton::Fields::AutoRaise] = "autoRaise";
-            desr[ReflectedButton::Fields::Result] = "value";
-            desr[ReflectedButton::Fields::Enabled] = "enabled";
+            ReflectedButton::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[ReflectedButton::Fields::Clicked] = "newValue";
+            params.fields[ReflectedButton::Fields::Icon] = "icon";
+            params.fields[ReflectedButton::Fields::Text] = "text";
+            params.fields[ReflectedButton::Fields::AutoRaise] = "autoRaise";
+            params.fields[ReflectedButton::Fields::Result] = "value";
+            params.fields[ReflectedButton::Fields::Enabled] = "enabled";
 
-            ReflectedButton* button = new ReflectedButton(desr, GetAccessor(), reflectedModel);
+            ReflectedButton* button = new ReflectedButton(params, GetAccessor(), reflectedModel);
             button->SetObjectName("ReflectedButton_disabled");
             layout->AddControl(button);
         }

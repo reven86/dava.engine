@@ -10,7 +10,7 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(TransformComponent)
 {
-    ReflectionRegistrator<TransformComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    ReflectionRegistrator<TransformComponent>::Begin()[M::CantBeCreatedManualyComponent(), M::CantBeDeletedManualyComponent()]
     .ConstructorByPointer()
     .Field("localMatrix", &TransformComponent::localMatrix)[M::ReadOnly(), M::DisplayName("Local Transform")]
     .Field("worldMatrix", &TransformComponent::worldMatrix)[M::ReadOnly(), M::DisplayName("World Transform")]

@@ -5,6 +5,7 @@
 #include <Base/BaseTypes.h>
 #include <Base/Type.h>
 #include <Base/Any.h>
+#include <Base/FastName.h>
 
 #include <memory>
 
@@ -34,23 +35,29 @@ public:
 
     PropertyNode() = default;
 
+    String BuildID() const;
+
     bool operator==(const PropertyNode& other) const;
     bool operator!=(const PropertyNode& other) const;
 
     int32 propertyType = Invalid; // it can be value from PropertyType or any value that you set in your extension
     Reflection::Field field;
     Any cachedValue;
+    FastName idPostfix;
+    std::weak_ptr<PropertyNode> parent;
 
     static const int32 InvalidSortKey;
     int32 sortKey = InvalidSortKey;
+
+    static const int32 FavoritesRootSortKey;
 };
 
 class IChildAllocator
 {
 public:
     virtual ~IChildAllocator() = default;
-    virtual std::shared_ptr<PropertyNode> CreatePropertyNode(Reflection::Field&& reflection, int32_t type = PropertyNode::RealProperty) = 0;
-    virtual std::shared_ptr<PropertyNode> CreatePropertyNode(Reflection::Field&& reflection, int32_t type, const Any& value) = 0;
+    virtual std::shared_ptr<PropertyNode> CreatePropertyNode(const std::shared_ptr<PropertyNode>& parent, Reflection::Field&& reflection, int32 sortKey, int32_t type) = 0;
+    virtual std::shared_ptr<PropertyNode> CreatePropertyNode(const std::shared_ptr<PropertyNode>& parent, Reflection::Field&& reflection, int32 sortKey, int32_t type, const Any& value) = 0;
 };
 
 std::shared_ptr<PropertyNode> MakeRootNode(IChildAllocator* allocator, DAVA::Reflection::Field&& field);
@@ -76,6 +83,7 @@ public:
             return head;
         }
 
+        extension->SetDevelopertMode(head->IsDeveloperMode());
         extension->nextExtension = head;
         DVASSERT(extension->nextExtension != nullptr);
         return extension;
@@ -105,6 +113,20 @@ public:
         return extensionType;
     }
 
+    void SetDevelopertMode(bool isDeveloperMode)
+    {
+        isInDeveloperMode = isDeveloperMode;
+        if (nextExtension != nullptr)
+        {
+            nextExtension->SetDevelopertMode(isDeveloperMode);
+        }
+    }
+
+    bool IsDeveloperMode() const
+    {
+        return isInDeveloperMode;
+    }
+
 protected:
     template <typename T>
     T* GetNext()
@@ -125,6 +147,7 @@ protected:
 private:
     const Type* extensionType;
     std::shared_ptr<ExtensionChain> nextExtension;
+    bool isInDeveloperMode = false;
 };
 
 // The main goal of this extension is create children of some property.
@@ -135,12 +158,13 @@ class ChildCreatorExtension : public ExtensionChain
 {
 public:
     ChildCreatorExtension();
-    virtual void ExposeChildren(const std::shared_ptr<const PropertyNode>& parent, Vector<std::shared_ptr<PropertyNode>>& children) const;
+    virtual void ExposeChildren(const std::shared_ptr<PropertyNode>& parent, Vector<std::shared_ptr<PropertyNode>>& children) const;
     static std::shared_ptr<ChildCreatorExtension> CreateDummy();
 
     void SetAllocator(std::shared_ptr<IChildAllocator> allocator);
 
 protected:
+    bool CanBeExposed(const Reflection::Field& field) const;
     std::shared_ptr<IChildAllocator> allocator;
 };
 
@@ -161,7 +185,7 @@ public:
         MultiCommandInterface(std::shared_ptr<ModifyExtension> ext);
 
         void ProduceCommand(const Reflection::Field& object, const Any& newValue);
-        void ModifyPropertyValue(const std::shared_ptr<PropertyNode>& nodes, const Any& newValue);
+        void ModifyPropertyValue(const std::shared_ptr<PropertyNode>& node, const Any& newValue);
         void Exec(std::unique_ptr<Command>&& command);
 
     private:
@@ -177,6 +201,7 @@ public:
 
 protected:
     virtual void BeginBatch(const String& text, uint32 commandCount);
+    virtual void ProduceCommand(const std::shared_ptr<PropertyNode>& node, const Any& newValue);
     virtual void ProduceCommand(const Reflection::Field& object, const Any& newValue);
     virtual void Exec(std::unique_ptr<Command>&& command);
     virtual void EndBatch();

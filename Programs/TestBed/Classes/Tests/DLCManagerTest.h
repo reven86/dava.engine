@@ -19,7 +19,7 @@ private:
     void UnloadResources() override;
 
     void OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData);
-    void OnStartSyncClicked(DAVA::BaseObject* sender, void* data, void* callerData);
+    void OnIOErrorClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnOffRequestingClicked(DAVA::BaseObject* sender, void* data, void* callerData);
@@ -63,7 +63,7 @@ private:
     DAVA::UITextField* filePathField = nullptr;
     DAVA::UIButton* checkFile = nullptr;
     DAVA::UIButton* startInit = nullptr;
-    DAVA::UIButton* startSync = nullptr;
+    DAVA::UIButton* genIOError = nullptr;
     DAVA::UIButton* clearDocs = nullptr;
     DAVA::UIButton* lsDvpks = nullptr;
     DAVA::UIButton* OnOffRequesting = nullptr;

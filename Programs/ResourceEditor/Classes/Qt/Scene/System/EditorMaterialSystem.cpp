@@ -10,6 +10,7 @@
 #include "Commands2/CopyLastLODCommand.h"
 #include "Commands2/InspMemberModifyCommand.h"
 #include "Commands2/RECommandIDs.h"
+#include "Commands2/SetFieldValueCommand.h"
 #include "Scene3D/Systems/LandscapeSystem.h"
 
 EditorMaterialSystem::MaterialMapping::MaterialMapping(DAVA::Entity* entity_, DAVA::RenderBatch* renderBatch_)
@@ -335,6 +336,28 @@ void EditorMaterialSystem::ProcessCommand(const RECommandNotificationObject& com
                 }
             }
         }
+        case CMDID_REFLECTED_FIELD_MODIFY:
+        {
+            const SetFieldValueCommand* cmd = static_cast<const SetFieldValueCommand*>(command);
+            const DAVA::Reflection::Field& field = cmd->GetField();
+            DAVA::ReflectedObject object = field.ref.GetDirectObject();
+
+            if (object.GetReflectedType() == DAVA::ReflectedTypeDB::Get<DAVA::Landscape>())
+            {
+                DAVA::Landscape* landscape = object.GetPtr<DAVA::Landscape>();
+                const DAVA::Vector<DAVA::Entity*>& landscapes = GetScene()->landscapeSystem->GetLandscapeEntities();
+                for (DAVA::Entity* landEntity : landscapes)
+                {
+                    DAVA::Landscape* landObject = GetLandscape(landEntity);
+                    if (landObject == landscape)
+                    {
+                        RemoveMaterial(landObject->GetMaterial());
+                        AddMaterials(landEntity);
+                        break;
+                    }
+                }
+            }
+        }
 
         default:
             break;
@@ -343,7 +366,8 @@ void EditorMaterialSystem::ProcessCommand(const RECommandNotificationObject& com
 
     static const DAVA::Vector<DAVA::uint32> commandIDs =
     {
-      CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_DELETE_RENDER_BATCH, CMDID_CONVERT_TO_SHADOW, CMDID_LOD_COPY_LAST_LOD, CMDID_INSP_MEMBER_MODIFY
+      CMDID_LOD_DELETE, CMDID_LOD_CREATE_PLANE, CMDID_DELETE_RENDER_BATCH, CMDID_CONVERT_TO_SHADOW,
+      CMDID_LOD_COPY_LAST_LOD, CMDID_INSP_MEMBER_MODIFY, CMDID_REFLECTED_FIELD_MODIFY
     };
 
     if (commandNotification.MatchCommandIDs(commandIDs))

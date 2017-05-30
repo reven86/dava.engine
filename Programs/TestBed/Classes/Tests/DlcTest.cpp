@@ -9,6 +9,7 @@
 #include "UI/Focus/UIFocusComponent.h"
 #include "Utils/StringUtils.h"
 #include "UI/Update/UIUpdateComponent.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/DeviceInfo.h"
@@ -111,7 +112,7 @@ void DlcTest::LoadResources()
     SafeRelease(ver);
 
     gameVersionIn = new UITextField(Rect(LEFT_COLUMN_X + BUTTON_W + SPACE, VERSION_LINE_Y, BUTTON_W, BUTTON_H));
-    gameVersionIn->SetDebugDraw(true);
+    gameVersionIn->GetOrCreateComponent<UIDebugRenderComponent>();
     String gameVer = options->GetString(gameVersion, defaultGameVersion);
     gameVersionIn->SetText(UTF8Utils::EncodeToWideString(gameVer));
     gameVersionIn->GetOrCreateComponent<UIFocusComponent>();
@@ -120,7 +121,7 @@ void DlcTest::LoadResources()
     AddControl(gameVersionIn);
 
     gpuIn = new UITextField(Rect(LEFT_COLUMN_X + BUTTON_W * 2 + SPACE * 2, VERSION_LINE_Y, BUTTON_W, BUTTON_H));
-    gpuIn->SetDebugDraw(true);
+    gpuIn->GetOrCreateComponent<UIDebugRenderComponent>();
     gpuIn->SetText(UTF8Utils::EncodeToWideString(GPUFamilyDescriptor::GetGPUName(DeviceInfo::GetGPUFamily())));
     gpuIn->GetOrCreateComponent<UIFocusComponent>();
     gpuIn->SetDelegate(this);
@@ -133,7 +134,7 @@ void DlcTest::LoadResources()
     setDlInternalServerButton->SetStateFont(0xFF, font);
     setDlInternalServerButton->SetStateFontColor(0xFF, Color::White);
     setDlInternalServerButton->SetStateText(0xFF, L"Set internal server");
-    setDlInternalServerButton->SetDebugDraw(true);
+    setDlInternalServerButton->GetOrCreateComponent<UIDebugRenderComponent>();
     setDlInternalServerButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::SetInternalDlServer));
     AddControl(setDlInternalServerButton);
     SafeRelease(setDlInternalServerButton);
@@ -142,7 +143,7 @@ void DlcTest::LoadResources()
     setDlexternalServerButton->SetStateFont(0xFF, font);
     setDlexternalServerButton->SetStateFontColor(0xFF, Color::White);
     setDlexternalServerButton->SetStateText(0xFF, L"Set external server");
-    setDlexternalServerButton->SetDebugDraw(true);
+    setDlexternalServerButton->GetOrCreateComponent<UIDebugRenderComponent>();
     setDlexternalServerButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::SetExternalDlServer));
     AddControl(setDlexternalServerButton);
     SafeRelease(setDlexternalServerButton);
@@ -153,13 +154,13 @@ void DlcTest::LoadResources()
     setDlSpeed->SetStateFont(0xFF, font);
     setDlSpeed->SetStateFontColor(0xFF, Color::White);
     setDlSpeed->SetStateText(0xFF, L"Set spd");
-    setDlSpeed->SetDebugDraw(true);
+    setDlSpeed->GetOrCreateComponent<UIDebugRenderComponent>();
     setDlSpeed->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::SetSpeed));
     AddControl(setDlSpeed);
     SafeRelease(setDlSpeed);
 
     dlSpeedIn = new UITextField(Rect(LEFT_COLUMN_X + HALF_BUTTON_W + SPACE, SPEED_THREAD_Y, HALF_BUTTON_W, BUTTON_H));
-    dlSpeedIn->SetDebugDraw(true);
+    dlSpeedIn->GetOrCreateComponent<UIDebugRenderComponent>();
 
     uint64 spd = options->GetUInt64(downloadSpeed, 0);
     String spdStr(Format("%lld", spd));
@@ -174,7 +175,7 @@ void DlcTest::LoadResources()
     decDlThreadsButton->SetStateFont(0xFF, font);
     decDlThreadsButton->SetStateFontColor(0xFF, Color::White);
     decDlThreadsButton->SetStateText(0xFF, L"-1 thr");
-    decDlThreadsButton->SetDebugDraw(true);
+    decDlThreadsButton->GetOrCreateComponent<UIDebugRenderComponent>();
     decDlThreadsButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::DecDlThreads));
     AddControl(decDlThreadsButton);
     SafeRelease(decDlThreadsButton);
@@ -183,7 +184,7 @@ void DlcTest::LoadResources()
     incDlThreadsButton->SetStateFont(0xFF, font);
     incDlThreadsButton->SetStateFontColor(0xFF, Color::White);
     incDlThreadsButton->SetStateText(0xFF, L"+1 thr");
-    incDlThreadsButton->SetDebugDraw(true);
+    incDlThreadsButton->GetOrCreateComponent<UIDebugRenderComponent>();
     incDlThreadsButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::IncDlThreads));
     AddControl(incDlThreadsButton);
     SafeRelease(incDlThreadsButton);
@@ -197,7 +198,7 @@ void DlcTest::LoadResources()
     AddControl(staticText);
 
     progressControl = new UIControl(Rect(LEFT_COLUMN_X, INFO_Y + BUTTON_H, WIDTH - 2 * BUTTON_H, SPACE));
-    progressControl->SetDebugDraw(true);
+    progressControl->GetOrCreateComponent<UIDebugRenderComponent>();
     AddControl(progressControl);
 
     progressStatistics = new UIStaticText(Rect(LEFT_COLUMN_X, INFO_Y + BUTTON_H + SPACE + SPACE, WIDTH - SPACE - BUTTON_H, SPACE));
@@ -207,7 +208,7 @@ void DlcTest::LoadResources()
     AddControl(progressStatistics);
 
     animControl = new UIControl(Rect(LEFT_COLUMN_X + WIDTH - SPACE - BUTTON_H, INFO_Y + BUTTON_H, BUTTON_H, BUTTON_H));
-    animControl->SetDebugDraw(true);
+    animControl->GetOrCreateComponent<UIDebugRenderComponent>();
     animControl->SetPivotPoint(Vector2(BUTTON_H / 2, BUTTON_H / 2));
     AddControl(animControl);
 
@@ -219,7 +220,7 @@ void DlcTest::LoadResources()
     startButton->SetStateFontColor(UIButton::STATE_DISABLED, Color(0.5f, 0.5f, 0.5f, 0.5f));
     startButton->SetStateFontColor(UIButton::STATE_PRESSED_INSIDE, Color(0.0f, 1.0f, 0.0f, 1.0f));
     startButton->SetStateText(0xFF, L"Start");
-    startButton->SetDebugDraw(true);
+    startButton->GetOrCreateComponent<UIDebugRenderComponent>();
     startButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::Start));
     AddControl(startButton);
 
@@ -229,7 +230,7 @@ void DlcTest::LoadResources()
     cancelButton->SetStateFontColor(UIButton::STATE_DISABLED, Color(0.5f, 0.5f, 0.5f, 0.5f));
     cancelButton->SetStateFontColor(UIButton::STATE_PRESSED_INSIDE, Color(0.0f, 1.0f, 0.0f, 1.0f));
     cancelButton->SetStateText(0xFF, L"Cancel");
-    cancelButton->SetDebugDraw(true);
+    cancelButton->GetOrCreateComponent<UIDebugRenderComponent>();
     cancelButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::Cancel));
     AddControl(cancelButton);
 
@@ -239,7 +240,7 @@ void DlcTest::LoadResources()
     clearButton->SetStateFontColor(UIButton::STATE_DISABLED, Color(0.5f, 0.5f, 0.5f, 0.5f));
     clearButton->SetStateFontColor(UIButton::STATE_PRESSED_INSIDE, Color(0.0f, 1.0f, 0.0f, 1.0f));
     clearButton->SetStateText(0xFF, L"Clear");
-    clearButton->SetDebugDraw(true);
+    clearButton->GetOrCreateComponent<UIDebugRenderComponent>();
     clearButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &DlcTest::Clear));
     AddControl(clearButton);
 

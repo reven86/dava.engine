@@ -36,7 +36,11 @@ const DAVA::ReflectedType* GetValueReflectedType(const Any& value)
     const Type* type = value.GetType();
     if (type->IsPointer())
     {
-        return ReflectedTypeDB::GetByPointer(value.Get<void*>(), type->Deref());
+        void* pointerValue = value.Get<void*>();
+        if (pointerValue != nullptr)
+        {
+            return ReflectedTypeDB::GetByPointer(pointerValue, type->Deref());
+        }
     }
 
     return ReflectedTypeDB::GetByType(type);

@@ -10,9 +10,10 @@ namespace DAVA
 class Color;
 class RenderSystem2D;
 class UIControlBackground;
-class UIScreenshoter;
+class UIDebugRenderComponent;
 class UIScreen;
 class UIScreenTransition;
+class UIScreenshoter;
 
 class UIRenderSystem final
 : public UISystem
@@ -46,9 +47,9 @@ private:
 
     void RenderControlHierarhy(UIControl* control, const UIGeometricData& geometricData, const UIControlBackground* parentBackground);
 
-    void DebugRender(UIControl* control, const UIGeometricData& geometricData, const Rect& unrotatedRect);
-    void RenderDebugRect(UIControl* control, const UIGeometricData& geometricData, bool useAlpha = false);
-    void RenderPivotPoint(UIControl* control, const Rect& drawRect);
+    void DebugRender(const UIDebugRenderComponent* component, const UIGeometricData& geometricData, const Rect& unrotatedRect);
+    void RenderDebugRect(const UIDebugRenderComponent* component, const UIGeometricData& geometricData);
+    void RenderPivotPoint(const UIDebugRenderComponent* component, const Rect& drawRect);
 
     RenderSystem2D* renderSystem2D = nullptr;
     UIGeometricData baseGeometricData;
