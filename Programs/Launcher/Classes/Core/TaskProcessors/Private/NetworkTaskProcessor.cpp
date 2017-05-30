@@ -67,7 +67,7 @@ void NetworkTaskProcessor::StartNextTask()
 
     currentTask->notifier.NotifyStarted(currentTask->task.get());
 
-    //on mac os x when connection fails once QNetworkAccessManager aborting each next  connection
+//on mac os x when connection fails once QNetworkAccessManager aborting each next  connection
 #ifdef Q_OS_MAC
     if (networkAccessManager->networkAccessible() != QNetworkAccessManager::Accessible)
     {
