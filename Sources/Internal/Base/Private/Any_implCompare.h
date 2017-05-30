@@ -2,13 +2,24 @@
 #ifndef __Dava_Any__
 #include "Base/Any.h"
 #endif
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
 template <typename T>
-bool AnyCompare<T>::IsEqual(const Any&, const Any&)
+bool AnyCompare<T>::IsEqual(const Any& v1, const Any&)
 {
-    DAVA_THROW(Exception, "Any:: can't be equal compared");
+    String message = "Any::can't be equal compared for type %s";
+    const Type* t = v1.GetType();
+    if (t == nullptr)
+    {
+        message = Format(message.c_str(), "nullptr");
+    }
+    else
+    {
+        message = Format(message.c_str(), t->GetName());
+    }
+    DAVA_THROW(Exception, message);
     return false;
 }
 

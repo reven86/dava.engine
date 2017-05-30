@@ -37,7 +37,7 @@ public:
 
     void ManualApplyLayout(UIControl* control); //DON'T USE IT!
 
-private:
+protected:
     void Process(float32 elapsedTime) override;
     void ForceProcessControl(float32 elapsedTime, UIControl* control) override;
 

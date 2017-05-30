@@ -50,14 +50,14 @@ public:
 };
 }
 
-ListView::ListView(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : TBase(ControlDescriptor(fields), wrappersProcessor, model, parent)
+ListView::ListView(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
+    : TBase(params, ControlDescriptor(params.fields), wrappersProcessor, model, parent)
 {
     SetupControl();
 }
 
-ListView::ListView(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : TBase(ControlDescriptor(fields), accessor, model, parent)
+ListView::ListView(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent)
+    : TBase(params, ControlDescriptor(params.fields), accessor, model, parent)
 {
     SetupControl();
 }

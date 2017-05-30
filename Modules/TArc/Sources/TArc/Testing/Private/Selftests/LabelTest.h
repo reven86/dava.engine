@@ -100,9 +100,9 @@ public:
         {
             Reflection refModel = Reflection::Create(&dataSource);
 
-            ControlDescriptorBuilder<Label::Fields> descr;
-            descr[Label::Fields::Text] = fieldName.c_str();
-            Label* label = new Label(descr, GetAccessor(), refModel);
+            Label::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[Label::Fields::Text] = fieldName.c_str();
+            Label* label = new Label(params, GetAccessor(), refModel);
             label->SetObjectName(QString::fromStdString("Label_" + fieldName));
             layout->AddControl(label);
         };

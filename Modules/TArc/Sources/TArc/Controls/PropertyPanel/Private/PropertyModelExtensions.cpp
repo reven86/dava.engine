@@ -10,7 +10,7 @@ namespace PMEDetails
 class DummyChildCreator : public ChildCreatorExtension
 {
 public:
-    void ExposeChildren(const std::shared_ptr<const PropertyNode>&, Vector<std::shared_ptr<PropertyNode>>&) const override
+    void ExposeChildren(const std::shared_ptr<PropertyNode>&, Vector<std::shared_ptr<PropertyNode>>&) const override
     {
     }
 };
@@ -31,6 +31,10 @@ public:
     {
     }
 
+    void ProduceCommand(const std::shared_ptr<PropertyNode>& node, const Any& newValue)
+    {
+    }
+
     void ProduceCommand(const Reflection::Field& object, const Any& newValue)
     {
     }
@@ -47,7 +51,7 @@ public:
 
 std::shared_ptr<PropertyNode> MakeRootNode(IChildAllocator* allocator, DAVA::Reflection::Field&& field)
 {
-    return allocator->CreatePropertyNode(std::move(field), PropertyNode::SelfRoot);
+    return allocator->CreatePropertyNode(nullptr, std::move(field), 0, PropertyNode::SelfRoot);
 }
 
 bool PropertyNode::operator==(const PropertyNode& other) const
@@ -66,14 +70,26 @@ bool PropertyNode::operator!=(const PropertyNode& other) const
     field.key != field.key;
 }
 
+DAVA::String PropertyNode::BuildID() const
+{
+    String key = field.key.Cast<String>();
+    if (idPostfix.IsValid())
+    {
+        return key + idPostfix.c_str();
+    }
+
+    return key;
+}
+
 const int32 PropertyNode::InvalidSortKey = std::numeric_limits<int32>::max();
+const int32 PropertyNode::FavoritesRootSortKey = -1000;
 
 ChildCreatorExtension::ChildCreatorExtension()
     : ExtensionChain(Type::Instance<ChildCreatorExtension>())
 {
 }
 
-void ChildCreatorExtension::ExposeChildren(const std::shared_ptr<const PropertyNode>& node, Vector<std::shared_ptr<PropertyNode>>& children) const
+void ChildCreatorExtension::ExposeChildren(const std::shared_ptr<PropertyNode>& node, Vector<std::shared_ptr<PropertyNode>>& children) const
 {
     GetNext<ChildCreatorExtension>()->ExposeChildren(node, children);
 }
@@ -86,6 +102,21 @@ std::shared_ptr<ChildCreatorExtension> ChildCreatorExtension::CreateDummy()
 void ChildCreatorExtension::SetAllocator(std::shared_ptr<IChildAllocator> allocator_)
 {
     allocator = allocator_;
+}
+
+bool ChildCreatorExtension::CanBeExposed(const Reflection::Field& field) const
+{
+    if (field.ref.GetMeta<M::HiddenField>() != nullptr)
+    {
+        return false;
+    }
+
+    if (field.ref.GetMeta<M::DeveloperModeOnly>() != nullptr && IsDeveloperMode() == false)
+    {
+        return false;
+    }
+
+    return true;
 }
 
 EditorComponentExtension::EditorComponentExtension()
@@ -144,6 +175,11 @@ void ModifyExtension::BeginBatch(const String& text, uint32 commandCount)
     GetNext<ModifyExtension>()->BeginBatch(text, commandCount);
 }
 
+void ModifyExtension::ProduceCommand(const std::shared_ptr<PropertyNode>& node, const Any& newValue)
+{
+    GetNext<ModifyExtension>()->ProduceCommand(node, newValue);
+}
+
 void ModifyExtension::ProduceCommand(const Reflection::Field& object, const Any& newValue)
 {
     GetNext<ModifyExtension>()->ProduceCommand(object, newValue);
@@ -171,15 +207,7 @@ ModifyExtension::MultiCommandInterface::MultiCommandInterface(std::shared_ptr<Mo
 
 void ModifyExtension::MultiCommandInterface::ModifyPropertyValue(const std::shared_ptr<PropertyNode>& node, const Any& newValue)
 {
-    extension->ProduceCommand(node->field, newValue);
-    if (node->field.ref.IsValid())
-    {
-        node->cachedValue = node->field.ref.GetValue();
-    }
-    else
-    {
-        node->cachedValue = Any();
-    }
+    extension->ProduceCommand(node, newValue);
 }
 
 void ModifyExtension::MultiCommandInterface::Exec(std::unique_ptr<DAVA::Command>&& command)

@@ -2,6 +2,8 @@
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "UI/Render/UIClipContentComponent.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 #include "UI/Render/UISceneComponent.h"
 #include "UI/UIControl.h"
 #include "UI/UIScreen.h"
@@ -128,7 +130,8 @@ void UIRenderSystem::RenderControlHierarhy(UIControl* control, const UIGeometric
 
     const Rect& unrotatedRect = drawData.GetUnrotatedRect();
 
-    if (control->GetClipContents())
+    bool clipContents = (control->GetComponentCount<UIClipContentComponent>() != 0);
+    if (clipContents)
     { //WARNING: for now clip contents don't work for rotating controls if you have any ideas you are welcome
         renderSystem2D->PushClip();
         renderSystem2D->IntersectClipRect(unrotatedRect); //anyway it doesn't work with rotation
@@ -147,38 +150,35 @@ void UIRenderSystem::RenderControlHierarhy(UIControl* control, const UIGeometric
 
     control->DrawAfterChilds(drawData);
 
-    if (control->GetClipContents())
+    if (clipContents)
     {
         renderSystem2D->PopClip();
     }
 
-    if (control->GetDebugDraw())
+    const UIDebugRenderComponent* debugRenderComponent = control->GetComponent<UIDebugRenderComponent>();
+    if (debugRenderComponent && debugRenderComponent->IsEnabled())
     {
-        DebugRender(control, drawData, unrotatedRect);
+        DebugRender(debugRenderComponent, drawData, unrotatedRect);
     }
 }
 
-void UIRenderSystem::DebugRender(UIControl* control, const UIGeometricData& geometricData, const Rect& unrotatedRect)
+void UIRenderSystem::DebugRender(const UIDebugRenderComponent* component, const UIGeometricData& geometricData, const Rect& unrotatedRect)
 {
     renderSystem2D->PushClip();
     renderSystem2D->RemoveClip();
-    RenderDebugRect(control, geometricData, false);
-    UIControl::eDebugDrawPivotMode drawMode = control->GetDrawPivotPointMode();
-    if (drawMode != UIControl::DRAW_NEVER &&
-        (drawMode != UIControl::DRAW_ONLY_IF_NONZERO || !control->GetPivotPoint().IsZero()))
+    RenderDebugRect(component, geometricData);
+    UIDebugRenderComponent::ePivotPointDrawMode drawMode = component->GetPivotPointDrawMode();
+    if (drawMode != UIDebugRenderComponent::DRAW_NEVER &&
+        (drawMode != UIDebugRenderComponent::DRAW_ONLY_IF_NONZERO || !component->GetControl()->GetPivotPoint().IsZero()))
     {
-        RenderPivotPoint(control, unrotatedRect);
+        RenderPivotPoint(component, unrotatedRect);
     }
     renderSystem2D->PopClip();
 }
 
-void UIRenderSystem::RenderDebugRect(UIControl* control, const UIGeometricData& gd, bool useAlpha)
+void UIRenderSystem::RenderDebugRect(const UIDebugRenderComponent* component, const UIGeometricData& gd)
 {
-    auto drawColor = control->GetDebugDrawColor();
-    if (useAlpha)
-    {
-        drawColor.a = 0.4f;
-    }
+    const Color& drawColor = component->GetDrawColor();
 
     if (gd.angle != 0.0f)
     {
@@ -193,13 +193,14 @@ void UIRenderSystem::RenderDebugRect(UIControl* control, const UIGeometricData& 
     }
 }
 
-void UIRenderSystem::RenderPivotPoint(UIControl* control, const Rect& drawRect)
+void UIRenderSystem::RenderPivotPoint(const UIDebugRenderComponent* component, const Rect& drawRect)
 {
     static const float32 PIVOT_POINT_MARK_RADIUS = 10.0f;
     static const float32 PIVOT_POINT_MARK_HALF_LINE_LENGTH = 13.0f;
-    static const Color drawColor(1.0f, 0.0f, 0.0f, 1.0f);
 
-    Vector2 pivotPointCenter = drawRect.GetPosition() + control->GetPivotPoint();
+    const Color& drawColor = component->GetDrawColor();
+
+    Vector2 pivotPointCenter = drawRect.GetPosition() + component->GetControl()->GetPivotPoint();
     renderSystem2D->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS, drawColor);
 
     // Draw the cross mark.

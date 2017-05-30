@@ -28,8 +28,9 @@ public:
         Range
     };
 
-    BaseSpinBox(const ControlDescriptor& descriptor, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent);
-    BaseSpinBox(const ControlDescriptor& descriptor, ContextAccessor* accessor, Reflection model, QWidget* parent);
+    using BaseParams = typename ControlProxyImpl<TBase>::BaseParams;
+    BaseSpinBox(const BaseParams& params, const ControlDescriptor& descriptor, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent);
+    BaseSpinBox(const BaseParams& params, const ControlDescriptor& descriptor, ContextAccessor* accessor, Reflection model, QWidget* parent);
 
 protected:
     bool event(QEvent* e) override;
@@ -67,7 +68,6 @@ protected:
 private:
     QString textFromValue(TEditableType val) const override;
     TEditableType valueFromText(const QString& text) const override;
-    void keyPressEvent(QKeyEvent* event) override;
     void focusInEvent(QFocusEvent* event) override;
     void focusOutEvent(QFocusEvent* event) override;
 };
