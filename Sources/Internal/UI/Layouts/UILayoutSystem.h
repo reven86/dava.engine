@@ -1,11 +1,8 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-#include "Math/Vector.h"
-
-#include "UI/Layouts/ControlLayoutData.h"
-#include "UI/UISystem.h"
 #include "Base/RefPtr.h"
+#include "UI/UISystem.h"
 
 struct UILayoutSystemTest;
 
@@ -48,23 +45,12 @@ protected:
     void UnregisterComponent(UIControl* control, UIComponent* component) override;
 
 private:
-    void ApplyLayout(UIControl* control);
-    void ApplyLayoutNonRecursive(UIControl* control);
-
     UIControl* FindNotDependentOnChildrenControl(UIControl* control) const;
     bool HaveToLayoutAfterReorder(const UIControl* control) const;
     bool HaveToLayoutAfterReposition(const UIControl* control) const;
 
     void CollectControls(UIControl* control, bool recursive);
     void CollectControlChildren(UIControl* control, int32 parentIndex, bool recursive);
-
-    void ProcessAxis(Vector2::eAxis axis, bool processSizes);
-    void DoMeasurePhase(Vector2::eAxis axis);
-    void DoLayoutPhase(Vector2::eAxis axis);
-
-    void ApplySizesAndPositions();
-    void ApplyPositions();
-
     void ProcessControlHierarhy(UIControl* control);
     void ProcessControl(UIControl* control);
 
@@ -72,7 +58,7 @@ private:
     bool autoupdatesEnabled = true;
     bool dirty = false;
     bool needUpdate = false;
-    Vector<ControlLayoutData> layoutData;
+    std::unique_ptr<class Layouter> sharedLayouter;
     RefPtr<UIScreen> currentScreen;
     RefPtr<UIControl> popupContainer;
     RefPtr<UIScreenTransition> currentScreenTransition;

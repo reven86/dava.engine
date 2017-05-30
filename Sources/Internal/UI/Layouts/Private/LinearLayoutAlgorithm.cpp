@@ -2,9 +2,9 @@
 
 #include "UI/Layouts/UISizePolicyComponent.h"
 
-#include "UI/Layouts/AnchorLayoutAlgorithm.h"
-#include "UI/Layouts/SizeMeasuringAlgorithm.h"
-#include "UI/Layouts/LayoutHelpers.h"
+#include "UI/Layouts/Private/AnchorLayoutAlgorithm.h"
+#include "UI/Layouts/Private/SizeMeasuringAlgorithm.h"
+#include "UI/Layouts/Private/LayoutHelpers.h"
 
 #include "UI/UIControl.h"
 
