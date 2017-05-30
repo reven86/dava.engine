@@ -76,7 +76,7 @@ void InstallApplicationTask::OnLoaded(const BaseTask* task)
     bool archiveCreated = fileManager->CreateFileFromRawData(downloadTask->GetLoadedData().front(), filePath);
     if (archiveCreated == false)
     {
-        SetError(QObject::tr("Can not create archive %1!").arg(filePath));
+        SetError(QObject::tr("Can not create file %1!").arg(filePath));
         emit Finished();
         return;
     }
