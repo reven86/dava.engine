@@ -59,5 +59,4 @@ void UIRichContentComponent::SetModified(bool _modified)
 {
     modified = _modified;
 }
-
 }

@@ -6,7 +6,6 @@
 
 namespace DAVA
 {
-
 /**
     RichContent compoent support tag aliases. Any alias contains alias
     name, original tag and original attributes. After declaration of alias you
