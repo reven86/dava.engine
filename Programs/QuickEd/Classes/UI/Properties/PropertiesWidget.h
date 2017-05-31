@@ -3,7 +3,11 @@
 #include "ui_PropertiesWidget.h"
 #include "EditorSystems/SelectionContainer.h"
 
+#include <TArc/DataProcessing/DataWrapper.h>
+#include <TArc/DataProcessing/DataListener.h>
+
 #include <QtTools/Updaters/ContinuousUpdater.h>
+
 #include <Base/BaseTypes.h>
 
 #include <QDockWidget>
@@ -12,7 +16,6 @@ namespace DAVA
 {
 namespace TArc
 {
-class FieldBinder;
 class ContextAccessor;
 class UI;
 }
@@ -24,7 +27,7 @@ class PackageBaseNode;
 class PropertiesModel;
 class PropertiesTreeItemDelegate;
 
-class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget
+class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget, private DAVA::TArc::DataListener
 {
     Q_OBJECT
 public:
@@ -65,9 +68,7 @@ private:
 
     void ApplyExpanding();
 
-    void BindFields();
-    void OnPackageDataChanged(const DAVA::Any& package);
-    void OnSelectionDataChanged(const DAVA::Any& selection);
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
 
     QAction* addComponentAction = nullptr;
     QAction* addStylePropertyAction = nullptr;
@@ -84,7 +85,7 @@ private:
     DAVA::String lastTopIndexPath;
     PackageBaseNode* selectedNode = nullptr; //node used to build model
 
-    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
+    DAVA::TArc::DataWrapper documentDataWrapper;
 
     DAVA::TArc::ContextAccessor* accessor = nullptr;
     DAVA::TArc::UI* ui = nullptr;

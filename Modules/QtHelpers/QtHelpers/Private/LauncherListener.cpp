@@ -1,15 +1,12 @@
 #include "QtHelpers/LauncherListener.h"
 #include "QtHelpers/Private/LauncherIPCHelpers.h"
+#include "QtHelpers/HelperFunctions.h"
 
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QApplication>
 #include <QTimer>
 #include <QDebug>
-#ifdef Q_OS_MAC
-#include <QUrl>
-#include <CoreFoundation/CoreFoundation.h>
-#endif //Q_OS_MAC
 
 LauncherListener::LauncherListener()
 {
@@ -29,19 +26,7 @@ bool LauncherListener::Init(ProcessRequestFunction function)
         lastError = "LauncherListener: application was not initialized";
         return false;
     }
-#ifdef Q_OS_MAC
-    CFURLRef url = (CFURLRef)CFAutorelease((CFURLRef)CFBundleCopyBundleURL(CFBundleGetMainBundle()));
-    QString appPath = QUrl::fromCFURL(url).path();
-    //launcher will use app as a file, but not as a folder
-    while (appPath.endsWith('/'))
-    {
-        appPath.chop(1);
-    }
-    //sometimes CFBundleCopyBundleURL returns url with a double slashes
-    appPath.replace("//", "/");
-#else
-    QString appPath = application->applicationFilePath();
-#endif //platform
+    QString appPath = QtHelpers::GetApplicationFilePath();
     appPath = LauncherIPCHelpers::PathToKey(appPath);
 
     //if last appplication was crashed - server will hold in OS untill we'll remove it manually

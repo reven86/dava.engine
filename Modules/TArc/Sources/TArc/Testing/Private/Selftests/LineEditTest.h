@@ -98,53 +98,53 @@ public:
         QtVBoxLayout* layout = new QtVBoxLayout(w);
 
         {
-            ControlDescriptorBuilder<LineEdit::Fields> descr;
-            descr[LineEdit::Fields::Text] = "text";
-            LineEdit* edit = new LineEdit(descr, GetAccessor(), Reflection::Create(&model));
+            LineEdit::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[LineEdit::Fields::Text] = "text";
+            LineEdit* edit = new LineEdit(params, GetAccessor(), Reflection::Create(&model));
             edit->SetObjectName("LineEdit");
             layout->AddControl(edit);
         }
 
         Reflection refModel = Reflection::Create(&dataSource);
         {
-            ControlDescriptorBuilder<LineEdit::Fields> descr;
-            descr[LineEdit::Fields::Text] = "readOnlyTextMeta";
-            LineEdit* edit = new LineEdit(descr, GetAccessor(), refModel);
+            LineEdit::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[LineEdit::Fields::Text] = "readOnlyTextMeta";
+            LineEdit* edit = new LineEdit(params, GetAccessor(), refModel);
             edit->SetObjectName("LineEdit_readOnlyMeta");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<LineEdit::Fields> descr;
-            descr[LineEdit::Fields::Text] = "readOnlyText";
-            LineEdit* edit = new LineEdit(descr, GetAccessor(), refModel);
+            LineEdit::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[LineEdit::Fields::Text] = "readOnlyText";
+            LineEdit* edit = new LineEdit(params, GetAccessor(), refModel);
             edit->SetObjectName("LineEdit_readOnlyText");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<LineEdit::Fields> descr;
-            descr[LineEdit::Fields::Text] = "text";
-            descr[LineEdit::Fields::PlaceHolder] = "placeHolder";
-            descr[LineEdit::Fields::IsReadOnly] = "isReadOnly";
-            descr[LineEdit::Fields::IsEnabled] = "isEnabled";
-            LineEdit* edit = new LineEdit(descr, GetAccessor(), refModel);
+            LineEdit::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[LineEdit::Fields::Text] = "text";
+            params.fields[LineEdit::Fields::PlaceHolder] = "placeHolder";
+            params.fields[LineEdit::Fields::IsReadOnly] = "isReadOnly";
+            params.fields[LineEdit::Fields::IsEnabled] = "isEnabled";
+            LineEdit* edit = new LineEdit(params, GetAccessor(), refModel);
             edit->SetObjectName("LineEdit_text");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<LineEdit::Fields> descr;
-            descr[LineEdit::Fields::Text] = "invalidateText";
-            LineEdit* edit = new LineEdit(descr, GetAccessor(), refModel);
+            LineEdit::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[LineEdit::Fields::Text] = "invalidateText";
+            LineEdit* edit = new LineEdit(params, GetAccessor(), refModel);
             edit->SetObjectName("LineEdit_invalidate");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<LineEdit::Fields> descr;
-            descr[LineEdit::Fields::Text] = "fixUpText";
-            LineEdit* edit = new LineEdit(descr, GetAccessor(), refModel);
+            LineEdit::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[LineEdit::Fields::Text] = "fixUpText";
+            LineEdit* edit = new LineEdit(params, GetAccessor(), refModel);
             edit->SetObjectName("LineEdit_fixup");
             layout->AddControl(edit);
         }

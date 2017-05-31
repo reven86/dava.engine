@@ -76,6 +76,11 @@ QIcon QColorToQIcon(const Any& value)
     return CreateIconFromColor(value.Get<QColor>());
 }
 
+String ColorToString(const Any& value)
+{
+    return ColorToQColorAny(value.Get<Color>()).name().toStdString();
+}
+
 void RegisterAnyCasts()
 {
     AnyCast<String, QString>::Register(&StringToQString);
@@ -101,6 +106,7 @@ void RegisterAnyCasts()
     AnyCast<Color, QColor>::Register(&ColorToQColorAny);
     AnyCast<Color, QIcon>::Register(&ColorToQIcon);
     AnyCast<QColor, QIcon>::Register(&QColorToQIcon);
+    AnyCast<Color, String>::Register(&ColorToString);
 }
 
 } // namespace TArc

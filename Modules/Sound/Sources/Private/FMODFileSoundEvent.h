@@ -20,7 +20,7 @@ namespace DAVA
 {
 class FMODSoundSystem;
 
-class FMODFileSoundEvent : public SoundEvent
+class FMODFileSoundEvent final : public SoundEvent
 {
 public:
     static FMOD_RESULT F_CALLBACK SoundInstanceEndPlaying(FMOD_CHANNEL* channel, FMOD_CHANNEL_CALLBACKTYPE type, void* commanddata1, void* commanddata2);
@@ -68,7 +68,7 @@ public:
         return -1.f;
     };
 
-protected:
+private:
     FMODFileSoundEvent(const FilePath& fileName, uint32 flags, int32 priority, FMODSoundSystem* rootSoundSystem);
     virtual ~FMODFileSoundEvent();
 

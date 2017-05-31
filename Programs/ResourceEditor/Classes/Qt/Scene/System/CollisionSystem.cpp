@@ -26,6 +26,7 @@
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/SingleComponents/TransformSingleComponent.h"
 #include "Scene3D/Scene.h"
+#include "Commands2/SetFieldValueCommand.h"
 
 #define SIMPLE_COLLISION_BOX_SIZE 1.0f
 
@@ -408,6 +409,7 @@ void SceneCollisionSystem::ProcessCommand(const RECommandNotificationObject& com
       CMDID_LOD_CREATE_PLANE,
       CMDID_LOD_DELETE,
       CMDID_INSP_MEMBER_MODIFY,
+      CMDID_REFLECTED_FIELD_MODIFY,
       CMDID_PARTICLE_EFFECT_EMITTER_REMOVE,
       CMDID_TRANSFORM,
       CMDID_CONVERT_TO_BILLBOARD
@@ -422,6 +424,16 @@ void SceneCollisionSystem::ProcessCommand(const RECommandNotificationObject& com
             static const DAVA::String HEIGHTMAP_PATH = "heightmapPath";
             const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
             if (HEIGHTMAP_PATH == cmd->member->Name().c_str())
+            {
+                UpdateCollisionObject(Selectable(curLandscapeEntity));
+            }
+        }
+        else if (command->MatchCommandID(CMDID_REFLECTED_FIELD_MODIFY))
+        {
+            const DAVA::FastName HEIGHTMAP_PATH("heightmapPath");
+            const SetFieldValueCommand* cmd = static_cast<const SetFieldValueCommand*>(command);
+            const DAVA::Reflection::Field& field = cmd->GetField();
+            if (field.key.Cast<DAVA::FastName>(DAVA::FastName("")) == HEIGHTMAP_PATH)
             {
                 UpdateCollisionObject(Selectable(curLandscapeEntity));
             }

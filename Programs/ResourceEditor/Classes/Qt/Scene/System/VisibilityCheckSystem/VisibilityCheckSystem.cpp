@@ -11,11 +11,11 @@
 #include "Math/MathHelpers.h"
 #include "Utils/Random.h"
 
-#include "Render/Renderer.h"
-#include "Render/Highlevel/RenderSystem.h"
-#include "Render/Highlevel/Landscape.h"
-#include "Render/PixelFormatDescriptor.h"
-#include "Render/2D/Systems/RenderSystem2D.h"
+#include <Render/Renderer.h>
+#include <Render/2D/Systems/RenderSystem2D.h>
+#include <Render/PixelFormatDescriptor.h>
+#include <Render/Highlevel/RenderSystem.h>
+#include <Render/Highlevel/Landscape.h>
 
 namespace VCSInternal
 {

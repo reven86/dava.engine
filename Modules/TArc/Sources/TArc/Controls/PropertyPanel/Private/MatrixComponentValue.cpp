@@ -16,11 +16,11 @@ bool MatrixComponentValue::IsValidValueToSet(const Any& newValue, const Any& cur
     return false;
 }
 
-ControlProxy* MatrixComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const
+ControlProxy* MatrixComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor)
 {
-    ControlDescriptorBuilder<Label::Fields> descr;
-    descr[Label::Fields::Text] = "value";
-    return new Label(descr, wrappersProcessor, model, parent);
+    Label::Params params(GetAccessor(), GetUI(), GetWindowKey());
+    params.fields[Label::Fields::Text] = "value";
+    return new Label(params, wrappersProcessor, model, parent);
 }
 
 String MatrixComponentValue::GetTextValue() const

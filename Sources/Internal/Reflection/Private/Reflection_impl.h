@@ -29,6 +29,11 @@ inline ReflectedObject Reflection::GetValueObject() const
     return valueWrapper->GetValueObject(object);
 }
 
+inline ReflectedObject Reflection::GetDirectObject() const
+{
+    return object;
+}
+
 inline Any Reflection::GetValue() const
 {
     return valueWrapper->GetValue(object);

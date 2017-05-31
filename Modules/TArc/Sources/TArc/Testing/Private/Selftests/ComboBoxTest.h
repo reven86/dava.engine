@@ -128,45 +128,45 @@ public:
         QtVBoxLayout* layout = new QtVBoxLayout(w);
 
         {
-            ControlDescriptorBuilder<ComboBox::Fields> descriptor;
-            descriptor[ComboBox::Fields::Value] = "valueMeta";
-            ComboBox* comboBox = new ComboBox(descriptor, GetAccessor(), reflectedModel);
+            ComboBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[ComboBox::Fields::Value] = "valueMeta";
+            ComboBox* comboBox = new ComboBox(params, GetAccessor(), reflectedModel);
             comboBox->SetObjectName("ComboBoxMeta");
             layout->AddControl(comboBox);
         }
 
         {
-            ControlDescriptorBuilder<ComboBox::Fields> descriptor;
-            descriptor[ComboBox::Fields::Value] = "value";
-            descriptor[ComboBox::Fields::Enumerator] = "enumeratorUnorderedMap";
-            ComboBox* comboBox = new ComboBox(descriptor, GetAccessor(), reflectedModel);
+            ComboBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[ComboBox::Fields::Value] = "value";
+            params.fields[ComboBox::Fields::Enumerator] = "enumeratorUnorderedMap";
+            ComboBox* comboBox = new ComboBox(params, GetAccessor(), reflectedModel);
             comboBox->SetObjectName("ComboBoxUnorderedMap");
             layout->AddControl(comboBox);
         }
 
         {
-            ControlDescriptorBuilder<ComboBox::Fields> descriptor;
-            descriptor[ComboBox::Fields::Value] = "value";
-            descriptor[ComboBox::Fields::Enumerator] = "enumeratorOrderedMap";
-            ComboBox* comboBox = new ComboBox(descriptor, GetAccessor(), reflectedModel);
+            ComboBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[ComboBox::Fields::Value] = "value";
+            params.fields[ComboBox::Fields::Enumerator] = "enumeratorOrderedMap";
+            ComboBox* comboBox = new ComboBox(params, GetAccessor(), reflectedModel);
             comboBox->SetObjectName("ComboBoxOrderedMap");
             layout->AddControl(comboBox);
         }
 
         {
-            ControlDescriptorBuilder<ComboBox::Fields> descriptor;
-            descriptor[ComboBox::Fields::Value] = "valueSize_t";
-            descriptor[ComboBox::Fields::Enumerator] = "enumeratorVector";
-            ComboBox* comboBox = new ComboBox(descriptor, GetAccessor(), reflectedModel);
+            ComboBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[ComboBox::Fields::Value] = "valueSize_t";
+            params.fields[ComboBox::Fields::Enumerator] = "enumeratorVector";
+            ComboBox* comboBox = new ComboBox(params, GetAccessor(), reflectedModel);
             comboBox->SetObjectName("ComboBoxVector");
             layout->AddControl(comboBox);
         }
 
         {
-            ControlDescriptorBuilder<ComboBox::Fields> descriptor;
-            descriptor[ComboBox::Fields::Value] = "valueString";
-            descriptor[ComboBox::Fields::Enumerator] = "enumeratorSet";
-            ComboBox* comboBox = new ComboBox(descriptor, GetAccessor(), reflectedModel);
+            ComboBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[ComboBox::Fields::Value] = "valueString";
+            params.fields[ComboBox::Fields::Enumerator] = "enumeratorSet";
+            ComboBox* comboBox = new ComboBox(params, GetAccessor(), reflectedModel);
             comboBox->SetObjectName("ComboBoxSet");
             layout->AddControl(comboBox);
         }
