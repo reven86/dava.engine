@@ -12,6 +12,7 @@
 #include "Time/SystemTimer.h"
 #include "Engine/Engine.h"
 #include "Debug/Backtrace.h"
+#include <Platform/DeviceInfo.h>
 
 namespace DAVA
 {
@@ -564,7 +565,8 @@ void DLCManagerImpl::GetFooter()
         {
             initError = InitError::LoadingRequestFailed;
             initErrorMsg = "failed get footer from server, download error: ";
-            log << initErrorMsg << std::endl;
+            const char* gpuFamily = GlobalEnumMap<eGPUFamily>::Instance()->ToString(static_cast<eGPUFamily>(DeviceInfo::GetGPUFamily()));
+            log << initErrorMsg << " current_device_gpu: " << gpuFamily << std::endl;
         }
     }
 }

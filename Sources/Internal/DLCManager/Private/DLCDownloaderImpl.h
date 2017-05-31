@@ -73,16 +73,16 @@ struct DLCDownloader::Task
          int64 rangeOffset,
          int64 rangeSize,
          int32 timeout);
-    void FlushWriterAndReset();
     ~Task();
 
+    void FlushWriterAndReset();
     void PrepareForDownloading();
     bool IsDone() const;
-    bool NeedHandle() const;
+    bool NeedDownloadMoreData() const;
     void OnSubTaskDone();
     void GenerateChunkSubRequests(const int chankSize);
-    void SetupFullDownload();
     void CorrectRangeToResumeDownloading();
+    void SetupFullDownload();
     void SetupResumeDownload();
     void SetupGetSizeDownload();
 

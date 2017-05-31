@@ -639,7 +639,7 @@ bool DLCDownloader::Task::IsDone() const
     return subTasksWorking.empty() && subTasksReadyToWrite.empty();
 }
 
-bool DLCDownloader::Task::NeedHandle() const
+bool DLCDownloader::Task::NeedDownloadMoreData() const
 {
     return restSize > 0;
 }
@@ -797,6 +797,7 @@ void DLCDownloaderImpl::Deinitialize()
             downloadThread->Cancel();
             downloadSem.Post(100); // just to resume if waiting
             downloadThread->Join();
+            SafeRelease(downloadThread);
         }
     }
 
@@ -910,6 +911,7 @@ void DLCDownloaderImpl::RemoveTask(Task* task)
     {
         LockGuard<Mutex> lock(mutexRemovedList);
         removedList.push_back(task);
+        downloadSem.Post(1); // if we sleep wakeup and remove task
     }
 }
 
@@ -1176,7 +1178,7 @@ void DLCDownloaderImpl::DeleteTask(Task* task)
 
 void DLCDownloader::Task::GenerateChunkSubRequests(const int chunkSize)
 {
-    while (NeedHandle() && curlStorage.GetFreeHandleCount() > 0)
+    while (NeedDownloadMoreData() && curlStorage.GetFreeHandleCount() > 0)
     {
         if (restSize < chunkSize)
         {
@@ -1276,8 +1278,17 @@ void DLCDownloader::Task::SetupResumeDownload()
         // so correct range to download only rest of file
         CorrectRangeToResumeDownloading();
 
-        const int chunkSize = curlStorage.GetChunkSize();
-        GenerateChunkSubRequests(chunkSize);
+        if (!NeedDownloadMoreData())
+        {
+            status.sizeDownloaded = info.rangeSize;
+            status.sizeTotal = info.rangeSize;
+            status.state = TaskState::Finished;
+        }
+        else
+        {
+            const int chunkSize = curlStorage.GetChunkSize();
+            GenerateChunkSubRequests(chunkSize);
+        }
     }
     else
     {
@@ -1332,9 +1343,9 @@ void DLCDownloaderImpl::SignalOnFinishedWaitingTasks()
 
 void DLCDownloaderImpl::AddNewTasks()
 {
+    LockGuard<Mutex> lock(mutexInputList);
     if (!inputList.empty() && GetFreeHandleCount() > 0)
     {
-        LockGuard<Mutex> lock(mutexInputList);
         while (!inputList.empty() && GetFreeHandleCount() > 0)
         {
             bool justAdded = TakeNewTaskFromInputList();
@@ -1406,7 +1417,7 @@ void DLCDownloaderImpl::BalancingHandles()
         // find first not finished task
         for (auto task : tasks)
         {
-            if (task->NeedHandle())
+            if (task->NeedDownloadMoreData())
             {
                 task->GenerateChunkSubRequests(hints.chunkMemBuffSize);
                 if (GetFreeHandleCount() == 0)

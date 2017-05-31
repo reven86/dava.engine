@@ -49,9 +49,10 @@ void PackRequest::CancelCurrentDownloads()
             {
                 downloader->RemoveTask(r.task);
                 r.task = nullptr;
-                r.status = LoadingPackFile; // to resume loading after update
             }
         }
+        requests.clear();
+        requests.shrink_to_fit();
     }
 }
 
@@ -74,6 +75,7 @@ void PackRequest::Start()
 void PackRequest::Stop()
 {
     CancelCurrentDownloads();
+    numOfDownloadedFile = 0;
 }
 
 const String& PackRequest::GetRequestedPackName() const
