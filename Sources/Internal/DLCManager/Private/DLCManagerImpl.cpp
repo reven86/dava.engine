@@ -84,8 +84,6 @@ DLCManagerImpl::DLCManagerImpl(Engine* engine_)
     DVASSERT(Thread::IsMainThread());
     engine.update.Connect(this, &DLCManagerImpl::Update);
     engine.backgroundUpdate.Connect(this, &DLCManagerImpl::Update);
-
-    downloader.reset(DLCDownloader::Create());
 }
 #endif
 
@@ -127,7 +125,7 @@ void DLCManagerImpl::ClearResouces()
     mapFileData.clear();
     startFileNameIndexesInUncompressedNames.clear();
 
-    if (downloadTaskId != 0)
+    if (downloadTaskId != nullptr)
     {
         if (downloader != nullptr)
         {
@@ -135,6 +133,9 @@ void DLCManagerImpl::ClearResouces()
             downloadTaskId = nullptr;
         }
     }
+
+    downloader.reset(nullptr);
+
     fullSizeServerData = 0;
 
     timeWaitingNextInitializationAttempt = 0;
@@ -188,7 +189,11 @@ void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
     downloaderHints.numOfMaxEasyHandles = static_cast<int>(hints.downloaderMaxHandles);
     downloaderHints.chunkMemBuffSize = static_cast<int>(hints.downloaderChankBufSize);
 
-    downloader->SetHints(downloaderHints);
+    if (!downloader)
+    {
+        downloader.reset(DLCDownloader::Create());
+        downloader->SetHints(downloaderHints);
+    }
 
     // TODO check if signal asyncConnectStateChanged has any subscriber
 

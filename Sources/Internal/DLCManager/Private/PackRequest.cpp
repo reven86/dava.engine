@@ -327,28 +327,13 @@ bool PackRequest::CheckLoadingStatusOfFileRequest(FileRequest& fileRequest, DLCD
 
             std::ostream& out = packManagerImpl->GetLog();
 
-            out << "can't download file: " << dstPath;
+            out << "file_request failed: can't download file: " << dstPath << " status: " << status;
 
             if (status.error.fileErrno != 0)
             {
                 out << " I/O error: " << status.error.errStr << std::endl;
                 DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
-                return true;
-            }
-
-            if (status.error.httpCode >= 400)
-            {
-                out << status << std::endl;
-            }
-
-            if (status.error.curlErr != 0)
-            {
-                out << status << std::endl;
-            }
-
-            if (status.error.curlMErr != 0)
-            {
-                out << status << std::endl;
+                return false;
             }
 
             DeleteJustDownloadedFileAndStartAgain(fileRequest);
@@ -477,9 +462,9 @@ bool PackRequest::UpdateFileRequests()
             break;
         } // end switch
 
-        if (!callUpdateSignal)
+        if (downloadedMore)
         {
-            callUpdateSignal = downloadedMore;
+            callUpdateSignal = true;
         }
     } // end for requests
 

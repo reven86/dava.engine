@@ -87,10 +87,10 @@ struct DLCDownloader::Task
     void SetupGetSizeDownload();
 
     // error handles
-    static void OnErrorCurlMulti(int32 multiCode, Task& task);
-    static void OnErrorCurlEasy(int32 easyCode, Task& task);
-    static void OnErrorCurlErrno(int32 errnoVal, Task& task);
-    static void OnErrorHttpCode(long httpCode, Task& task);
+    static void OnErrorCurlMulti(int32 multiCode, Task& task, int32 line);
+    static void OnErrorCurlEasy(int32 easyCode, Task& task, int32 line);
+    static void OnErrorCurlErrno(int32 errnoVal, Task& task, int32 line);
+    static void OnErrorHttpCode(long httpCode, Task& task, int32 line);
 };
 
 class DLCDownloaderImpl : public DLCDownloader, public ICurlEasyStorage
@@ -149,7 +149,6 @@ private:
     IDownloaderSubTask& FindInMap(CURL* easy) override;
     void UnMap(CURL* easy) override;
     int GetChunkSize() override;
-    void DeleteSubTaskHandler(IDownloaderSubTask* t);
     // [end] implement ICurlEasyStorage interface
 
     void DownloadThreadFunc();

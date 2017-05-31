@@ -91,7 +91,7 @@ public:
 	*/
     struct Hints
     {
-        const char* logFilePath = "~doc:/dlc_manager.log"; //!< path for separate log file
+        String logFilePath = "~doc:/dlc_manager.log"; //!< path for separate log file
         uint32 retryConnectMilliseconds = 5000; //!< try to reconnect to server if `Offline` state default every 5 seconds
         uint32 maxFilesToDownload = 0; //!< user should fill this value default value average files count in Data
         uint32 timeoutForDownload = 30; //!< this value passed to DownloadManager

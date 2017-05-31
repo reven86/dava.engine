@@ -143,6 +143,7 @@ public:
         int32 curlMErr = 0; //!< CURLM_OK == 0 see https://curl.haxx.se/libcurl/c/libcurl-errors.html
         int32 fileErrno = 0; //!< Errno value after bad (open|read|write|close|truncate) operation to file
         int32 httpCode = 0; //!< Last received HTTP response code
+        int32 fileLine = 0; //!< Source code first known line with error
         //!< See http://en.cppreference.com/w/cpp/error/errno_macros
         const char* errStr = ""; //!< See https://curl.haxx.se/libcurl/c/curl_multi_strerror.html
         //!< And https://curl.haxx.se/libcurl/c/curl_easy_strerror.html
