@@ -40,11 +40,6 @@ String disableTheseTestClasses = "ScriptTest";
 String disableTheseTestClasses =
 "DateTimeTest "
 "LocalizationTest "
-"ScriptTest "
-"FormulaExecutorTest "
-"FormulaParserTest "
-"FormulaTest "
-"FormulaTokenizerTest "
 "UILayoutSystemTest "
 "UIControlHelpersTest "
 "UIControlHierarhyTest "
