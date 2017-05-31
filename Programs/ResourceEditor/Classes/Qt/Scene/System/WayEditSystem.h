@@ -35,8 +35,6 @@ public:
     WayEditSystem(DAVA::Scene* scene);
     ~WayEditSystem() = default;
 
-    void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
-
     void EnableWayEdit(bool enable);
     bool IsWayEditEnabled() const;
 
@@ -51,8 +49,6 @@ public:
 
     bool HasCustomRemovingForEntity(DAVA::Entity* entityToRemove) const override;
     void PerformRemoving(DAVA::Entity* entityToRemove) override;
-
-    void SetScene(DAVA::Scene* scene) override;
 
 protected:
     void Draw() override;
