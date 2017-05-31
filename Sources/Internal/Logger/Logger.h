@@ -116,6 +116,7 @@ public:
     static eLogLevel GetLogLevelFromString(const char8* ll);
 
 private:
+    static Logger* GetLoggerInstance();
     bool CutOldLogFileIfExist(const FilePath& logFile) const;
 
     void FileLog(const FilePath& filepath, eLogLevel ll, const char8* text) const;
