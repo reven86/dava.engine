@@ -42,11 +42,14 @@ public:
     bool CanSave() const;
     bool CanUndo() const;
     bool CanRedo() const;
+    bool CanClose() const;
 
     QString GetUndoText() const;
     QString GetRedoText() const;
 
     bool IsDocumentExists() const;
+
+    PackageBaseNode* GetCurrentNode() const;
 
     DAVA_DEPRECATED(void RefreshLayout());
     DAVA_DEPRECATED(void RefreshAllControlProperties());
@@ -57,6 +60,7 @@ public:
     static DAVA::FastName canRedoPropertyName;
     static DAVA::FastName undoTextPropertyName;
     static DAVA::FastName redoTextPropertyName;
+    static DAVA::FastName currentNodePropertyName;
     static DAVA::FastName selectionPropertyName;
     static DAVA::FastName displayedRootControlsPropertyName;
 
@@ -66,12 +70,21 @@ private:
     void SetSelectedNodes(const SelectedNodes& selection);
     void SetDisplayedRootControls(const SortedControlNodeSet& controls);
 
+    void RefreshDisplayedRootControls();
+    void RefreshCurrentNode(const SelectedNodes& selection);
+
     DAVA::RefPtr<PackageNode> package;
     std::unique_ptr<DAVA::CommandStack> commandStack;
     SelectionContainer selection;
+
+    PackageBaseNode* currentNode = nullptr;
+    //we store this variable for cases when we select multiple controls from bottom to top and than deselect them one by one
+    DAVA::List<PackageBaseNode*> currentNodesHistory;
+
     SortedControlNodeSet displayedRootControls;
 
     bool documentExists = true;
+    DAVA::uint32 startedBatches = 0;
 
     DAVA_VIRTUAL_REFLECTION(DocumentData, DAVA::TArc::DataNode);
 };

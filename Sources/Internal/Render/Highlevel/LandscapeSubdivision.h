@@ -1,5 +1,6 @@
 #pragma once
 
+#include <Base/Any.h>
 #include "Base/BaseTypes.h"
 #include "Reflection/Reflection.h"
 #include "Base/IntrospectionBase.h"
@@ -52,6 +53,8 @@ public:
         float32 zoomMaxHeightError = 0.03f;
         float32 zoomMaxPatchRadiusError = 0.9f;
         float32 zoomMaxAbsoluteHeightError = 3.f;
+
+        bool operator==(const SubdivisionMetrics& other) const;
 
         INTROSPECTION(SubdivisionMetrics,
                       MEMBER(normalMaxHeightError, "normalMaxHeightError", I_VIEW | I_EDIT)
@@ -177,4 +180,8 @@ inline LandscapeSubdivision::SubdivisionMetrics& LandscapeSubdivision::GetMetric
 {
     return metrics;
 }
+
+template <>
+bool AnyCompare<LandscapeSubdivision::SubdivisionMetrics>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2);
+extern template struct AnyCompare<LandscapeSubdivision::SubdivisionMetrics>;
 }

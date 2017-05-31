@@ -24,7 +24,9 @@
 // framework
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/TransformComponent.h"
+#include "Scene3D/Components/SingleComponents/TransformSingleComponent.h"
 #include "Scene3D/Scene.h"
+#include "Commands2/SetFieldValueCommand.h"
 
 #define SIMPLE_COLLISION_BOX_SIZE 1.0f
 
@@ -61,8 +63,6 @@ SceneCollisionSystem::SceneCollisionSystem(DAVA::Scene* scene)
     landCollWorld->setDebugDrawer(landDebugDrawer);
 
     scene->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::SWITCH_CHANGED);
-    scene->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED);
-    scene->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::TRANSFORM_PARENT_CHANGED);
 }
 
 SceneCollisionSystem::~SceneCollisionSystem()
@@ -295,6 +295,16 @@ void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
         return;
     }
 
+    DAVA::TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+    for (DAVA::Entity* entity : tsc->localTransformChanged)
+    {
+        UpdateCollisionObject(Selectable(entity));
+    }
+    for (DAVA::Entity* entity : tsc->transformParentChanged)
+    {
+        UpdateCollisionObject(Selectable(entity));
+    }
+
     // check in there are entities that should be added or removed
     if (!(objectsToAdd.empty() && objectsToRemove.empty()))
     {
@@ -399,6 +409,7 @@ void SceneCollisionSystem::ProcessCommand(const RECommandNotificationObject& com
       CMDID_LOD_CREATE_PLANE,
       CMDID_LOD_DELETE,
       CMDID_INSP_MEMBER_MODIFY,
+      CMDID_REFLECTED_FIELD_MODIFY,
       CMDID_PARTICLE_EFFECT_EMITTER_REMOVE,
       CMDID_TRANSFORM,
       CMDID_CONVERT_TO_BILLBOARD
@@ -413,6 +424,16 @@ void SceneCollisionSystem::ProcessCommand(const RECommandNotificationObject& com
             static const DAVA::String HEIGHTMAP_PATH = "heightmapPath";
             const InspMemberModifyCommand* cmd = static_cast<const InspMemberModifyCommand*>(command);
             if (HEIGHTMAP_PATH == cmd->member->Name().c_str())
+            {
+                UpdateCollisionObject(Selectable(curLandscapeEntity));
+            }
+        }
+        else if (command->MatchCommandID(CMDID_REFLECTED_FIELD_MODIFY))
+        {
+            const DAVA::FastName HEIGHTMAP_PATH("heightmapPath");
+            const SetFieldValueCommand* cmd = static_cast<const SetFieldValueCommand*>(command);
+            const DAVA::Reflection::Field& field = cmd->GetField();
+            if (field.key.Cast<DAVA::FastName>(DAVA::FastName("")) == HEIGHTMAP_PATH)
             {
                 UpdateCollisionObject(Selectable(curLandscapeEntity));
             }
@@ -457,8 +478,6 @@ void SceneCollisionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint
     switch (event)
     {
     case DAVA::EventSystem::SWITCH_CHANGED:
-    case DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED:
-    case DAVA::EventSystem::TRANSFORM_PARENT_CHANGED:
     {
         UpdateCollisionObject(Selectable(component->GetEntity()));
         break;

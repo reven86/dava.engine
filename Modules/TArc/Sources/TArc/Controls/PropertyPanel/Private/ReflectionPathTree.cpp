@@ -17,7 +17,6 @@ ReflectionPathTree::ReflectionPathTree(const FastName& rootName)
 ReflectionPathTree::~ReflectionPathTree()
 {
     DVASSERT(root.size() == 1);
-    root.top()->TearDown();
     root.pop();
 }
 
@@ -91,7 +90,7 @@ void ReflectionPathTree::RemoveLeaf(List<FastName>&& leafPath)
     rootNode->flags[HasChildren] = hasChildren;
     if (hasChildren == false)
     {
-        rootNode->TearDown();
+        rootNode->children.clear();
     }
 
     PopRoot();
@@ -185,15 +184,6 @@ void ReflectionPathTree::Save(PropertiesItem& settingsNode, std::shared_ptr<Refl
         PropertiesItem childSettingsNode = settingsNode.CreateSubHolder(Format("child_%d", static_cast<int32>(i)));
         Save(childSettingsNode, node->children[i]);
     }
-}
-
-void ReflectionPathTree::Node::TearDown()
-{
-    std::for_each(children.begin(), children.end(), [](std::shared_ptr<Node> node) {
-        node->TearDown();
-    });
-
-    children.clear();
 }
 
 } // namespace TArc

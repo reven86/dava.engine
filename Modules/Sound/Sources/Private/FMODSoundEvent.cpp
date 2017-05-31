@@ -68,12 +68,6 @@ bool FMODSoundEvent::Trigger()
         if (fmodEventInfo)
         {
             // http://stackoverflow.com/questions/570669/checking-if-a-double-or-float-is-nan-in-c
-            DVASSERT(position == position && "position is NaN"); //-V501 check for NaN
-            DVASSERT(direction == direction && "direction is NaN"); //-V501 check for NaN
-            if (isDirectional)
-            {
-                DVASSERT(direction.Length() > 0.f);
-            }
 
             FMOD_VERIFY(fmodEventInfo->setVolume(volume));
             FMOD_VERIFY(fmodEventInfo->set3DAttributes(reinterpret_cast<FMOD_VECTOR*>(&position), 0, isDirectional ? reinterpret_cast<FMOD_VECTOR*>(&direction) : nullptr));
@@ -121,23 +115,55 @@ bool FMODSoundEvent::Trigger()
 
 void FMODSoundEvent::SetPosition(const Vector3& _position)
 {
-    position = _position;
+    const bool isFinite = std::isfinite(_position.x) && std::isfinite(_position.y) && std::isfinite(_position.z);
+    DVASSERT(isFinite);
+
+    if (isFinite)
+    {
+        position = _position;
+    }
+    else
+    {
+        Logger::Error("[FMODSoundEvent::SetPosition] Invalid vector was given: (%f, %f, %f), ignoring", _position.x, _position.y, _position.z);
+    }
 }
 
 void FMODSoundEvent::SetDirection(const Vector3& _direction)
 {
-    direction = _direction;
+    const bool isFinite = std::isfinite(_direction.x) && std::isfinite(_direction.y) && std::isfinite(_direction.z);
+    const bool nonZero = _direction.SquareLength() > 0.0f;
+    DVASSERT(isFinite);
+    DVASSERT(nonZero);
+
+    if (isFinite && nonZero)
+    {
+        direction = Normalize(_direction);
+    }
+    else
+    {
+        Logger::Error("[FMODSoundEvent::SetDirection] Invalid vector was given: (%f, %f, %f), ignoring", _direction.x, _direction.y, _direction.z);
+    }
 }
 
 void FMODSoundEvent::SetVelocity(const Vector3& velocity)
 {
     if (is3D && fmodEventInstances.size())
     {
-        Vector<FMOD::Event*> instancesCopy(fmodEventInstances);
-        size_t instancesCount = instancesCopy.size();
-        for (size_t i = 0; i < instancesCount; ++i)
+        const bool isFinite = std::isfinite(velocity.x) && std::isfinite(velocity.y) && std::isfinite(velocity.z);
+        DVASSERT(isFinite);
+
+        if (isFinite)
         {
-            FMOD_VERIFY(instancesCopy[i]->set3DAttributes(0, reinterpret_cast<const FMOD_VECTOR*>(&velocity), 0));
+            Vector<FMOD::Event*> instancesCopy(fmodEventInstances);
+            size_t instancesCount = instancesCopy.size();
+            for (size_t i = 0; i < instancesCount; ++i)
+            {
+                FMOD_VERIFY(instancesCopy[i]->set3DAttributes(0, reinterpret_cast<const FMOD_VECTOR*>(&velocity), 0));
+            }
+        }
+        else
+        {
+            Logger::Error("[FMODSoundEvent::SetVelocity] Invalid vector was given: (%f, %f, %f), ignoring", velocity.x, velocity.y, velocity.z);
         }
     }
 }

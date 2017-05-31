@@ -7,15 +7,17 @@
 #include "LandscapeEditorDrawSystem/RulerToolProxy.h"
 
 #include "Commands2/InspMemberModifyCommand.h"
+#include "Commands2/SetFieldValueCommand.h"
 #include "Commands2/InspDynamicModifyCommand.h"
 #include "Commands2/Base/RECommandNotificationObject.h"
-
-#include "Debug/DVAssert.h"
-#include "Scene3D/Systems/RenderUpdateSystem.h"
 
 #include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 
 #include "Scene/SceneHelper.h"
+
+#include <Scene3D/Systems/RenderUpdateSystem.h>
+#include <Debug/DVAssert.h>
+#include <Base/Any.h>
 
 LandscapeEditorDrawSystem::LandscapeEditorDrawSystem(DAVA::Scene* scene)
     : SceneSystem(scene)
@@ -637,7 +639,7 @@ void LandscapeEditorDrawSystem::ProcessCommand(const RECommandNotificationObject
 {
     static const DAVA::FastName heightmapPath("heightmapPath");
 
-    if (commandNotification.MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY }))
+    if (commandNotification.MatchCommandIDs({ CMDID_INSP_MEMBER_MODIFY, CMDID_INSP_DYNAMIC_MODIFY, CMDID_REFLECTED_FIELD_MODIFY }))
     {
         auto processSingleCommand = [this](const RECommand* command, bool redo) {
             if (command->MatchCommandID(CMDID_INSP_MEMBER_MODIFY))
@@ -663,6 +665,23 @@ void LandscapeEditorDrawSystem::ProcessCommand(const RECommandNotificationObject
                 if (DAVA::Landscape::TEXTURE_TILEMASK == cmd->key)
                 {
                     UpdateTilemaskPathname();
+                }
+            }
+            else if (command->MatchCommandID(CMDID_REFLECTED_FIELD_MODIFY))
+            {
+                const SetFieldValueCommand* cmd = static_cast<const SetFieldValueCommand*>(command);
+                if (heightmapPath == cmd->GetField().key.Cast<DAVA::FastName>(DAVA::FastName("")) && baseLandscape != nullptr)
+                {
+                    DAVA::Heightmap* heightmap = baseLandscape->GetHeightmap();
+                    if ((heightmap != nullptr) && (heightmap->Size() > 0))
+                    {
+                        DAVA::ScopedPtr<DAVA::Heightmap> clonedHeightmap(heightmap->Clone(nullptr));
+                        SafeRelease(heightmapProxy);
+                        heightmapProxy = new HeightmapProxy(clonedHeightmap);
+
+                        DAVA::float32 size = static_cast<DAVA::float32>(heightmapProxy->Size());
+                        heightmapProxy->UpdateRect(DAVA::Rect(0.f, 0.f, size, size));
+                    }
                 }
             }
         };

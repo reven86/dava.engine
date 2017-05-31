@@ -60,6 +60,13 @@ DataWrapper::DataWrapper(DataWrapper&& other)
 {
 }
 
+void DataWrapper::SetDebugName(const String& name)
+{
+#ifdef __DAVAENGINE_DEBUG__
+    impl->typeName = name;
+#endif
+}
+
 DataWrapper& DataWrapper::operator=(DataWrapper&& other)
 {
     if (&other == this)

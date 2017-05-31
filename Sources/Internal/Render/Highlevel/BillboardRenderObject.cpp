@@ -7,7 +7,7 @@ namespace DAVA
 DAVA_VIRTUAL_REFLECTION_IMPL(BillboardRenderObject)
 {
     ReflectionRegistrator<BillboardRenderObject>::Begin()
-    .Field("type", &BillboardRenderObject::billboardType)[M::DisplayName("Billboard Type"), M::EnumT<BillboardRenderObject::BillboardType>()]
+    .Field("billboardType", &BillboardRenderObject::billboardType)[M::DisplayName("Billboard Type"), M::EnumT<BillboardRenderObject::BillboardType>()]
     .End();
 }
 

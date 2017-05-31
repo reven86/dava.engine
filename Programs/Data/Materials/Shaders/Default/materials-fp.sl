@@ -29,7 +29,7 @@ fragment_in
         float2 varDecalTileTexCoord : TEXCOORD2;
     #endif
     #if MATERIAL_DETAIL
-        half2 varDetailTexCoord : TEXCOORD2;
+        float2 varDetailTexCoord : TEXCOORD2;
     #endif
 
     #if VERTEX_LIT
