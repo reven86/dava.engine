@@ -174,7 +174,7 @@ private:
 
     // [start] next variables used only from Download thread
     List<Task*> tasks;
-    UnorderedMap<CURL*, IDownloaderSubTask*> taskMap;
+    UnorderedMap<CURL*, IDownloaderSubTask*> subtaskMap;
     List<CURL*> reusableHandles;
     CURLM* multiHandle = nullptr;
     Thread* downloadThread = nullptr;

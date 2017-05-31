@@ -281,6 +281,7 @@ struct DownloadChunkSubTask : IDownloaderSubTask
     {
         if (offset >= 0 && size <= 0)
         {
+            DVASSERT(false);
             Logger::Error("incorrect offset or size");
             offset = 0;
             size = 0;
@@ -293,6 +294,7 @@ struct DownloadChunkSubTask : IDownloaderSubTask
         if (easy == nullptr)
         {
             Logger::Error("can't create easy handle, something bad happened");
+            DVASSERT(easy != nullptr);
         }
 
         const char* url = task.info.srcUrl.c_str();
@@ -319,6 +321,7 @@ struct DownloadChunkSubTask : IDownloaderSubTask
         if (result < 0 || result >= sizeof(buf))
         {
             Logger::Error("range format failed");
+            DVASSERT(false);
         }
 
         code = curl_easy_setopt(easy, CURLOPT_RANGE, buf);
@@ -1119,12 +1122,12 @@ void DLCDownloaderImpl::Map(CURL* easy, IDownloaderSubTask& subTask)
     {
         DAVA_THROW(Exception, "easy is nullptr");
     }
-    auto it = taskMap.find(easy);
-    if (it != end(taskMap))
+    auto it = subtaskMap.find(easy);
+    if (it != end(subtaskMap))
     {
         DAVA_THROW(Exception, "easy handle already in map!");
     }
-    taskMap.emplace(easy, &subTask);
+    subtaskMap.emplace(easy, &subTask);
 }
 
 IDownloaderSubTask& DLCDownloaderImpl::FindInMap(CURL* easy)
@@ -1134,8 +1137,8 @@ IDownloaderSubTask& DLCDownloaderImpl::FindInMap(CURL* easy)
     {
         DAVA_THROW(Exception, "easy is nullptr");
     }
-    auto it = taskMap.find(easy);
-    if (it != end(taskMap))
+    auto it = subtaskMap.find(easy);
+    if (it != end(subtaskMap))
     {
         IDownloaderSubTask* subTask = it->second;
         if (subTask != nullptr)
@@ -1153,10 +1156,10 @@ void DLCDownloaderImpl::UnMap(CURL* easy)
     {
         DAVA_THROW(Exception, "easy is nullptr");
     }
-    auto it = taskMap.find(easy);
-    if (it != end(taskMap))
+    auto it = subtaskMap.find(easy);
+    if (it != end(subtaskMap))
     {
-        taskMap.erase(easy);
+        subtaskMap.erase(easy);
     }
     else
     {

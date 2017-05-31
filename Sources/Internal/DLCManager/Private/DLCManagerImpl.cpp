@@ -12,7 +12,7 @@
 #include "Time/SystemTimer.h"
 #include "Engine/Engine.h"
 #include "Debug/Backtrace.h"
-#include <Platform/DeviceInfo.h>
+#include "Platform/DeviceInfo.h"
 
 namespace DAVA
 {

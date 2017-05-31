@@ -38,7 +38,7 @@ PackRequest& PackRequest::operator=(PackRequest&& other)
     return *this;
 }
 
-void PackRequest::CancelCurrentDownloads()
+void PackRequest::CancelCurrentDownloadRequests()
 {
     DLCDownloader* downloader = packManagerImpl->GetDownloader();
     if (downloader)
@@ -58,7 +58,7 @@ void PackRequest::CancelCurrentDownloads()
 
 PackRequest::~PackRequest()
 {
-    CancelCurrentDownloads();
+    CancelCurrentDownloadRequests();
     packManagerImpl = nullptr;
     requests.clear();
     fileIndexes.clear();
@@ -74,7 +74,7 @@ void PackRequest::Start()
 
 void PackRequest::Stop()
 {
-    CancelCurrentDownloads();
+    CancelCurrentDownloadRequests();
     numOfDownloadedFile = 0;
 }
 

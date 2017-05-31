@@ -17,7 +17,7 @@ class PackRequest : public DLCManager::IRequest
 {
 public:
     PackRequest(DLCManagerImpl& packManager_, const String& packName, Vector<uint32> fileIndexes_);
-    void CancelCurrentDownloads();
+    void CancelCurrentDownloadRequests();
     PackRequest(DLCManagerImpl& packManager_, const String& requestedPackName);
 
     ~PackRequest() override;
