@@ -122,6 +122,7 @@ void SelectionSystem::Process(DAVA::float32 timeElapsed)
         if (currentSelection.ContainsObject(entity))
         {
             invalidSelectionBoxes = true;
+            break;
         }
     }
     for (DAVA::Entity* entity : tsc->transformParentChanged)
@@ -129,6 +130,7 @@ void SelectionSystem::Process(DAVA::float32 timeElapsed)
         if (currentSelection.ContainsObject(entity))
         {
             invalidSelectionBoxes = true;
+            break;
         }
     }
 
