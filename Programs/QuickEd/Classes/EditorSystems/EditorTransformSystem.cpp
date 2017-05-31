@@ -5,6 +5,7 @@
 #include "EditorSystems/EditorSystemsManager.h"
 #include "EditorSystems/KeyboardProxy.h"
 
+#include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/RootProperty.h"
 
@@ -69,10 +70,9 @@ struct EditorTransformSystem::MoveInfo
 struct EditorTransformSystem::MagnetLine
 {
     //controlBox and targetBox in parent coordinates. controlSharePos ans targetSharePos is a share of corresponding size
-    MagnetLine(float32 controlSharePos_, const Rect& controlBox_, float32 targetSharePos_, const Rect& targetBox_, Vector2::eAxis axis_)
+    MagnetLine(float32 controlSharePos_, const Rect& controlBox_, float32 targetSharePos, const Rect& targetBox_, Vector2::eAxis axis_)
         : controlSharePos(controlSharePos_)
         , controlBox(controlBox_)
-        , targetSharePos(targetSharePos_)
         , targetBox(targetBox_)
         , axis(axis_)
     {
@@ -81,11 +81,20 @@ struct EditorTransformSystem::MagnetLine
         interval = controlPosition - targetPosition;
     }
 
+    MagnetLine(float32 controlSharePos_, const Rect& controlBox_, float32 targetPosition_, Vector2::eAxis axis_)
+        : controlSharePos(controlSharePos_)
+        , controlBox(controlBox_)
+        , targetPosition(targetPosition_)
+        , axis(axis_)
+    {
+        controlPosition = controlBox.GetPosition()[axis] + controlBox.GetSize()[axis] * controlSharePos;
+        interval = controlPosition - targetPosition;
+    }
+
     float32 controlSharePos;
     float32 controlPosition;
     Rect controlBox;
 
-    float32 targetSharePos;
     float32 targetPosition;
     Rect targetBox;
 
@@ -520,33 +529,52 @@ void EditorTransformSystem::MoveAllSelectedControlsByMouse(Vector2 mouseDelta, b
 
 Vector<EditorTransformSystem::MagnetLine> EditorTransformSystem::CreateMagnetPairs(const Rect& box, const UIGeometricData* parentGD, const Vector<UIControl*>& neighbours, Vector2::eAxis axis)
 {
+    using namespace DAVA;
+    using namespace DAVA::TArc;
+
     DVASSERT(nullptr != parentGD);
     Vector<MagnetLine> magnets;
-    Rect parentBox(Vector2(), parentGD->size);
-    if (parentBox.GetSize()[axis] <= 0.0f)
-    {
-        return magnets;
-    }
+
+    DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    const DocumentData* data = activeContext->GetData<DocumentData>();
+    const SortedControlNodeSet& rootControls = data->GetDisplayedRootControls();
+    DVASSERT(rootControls.size() == 1);
+    PackageNode* package = data->GetPackageNode();
+    DAVA::String name = (*rootControls.begin())->GetName();
+    const List<float32>& values = package->GetGuides(name, axis);
+
     const size_type magnetsCountForParent = 7;
     const size_type magnetsCountForOneNeighbour = 9;
-    magnets.reserve(magnetsCountForParent + magnetsCountForOneNeighbour * neighbours.size()); //TODO: replace digits with calculated values
+    magnets.reserve(magnetsCountForParent + magnetsCountForOneNeighbour * neighbours.size() + values.size()); //TODO: replace digits with calculated values
 
-    magnets.emplace_back(0.0f, box, 0.0f, parentBox, axis);
-    magnets.emplace_back(0.0f, box, 0.5f, parentBox, axis);
-    magnets.emplace_back(0.5f, box, 0.5f, parentBox, axis);
-    magnets.emplace_back(1.0f, box, 0.5f, parentBox, axis);
-    magnets.emplace_back(1.0f, box, 1.0f, parentBox, axis);
-
-    const float32 border = borderInParentToMagnet[axis];
-    //we will not magnet if control is less than 5 more than magnet distance
-    float32 requiredSizeToMagnetToBorders = 5.0f * border;
-    float32 parentSize = parentGD->GetUnrotatedRect().GetSize()[axis];
-    parentSize = parentSize / parentGD->scale[axis];
-    if (parentSize > requiredSizeToMagnetToBorders)
+    for (float32 value : values)
     {
-        const float32 borderShare = border / parentBox.GetSize()[axis];
-        magnets.emplace_back(0.0f, box, borderShare, parentBox, axis);
-        magnets.emplace_back(1.0f, box, 1.0f - borderShare, parentBox, axis);
+        magnets.emplace_back(0.0f, box, value, axis);
+        magnets.emplace_back(0.5f, box, value, axis);
+        magnets.emplace_back(1.0f, box, value, axis);
+    }
+
+    Rect parentBox(Vector2(), parentGD->size);
+    if (parentBox.GetSize()[axis] > 0.0f)
+    {
+        magnets.emplace_back(0.0f, box, 0.0f, parentBox, axis);
+        magnets.emplace_back(0.0f, box, 0.5f, parentBox, axis);
+        magnets.emplace_back(0.5f, box, 0.5f, parentBox, axis);
+        magnets.emplace_back(1.0f, box, 0.5f, parentBox, axis);
+        magnets.emplace_back(1.0f, box, 1.0f, parentBox, axis);
+
+        const float32 border = borderInParentToMagnet[axis];
+        //we will not magnet if control is less than 5 more than magnet distance
+        float32 requiredSizeToMagnetToBorders = 5.0f * border;
+        float32 parentSize = parentGD->GetUnrotatedRect().GetSize()[axis];
+        parentSize = parentSize / parentGD->scale[axis];
+        if (parentSize > requiredSizeToMagnetToBorders)
+        {
+            const float32 borderShare = border / parentBox.GetSize()[axis];
+            magnets.emplace_back(0.0f, box, borderShare, parentBox, axis);
+            magnets.emplace_back(1.0f, box, 1.0f - borderShare, parentBox, axis);
+        }
     }
 
     for (UIControl* neighbour : neighbours)

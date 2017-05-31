@@ -3,6 +3,7 @@
 #include "PackageHierarchy/PackageNode.h"
 #include "PackageHierarchy/ImportedPackagesNode.h"
 #include "PackageHierarchy/PackageControlsNode.h"
+
 #include "Model/ControlProperties/ControlPropertiesSection.h"
 #include "Model/ControlProperties/ComponentPropertiesSection.h"
 #include "Model/ControlProperties/ValueProperty.h"
@@ -12,13 +13,15 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Model/PackageHierarchy/StyleSheetsNode.h"
-#include "UI/UIPackage.h"
-#include "UI/UIControl.h"
-#include "UI/UIControlPackageContext.h"
-#include "UI/Styles/UIStyleSheet.h"
-#include "UI/Styles/UIStyleSheetYamlLoader.h"
-#include "Base/ObjectFactory.h"
-#include "Utils/Utils.h"
+
+#include <UI/UIPackage.h>
+#include <UI/UIControl.h>
+#include <UI/UIControlPackageContext.h>
+#include <UI/Styles/UIStyleSheet.h>
+#include <UI/Styles/UIStyleSheetYamlLoader.h>
+#include <Base/ObjectFactory.h>
+#include <Utils/Utils.h>
+#include <FileSystem/YamlNode.h>
 
 using namespace DAVA;
 
@@ -352,6 +355,42 @@ void QuickEdPackageBuilder::ProcessProperty(const ReflectedStructure::Field& fie
     }
 }
 
+void QuickEdPackageBuilder::ProcessCustomData(const YamlNode* customDataNode)
+{
+    DVASSERT(customDataNode != nullptr);
+    DVASSERT(customDataNode->GetType() == YamlNode::TYPE_MAP);
+
+    const YamlNode* guidesNode = customDataNode->Get("Guides");
+    const UnorderedMap<String, YamlNode*>& controlsMap = guidesNode->AsMap();
+    for (const auto& controlsMapItem : controlsMap)
+    {
+        const String& controlName = controlsMapItem.first;
+        YamlNode* allGuidesNode = controlsMapItem.second;
+        PackageNode::Guides& guides = allGuides[controlName];
+        struct Orientation
+        {
+            String type;
+            List<float32>* values;
+        };
+        Vector<Orientation> orientations = { { "Vertical", &guides.verticalGuides }, { "Horizontal", &guides.horizontalGuides } };
+        for (Orientation& orientation : orientations)
+        {
+            const YamlNode* guideValuesNode = allGuidesNode->Get(orientation.type);
+            if (guideValuesNode != nullptr)
+            {
+                const Vector<YamlNode*>& valuesNodes = guideValuesNode->AsVector();
+                List<float32>* values = orientation.values;
+                std::transform(valuesNodes.begin(),
+                               valuesNodes.end(),
+                               std::back_inserter(*values),
+                               [](YamlNode* node) {
+                                   return node->AsFloat();
+                               });
+            }
+        }
+    }
+}
+
 RefPtr<PackageNode> QuickEdPackageBuilder::BuildPackage() const
 {
     DVASSERT(!packagePath.IsEmpty());
@@ -407,6 +446,8 @@ RefPtr<PackageNode> QuickEdPackageBuilder::BuildPackage() const
             package->GetPackageControlsNode()->Add(control);
         }
     }
+
+    package->SetAllGuidesForAllControls(allGuides);
 
     package->RefreshPackageStylesAndLayout();
 

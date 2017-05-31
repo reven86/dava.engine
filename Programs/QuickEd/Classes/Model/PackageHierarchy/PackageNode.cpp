@@ -445,6 +445,55 @@ bool PackageNode::CanUpdateAll() const
     return canUpdateAll;
 }
 
+DAVA::List<DAVA::float32> PackageNode::GetGuides(const DAVA::String& name, DAVA::Vector2::eAxis orientation)
+{
+    auto iter = allGuides.find(name);
+    if (iter != allGuides.end())
+    {
+        return orientation == Vector2::AXIS_X ? iter->second.horizontalGuides : iter->second.verticalGuides;
+    }
+    return DAVA::List<DAVA::float32>();
+}
+
+void PackageNode::SetGuides(const DAVA::String& name, DAVA::Vector2::eAxis orientation, const DAVA::List<DAVA::float32>& guidesValues)
+{
+    DVASSERT(name.empty() == false);
+    Guides& guides = allGuides[name];
+    if (orientation == Vector2::AXIS_X)
+    {
+        guides.horizontalGuides = guidesValues;
+    }
+    else
+    {
+        guides.verticalGuides = guidesValues;
+    }
+}
+
+PackageNode::Guides PackageNode::GetAllGuides(const DAVA::String& name) const
+{
+    auto iter = allGuides.find(name);
+    if (iter != allGuides.end())
+    {
+        return iter->second;
+    }
+    return Guides();
+}
+
+void PackageNode::SetAllGuides(const DAVA::String& name, const Guides& guides)
+{
+    allGuides[name] = guides;
+}
+
+const DAVA::Map<DAVA::String, PackageNode::Guides>& PackageNode::GetAllGuidesForAllControls() const
+{
+    return allGuides;
+}
+
+void PackageNode::SetAllGuidesForAllControls(const DAVA::Map<DAVA::String, Guides>& allGuides_)
+{
+    allGuides = allGuides_;
+}
+
 void PackageNode::RefreshPropertiesInInstances(ControlNode* node, AbstractProperty* property)
 {
     for (ControlNode* instance : node->GetInstances())
@@ -498,4 +547,10 @@ Vector<PackageNode::DepthPackageNode> PackageNode::CollectImportedPackagesRecurs
     }
 
     return result;
+}
+
+bool PackageNode::Guides::operator==(const Guides& another) const
+{
+    return horizontalGuides == another.horizontalGuides &&
+    verticalGuides == another.verticalGuides;
 }

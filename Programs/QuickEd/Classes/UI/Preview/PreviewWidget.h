@@ -22,15 +22,17 @@ class WidgetsData;
 
 class ControlNode;
 class PackageBaseNode;
-class RulerController;
-class EditorCanvas;
 class CursorInterpreter;
 class AbstractProperty;
 
 class FindInDocumentWidget;
-class QGridLayout;
 class RulerWidget;
 class RulerController;
+class RulerController;
+class EditorCanvas;
+class GuidesController;
+
+class QGridLayout;
 class QComboBox;
 class QScrollBar;
 class RulerController;
@@ -84,6 +86,7 @@ private slots:
     void UpdateScrollArea(const DAVA::Vector2& size = DAVA::Vector2(0.0f, 0.0f));
     void OnPositionChanged(const DAVA::Vector2& position);
     void OnResized(DAVA::uint32 width, DAVA::uint32 height);
+    void OnRulersGeometryChanged();
 
 private:
     void InitUI();
@@ -95,7 +98,6 @@ private:
 
     void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
 
-private:
     void CreateActions();
     void ApplyPosChanges();
     void OnMouseReleased(QMouseEvent* event) override;
@@ -131,6 +133,10 @@ private:
     QGridLayout* gridLayout = nullptr;
     RulerWidget* horizontalRuler = nullptr;
     RulerWidget* verticalRuler = nullptr;
+
+    GuidesController* hGuidesController = nullptr;
+    GuidesController* vGuidesController = nullptr;
+
     FindInDocumentWidget* findInDocumentWidget = nullptr;
     QComboBox* scaleCombo = nullptr;
     QScrollBar* horizontalScrollBar = nullptr;

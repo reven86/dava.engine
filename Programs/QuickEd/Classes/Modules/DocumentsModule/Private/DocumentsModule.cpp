@@ -902,7 +902,7 @@ bool DocumentsModule::SaveDocument(const DAVA::TArc::DataContext::ContextID& con
     QString path = data->GetPackageAbsolutePath();
     watcherData->Unwatch(path);
     YamlPackageSerializer serializer;
-    serializer.SerializePackage(data->package.Get());
+    serializer.SerializePackage(data->GetPackageNode());
     if (serializer.HasErrors())
     {
         ModalMessageParams params;

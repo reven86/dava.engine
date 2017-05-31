@@ -5,8 +5,10 @@
 #include "EditorSystems/EditorCanvas.h"
 #include "EditorSystems/CursorSystem.h"
 
-#include "Ruler/RulerWidget.h"
-#include "Ruler/RulerController.h"
+#include "UI/Preview/Ruler/RulerWidget.h"
+#include "UI/Preview/Ruler/RulerController.h"
+#include "UI/Preview/Guides/GuidesController.h"
+
 #include "UI/Find/Widgets/FindInDocumentWidget.h"
 #include "UI/Package/PackageMimeData.h"
 #include "UI/QtModelPackageCommandExecutor.h"
@@ -53,10 +55,15 @@ QString ScaleStringFromReal(float scale)
 }
 
 PreviewWidget::PreviewWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::RenderWidget* renderWidget, EditorSystemsManager* systemsManager)
-    : QFrame()
+    : QFrame(nullptr)
     , accessor(accessor_)
     , rulerController(new RulerController(this))
+    , vGuidesController(new VGuidesController(accessor, this))
+    , hGuidesController(new HGuidesController(accessor, this))
 {
+    vGuidesController->BindFields();
+    hGuidesController->BindFields();
+
     qRegisterMetaType<SelectedNodes>("SelectedNodes");
 
     InjectRenderWidget(renderWidget);
@@ -225,8 +232,14 @@ void PreviewWidget::SetActualScale()
 
 void PreviewWidget::ApplyPosChanges()
 {
-    QPoint viewPos = canvasPos + rootControlPos;
-    rulerController->SetViewPos(-viewPos);
+    DAVA::float32 scale = editorCanvas->GetScale();
+    QPoint viewPos = (canvasPos + rootControlPos * scale) * -1;
+    rulerController->SetViewPos(viewPos);
+
+    QPoint viewStartValue = viewPos / scale;
+
+    hGuidesController->OnCanvasParametersChanged(viewStartValue.x(), viewStartValue.x() + renderWidget->width() / scale, scale);
+    vGuidesController->OnCanvasParametersChanged(viewStartValue.y(), viewStartValue.y() + renderWidget->height() / scale, scale);
 }
 
 void PreviewWidget::UpdateScrollArea(const DAVA::Vector2& /*size*/)
@@ -381,13 +394,14 @@ void PreviewWidget::InitUI()
     findInDocumentWidget = new FindInDocumentWidget(this);
     gridLayout->addWidget(findInDocumentWidget, 1, 0, 1, 4);
 
-    horizontalRuler = new RulerWidget(this);
+    horizontalRuler = new RulerWidget(hGuidesController, this);
     horizontalRuler->SetRulerOrientation(Qt::Horizontal);
-
+    connect(horizontalRuler, &RulerWidget::GeometryChanged, this, &PreviewWidget::OnRulersGeometryChanged);
     gridLayout->addWidget(horizontalRuler, 2, 1, 1, 2);
 
-    verticalRuler = new RulerWidget(this);
+    verticalRuler = new RulerWidget(vGuidesController, this);
     verticalRuler->SetRulerOrientation(Qt::Vertical);
+    connect(verticalRuler, &RulerWidget::GeometryChanged, this, &PreviewWidget::OnRulersGeometryChanged);
     gridLayout->addWidget(verticalRuler, 3, 0, 1, 1);
 
     QSizePolicy expandingPolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -411,6 +425,9 @@ void PreviewWidget::InitUI()
     gridLayout->addWidget(horizontalScrollBar, 4, 2, 1, 1);
 
     gridLayout->setMargin(0.0f);
+
+    hGuidesController->CreatePreviewGuide();
+    vGuidesController->CreatePreviewGuide();
 }
 
 void PreviewWidget::ShowMenu(const QMouseEvent* mouseEvent)
@@ -671,4 +688,13 @@ void PreviewWidget::OnKeyPressed(QKeyEvent* event)
             }
         }
     }
+}
+
+void PreviewWidget::OnRulersGeometryChanged()
+{
+    QPoint topRight = horizontalRuler->geometry().topRight();
+    QPoint bottomLeft = verticalRuler->geometry().bottomLeft();
+
+    hGuidesController->OnContainerGeometryChanged(bottomLeft, topRight, horizontalRuler->pos().x());
+    vGuidesController->OnContainerGeometryChanged(bottomLeft, topRight, verticalRuler->pos().y());
 }

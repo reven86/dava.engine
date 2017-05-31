@@ -1,17 +1,28 @@
 #include "RulerWidget.h"
 
+#include <QtTools/Utils/Themes/Themes.h>
+#include <QtTools/Updaters/LazyUpdater.h>
+
+#include <Debug/DVAssert.h>
+
+#include <QMenu>
 #include <QPainter>
 #include <QApplication>
 #include <QDrag>
 #include <QMimeData>
+
 #include <cmath>
 #include <sstream>
-#include "QtTools/Utils/Themes/Themes.h"
-#include "QtTools/Updaters/LazyUpdater.h"
 
-RulerWidget::RulerWidget(QWidget* parent)
+RulerWidget::RulerWidget(IRulerListener* listener_, QWidget* parent)
     : QWidget(parent)
+    , listener(listener_)
 {
+    setMouseTracking(true);
+
+    setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(this, &QWidget::customContextMenuRequested, this, &RulerWidget::ShowContextMenu);
+
     DAVA::Function<void()> updateRuler(this, static_cast<void (QWidget::*)(void)>(&RulerWidget::update));
     lazyUpdater = new LazyUpdater(updateRuler, this);
 
@@ -25,16 +36,12 @@ void RulerWidget::SetRulerOrientation(Qt::Orientation orientation_)
     update();
 }
 
-void RulerWidget::SetRulerSettings(const RulerSettings& rulerSettings)
-{
-    settings = rulerSettings;
-    UpdateDoubleBufferImage();
-    update();
-}
-
 void RulerWidget::OnRulerSettingsChanged(const RulerSettings& rulerSettings)
 {
-    SetRulerSettings(rulerSettings);
+    settings = rulerSettings;
+
+    UpdateDoubleBufferImage();
+    update();
 }
 
 void RulerWidget::OnMarkerPositionChanged(int position)
@@ -43,9 +50,21 @@ void RulerWidget::OnMarkerPositionChanged(int position)
     lazyUpdater->Update();
 }
 
-void RulerWidget::paintEvent(QPaintEvent* /*event*/)
+void RulerWidget::ShowContextMenu(const QPoint& point)
 {
-    UpdateDoubleBufferImage();
+    QMenu menu(this);
+
+    QList<QAction*> actions = listener->GetActions(GetMousePos(point), &menu);
+    menu.addActions(actions);
+
+    if (menu.actions().isEmpty() == false)
+    {
+        menu.exec(mapToGlobal(point));
+    }
+}
+
+void RulerWidget::paintEvent(QPaintEvent* paintEvent)
+{
     QPainter painter(this);
     painter.drawPixmap(0, 0, doubleBuffer);
     if (markerPosition == 0)
@@ -67,6 +86,8 @@ void RulerWidget::paintEvent(QPaintEvent* /*event*/)
     {
         painter.drawLine(0, markerPosition, rect().width(), markerPosition);
     }
+
+    QWidget::paintEvent(paintEvent);
 }
 
 QSize RulerWidget::minimumSizeHint() const
@@ -75,25 +96,20 @@ QSize RulerWidget::minimumSizeHint() const
     return QSize(minimumSize, minimumSize);
 }
 
-void RulerWidget::resizeEvent(QResizeEvent*)
-{
-    UpdateDoubleBufferImage();
-}
-
 void RulerWidget::DrawScale(QPainter& painter, int tickStep, int tickStartPos, int tickEndPos,
-                            bool drawValues, bool isHorizontal)
+                            bool drawValues)
 {
-    if (tickStep <= 0)
-    {
-        return;
-    }
+    DVASSERT(tickStep > 0);
 
+    //value to start from
     int numberOffset = std::ceilf((float)(settings.startPos) / (float)(tickStep)) * (float)tickStep;
+
+    //visual position to start
     int tickOffset = numberOffset - settings.startPos;
 
     int fontPos = 0;
     int endPos = 0;
-    if (isHorizontal)
+    if (orientation == Qt::Horizontal)
     {
         endPos = rect().width();
         fontPos = rect().height() / 2;
@@ -110,11 +126,13 @@ void RulerWidget::DrawScale(QPainter& painter, int tickStep, int tickStartPos, i
 
     QVector<QLine> linesVector;
     linesVector.reserve(endPos / tickStep);
+
+    //i and endPos is a visual positions
     for (int i = 0; i < endPos; i += tickStep)
     {
         int curPos = i + tickOffset;
         int curPosValue = (int)(i + numberOffset) / settings.zoomLevel;
-        if (isHorizontal)
+        if (orientation == Qt::Horizontal)
         {
             linesVector.append(QLine(curPos, tickStartPos, curPos, tickEndPos));
             if (drawValues)
@@ -191,20 +209,17 @@ void RulerWidget::UpdateDoubleBufferImage()
     if (orientation == Qt::Horizontal)
     {
         smallTickStart = (rect().height() / 5) * 3;
-        bigTickStart = 0;
         tickEnd = rect().height();
     }
     else
     {
         smallTickStart = (rect().width() / 5) * 3;
-        bigTickStart = 0;
-        tickEnd = rect().height();
+        tickEnd = rect().width();
     }
 
     // Draw small ticks.
-    bool isHorizontal = (orientation == Qt::Horizontal);
     int tickStep = settings.smallTicksDelta * settings.zoomLevel;
-    DrawScale(painter, tickStep, smallTickStart, tickEnd, false, isHorizontal);
+    DrawScale(painter, tickStep, smallTickStart, tickEnd, false);
 
     // Draw big ticks and values.
     QFont font = painter.font();
@@ -212,5 +227,56 @@ void RulerWidget::UpdateDoubleBufferImage()
     painter.setFont(font);
 
     tickStep = settings.bigTicksDelta * settings.zoomLevel;
-    DrawScale(painter, tickStep, bigTickStart, tickEnd, true, isHorizontal);
+    DrawScale(painter, tickStep, bigTickStart, tickEnd, true);
+}
+
+void RulerWidget::resizeEvent(QResizeEvent* resizeEvent)
+{
+    UpdateDoubleBufferImage();
+
+    QWidget::resizeEvent(resizeEvent);
+
+    emit GeometryChanged();
+}
+
+void RulerWidget::moveEvent(QMoveEvent* moveEvent)
+{
+    QWidget::moveEvent(moveEvent);
+
+    emit GeometryChanged();
+}
+
+void RulerWidget::mouseMoveEvent(QMouseEvent* mouseEvent)
+{
+    listener->OnMouseMove(GetMousePos(mouseEvent->pos()));
+    QWidget::mouseMoveEvent(mouseEvent);
+}
+
+void RulerWidget::leaveEvent(QEvent* event)
+{
+    listener->OnMouseLeave();
+    QWidget::leaveEvent(event);
+}
+
+void RulerWidget::mousePressEvent(QMouseEvent* mouseEvent)
+{
+    if (mouseEvent->button() == Qt::LeftButton)
+    {
+        listener->OnMousePress(GetMousePos(mouseEvent->pos()));
+    }
+    QWidget::mousePressEvent(mouseEvent);
+}
+
+void RulerWidget::mouseReleaseEvent(QMouseEvent* mouseEvent)
+{
+    if (mouseEvent->button() == Qt::LeftButton)
+    {
+        listener->OnMouseRelease(GetMousePos(mouseEvent->pos()));
+    }
+    QWidget::mouseReleaseEvent(mouseEvent);
+}
+
+DAVA::float32 RulerWidget::GetMousePos(const QPoint& pos) const
+{
+    return (orientation == Qt::Horizontal) ? pos.x() : pos.y();
 }

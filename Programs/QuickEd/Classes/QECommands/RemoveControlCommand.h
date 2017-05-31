@@ -1,6 +1,7 @@
 #pragma once
 
 #include "QECommands/Private/QEPackageCommand.h"
+#include "Model/PackageHierarchy/PackageNode.h"
 
 class ControlNode;
 class ControlsContainerNode;
@@ -15,6 +16,8 @@ public:
 
 private:
     DAVA::RefPtr<ControlNode> node;
+    PackageNode::Guides nodeGuides;
+
     DAVA::RefPtr<ControlsContainerNode> from;
     const int index;
 };

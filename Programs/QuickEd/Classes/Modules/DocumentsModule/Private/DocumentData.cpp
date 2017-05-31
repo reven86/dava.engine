@@ -18,6 +18,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(DocumentData)
     .Field(currentNodePropertyName.c_str(), &DocumentData::GetCurrentNode, nullptr)
     .Field(selectionPropertyName.c_str(), &DocumentData::GetSelectedNodes, &DocumentData::SetSelectedNodes)
     .Field(displayedRootControlsPropertyName.c_str(), &DocumentData::GetDisplayedRootControls, &DocumentData::SetDisplayedRootControls)
+    .Field(guidesPropertyName.c_str(), &DocumentData::GetGuides, nullptr)
     .End();
 }
 
@@ -125,11 +126,6 @@ QString DocumentData::GetRedoText() const
     return QString::fromStdString(text);
 }
 
-bool DocumentData::IsDocumentExists() const
-{
-    return documentExists;
-}
-
 PackageBaseNode* DocumentData::GetCurrentNode() const
 {
     return currentNode;
@@ -140,6 +136,21 @@ QString DocumentData::GetUndoText() const
     const DAVA::Command* command = commandStack->GetUndoCommand();
     DAVA::String text = (command != nullptr ? command->GetDescription() : "");
     return QString::fromStdString(text);
+}
+
+PackageNode::Guides DocumentData::GetGuides() const
+{
+    if (displayedRootControls.size() == 1)
+    {
+        PackageBaseNode* firstNode = *displayedRootControls.begin();
+        return package->GetAllGuides(firstNode->GetName());
+    }
+    return PackageNode::Guides();
+}
+
+bool DocumentData::IsDocumentExists() const
+{
+    return documentExists;
 }
 
 void DocumentData::RefreshLayout()
@@ -256,3 +267,10 @@ DAVA::FastName DocumentData::redoTextPropertyName{ "redo text" };
 DAVA::FastName DocumentData::currentNodePropertyName{ "current node" };
 DAVA::FastName DocumentData::selectionPropertyName{ "selection" };
 DAVA::FastName DocumentData::displayedRootControlsPropertyName{ "displayed root controls" };
+DAVA::FastName DocumentData::guidesPropertyName{ "guides" };
+
+template <>
+bool DAVA::AnyCompare<PackageNode::Guides>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
+{
+    return v1.Get<PackageNode::Guides>() == v2.Get<PackageNode::Guides>();
+}

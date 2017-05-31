@@ -181,6 +181,12 @@ bool UIPackageLoader::LoadPackage(const YamlNode* rootNode, const FilePath& pack
             }
         }
 
+        const YamlNode* customDataNode = rootNode->Get("CustomData");
+        if (customDataNode)
+        {
+            builder->ProcessCustomData(customDataNode);
+        }
+
         loadingQueue.clear();
     }
 

@@ -1,5 +1,4 @@
-#ifndef __QUICKED_PACKAGE_SERIALIZER_H__
-#define __QUICKED_PACKAGE_SERIALIZER_H__
+#pragma once
 
 #include "Base/BaseObject.h"
 
@@ -73,6 +72,9 @@ private:
     void AcceptChildren(AbstractProperty* property);
     void PutValueProperty(const DAVA::String& name, ValueProperty* property);
 
+    void PutGuides(const PackageNode* node);
+    void PutGuidesList(const DAVA::List<DAVA::float32>& values);
+
 private:
     DAVA::Vector<PackageNode*> importedPackages;
     DAVA::Vector<ControlNode*> controls;
@@ -81,5 +83,3 @@ private:
 
     DAVA::ResultList results;
 };
-
-#endif // __QUICKED_PACKAGE_SERIALIZER_H__

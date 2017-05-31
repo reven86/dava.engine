@@ -1,11 +1,12 @@
-#ifndef __UI_EDITOR_PACKAGE_NODE_H__
-#define __UI_EDITOR_PACKAGE_NODE_H__
+#pragma once
 
 #include "PackageBaseNode.h"
 
+#include <Base/BaseTypes.h>
 #include <FileSystem/FilePath.h>
 #include <Base/Any.h>
 #include <Base/Result.h>
+#include <Math/Vector.h>
 
 class ImportedPackagesNode;
 class PackageControlsNode;
@@ -92,6 +93,23 @@ public:
     void SetCanUpdateAll(bool canUpdate);
     bool CanUpdateAll() const;
 
+    struct Guides
+    {
+        DAVA::List<DAVA::float32> horizontalGuides;
+        DAVA::List<DAVA::float32> verticalGuides;
+
+        bool operator==(const Guides& another) const;
+    };
+
+    DAVA::List<DAVA::float32> GetGuides(const DAVA::String& name, DAVA::Vector2::eAxis orientation);
+    void SetGuides(const DAVA::String& name, DAVA::Vector2::eAxis orientation, const DAVA::List<DAVA::float32>& guides);
+
+    Guides GetAllGuides(const DAVA::String& name) const;
+    void SetAllGuides(const DAVA::String& name, const Guides& guides);
+
+    const DAVA::Map<DAVA::String, Guides>& GetAllGuidesForAllControls() const;
+    void SetAllGuidesForAllControls(const DAVA::Map<DAVA::String, Guides>& allGuides);
+
 private:
     struct DepthPackageNode
     {
@@ -128,9 +146,10 @@ private:
     StyleSheetsNode* styleSheets = nullptr;
     DAVA::UIControlPackageContext* packageContext = nullptr;
     DAVA::Vector<PackageListener*> listeners;
+
+    DAVA::Map<DAVA::String, Guides> allGuides;
+
     bool canUpdateAll = true;
 
     DAVA::ResultList results;
 };
-
-#endif // __UI_EDITOR_PACKAGE_NODE_H__

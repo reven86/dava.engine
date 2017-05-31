@@ -143,6 +143,8 @@ void PackageSerializer::VisitPackage(PackageNode* node)
             control->Accept(this);
         EndArray();
     }
+
+    PutGuides(node);
 }
 
 void PackageSerializer::VisitImportedPackages(ImportedPackagesNode* node)
@@ -515,5 +517,47 @@ void PackageSerializer::PutValueProperty(const DAVA::String& name, ValueProperty
     else
     {
         PutValue(name, AnyToString(value), value.CanGet<String>() || value.CanGet<FilePath>() || value.CanGet<FastName>());
+    }
+}
+
+void PackageSerializer::PutGuides(const PackageNode* node)
+{
+    BeginMap("CustomData");
+    {
+        BeginMap("Guides");
+        for (const auto& mapItem : node->GetAllGuidesForAllControls())
+        {
+            const String& name = mapItem.first;
+            const PackageNode::Guides& mapItemValue = mapItem.second;
+            if (mapItemValue.horizontalGuides.empty() == false || mapItemValue.verticalGuides.empty() == false)
+            {
+                BeginMap(name);
+                {
+                    if (mapItemValue.horizontalGuides.empty() == false)
+                    {
+                        BeginArray("Horizontal");
+                        PutGuidesList(mapItemValue.horizontalGuides);
+                        EndArray();
+                    }
+                    if (mapItemValue.verticalGuides.empty() == false)
+                    {
+                        BeginArray("Vertical");
+                        PutGuidesList(mapItemValue.verticalGuides);
+                        EndArray();
+                    }
+                }
+                EndMap();
+            }
+        }
+        EndMap();
+    }
+    EndMap();
+}
+
+void PackageSerializer::PutGuidesList(const List<float32>& values)
+{
+    for (float32 value : values)
+    {
+        PutValue(AnyToString(value), false);
     }
 }
