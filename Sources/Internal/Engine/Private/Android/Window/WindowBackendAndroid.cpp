@@ -339,6 +339,13 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
                 engineBackend->ResetRenderer(this->window, !this->IsWindowReadyForRender());
             }));
         }
+
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([this]() {
+            if (engineBackend->IsSuspended())
+            {
+                engineBackend->DrawSingleFrameWhileSuspended();
+            }
+        }));
     }
 }
 

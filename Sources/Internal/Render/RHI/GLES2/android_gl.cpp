@@ -25,6 +25,7 @@ static GLint backingWidth = 0;
 static GLint backingHeight = 0;
 static bool needRecreateSurface = false;
 static DAVA::Mutex surfaceMutex;
+static bool invokedResetWithResize = false;
 
 PFNGLEGL_GLDRAWELEMENTSINSTANCED glDrawElementsInstanced = nullptr;
 PFNGLEGL_GLDRAWARRAYSINSTANCED glDrawArraysInstanced = nullptr;
@@ -126,11 +127,17 @@ void android_gl_reset(void* _window, GLint width, GLint height)
     DAVA::LockGuard<DAVA::Mutex> guard(surfaceMutex);
 
     ANativeWindow* nativeWindow = static_cast<ANativeWindow*>(_window);
-    if (nullptr != nativeWindow && (_nativeWindow != nativeWindow || backingWidth != width || backingHeight != height))
+    if (nullptr != nativeWindow)
     {
-        needRecreateSurface = true;
-        backingWidth = width;
-        backingHeight = height;
+        const bool resize = (backingWidth != width) || (backingHeight != height);
+        if (_nativeWindow != nativeWindow || resize)
+        {
+            needRecreateSurface = true;
+            backingWidth = width;
+            backingHeight = height;
+
+            invokedResetWithResize = resize;
+        }
     }
     _nativeWindow = nativeWindow;
 }
@@ -157,7 +164,16 @@ bool android_gl_checkSurface()
 
         needRecreateSurface = false;
 
-        return false;
+        // Next frame should be rejected only if we called reset with size different from a previous one
+        if (invokedResetWithResize)
+        {
+            invokedResetWithResize = false;
+            return false;
+        }
+        else
+        {
+            return true;
+        }
     }
 
     return true;

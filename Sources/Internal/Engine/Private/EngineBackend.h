@@ -92,6 +92,8 @@ public:
 
     bool IsRunning() const;
 
+    void DrawSingleFrameWhileSuspended();
+
 private:
     void RunConsole();
 
@@ -101,7 +103,7 @@ private:
 
     void BeginFrame();
     void Update(float32 frameDelta);
-    void UpdateWindows(float32 frameDelta);
+    void UpdateAndDrawWindows(float32 frameDelta, bool drawOnly);
     void EndFrame();
     void BackgroundUpdate(float32 frameDelta);
 
@@ -116,6 +118,9 @@ private:
     void DestroySubsystems();
 
     void OnWindowVisibilityChanged(Window* window, bool visible);
+
+    void SuspendRenderer();
+    void ResumeRenderer();
 
     static void OnRenderingError(rhi::RenderingError err, void* param);
 
@@ -150,6 +155,9 @@ private:
 
     bool atLeastOneWindowIsVisible = false;
     bool screenTimeoutEnabled = true;
+
+    bool rendererSuspended = false;
+    bool drawSingleFrameWhileSuspended = false;
 
     static EngineBackend* instance;
 };
