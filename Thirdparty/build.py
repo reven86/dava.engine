@@ -212,8 +212,13 @@ if __name__ == "__main__":
     # List of all targets
     if host_platform == 'win32':
         all_targets = ['win32', 'win10', 'android']
+    elif host_platform == 'darwin':
+        all_targets = ['ios', 'macos', 'android']
+    elif host_platform == 'linux':
+        all_targets = ['android', 'linux']
     else:
-        all_targets = ['ios', 'macos', 'android', 'linux']
+        print 'Unknown platform: %s. Aborting' % (host_platform)
+        sys.exit(1)
 
     # Setup and parse arguments
 
