@@ -1,8 +1,8 @@
 #include "Scene3D/Systems/LightUpdateSystem.h"
-#include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Components/LightComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
+#include "Scene3D/Components/SingleComponents/TransformSingleComponent.h"
 #include "Render/Highlevel/Frustum.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Landscape.h"
@@ -19,25 +19,20 @@ namespace DAVA
 LightUpdateSystem::LightUpdateSystem(Scene* scene)
     : SceneSystem(scene)
 {
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
 }
 
-LightUpdateSystem::~LightUpdateSystem()
+void LightUpdateSystem::Process(float32 timeElapsed)
 {
-}
-
-void LightUpdateSystem::ImmediateEvent(Component* component, uint32 event)
-{
-    if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
+    TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+    for (auto& pair : tsc->worldTransformChanged.map)
     {
-        Entity* entity = component->GetEntity();
-        RecalcLight(entity);
-    }
-
-    //if (event == EventSystem::ACTIVE_CAMERA_CHANGED)
-    {
-        // entity->GetCameraComponent();
-        // RenderSystem::
+        if (pair.first->GetComponentsCount(Component::LIGHT_COMPONENT) > 0)
+        {
+            for (Entity* entity : pair.second)
+            {
+                RecalcLight(entity);
+            }
+        }
     }
 }
 
