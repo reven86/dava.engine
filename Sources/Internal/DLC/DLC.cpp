@@ -771,7 +771,7 @@ void DLC::StepDownloadPatchBegin()
 
     // start download, notifications are handled in StepDownloadPatchFinish
     DownloadManager* dm = DownloadManager::Instance();
-    dlcContext.remotePatchDownloadId = dm->Download(dlcContext.remotePatchUrl, dlcContext.remotePatchStorePath.GetAbsolutePathname(), donwloadType);
+    dlcContext.remotePatchDownloadId = dm->Download(dlcContext.remotePatchUrl, dlcContext.remotePatchStorePath.GetAbsolutePathname(), donwloadType, -1, 60); // partsCount = -1 (auto), timeout = 60 sec
 }
 
 void DLC::StepDownloadPatchFinish(uint32 id, DownloadStatus status)
