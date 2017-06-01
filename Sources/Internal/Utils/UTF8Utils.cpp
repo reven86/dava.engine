@@ -1,6 +1,7 @@
-#include "Utils/UTF8Utils.h"
-#include "Debug/DVAssert.h"
 #include "Base/Exception.h"
+#include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
+#include "Utils/UTF8Utils.h"
 
 #include <utf8.h>
 
@@ -29,7 +30,9 @@ void UTF8Utils::EncodeToWideString(const uint8* string, size_t size, WideString&
     }
     catch (const utf8::exception& exception)
     {
-        DAVA_THROW(DAVA::Exception, "UTF8->WideString Conversion error: " + String(exception.what()));
+        String msg = "UTF8->WideString Conversion error: " + String(exception.what());
+        DAVA::Logger::Error(msg.c_str());
+        DAVA_THROW(DAVA::Exception, msg);
     }
 };
 
@@ -48,7 +51,9 @@ String UTF8Utils::EncodeToUTF8(const WideString& wstring)
     }
     catch (const utf8::exception& exception)
     {
-        DAVA_THROW(DAVA::Exception, "WideString->UTF8 Conversion error: " + String(exception.what()));
+        String msg = "WideString->UTF8 Conversion error: " + String(exception.what());
+        DAVA::Logger::Error(msg.c_str());
+        DAVA_THROW(DAVA::Exception, msg);
     }
 
     return result;
