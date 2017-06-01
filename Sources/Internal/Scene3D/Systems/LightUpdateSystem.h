@@ -23,11 +23,10 @@ class LightUpdateSystem : public SceneSystem
 {
 public:
     LightUpdateSystem(Scene* scene);
-    ~LightUpdateSystem() override;
 
     void AddEntity(Entity* entity) override;
     void RemoveEntity(Entity* entity) override;
-    void ImmediateEvent(Component* component, uint32 event) override;
+    void Process(float32 timeElapsed) override;
 
 private:
     void RecalcLight(Entity* entity);
