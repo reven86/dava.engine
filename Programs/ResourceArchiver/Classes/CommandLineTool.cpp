@@ -1,4 +1,5 @@
 #include "CommandLineTool.h"
+#include "Engine/Engine.h"
 #include "Logger/Logger.h"
 #include "Logger/TeamcityOutput.h"
 #include "CommandLine/CommandLineParser.h"
@@ -76,7 +77,7 @@ void CommandLineTool::PrepareEnvironment() const
     if (verboseMode)
     {
         CommandLineParser::Instance()->SetVerbose(true);
-        Logger::Instance()->SetLogLevel(Logger::LEVEL_DEBUG);
+        GetEngineContext()->logger->SetLogLevel(Logger::LEVEL_DEBUG);
     }
 
     const bool useTeamcity = options.GetOption("-teamcity").AsBool();
