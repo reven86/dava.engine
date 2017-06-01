@@ -559,6 +559,7 @@ Vector<EditorTransformSystem::MagnetLine> EditorTransformSystem::CreateMagnetPai
                 //position in global coordinates, while pivotPoint and value in root control coordinates
                 float32 valueInGlobalCoordinates = value * rootGD.scale[axis] + (rootGD.position[axis] - rootGD.pivotPoint[axis] * rootGD.scale[axis]);
                 float32 valueInControlCoordinates = (valueInGlobalCoordinates - (parentGD->position[axis] - parentGD->pivotPoint[axis] * parentGD->scale[axis])) / parentGD->scale[axis];
+
                 magnets.emplace_back(0.0f, box, valueInControlCoordinates, axis);
                 magnets.emplace_back(0.5f, box, valueInControlCoordinates, axis);
                 magnets.emplace_back(1.0f, box, valueInControlCoordinates, axis);

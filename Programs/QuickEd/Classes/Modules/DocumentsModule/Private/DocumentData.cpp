@@ -126,6 +126,11 @@ QString DocumentData::GetRedoText() const
     return QString::fromStdString(text);
 }
 
+bool DocumentData::IsDocumentExists() const
+{
+    return documentExists;
+}
+
 PackageBaseNode* DocumentData::GetCurrentNode() const
 {
     return currentNode;
@@ -146,11 +151,6 @@ PackageNode::Guides DocumentData::GetGuides() const
         return package->GetAllGuides(firstNode->GetName());
     }
     return PackageNode::Guides();
-}
-
-bool DocumentData::IsDocumentExists() const
-{
-    return documentExists;
 }
 
 void DocumentData::RefreshLayout()

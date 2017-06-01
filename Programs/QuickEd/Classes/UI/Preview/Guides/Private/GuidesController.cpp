@@ -53,6 +53,8 @@ void GuidesController::OnMousePress(DAVA::float32 position)
         return;
     }
 
+    //if guides was disabled - enable guides and create new one
+    //else if guides was enabled but we receive mousePress just to hide menu
     if (IsGuidesEnabled() == false)
     {
         SetGuidesEnabled(true);
@@ -63,12 +65,12 @@ void GuidesController::OnMousePress(DAVA::float32 position)
         return;
     }
 
-    //if no guide under the mouse cursor - create new one
     if (displayState == DISPLAY_PREVIEW)
     {
         CreateGuide(position);
         SetDisplayState(DISPLAY_DRAG);
     }
+
     EnableDrag(position);
 }
 

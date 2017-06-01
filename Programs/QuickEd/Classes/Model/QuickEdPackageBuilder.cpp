@@ -380,6 +380,11 @@ void QuickEdPackageBuilder::ProcessCustomData(const YamlNode* customDataNode)
             {
                 const Vector<YamlNode*>& valuesNodes = guideValuesNode->AsVector();
                 List<float32>* values = orientation.values;
+                if (values->empty() == false)
+                {
+                    results.AddResult(Result::RESULT_WARNING, Format("Guides for control %s already exists! They will be overwritten", controlName.c_str()));
+                    values->clear();
+                }
                 std::transform(valuesNodes.begin(),
                                valuesNodes.end(),
                                std::back_inserter(*values),

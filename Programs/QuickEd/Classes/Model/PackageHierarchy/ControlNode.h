@@ -101,8 +101,6 @@ private:
     DAVA::Vector<ControlNode*> instances; // weak
 
     eCreationType creationType;
-
-    ControlNode* rootControlNode = nullptr;
 };
 
 
