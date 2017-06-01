@@ -383,6 +383,7 @@ int32 EngineBackend::OnFrame()
     }
     else
     {
+        // See comment to DrawSingleFrameWhileSuspended method
         if (drawSingleFrameWhileSuspended)
         {
             Logger::Info("EngineBackend::OnFrame, rendering single frame while suspended");
