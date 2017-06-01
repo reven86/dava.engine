@@ -11,6 +11,9 @@ SetGuidesCommand::SetGuidesCommand(PackageNode* package, const DAVA::String& con
     , guides(guides_)
     , oldGuides(package->GetGuides(controlName, orientation))
 {
+    std::for_each(guides.begin(), guides.end(), [](DAVA::float32& value) {
+        value = std::floor(value);
+    });
 }
 
 void SetGuidesCommand::Redo()

@@ -10,6 +10,7 @@
 #include "Model/ControlProperties/RootProperty.h"
 
 #include "Modules/DocumentsModule/DocumentData.h"
+#include "Modules/PreferencesModule/PreferencesData.h"
 
 #include "QECommands/ChangePropertyValueCommand.h"
 #include "QECommands/ResizeCommand.h"
@@ -34,8 +35,6 @@ REGISTER_PREFERENCES_ON_START(EditorTransformSystem,
                               PREF_ARG("pivotMagnetRange", DAVA::Vector2(7.0f, 7.0f)),
                               PREF_ARG("moveStepByKeyboard2", DAVA::Vector2(10.0f, 10.0f)),
                               PREF_ARG("expandedmoveStepByKeyboard2", DAVA::Vector2(1.0f, 1.0f)),
-                              PREF_ARG("borderInParentToMagnet", DAVA::Vector2(20.0f, 20.0f)),
-                              PREF_ARG("indentOfControlToManget", DAVA::Vector2(5.0f, 5.0f)),
                               PREF_ARG("shareOfSizeToMagnetPivot", DAVA::Vector2(0.25f, 0.25f)),
                               PREF_ARG("angleSegment", static_cast<DAVA::float32>(15.0f)),
                               PREF_ARG("shiftInverted", false),
@@ -535,24 +534,36 @@ Vector<EditorTransformSystem::MagnetLine> EditorTransformSystem::CreateMagnetPai
     DVASSERT(nullptr != parentGD);
     Vector<MagnetLine> magnets;
 
-    DataContext* activeContext = accessor->GetActiveContext();
-    DVASSERT(activeContext != nullptr);
-    const DocumentData* data = activeContext->GetData<DocumentData>();
-    const SortedControlNodeSet& rootControls = data->GetDisplayedRootControls();
-    DVASSERT(rootControls.size() == 1);
-    PackageNode* package = data->GetPackageNode();
-    DAVA::String name = (*rootControls.begin())->GetName();
-    const List<float32>& values = package->GetGuides(name, axis);
-
-    const size_type magnetsCountForParent = 7;
-    const size_type magnetsCountForOneNeighbour = 9;
-    magnets.reserve(magnetsCountForParent + magnetsCountForOneNeighbour * neighbours.size() + values.size()); //TODO: replace digits with calculated values
-
-    for (float32 value : values)
+    DataContext* globalContext = accessor->GetGlobalContext();
+    PreferencesData* preferencesData = globalContext->GetData<PreferencesData>();
+    if (preferencesData->IsGuidesEnabled())
     {
-        magnets.emplace_back(0.0f, box, value, axis);
-        magnets.emplace_back(0.5f, box, value, axis);
-        magnets.emplace_back(1.0f, box, value, axis);
+        DataContext* activeContext = accessor->GetActiveContext();
+        DVASSERT(activeContext != nullptr);
+        const DocumentData* data = activeContext->GetData<DocumentData>();
+        const SortedControlNodeSet& rootControls = data->GetDisplayedRootControls();
+        DVASSERT(rootControls.size() == 1);
+        PackageNode* package = data->GetPackageNode();
+        PackageBaseNode* root = *rootControls.begin();
+        const List<float32>& values = package->GetGuides(root->GetName(), axis);
+
+        const size_type magnetsCountForParent = 7;
+        const size_type magnetsCountForOneNeighbour = 9;
+        magnets.reserve(magnetsCountForParent + magnetsCountForOneNeighbour * neighbours.size() + values.size()); //TODO: replace digits with calculated values
+
+        if (parentGD->angle == 0.0f)
+        {
+            const UIGeometricData rootGD = root->GetControl()->GetGeometricData();
+            for (float32 value : values)
+            {
+                //position in global coordinates, while pivotPoint and value in root control coordinates
+                float32 valueInGlobalCoordinates = value * rootGD.scale[axis] + (rootGD.position[axis] - rootGD.pivotPoint[axis] * rootGD.scale[axis]);
+                float32 valueInControlCoordinates = (valueInGlobalCoordinates - (parentGD->position[axis] - parentGD->pivotPoint[axis] * parentGD->scale[axis])) / parentGD->scale[axis];
+                magnets.emplace_back(0.0f, box, valueInControlCoordinates, axis);
+                magnets.emplace_back(0.5f, box, valueInControlCoordinates, axis);
+                magnets.emplace_back(1.0f, box, valueInControlCoordinates, axis);
+            }
+        }
     }
 
     Rect parentBox(Vector2(), parentGD->size);
@@ -563,18 +574,6 @@ Vector<EditorTransformSystem::MagnetLine> EditorTransformSystem::CreateMagnetPai
         magnets.emplace_back(0.5f, box, 0.5f, parentBox, axis);
         magnets.emplace_back(1.0f, box, 0.5f, parentBox, axis);
         magnets.emplace_back(1.0f, box, 1.0f, parentBox, axis);
-
-        const float32 border = borderInParentToMagnet[axis];
-        //we will not magnet if control is less than 5 more than magnet distance
-        float32 requiredSizeToMagnetToBorders = 5.0f * border;
-        float32 parentSize = parentGD->GetUnrotatedRect().GetSize()[axis];
-        parentSize = parentSize / parentGD->scale[axis];
-        if (parentSize > requiredSizeToMagnetToBorders)
-        {
-            const float32 borderShare = border / parentBox.GetSize()[axis];
-            magnets.emplace_back(0.0f, box, borderShare, parentBox, axis);
-            magnets.emplace_back(1.0f, box, 1.0f - borderShare, parentBox, axis);
-        }
     }
 
     for (UIControl* neighbour : neighbours)
@@ -589,11 +588,6 @@ Vector<EditorTransformSystem::MagnetLine> EditorTransformSystem::CreateMagnetPai
         magnets.emplace_back(1.0f, box, 1.0f, neighbourBox, axis);
         magnets.emplace_back(0.0f, box, 1.0f, neighbourBox, axis);
         magnets.emplace_back(1.0f, box, 0.0f, neighbourBox, axis);
-
-        const float32 neighbourSpacing = indentOfControlToManget[axis];
-        const float32 neighbourSpacingShare = neighbourSpacing / neighbourBox.GetSize()[axis];
-        magnets.emplace_back(1.0f, box, -neighbourSpacingShare, neighbourBox, axis);
-        magnets.emplace_back(0.0f, box, 1.0f + neighbourSpacingShare, neighbourBox, axis);
     }
 
     return magnets;

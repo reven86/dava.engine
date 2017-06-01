@@ -79,6 +79,7 @@ private:
     void DisableDrag();
 
     void OnValuesChanged(const DAVA::Any& values);
+    void OnGuidesEnabledChanged(const DAVA::Any& guidesEnabled);
 
     void SyncGuidesWithValues();
 
@@ -96,6 +97,9 @@ private:
 
     void RemoveGuide(DAVA::float32 value);
     void RemoveAllGuides();
+
+    bool IsGuidesEnabled() const;
+    void SetGuidesEnabled(bool enabled);
 
     //behavior
     virtual void ProcessGeometryChanged(const QPoint& bottomLeft, const QPoint& topRight) = 0;
@@ -115,6 +119,7 @@ private:
     DAVA::TArc::ContextAccessor* accessor = nullptr;
     std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
     DAVA::TArc::DataWrapper documentDataWrapper;
+    DAVA::TArc::DataWrapper preferencesDataWrapper;
 
     QWidgetList guides;
 

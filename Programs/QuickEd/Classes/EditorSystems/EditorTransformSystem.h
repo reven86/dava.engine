@@ -104,8 +104,6 @@ private:
     DAVA::Vector2 moveStepByKeyboard2;
     DAVA::Vector2 expandedmoveStepByKeyboard2;
 
-    DAVA::Vector2 borderInParentToMagnet;
-    DAVA::Vector2 indentOfControlToManget;
     DAVA::Vector2 shareOfSizeToMagnetPivot;
     DAVA::float32 angleSegment;
     bool shiftInverted;
@@ -120,8 +118,6 @@ public:
                   MEMBER(pivotMagnetRange, "Control Transformations/Mouse magnet distance on move pivot point", DAVA::I_SAVE | DAVA::I_PREFERENCE)
                   MEMBER(moveStepByKeyboard2, "Control Transformations/Move distance by keyboard", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   MEMBER(expandedmoveStepByKeyboard2, "Control Transformations/Move distance by keyboard alternate", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
-                  MEMBER(borderInParentToMagnet, "Control Transformations/Magnet to parent indent", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
-                  MEMBER(indentOfControlToManget, "Control Transformations/Magnet to neighbour indent", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   MEMBER(shareOfSizeToMagnetPivot, "Control Transformations/Pivot magnet share", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   MEMBER(angleSegment, "Control Transformations/Rotate section angle", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   MEMBER(shiftInverted, "Control Transformations/Invert shift button", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)

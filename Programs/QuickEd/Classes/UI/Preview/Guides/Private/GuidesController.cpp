@@ -1,16 +1,15 @@
 #include "UI/Preview/Guides/GuidesController.h"
 
 #include "Modules/DocumentsModule/DocumentData.h"
+#include "Modules/PreferencesModule/PreferencesData.h"
 #include "QECommands/SetGuidesCommand.h"
 
 #include <TArc/Core/FieldBinder.h>
 
 #include <Reflection/ReflectedTypeDB.h>
 #include <Logger/Logger.h>
-#include <Preferences/PreferencesRegistrator.h>
 #include <Preferences/PreferencesStorage.h>
-
-#include <QPropertyAnimation>
+#include <Preferences/PreferencesRegistrator.h>
 
 GuidesController::GuidesController(DAVA::TArc::ContextAccessor* accessor_, QWidget* container_)
     : accessor(accessor_)
@@ -18,6 +17,7 @@ GuidesController::GuidesController(DAVA::TArc::ContextAccessor* accessor_, QWidg
     , container(container_)
 {
     documentDataWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<DocumentData>());
+    preferencesDataWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<PreferencesData>());
 }
 
 void GuidesController::CreatePreviewGuide()
@@ -48,7 +48,17 @@ void GuidesController::OnCanvasParametersChanged(DAVA::float32 min_, DAVA::float
 
 void GuidesController::OnMousePress(DAVA::float32 position)
 {
-    if (IsEnabled() == false || displayState == NO_DISPLAY)
+    if (IsEnabled() == false)
+    {
+        return;
+    }
+
+    if (IsGuidesEnabled() == false)
+    {
+        SetGuidesEnabled(true);
+        SetDisplayState(DISPLAY_PREVIEW);
+    }
+    else if (displayState == NO_DISPLAY)
     {
         return;
     }
@@ -64,7 +74,7 @@ void GuidesController::OnMousePress(DAVA::float32 position)
 
 void GuidesController::OnMouseMove(DAVA::float32 position)
 {
-    if (IsEnabled() == false)
+    if (IsEnabled() == false || IsGuidesEnabled() == false)
     {
         return;
     }
@@ -90,7 +100,7 @@ void GuidesController::OnMouseMove(DAVA::float32 position)
 
 void GuidesController::OnMouseRelease(DAVA::float32 position)
 {
-    if (IsEnabled() == false)
+    if (IsEnabled() == false || IsGuidesEnabled() == false)
     {
         return;
     }
@@ -100,7 +110,7 @@ void GuidesController::OnMouseRelease(DAVA::float32 position)
 
 void GuidesController::OnMouseLeave()
 {
-    if (IsEnabled() == false)
+    if (IsEnabled() == false || IsGuidesEnabled() == false)
     {
         return;
     }
@@ -110,7 +120,15 @@ void GuidesController::OnMouseLeave()
 QList<QAction*> GuidesController::GetActions(DAVA::float32 position, QObject* parent)
 {
     QList<QAction*> actions;
-    if (IsEnabled() == false)
+
+    QAction* guidesEnabledAction = new QAction("Show Alignment Guides", parent);
+    guidesEnabledAction->setCheckable(true);
+    guidesEnabledAction->setChecked(IsGuidesEnabled());
+    connect(guidesEnabledAction, &QAction::toggled, this, &GuidesController::SetGuidesEnabled);
+
+    actions << guidesEnabledAction;
+
+    if (IsEnabled() == false || IsGuidesEnabled() == false)
     {
         return actions;
     }
@@ -123,7 +141,7 @@ QList<QAction*> GuidesController::GetActions(DAVA::float32 position, QObject* pa
         actions << removeGuideAction;
     }
 
-    QAction* removeAllGuidesAction = new QAction("Remove All Guides", parent);
+    QAction* removeAllGuidesAction = new QAction(QString("Remove All %1 Guides").arg(GetOrientation() == DAVA::Vector2::AXIS_X ? "Horizontal" : "Vertical"), parent);
     connect(removeAllGuidesAction, &QAction::triggered, this, &GuidesController::RemoveAllGuides);
     if (GetValues().empty())
     {
@@ -170,28 +188,51 @@ void GuidesController::SetDisplayState(eDisplayState state)
 
 void GuidesController::EnableDrag(DAVA::float32 position)
 {
+    DVASSERT(IsEnabled());
     DVASSERT(dragState == NO_DRAG);
 
     dragState = DRAG;
     DVASSERT(valuePtr == nullptr);
     valuePtr = GetNearestValuePtr(position);
     DVASSERT(valuePtr != nullptr);
+
+    DAVA::TArc::DataContext* active = accessor->GetActiveContext();
+    DocumentData* data = active->GetData<DocumentData>();
+    data->BeginBatch("Dragging guide");
 }
 
 void GuidesController::DisableDrag()
 {
+    if (dragState != DRAG)
+    {
+        return;
+    }
+
+    DAVA::TArc::DataContext* active = accessor->GetActiveContext();
+    DocumentData* data = active->GetData<DocumentData>();
+    data->EndBatch();
+
     dragState = NO_DRAG;
+
+    DVASSERT(valuePtr != nullptr);
     valuePtr = nullptr;
 }
 
 void GuidesController::BindFields()
 {
     using namespace DAVA;
-
-    TArc::FieldDescriptor fieldDescr;
-    fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
-    fieldDescr.fieldName = DocumentData::guidesPropertyName;
-    fieldBinder->BindField(fieldDescr, MakeFunction(this, &GuidesController::OnValuesChanged));
+    {
+        TArc::FieldDescriptor fieldDescr;
+        fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
+        fieldDescr.fieldName = DocumentData::guidesPropertyName;
+        fieldBinder->BindField(fieldDescr, MakeFunction(this, &GuidesController::OnValuesChanged));
+    }
+    {
+        TArc::FieldDescriptor fieldDescr;
+        fieldDescr.type = ReflectedTypeDB::Get<PreferencesData>();
+        fieldDescr.fieldName = PreferencesData::guidesEnabledPropertyName;
+        fieldBinder->BindField(fieldDescr, MakeFunction(this, &GuidesController::OnGuidesEnabledChanged));
+    }
 }
 
 void GuidesController::OnValuesChanged(const DAVA::Any&)
@@ -206,9 +247,14 @@ void GuidesController::OnValuesChanged(const DAVA::Any&)
     SyncGuidesWithValues();
 }
 
+void GuidesController::OnGuidesEnabledChanged(const DAVA::Any&)
+{
+    SyncGuidesWithValues();
+}
+
 void GuidesController::SyncGuidesWithValues()
 {
-    if (IsEnabled() == false)
+    if (IsEnabled() == false || IsGuidesEnabled() == false)
     {
         while (guides.empty() == false)
         {
@@ -300,6 +346,7 @@ void GuidesController::SetValues(const DAVA::List<DAVA::float32>& values)
     const SortedControlNodeSet& rootControls = data->GetDisplayedRootControls();
     Q_ASSERT(rootControls.size() == 1);
     DAVA::String name = (*rootControls.begin())->GetName();
+
     data->ExecCommand<SetGuidesCommand>(name, GetOrientation(), values);
 }
 
@@ -343,6 +390,21 @@ void GuidesController::RemoveGuide(DAVA::float32 value)
 void GuidesController::RemoveAllGuides()
 {
     SetValues(DAVA::List<DAVA::float32>());
+}
+
+bool GuidesController::IsGuidesEnabled() const
+{
+    return preferencesDataWrapper.GetFieldValue(PreferencesData::guidesEnabledPropertyName).Cast<bool>(true);
+}
+
+void GuidesController::SetGuidesEnabled(bool enabled)
+{
+    preferencesDataWrapper.SetFieldValue(PreferencesData::guidesEnabledPropertyName, enabled);
+    if (enabled == false)
+    {
+        DisableDrag();
+        SetDisplayState(NO_DISPLAY);
+    }
 }
 
 DAVA::float32 GuidesController::PositionToValue(DAVA::float32 position) const
