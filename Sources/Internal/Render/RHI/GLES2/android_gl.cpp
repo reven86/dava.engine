@@ -129,14 +129,12 @@ void android_gl_reset(void* _window, GLint width, GLint height)
     ANativeWindow* nativeWindow = static_cast<ANativeWindow*>(_window);
     if (nullptr != nativeWindow)
     {
-        const bool resize = (backingWidth != width) || (backingHeight != height);
-        if (_nativeWindow != nativeWindow || resize)
+        invokedResetWithResize = (backingWidth != width) || (backingHeight != height);
+        if (_nativeWindow != nativeWindow || invokedResetWithResize)
         {
             needRecreateSurface = true;
             backingWidth = width;
             backingHeight = height;
-
-            invokedResetWithResize = resize;
         }
     }
     _nativeWindow = nativeWindow;
@@ -167,12 +165,7 @@ bool android_gl_checkSurface()
         // Next frame should be rejected only if we called reset with size different from a previous one
         if (invokedResetWithResize)
         {
-            invokedResetWithResize = false;
             return false;
-        }
-        else
-        {
-            return true;
         }
     }
 
