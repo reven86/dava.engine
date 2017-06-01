@@ -12,7 +12,7 @@ void DAVA::RegisterDAVAClasses()
         log->Log(Logger::LEVEL__DISABLE, "");
 }
 
-#if !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_LINUX__)
+#if !defined(__DAVAENGINE_ANDROID__)
 REGISTER_CLASS(TheoraPlayer);
 #endif
 

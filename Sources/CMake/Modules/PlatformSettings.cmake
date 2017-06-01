@@ -288,6 +288,9 @@ elseif ( IOS     )
 elseif ( MACOS )
     set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/mac" )
 
+elseif (LINUX)
+    set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/linux" )
+
 elseif ( WIN32 )
 
     if ( WINDOWS_UAP )

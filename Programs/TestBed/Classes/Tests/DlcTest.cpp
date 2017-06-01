@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_LINUX__)
+
 #include "DlcTest.h"
 #include "Base/GlobalEnum.h"
 #include "Database/MongodbClient.h"
@@ -689,3 +691,5 @@ void DLCCrashTest::ExitThread(BaseObject* caller, void* callerData, void* userDa
 
     forceExit = true;
 }
+
+#endif // __DAVAENGINE_LINUX__

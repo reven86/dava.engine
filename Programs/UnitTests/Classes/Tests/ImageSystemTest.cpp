@@ -47,9 +47,6 @@ struct TestData
 
 DAVA_TESTCLASS (ImageSystemTest)
 {
-// TODO: linux
-#if !defined(__DAVAENGINE_LINUX__)
-
     void LoadSaveAndCheck(ISTLocal::TestData loadingData)
     {
         const FilePath outFolderPathname = "~doc:/TestData/ImageSystemTest/";
@@ -380,5 +377,4 @@ DAVA_TESTCLASS (ImageSystemTest)
         AddGetCRCFromMetaData("~res:/TestData/ImageSystemTest/pvr4.pvr", &LibPVRHelper::AddCRCIntoMetaData, &LibPVRHelper::GetCRCFromMetaData);
         AddGetCRCFromMetaData("~res:/TestData/ImageSystemTest/dxt1.dds", &LibDdsHelper::AddCRCIntoMetaData, &LibDdsHelper::GetCRCFromMetaData);
     }
-#endif // !__DAVAENGINE_LINUX__
 };
