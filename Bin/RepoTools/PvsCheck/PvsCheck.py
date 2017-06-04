@@ -23,6 +23,12 @@ def main():
 
     args = parser.parse_args()
 
+    print (["C:\Program Files (x86)\PVS-Studio\PVS-Studio_Cmd.exe",
+                             "--progress",
+                             "--target", args.sln_path,
+                             "--output", args.output_log,
+                             "--settings", "Settings.xml"])
+
     PvsProcess = subprocess.Popen(["C:\Program Files (x86)\PVS-Studio\PVS-Studio_Cmd.exe",
                              "--progress",
                              "--target", args.sln_path,
