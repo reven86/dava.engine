@@ -7,6 +7,7 @@ import com.dava.framework.JNIDeviceInfo;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
 import android.opengl.GLSurfaceView;
 import android.opengl.GLUtils;
 
@@ -45,26 +46,61 @@ public class DavaSplashView extends GLSurfaceView
 
     private static class Renderer implements GLSurfaceView.Renderer
     {
-        private Bitmap splashBitmap = null; // Bitmap to draw (can be null)
+        private Bitmap powerOfTwoBitmap; // Bitmap, passed to the ctor, and converted to power of two, used for drawing
         private int splashTextureId = -1; // OpenGL texture id created from a bitmap
+        private float originalBitmapWidth;
+        private float originalBitmapHeight;
 
         // Helper variables for drawing splash view
-        private FloatBuffer verticesBuffer = null;
-        private ShortBuffer indicesBuffer = null;
-        private FloatBuffer uvCoordsBuffer = null;
+        private FloatBuffer verticesBuffer;
+        private ShortBuffer indicesBuffer;
+        private FloatBuffer uvCoordsBuffer;
         private int indicesCount = -1;
 
         public Renderer(Bitmap splashViewBitmap)
         {
-            splashBitmap = splashViewBitmap;
+            // Some devices do not support non POW2 textures,
+            // so we need to convert splashViewBitmap to be power of two (if it's not)
+
+            originalBitmapWidth = splashViewBitmap.getWidth();
+            originalBitmapHeight = splashViewBitmap.getHeight();
+
+            if (!isPowerOfTwo(splashViewBitmap.getWidth()) || !isPowerOfTwo(splashViewBitmap.getHeight()))
+            {
+                int powerOfTwoWidth = 1;
+                int powerOfTwoHeight = 1;
+
+                while (powerOfTwoWidth < originalBitmapWidth) {
+                    powerOfTwoWidth *= 2;
+                }
+
+                while (powerOfTwoHeight < originalBitmapHeight) {
+                    powerOfTwoHeight *= 2;
+                }
+
+                powerOfTwoBitmap = Bitmap.createBitmap(powerOfTwoWidth, powerOfTwoHeight, Bitmap.Config.ARGB_8888);
+                Canvas canvas = new Canvas(powerOfTwoBitmap);
+                canvas.drawBitmap(splashViewBitmap, 0, 0, null);
+
+                splashViewBitmap.recycle();
+            }
+            else
+            {
+                powerOfTwoBitmap = splashViewBitmap;
+            }
+        }
+
+        private boolean isPowerOfTwo(int i)
+        {
+            return ((i & -i) == i);
         }
 
         public void cleanup()
         {
-            if (splashBitmap != null)
+            if (powerOfTwoBitmap != null)
             {
-                splashBitmap.recycle();
-                splashBitmap = null;
+                powerOfTwoBitmap.recycle();
+                powerOfTwoBitmap = null;
             }
         }
 
@@ -80,7 +116,7 @@ public class DavaSplashView extends GLSurfaceView
             gl.glTexParameterf(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER,
                     GL10.GL_LINEAR);
 
-            GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0);
+            GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, powerOfTwoBitmap, 0);
 
             return textures[0];
         }
@@ -131,8 +167,8 @@ public class DavaSplashView extends GLSurfaceView
 
         private float[] caculateAspectFitVertices()
         {
-            float splashWidth = splashBitmap.getWidth();
-            float splashHeight = splashBitmap.getHeight();
+            float splashWidth = originalBitmapWidth;
+            float splashHeight = originalBitmapHeight;
             
             DeviceManager.DisplayInfo mainDisplayInfo = DeviceManager.instance().getDisplaysInfo()[0];
             float screenWidth = mainDisplayInfo.width;
@@ -172,19 +208,22 @@ public class DavaSplashView extends GLSurfaceView
         @Override
         public void onSurfaceCreated(GL10 gl, EGLConfig config)
         {
-            if (splashBitmap != null)
+            if (powerOfTwoBitmap != null)
             {
-                splashTextureId = convertBitmapToOpenGLTexture(gl, splashBitmap);
+                splashTextureId = convertBitmapToOpenGLTexture(gl, powerOfTwoBitmap);
                 if (splashTextureId != -1)
                 {
                     // Create simple quad data for full-screen drawing
                     // (projection = modelview = identity)
 
+                    float uvXRight = originalBitmapWidth / (float)powerOfTwoBitmap.getWidth();
+                    float uvYTop = originalBitmapHeight / (float)powerOfTwoBitmap.getHeight();
+
                     float textureCoordinates[] = {
-                            0.0f, 1.0f,
-                            1.0f, 1.0f,
+                            0.0f, uvYTop,
+                            uvXRight, uvYTop,
                             0.0f, 0.0f,
-                            1.0f, 0.0f
+                            uvXRight, 0.0f
                     };
 
                     short[] indices = {
