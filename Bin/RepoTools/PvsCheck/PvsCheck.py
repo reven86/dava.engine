@@ -27,16 +27,8 @@ def main():
                              "--progress",
                              "--target", args.sln_path,
                              "--output", args.output_log,
-                             "--settings", "Settings.xml"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-
-    while pvs_process.poll() is None:
-        try:
-            line = pvs_process.stdout.readline()
-            sys.stdout.write(line)
-            sys.stdout.flush()
-
-        except IOError as err:
-            sys.stdout.write(err.message)
+                             "--settings", "Settings.xml"])
+    pvs_process.communicate()
 
     return_code = pvs_process.returncode
 
@@ -72,23 +64,17 @@ def main():
         teamcity_message("analysis was successfully completed, no issues were found in the source code", "SUCCESS")
         sys.exit(return_code)
 
-
     converter_process = subprocess.Popen(["C:\Program Files (x86)\PVS-Studio\PlogConverter.exe",
                              "-t", "Html",
                              "-a", "GA:1",
                              "-d", "V520",
-                             args.output_log], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                             args.output_log])
+    converter_process.communicate()
 
-    while converter_process.poll() is None:
-        try:
-            line = converter_process.stdout.readline()
-            sys.stdout.write(line)
-            sys.stdout.flush()
-
-        except IOError as err:
-            sys.stdout.write(err.message)
-
-    sys.exit(return_code)
+    if converter_process.returncode != 0:
+        sys.exit(converter_process.returncode)
+    else:
+        sys.exit(return_code)
 
 if "__main__" == __name__:
     main()
