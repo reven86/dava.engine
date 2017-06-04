@@ -23,54 +23,72 @@ def main():
 
     args = parser.parse_args()
 
-    PvsProcess = subprocess.Popen(["C:\Program Files (x86)\PVS-Studio\PVS-Studio_Cmd.exe",
+    pvs_process = subprocess.Popen(["C:\Program Files (x86)\PVS-Studio\PVS-Studio_Cmd.exe",
                              "--progress",
                              "--target", args.sln_path,
                              "--output", args.output_log,
-                             "--settings", "Settings.xml"])
+                             "--settings", "Settings.xml"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-    returncode = PvsProcess.wait(timeout=None)
+    while pvs_process.poll() is None:
+        try:
+            line = pvs_process.stdout.readline()
+            sys.stdout.write(line)
+            sys.stdout.flush()
 
-    if returncode & ERROR_LEVEL_1:
+        except IOError as err:
+            sys.stdout.write(err.message)
+
+    return_code = pvs_process.returncode
+
+    if return_code & ERROR_LEVEL_1:
         teamcity_message("error (crash) during analysis of some source file(s)", "ERROR")
 
-    if returncode & ERROR_LEVEL_2:
+    if return_code & ERROR_LEVEL_2:
         teamcity_message("general (nonspecific) error in the analyzer|'s operation, a possible handled exception",
                          "ERROR")
 
-    if returncode & ERROR_LEVEL_3:
+    if return_code & ERROR_LEVEL_3:
         teamcity_message("some of the command line arguments passed to the tool were incorrect", "ERROR")
 
-    if returncode & ERROR_LEVEL_4:
+    if return_code & ERROR_LEVEL_4:
         teamcity_message("some of the analyzed source files or project files were not found", "ERROR")
 
-    if returncode & ERROR_LEVEL_5:
+    if return_code & ERROR_LEVEL_5:
         teamcity_message("specified configuration and (or) platform were not found in a solution file", "ERROR")
 
-    if returncode & ERROR_LEVEL_6:
+    if return_code & ERROR_LEVEL_6:
         teamcity_message("solution file is not supported", "ERROR")
 
-    if returncode & ERROR_LEVEL_7:
+    if return_code & ERROR_LEVEL_7:
         teamcity_message("incorrect extension of analyzed project", "ERROR")
 
-    if returncode & ERROR_LEVEL_8:
+    if return_code & ERROR_LEVEL_8:
         teamcity_message("incorrect or out-of-date analyzer license", "ERROR")
 
-    if returncode & ERROR_LEVEL_9:
+    if return_code & ERROR_LEVEL_9:
         teamcity_message("some issues were found in the source code", "ERROR")
 
-    if returncode == 0:
+    if return_code == 0:
         teamcity_message("analysis was successfully completed, no issues were found in the source code", "SUCCESS")
-        sys.exit(returncode)
+        sys.exit(return_code)
 
-    proc = subprocess.Popen(["C:\Program Files (x86)\PVS-Studio\PlogConverter.exe",
+
+    converter_process = subprocess.Popen(["C:\Program Files (x86)\PVS-Studio\PlogConverter.exe",
                              "-t", "Html",
                              "-a", "GA:1",
                              "-d", "V520",
-                             args.output_log])
-    proc.communicate()
+                             args.output_log], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
 
-    sys.exit(returncode)
+    while converter_process.poll() is None:
+        try:
+            line = converter_process.stdout.readline()
+            sys.stdout.write(line)
+            sys.stdout.flush()
+
+        except IOError as err:
+            sys.stdout.write(err.message)
+
+    sys.exit(return_code)
 
 if "__main__" == __name__:
     main()
