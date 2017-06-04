@@ -59,34 +59,37 @@ public class DavaSplashView extends GLSurfaceView
 
         public Renderer(Bitmap splashViewBitmap)
         {
-            // Some devices do not support non POW2 textures,
-            // so we need to convert splashViewBitmap to be power of two (if it's not)
-
-            originalBitmapWidth = splashViewBitmap.getWidth();
-            originalBitmapHeight = splashViewBitmap.getHeight();
-
-            if (!isPowerOfTwo(splashViewBitmap.getWidth()) || !isPowerOfTwo(splashViewBitmap.getHeight()))
+            if (splashViewBitmap != null)
             {
-                int powerOfTwoWidth = 1;
-                int powerOfTwoHeight = 1;
+                // Some devices do not support non POW2 textures,
+                // so we need to convert splashViewBitmap to be power of two (if it's not)
 
-                while (powerOfTwoWidth < originalBitmapWidth) {
-                    powerOfTwoWidth *= 2;
+                originalBitmapWidth = splashViewBitmap.getWidth();
+                originalBitmapHeight = splashViewBitmap.getHeight();
+
+                if (!isPowerOfTwo(splashViewBitmap.getWidth()) || !isPowerOfTwo(splashViewBitmap.getHeight()))
+                {
+                    int powerOfTwoWidth = 1;
+                    int powerOfTwoHeight = 1;
+
+                    while (powerOfTwoWidth < originalBitmapWidth) {
+                        powerOfTwoWidth *= 2;
+                    }
+
+                    while (powerOfTwoHeight < originalBitmapHeight) {
+                        powerOfTwoHeight *= 2;
+                    }
+
+                    powerOfTwoBitmap = Bitmap.createBitmap(powerOfTwoWidth, powerOfTwoHeight, Bitmap.Config.ARGB_8888);
+                    Canvas canvas = new Canvas(powerOfTwoBitmap);
+                    canvas.drawBitmap(splashViewBitmap, 0, 0, null);
+
+                    splashViewBitmap.recycle();
                 }
-
-                while (powerOfTwoHeight < originalBitmapHeight) {
-                    powerOfTwoHeight *= 2;
+                else
+                {
+                    powerOfTwoBitmap = splashViewBitmap;
                 }
-
-                powerOfTwoBitmap = Bitmap.createBitmap(powerOfTwoWidth, powerOfTwoHeight, Bitmap.Config.ARGB_8888);
-                Canvas canvas = new Canvas(powerOfTwoBitmap);
-                canvas.drawBitmap(splashViewBitmap, 0, 0, null);
-
-                splashViewBitmap.recycle();
-            }
-            else
-            {
-                powerOfTwoBitmap = splashViewBitmap;
             }
         }
 
