@@ -72,6 +72,7 @@ set( DAVA_STATIC_LIBRARIES_LINUX
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfreetype.a"
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libjpeg.a"
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libmongodb.a"
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libpng.a"
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libsqlite3.a"
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libtheora.a"
