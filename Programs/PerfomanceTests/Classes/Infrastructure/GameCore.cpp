@@ -194,7 +194,7 @@ void GameCore::InitScreenController()
 {
     Random::Instance()->Seed(0);
 
-    Logger::Instance()->AddCustomOutput(&teamCityOutput);
+    Logger::AddCustomOutput(&teamCityOutput);
     Logger::Info(GetDeviceName().c_str());
 
     bool chooserFound = CommandLineParser::Instance()->CommandIsFound("-chooser");
@@ -214,7 +214,7 @@ void GameCore::InitScreenController()
     }
     else if (!testForRun.empty())
     {
-        Logger::Instance()->Info(DAVA::Format("Test %s", testForRun.c_str()).c_str());
+        Logger::Info(DAVA::Format("Test %s", testForRun.c_str()).c_str());
 
         BaseTest::TestParams singleTestParams = defaultTestParams;
         ReadSingleTestParams(singleTestParams);
@@ -324,13 +324,13 @@ void GameCore::ReadSingleTestParams(BaseTest::TestParams& params)
         }
     }
 
-    Logger::Instance()->Info(DAVA::Format("Target time : %d", params.targetTime).c_str());
-    Logger::Instance()->Info(DAVA::Format("Statistic start time : %d", params.startTime).c_str());
-    Logger::Instance()->Info(DAVA::Format("Statistic end time : %d", params.endTime).c_str());
-    Logger::Instance()->Info(DAVA::Format("Target frames count : %d", params.targetFramesCount).c_str());
-    Logger::Instance()->Info(DAVA::Format("Target frame delta : %f", params.targetFrameDelta).c_str());
-    Logger::Instance()->Info(DAVA::Format("Frame for debug : %d", params.frameForDebug).c_str());
-    Logger::Instance()->Info(DAVA::Format("Max delta : %f", params.maxDelta).c_str());
+    Logger::Info(DAVA::Format("Target time : %d", params.targetTime).c_str());
+    Logger::Info(DAVA::Format("Statistic start time : %d", params.startTime).c_str());
+    Logger::Info(DAVA::Format("Statistic end time : %d", params.endTime).c_str());
+    Logger::Info(DAVA::Format("Target frames count : %d", params.targetFramesCount).c_str());
+    Logger::Info(DAVA::Format("Target frame delta : %f", params.targetFrameDelta).c_str());
+    Logger::Info(DAVA::Format("Frame for debug : %d", params.frameForDebug).c_str());
+    Logger::Info(DAVA::Format("Max delta : %f", params.maxDelta).c_str());
 }
 
 void GameCore::Quit()

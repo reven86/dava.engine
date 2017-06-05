@@ -4,6 +4,7 @@
 #include "Scene3D/Components/SoundComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/SingleComponents/TransformSingleComponent.h"
 #include "Scene3D/Systems/SoundUpdateSystem.h"
 #include "Sound/SoundSystem.h"
 #include "Sound/SoundEvent.h"
@@ -14,10 +15,8 @@
 namespace DAVA
 {
 SoundUpdateSystem::AutoTriggerSound::AutoTriggerSound(Entity* _owner, SoundEvent* _sound)
-    :
-    owner(_owner)
-    ,
-    soundEvent(_sound)
+    : owner(_owner)
+    , soundEvent(_sound)
 {
     float32 distance = soundEvent->GetMaxDistance();
     maxSqDistance = distance * distance;
@@ -26,7 +25,6 @@ SoundUpdateSystem::AutoTriggerSound::AutoTriggerSound(Entity* _owner, SoundEvent
 SoundUpdateSystem::SoundUpdateSystem(Scene* scene)
     : SceneSystem(scene)
 {
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SOUND_COMPONENT_CHANGED);
 }
 
@@ -38,7 +36,7 @@ SoundUpdateSystem::~SoundUpdateSystem()
 
 void SoundUpdateSystem::ImmediateEvent(Component* component, uint32 event)
 {
-    if (event == EventSystem::WORLD_TRANSFORM_CHANGED || event == EventSystem::SOUND_COMPONENT_CHANGED)
+    if (event == EventSystem::SOUND_COMPONENT_CHANGED)
     {
         const Matrix4& worldTransform = GetTransformComponent(component->GetEntity())->GetWorldTransform();
         Vector3 translation = worldTransform.GetTranslationVector();
@@ -64,6 +62,33 @@ void SoundUpdateSystem::ImmediateEvent(Component* component, uint32 event)
 void SoundUpdateSystem::Process(float32 timeElapsed)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_SOUND_UPDATE_SYSTEM);
+
+    TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+    for (auto& pair : tsc->worldTransformChanged.map)
+    {
+        if (pair.first->GetComponentsCount(Component::SOUND_COMPONENT) > 0)
+        {
+            for (Entity* entity : pair.second)
+            {
+                SoundComponent* sc = static_cast<SoundComponent*>(entity->GetComponent(Component::SOUND_COMPONENT));
+                const Matrix4& worldTransform = GetTransformComponent(entity)->GetWorldTransform();
+                Vector3 translation = worldTransform.GetTranslationVector();
+
+                uint32 eventsCount = sc->GetEventsCount();
+                for (uint32 i = 0; i < eventsCount; ++i)
+                {
+                    SoundEvent* sound = sc->GetSoundEvent(i);
+                    sound->SetPosition(translation);
+                    if (sound->IsDirectional())
+                    {
+                        Vector3 worldDirection = MultiplyVectorMat3x3(sc->GetLocalDirection(i), worldTransform);
+                        sound->SetDirection(worldDirection);
+                    }
+                    sound->UpdateInstancesPosition();
+                }
+            }
+        }
+    }
 
     Camera* activeCamera = GetScene()->GetCurrentCamera();
 

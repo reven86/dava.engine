@@ -10,6 +10,7 @@ class UIPreviewModule : public DAVA::TArc::ClientModule
 private:
     void PostInit() override;
 
+    void RunUIViewer();
     void CollectAllFiles();
     void CollectUsedFiles();
 
