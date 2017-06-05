@@ -1,4 +1,5 @@
-#include "UIRichContentComponent.h"
+#include "UI/RichContent/UIRichContentComponent.h"
+
 #include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA

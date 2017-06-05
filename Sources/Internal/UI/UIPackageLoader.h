@@ -25,6 +25,7 @@ public:
     static const DAVA::int32 LAST_VERSION_WITHOUT_PROTOTYPES_SUPPORT = 5;
     static const DAVA::int32 LAST_VERSION_WITH_LEGACY_DEBUG_DRAW = 14;
     static const DAVA::int32 LAST_VERSION_WITH_LEGACY_CLIP_CONTENT = 14;
+    static const DAVA::int32 LAST_VERSION_WITH_RICH_SINGLE_ALISES = 15;
 
 public:
     UIPackageLoader();
@@ -54,6 +55,7 @@ private:
     void ProcessLegacyAligns(const YamlNode* node, AbstractUIPackageBuilder* builder) const;
     void ProcessLegacyDebugDraw(const YamlNode* node, AbstractUIPackageBuilder* builder) const;
     void ProcessLegacyClipContent(const YamlNode* node, AbstractUIPackageBuilder* builder) const;
+    void ProcessLegacyRichSingleAliases(const YamlNode* node, AbstractUIPackageBuilder* builder) const;
     Vector<ComponentNode> ExtractComponentNodes(const YamlNode* node);
 
     Any ReadAnyFromYamlNode(const ReflectedStructure::Field* fieldRef, const YamlNode* node, const String& name) const;

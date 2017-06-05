@@ -367,6 +367,11 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
         {
             ProcessLegacyClipContent(node, builder);
         }
+
+        if (version <= LAST_VERSION_WITH_RICH_SINGLE_ALISES)
+        {
+            ProcessLegacyRichSingleAliases(node, builder);
+        }
     }
 
     // load children
@@ -561,6 +566,48 @@ void UIPackageLoader::ProcessLegacyClipContent(const YamlNode* node, AbstractUIP
     if (node->Get("clip"))
     {
         builder->BeginComponentPropertiesSection(UIComponent::CLIP_CONTENT_COMPONENT, 0);
+        builder->EndComponentPropertiesSection();
+    }
+}
+
+void UIPackageLoader::ProcessLegacyRichSingleAliases(const YamlNode* node, AbstractUIPackageBuilder* builder) const
+{
+    bool hasRichSingleAliases = false;
+    const YamlNode* componentsNode = node->Get("components");
+    if (componentsNode)
+    {
+        auto componentsMap = componentsNode->AsMap();
+        for ()
+    }
+
+    {
+        hasDebugDrawProperties = true;
+        break;
+    }
+
+    if (hasDebugDrawProperties)
+    {
+        const ReflectedType* componentRef = builder->BeginComponentPropertiesSection(UIComponent::DEBUG_RENDER_COMPONENT, 0);
+        if (componentRef != nullptr && componentRef->GetStructure() != nullptr)
+        {
+            const Vector<std::unique_ptr<ReflectedStructure::Field>>& fields = componentRef->GetStructure()->fields;
+            for (const std::unique_ptr<ReflectedStructure::Field>& field : fields)
+            {
+                static const FastName enabledFieldName("enabled");
+                String name(field->name.c_str());
+                auto it = legacyDebugDrawMap.find(name);
+                if (it != legacyDebugDrawMap.end())
+                {
+                    Any res = ReadAnyFromYamlNode(field.get(), node, it->second);
+                    if (res.IsEmpty() && enabledFieldName == field->name)
+                    {
+                        res = Any(false);
+                    }
+                    builder->ProcessProperty(*field, res);
+                }
+            }
+        }
+
         builder->EndComponentPropertiesSection();
     }
 }

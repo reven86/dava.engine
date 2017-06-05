@@ -1,4 +1,4 @@
-#include "UIRichContentObjectComponent.h"
+#include "UI/RichContent/UIRichContentObjectComponent.h"
 
 namespace DAVA
 {
