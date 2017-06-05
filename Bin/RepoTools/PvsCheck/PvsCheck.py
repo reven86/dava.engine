@@ -28,6 +28,7 @@ def main():
                              "--target", args.sln_path,
                              "--output", args.output_log,
                              "--settings", "Settings.xml"])
+
     pvs_process.communicate()
 
     return_code = pvs_process.returncode
@@ -69,6 +70,7 @@ def main():
                              "-a", "GA:1",
                              "-d", "V520",
                              args.output_log])
+
     converter_process.communicate()
 
     if converter_process.returncode != 0:
