@@ -25,10 +25,6 @@ APP_LDFLAGS  += -fsanitize=address
 #LIBCXX_FORCE_REBUILD := true # if you want to see bug in stl line code
 endif
 
-APP_CFLAGS += -D__DAVAENGINE_COREV2__
-APP_CPPFLAGS += -D__DAVAENGINE_ANDROID__
-APP_CPPFLAGS += -D__DAVAENGINE_POSIX__
-
 APP_ABI += armeabi-v7a
 APP_ABI += x86
 APP_PLATFORM := android-14

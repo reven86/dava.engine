@@ -138,6 +138,8 @@ DV_LOCAL_CPPFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1
 DV_LOCAL_CPPFLAGS += -std=c++14
 
 DV_LOCAL_CFLAGS += -D__DAVAENGINE_ANDROID__
+DV_LOCAL_CFLAGS += -D__DAVAENGINE_POSIX__
+DV_LOCAL_CFLAGS += -D__DAVAENGINE_COREV2__
 
 # remove warnings about unused arguments to compiler
 DV_LOCAL_CFLAGS += -Qunused-arguments
@@ -246,6 +248,8 @@ DV_LOCAL_CFLAGS += -fno-standalone-debug
 # set exported build flags
 DV_LOCAL_EXPORT_CFLAGS := $(LOCAL_CFLAGS) -fno-standalone-debug
 DV_LOCAL_EXPORT_CFLAGS += -D__DAVAENGINE_ANDROID__
+DV_LOCAL_EXPORT_CFLAGS += -D__DAVAENGINE_POSIX__
+DV_LOCAL_EXPORT_CFLAGS += -D__DAVAENGINE_COREV2__
 
 # set exported used libs
 DV_LOCAL_EXPORT_LDLIBS := $(LOCAL_LDLIBS)
