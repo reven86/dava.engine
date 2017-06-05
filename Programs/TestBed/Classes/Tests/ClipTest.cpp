@@ -1,4 +1,6 @@
 #include "Tests/ClipTest.h"
+#include <UI/Render/UIClipContentComponent.h>
+#include <UI/Render/UIDebugRenderComponent.h>
 
 using namespace DAVA;
 
@@ -10,25 +12,37 @@ ClipTest::ClipTest(TestBed& app)
 void ClipTest::ClipPressed(BaseObject* obj, void* data, void* callerData)
 {
     enableClip = !enableClip;
-    clip->SetDebugDraw(enableClip);
+    clip->GetOrCreateComponent<UIDebugRenderComponent>()->SetEnabled(enableClip);
 
-    fullSizeWgt->SetClipContents(enableClip);
-    parent1->SetClipContents(enableClip);
-    parent2->SetClipContents(enableClip);
-    child1->SetClipContents(enableClip);
-    child2->SetClipContents(enableClip);
+    if (enableClip)
+    {
+        fullSizeWgt->GetOrCreateComponent<UIClipContentComponent>();
+        parent1->GetOrCreateComponent<UIClipContentComponent>();
+        parent2->GetOrCreateComponent<UIClipContentComponent>();
+        child1->GetOrCreateComponent<UIClipContentComponent>();
+        child2->GetOrCreateComponent<UIClipContentComponent>();
+    }
+    else
+    {
+        fullSizeWgt->RemoveComponent<UIClipContentComponent>();
+        parent1->RemoveComponent<UIClipContentComponent>();
+        parent2->RemoveComponent<UIClipContentComponent>();
+        child1->RemoveComponent<UIClipContentComponent>();
+        child2->RemoveComponent<UIClipContentComponent>();
+    }
 }
 
 void ClipTest::DebugDrawPressed(BaseObject* obj, void* data, void* callerData)
 {
     enableDebugDraw = !enableDebugDraw;
-    debugDraw->SetDebugDraw(enableDebugDraw);
 
-    fullSizeWgt->SetDebugDraw(enableDebugDraw);
-    parent1->SetDebugDraw(enableDebugDraw);
-    parent2->SetDebugDraw(enableDebugDraw);
-    child1->SetDebugDraw(enableDebugDraw);
-    child2->SetDebugDraw(enableDebugDraw);
+    debugDraw->GetOrCreateComponent<UIDebugRenderComponent>()->SetEnabled(enableDebugDraw);
+
+    fullSizeWgt->GetOrCreateComponent<UIDebugRenderComponent>()->SetEnabled(enableDebugDraw);
+    parent1->GetOrCreateComponent<UIDebugRenderComponent>()->SetEnabled(enableDebugDraw);
+    parent2->GetOrCreateComponent<UIDebugRenderComponent>()->SetEnabled(enableDebugDraw);
+    child1->GetOrCreateComponent<UIDebugRenderComponent>()->SetEnabled(enableDebugDraw);
+    child2->GetOrCreateComponent<UIDebugRenderComponent>()->SetEnabled(enableDebugDraw);
 }
 
 WideString ConvertToWString(const Rect& rect)
@@ -91,28 +105,22 @@ void ClipTest::LoadResources()
     //full-size widget
     defaultRect = Rect(0.f, 0.f, static_cast<float32>(screenSize.dx), static_cast<float32>(screenSize.dy));
     fullSizeWgt = new UIControl(defaultRect);
-    fullSizeWgt->SetDebugDraw(enableDebugDraw);
     UIControlBackground* fullSizeWgtBg = fullSizeWgt->GetOrCreateComponent<UIControlBackground>();
     fullSizeWgtBg->SetColor(Color(0.f, 0.5f, 0.1f, 1.f));
     fullSizeWgtBg->SetDrawType(UIControlBackground::DRAW_FILL);
-    fullSizeWgt->SetClipContents(enableClip);
     fullSizeWgt->SetName("fullSizeWgt");
     AddControl(fullSizeWgt);
 
     float32 parentX(0.05f * startX), parentY(parentX), parentW(0.6f * startX), parentH(parentW);
     parent1 = new UIControl(Rect(parentX, parentY, parentW, parentH));
-    parent1->SetDebugDraw(enableDebugDraw);
     UIControlBackground* parent1Bg = parent1->GetOrCreateComponent<UIControlBackground>();
     parent1Bg->SetColor(Color(0.5f, 0.f, 0.1f, 1.f));
     parent1Bg->SetDrawType(UIControlBackground::DRAW_FILL);
-    parent1->SetClipContents(enableClip);
     parent1->SetName("parent1");
     child1 = new UIControl(Rect(parentW * 0.5f, parentH * 0.5f, parentW, parentH));
-    child1->SetDebugDraw(enableDebugDraw);
     UIControlBackground* child1Bg = child1->GetOrCreateComponent<UIControlBackground>();
     child1Bg->SetColor(Color(0.1f, 0.f, 0.5f, 1.f));
     child1Bg->SetDrawType(UIControlBackground::DRAW_FILL);
-    child1->SetClipContents(enableClip);
     child1->SetName("child1");
     parent1->AddControl(child1);
     AddControl(parent1);
@@ -120,25 +128,20 @@ void ClipTest::LoadResources()
     parentX = screenSize.dx - parentX - parentW;
     parentY += parentH * 0.5f;
     parent2 = new UIControl(Rect(parentX, parentY, parentW, parentH));
-    parent2->SetDebugDraw(enableDebugDraw);
     UIControlBackground* parent2Bg = parent2->GetOrCreateComponent<UIControlBackground>();
     parent2Bg->SetColor(Color(0.1f, 0.f, 0.5f, 1.f));
     parent2Bg->SetDrawType(UIControlBackground::DRAW_FILL);
-    parent2->SetClipContents(enableClip);
     parent2->SetName("parent2");
     child2 = new UIControl(Rect(-1.f * parentW * 0.5f, -1.f * parentH * 0.5f, parentW, parentH));
     UIControlBackground* child2Bg = child2->GetOrCreateComponent<UIControlBackground>();
-    child2->SetDebugDraw(enableDebugDraw);
     child2Bg->SetColor(Color(0.5f, 0.f, 0.1f, 1.f));
     child2Bg->SetDrawType(UIControlBackground::DRAW_FILL);
-    child2->SetClipContents(enableClip);
     child2->SetName("child2");
     parent2->AddControl(child2);
     AddControl(parent2);
     // button Clip
     clip = new UIButton(Rect(startX, startY, w, h));
     clip->SetStateFont(0xFF, font);
-    clip->SetDebugDraw(enableClip);
     clip->SetStateFontColor(0xFF, Color(1.0, 0.0, 0.0, 0.75));
     clip->SetStateText(0xFF, L"clip");
     clip->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ClipTest::ClipPressed));
@@ -147,7 +150,6 @@ void ClipTest::LoadResources()
     // button DebugDraw
     debugDraw = new UIButton(Rect(startX, startY, w, h));
     debugDraw->SetStateFont(0xFF, font);
-    debugDraw->SetDebugDraw(enableDebugDraw);
     debugDraw->SetStateFontColor(0xFF, Color(1.0, 0.0, 0.0, 0.75));
     debugDraw->SetStateText(0xFF, L"debugDraw");
     debugDraw->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ClipTest::DebugDrawPressed));
@@ -156,7 +158,7 @@ void ClipTest::LoadResources()
     // button startPos
     startPos = new UIButton(Rect(startX, startY, w, h));
     startPos->SetStateFont(0xFF, font);
-    startPos->SetDebugDraw(true);
+    startPos->GetOrCreateComponent<UIDebugRenderComponent>();
     startPos->SetStateFontColor(0xFF, Color(1.0, 0.0, 0.0, 0.75));
     startPos->SetStateText(0xFF, L"startPos");
     startPos->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ClipTest::StartPos));
@@ -165,7 +167,7 @@ void ClipTest::LoadResources()
     // button moveLeft
     moveLeft = new UIButton(Rect(startX, startY, w, h));
     moveLeft->SetStateFont(0xFF, font);
-    moveLeft->SetDebugDraw(true);
+    moveLeft->GetOrCreateComponent<UIDebugRenderComponent>();
     moveLeft->SetStateFontColor(0xFF, Color(1.0, 0.0, 0.0, 0.75));
     moveLeft->SetStateText(0xFF, L"moveLeft");
     moveLeft->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ClipTest::MoveLeft));
@@ -174,7 +176,7 @@ void ClipTest::LoadResources()
     // button moveRight
     moveRight = new UIButton(Rect(startX, startY, w, h));
     moveRight->SetStateFont(0xFF, font);
-    moveRight->SetDebugDraw(true);
+    moveRight->GetOrCreateComponent<UIDebugRenderComponent>();
     moveRight->SetStateFontColor(0xFF, Color(1.0, 0.0, 0.0, 0.75));
     moveRight->SetStateText(0xFF, L"moveRight");
     moveRight->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ClipTest::MoveRight));
@@ -183,7 +185,7 @@ void ClipTest::LoadResources()
     // button moveUp
     moveUp = new UIButton(Rect(startX, startY, w, h));
     moveUp->SetStateFont(0xFF, font);
-    moveUp->SetDebugDraw(true);
+    moveUp->GetOrCreateComponent<UIDebugRenderComponent>();
     moveUp->SetStateFontColor(0xFF, Color(1.0, 0.0, 0.0, 0.75));
     moveUp->SetStateText(0xFF, L"moveUp");
     moveUp->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ClipTest::MoveUp));
@@ -192,7 +194,7 @@ void ClipTest::LoadResources()
     // button moveDown
     moveDown = new UIButton(Rect(startX, startY, w, h));
     moveDown->SetStateFont(0xFF, font);
-    moveDown->SetDebugDraw(true);
+    moveDown->GetOrCreateComponent<UIDebugRenderComponent>();
     moveDown->SetStateFontColor(0xFF, Color(1.0, 0.0, 0.0, 0.75));
     moveDown->SetStateText(0xFF, L"moveDown");
     moveDown->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ClipTest::MoveDown));
@@ -200,6 +202,9 @@ void ClipTest::LoadResources()
 
     SafeRelease(font);
     BaseScreen::LoadResources();
+
+    ClipPressed(nullptr, nullptr, nullptr);
+    DebugDrawPressed(nullptr, nullptr, nullptr);
 }
 
 void ClipTest::UnloadResources()

@@ -3,6 +3,8 @@
 
 #include <FileSystem/KeyedArchive.h>
 #include <Scene3D/Components/ComponentHelpers.h>
+#include <Scene3D/Components/TransformComponent.h>
+#include <Scene3D/Components/SingleComponents/TransformSingleComponent.h>
 #include <Scene3D/Systems/EventSystem.h>
 #include <Scene3D/Scene.h>
 #include <Time/DateTime.h>
@@ -12,8 +14,6 @@ OwnersSignatureSystem::OwnersSignatureSystem(DAVA::Scene* scene, const DAVA::Str
     : SceneSystem(scene)
     , currentUserName(userName)
 {
-    scene->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED);
-    scene->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::TRANSFORM_PARENT_CHANGED);
 }
 
 void OwnersSignatureSystem::AddEntity(DAVA::Entity* entity)
@@ -21,18 +21,16 @@ void OwnersSignatureSystem::AddEntity(DAVA::Entity* entity)
     UpdateOwner(entity);
 }
 
-void OwnersSignatureSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint32 event)
+void OwnersSignatureSystem::Process(DAVA::float32 timeElapsed)
 {
-    switch (event)
+    DAVA::TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+    for (DAVA::Entity* entity : tsc->localTransformChanged)
     {
-    case DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED:
-    case DAVA::EventSystem::TRANSFORM_PARENT_CHANGED:
-    {
-        UpdateOwner(component->GetEntity());
-        break;
+        UpdateOwner(entity);
     }
-    default:
-        break;
+    for (DAVA::Entity* entity : tsc->transformParentChanged)
+    {
+        UpdateOwner(entity);
     }
 }
 

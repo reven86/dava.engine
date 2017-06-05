@@ -2,6 +2,7 @@
 #include "Scripting/LuaException.h"
 #include "Debug/DVAssert.h"
 #include "LuaBridge.h"
+#include "Engine/Engine.h"
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 #include "MemoryManager/MemoryProfiler.h"
@@ -29,7 +30,8 @@ DAVA::int32 panichandler(lua_State* L)
 {
     std::ostringstream os;
     DAVA::LuaBridge::DumpStack(L, os);
-    DAVA::Logger::Debug("PANIC: unhandled error during Lua call:\n%s\n%s", lua_tostring(L, -1), os.str().c_str());
+    DAVA::LuaBridge::DumpCallstack(L, os);
+    DAVA::Logger::Debug("LUA PANIC: unhandled error during Lua call:\n%s\n%s", lua_tostring(L, -1), os.str().c_str());
     return 0;
 }
 
@@ -37,8 +39,9 @@ DAVA::int32 errorhandler(lua_State* L)
 {
     std::ostringstream os;
     DAVA::LuaBridge::DumpStack(L, os);
-    DAVA::Logger::Info(os.str().c_str());
-    DAVA_THROW(DAVA::LuaException, LUA_ERRRUN, DAVA::LuaBridge::PopString(L));
+    DAVA::LuaBridge::DumpCallstack(L, os);
+    DAVA::Logger::Debug("Lua error:\n%s\n%s", lua_tostring(L, -1), os.str().c_str());
+    return 1;
 }
 
 namespace DAVA
@@ -92,20 +95,31 @@ LuaScript::~LuaScript()
 
 int32 LuaScript::ExecString(const String& script)
 {
-    int32 beginTop = lua_gettop(state->lua); // store current stack size
     int32 res = luaL_loadstring(state->lua, script.c_str()); // stack +1: script chunk
     if (res != 0)
     {
         DAVA_THROW(LuaException, res, LuaBridge::PopString(state->lua)); // stack -1
     }
-    res = lua_pcall(state->lua, 0, LUA_MULTRET, 0); // stack -1: run function/chunk on stack top and pop it
+
+    int32 base = lua_gettop(state->lua); // store current stack size
+    DVASSERT(base >= 1, "Lua stack corrupted!");
+
+    int32 errfunc = PushErrorHandler(base); // stack +1: insert error handler function before function
+    res = lua_pcall(state->lua, 0, LUA_MULTRET, errfunc); // stack -1: run function/chunk on stack top and pop it
+    int32 top = lua_gettop(state->lua); // store current stack size
+
+    if (errfunc)
+    {
+        DVASSERT(top >= base, "Lua stack corrupted!");
+        lua_remove(state->lua, base); // stack -1: remove error hander function
+    }
+
     if (res != 0)
     {
         DAVA_THROW(LuaException, res, LuaBridge::PopString(state->lua)); // stack -1
     }
 
-    int32 lastIndex = lua_gettop(state->lua); // store current stack size
-    return lastIndex - beginTop; // calculate number of function results
+    return top - base; // calculate number of function results
 }
 
 int32 LuaScript::ExecStringSafe(const String& script)
@@ -163,7 +177,7 @@ void LuaScript::DumpStackToLog(Logger::eLogLevel level) const
 {
     std::ostringstream os;
     DumpStack(os);
-    Logger* logger = Logger::Instance();
+    Logger* logger = GetEngineContext()->logger;
     if (logger)
     {
         logger->Log(level, os.str().c_str());
@@ -184,18 +198,22 @@ int32 LuaScript::EndCallFunction(int32 nargs)
 {
     int32 base = lua_gettop(state->lua) - nargs; // store function stack index
     DVASSERT(base >= 1, "Lua stack corrupted!");
+
     int32 errfunc = PushErrorHandler(base); // stack +1: insert error handler function before function
     int32 res = lua_pcall(state->lua, nargs, LUA_MULTRET, errfunc); // stack -(nargs+1), +nresults: return value or error message
+    int32 top = lua_gettop(state->lua); // store current stack size (must contains error handler if it has setted)
+
+    if (errfunc)
+    {
+        DVASSERT(top >= base, "Lua stack corrupted!");
+        lua_remove(state->lua, base); // stack -1: remove error hander function
+    }
+
     if (res != 0)
     {
         DAVA_THROW(LuaException, res, LuaBridge::PopString(state->lua)); // stack -1
     }
-    int32 top = lua_gettop(state->lua); // store current stack size (must contains error handler if it has setted
-    if (errfunc)
-    {
-        DVASSERT(top >= 1, "Lua stack corrupted!");
-        lua_remove(state->lua, base); // stack -1: remove error hander function
-    }
+
     return top - base; // calculate number of function results
 }
 

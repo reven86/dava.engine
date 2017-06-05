@@ -107,68 +107,68 @@ public:
         Reflection ref = Reflection::Create(&model);
 
         {
-            ControlDescriptorBuilder<IntSpinBox::Fields> descr;
-            descr[IntSpinBox::Fields::Value] = "value";
-            IntSpinBox* edit = new IntSpinBox(descr, GetAccessor(), ref);
+            IntSpinBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[IntSpinBox::Fields::Value] = "value";
+            IntSpinBox* edit = new IntSpinBox(params, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_value");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<IntSpinBox::Fields> descr;
-            descr[IntSpinBox::Fields::Value] = "noRangeValue";
-            descr[IntSpinBox::Fields::Range] = "rangeMeta";
-            IntSpinBox* edit = new IntSpinBox(descr, GetAccessor(), ref);
+            IntSpinBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[IntSpinBox::Fields::Value] = "noRangeValue";
+            params.fields[IntSpinBox::Fields::Range] = "rangeMeta";
+            IntSpinBox* edit = new IntSpinBox(params, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_metaRangeValue");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<IntSpinBox::Fields> descr;
-            descr[IntSpinBox::Fields::Value] = "readOnlyValue";
-            IntSpinBox* edit = new IntSpinBox(descr, GetAccessor(), ref);
+            IntSpinBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[IntSpinBox::Fields::Value] = "readOnlyValue";
+            IntSpinBox* edit = new IntSpinBox(params, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_readOnlyValue");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<IntSpinBox::Fields> descr;
-            descr[IntSpinBox::Fields::Value] = "readOnlyMeta";
-            IntSpinBox* edit = new IntSpinBox(descr, GetAccessor(), ref);
+            IntSpinBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[IntSpinBox::Fields::Value] = "readOnlyMeta";
+            IntSpinBox* edit = new IntSpinBox(params, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_readOnlyMeta");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<IntSpinBox::Fields> descr;
-            descr[IntSpinBox::Fields::Value] = "value";
-            descr[IntSpinBox::Fields::IsReadOnly] = "isReadOnly";
-            IntSpinBox* edit = new IntSpinBox(descr, GetAccessor(), ref);
+            IntSpinBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[IntSpinBox::Fields::Value] = "value";
+            params.fields[IntSpinBox::Fields::IsReadOnly] = "isReadOnly";
+            IntSpinBox* edit = new IntSpinBox(params, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_readOnlyField");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<IntSpinBox::Fields> descr;
-            descr[IntSpinBox::Fields::Value] = "value";
-            descr[IntSpinBox::Fields::IsEnabled] = "isEnabled";
-            IntSpinBox* edit = new IntSpinBox(descr, GetAccessor(), ref);
+            IntSpinBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[IntSpinBox::Fields::Value] = "value";
+            params.fields[IntSpinBox::Fields::IsEnabled] = "isEnabled";
+            IntSpinBox* edit = new IntSpinBox(params, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_enable");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<IntSpinBox::Fields> descr;
-            descr[IntSpinBox::Fields::Value] = "noValue";
-            IntSpinBox* edit = new IntSpinBox(descr, GetAccessor(), ref);
+            IntSpinBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[IntSpinBox::Fields::Value] = "noValue";
+            IntSpinBox* edit = new IntSpinBox(params, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_noValue");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<IntSpinBox::Fields> descr;
-            descr[IntSpinBox::Fields::Value] = "noValueHint";
-            IntSpinBox* edit = new IntSpinBox(descr, GetAccessor(), ref);
+            IntSpinBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[IntSpinBox::Fields::Value] = "noValueHint";
+            IntSpinBox* edit = new IntSpinBox(params, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_noValuehint");
             layout->AddControl(edit);
         }

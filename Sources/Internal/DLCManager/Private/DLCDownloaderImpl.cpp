@@ -423,8 +423,7 @@ struct GetSizeSubTask : IDownloaderSubTask
 
     ~GetSizeSubTask()
     {
-        task.curlStorage.UnMap(easy);
-        easy = nullptr;
+        Cleanup();
     }
 
     void OnDone(CURLMsg* curlMsg) override
@@ -475,14 +474,26 @@ struct GetSizeSubTask : IDownloaderSubTask
             }
         }
 
-        ICurlEasyStorage& storage = task.curlStorage;
-        CURLM* multi = storage.GetMultiHandle();
-        CURLMcode code = curl_multi_remove_handle(multi, easy);
-        if (CURLM_OK != code)
+        Cleanup();
+    }
+
+    void Cleanup()
+    {
+        if (easy != nullptr)
         {
-            DLCDownloader::Task::OnErrorCurlMulti(code, task);
+            ICurlEasyStorage& storage = task.curlStorage;
+            task.curlStorage.UnMap(easy);
+
+            CURLM* multi = storage.GetMultiHandle();
+            CURLMcode code = curl_multi_remove_handle(multi, easy);
+            if (CURLM_OK != code)
+            {
+                DLCDownloader::Task::OnErrorCurlMulti(code, task);
+            }
+            storage.CurlDeleteHandle(easy);
+
+            easy = nullptr;
         }
-        storage.CurlDeleteHandle(easy);
     }
 
     DLCDownloader::Task& GetTask() override
@@ -1024,6 +1035,9 @@ void DLCDownloaderImpl::CurlDeleteHandle(CURL* easy)
 
     DVASSERT(Thread::GetCurrentId() == downloadThreadId);
 
+    // Make sure that easy handle hasn't been returned already
+    DVASSERT(std::find(reusableHandles.begin(), reusableHandles.end(), easy) == reusableHandles.end());
+
     curl_easy_reset(easy);
     reusableHandles.push_back(easy);
     --numOfRunningSubTasks;
@@ -1085,39 +1099,12 @@ int DLCDownloaderImpl::GetChunkSize()
     return hints.chunkMemBuffSize;
 }
 
-void DLCDownloaderImpl::DeleteSubTaskHandler(IDownloaderSubTask* t)
-{
-    CURL* easy = t->GetEasyHandle();
-    if (easy != nullptr)
-    {
-        size_t numOfRemovedElements = taskMap.erase(easy);
-        if (numOfRemovedElements != 1)
-        {
-            DAVA_THROW(Exception, "one element should be in map, something bad is happened.");
-        }
-
-        CURLMcode r = curl_multi_remove_handle(multiHandle, easy);
-        if (r != CURLM_OK)
-        {
-            const char* strErr = curl_multi_strerror(r);
-            DAVA_THROW(Exception, strErr);
-        }
-
-        CurlDeleteHandle(easy);
-    }
-    else
-    {
-        DAVA_THROW(Exception, "bad easy subtask handler, something bad is happened");
-    }
-}
-
 void DLCDownloaderImpl::DeleteTask(Task* task)
 {
     if (task->status.state == TaskState::Downloading)
     {
         for (auto& t : task->subTasksWorking)
         {
-            DeleteSubTaskHandler(t);
             delete t;
         }
 
@@ -1125,7 +1112,6 @@ void DLCDownloaderImpl::DeleteTask(Task* task)
 
         for (auto& t : task->subTasksReadyToWrite)
         {
-            DeleteSubTaskHandler(t);
             delete t;
         }
 

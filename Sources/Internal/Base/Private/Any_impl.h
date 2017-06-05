@@ -187,6 +187,11 @@ T Any::Cast() const
 template <typename T>
 T Any::Cast(const T& defaultValue) const
 {
+    if (type == nullptr)
+    {
+        return defaultValue;
+    }
+
     if (CanGet<T>())
         return anyStorage.GetAuto<T>();
 

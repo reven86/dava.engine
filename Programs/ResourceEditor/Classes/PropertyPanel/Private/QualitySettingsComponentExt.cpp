@@ -9,7 +9,7 @@
 #include <Reflection/ReflectedType.h>
 #include <Reflection/ReflectedTypeDB.h>
 
-void QualitySettingsChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::PropertyNode>& parent, DAVA::Vector<std::shared_ptr<DAVA::TArc::PropertyNode>>& children) const
+void QualitySettingsChildCreator::ExposeChildren(const std::shared_ptr<DAVA::TArc::PropertyNode>& parent, DAVA::Vector<std::shared_ptr<DAVA::TArc::PropertyNode>>& children) const
 {
     using namespace DAVA;
     using namespace DAVA::TArc;
@@ -21,7 +21,8 @@ void QualitySettingsChildCreator::ExposeChildren(const std::shared_ptr<const DAV
         {
             Reflection::Field field = parent->field;
             field.key = "group_quality";
-            children.push_back(allocator->CreatePropertyNode(std::move(field), PropertyPanel::GroupQualityProperty, parent->cachedValue));
+            children.push_back(allocator->CreatePropertyNode(parent, std::move(field), static_cast<int32>(children.size()),
+                                                             PropertyPanel::GroupQualityProperty, parent->cachedValue));
         }
     }
     else

@@ -53,6 +53,13 @@ void UISoundSystem::SetGlobalParameter(const FastName& parameter, float32 value)
     globalParameters[parameter] = value;
 }
 
+void UISoundSystem::SetVolume(float32 aVolume)
+{
+    volume = aVolume;
+
+    SoundSystem::Instance()->SetGroupVolume(UISoundSystemDetail::SOUND_GROUP, volume);
+}
+
 void UISoundSystem::TriggerEvent(const FastName& eventName, const UIEvent* uiEvent, const UIControl* control)
 {
     RefPtr<SoundEvent> event = GetEvent(eventName);
@@ -117,6 +124,8 @@ RefPtr<SoundEvent> UISoundSystem::GetEvent(const FastName& eventName)
         RefPtr<SoundEvent> event(SoundSystem::Instance()->CreateSoundEventByID(eventName, UISoundSystemDetail::SOUND_GROUP));
 
         soundEvents[eventName] = event;
+
+        event->SetVolume(volume);
 
         return event;
     }

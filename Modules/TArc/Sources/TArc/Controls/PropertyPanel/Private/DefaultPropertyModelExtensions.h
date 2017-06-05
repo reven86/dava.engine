@@ -12,7 +12,7 @@ class UI;
 class DefaultChildCheatorExtension : public ChildCreatorExtension
 {
 public:
-    void ExposeChildren(const std::shared_ptr<const PropertyNode>& node, Vector<std::shared_ptr<PropertyNode>>& children) const override;
+    void ExposeChildren(const std::shared_ptr<PropertyNode>& node, Vector<std::shared_ptr<PropertyNode>>& children) const override;
 };
 
 class DefaultEditorComponentExtension : public EditorComponentExtension

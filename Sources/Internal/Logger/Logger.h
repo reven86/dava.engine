@@ -10,7 +10,6 @@
                                 Logger::Debug("%s_2 = %f, %f, %f, %f", #param, param._30, param._31, param._32, param._33);
 
 #include "Base/BaseTypes.h"
-#include "Base/Singleton.h"
 
 #include "FileSystem/FilePath.h"
 
@@ -20,7 +19,7 @@ namespace DAVA
 {
 class LoggerOutput;
 
-class Logger : public Singleton<Logger>
+class Logger
 {
 public:
     enum eLogLevel
@@ -117,6 +116,7 @@ public:
     static eLogLevel GetLogLevelFromString(const char8* ll);
 
 private:
+    static Logger* GetLoggerInstance();
     bool CutOldLogFileIfExist(const FilePath& logFile) const;
 
     void FileLog(const FilePath& filepath, eLogLevel ll, const char8* text) const;

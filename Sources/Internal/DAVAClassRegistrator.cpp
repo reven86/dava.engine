@@ -2,29 +2,14 @@
 #include "DAVAClassRegistrator.h"
 #include "Render/Highlevel/ShadowVolume.h"
 #include "Reflection/ReflectionRegistrator.h"
-#include "UI/Layouts/UILinearLayoutComponent.h"
-#include "UI/Layouts/UIFlowLayoutComponent.h"
-#include "UI/Layouts/UIFlowLayoutHintComponent.h"
-#include "UI/Layouts/UIIgnoreLayoutComponent.h"
-#include "UI/Layouts/UISizePolicyComponent.h"
-#include "UI/Layouts/UIAnchorComponent.h"
-#include "UI/Input/UIModalInputComponent.h"
-#include "UI/Focus/UIFocusComponent.h"
-#include "UI/Focus/UIFocusGroupComponent.h"
-#include "UI/Focus/UINavigationComponent.h"
-#include "UI/Focus/UITabOrderComponent.h"
-#include "UI/Input/UIActionComponent.h"
-#include "UI/Input/UIActionBindingComponent.h"
-#include "UI/Scroll/UIScrollBarDelegateComponent.h"
 #include "Engine/Engine.h"
-#include "Entity/ComponentManager.h"
 
 using namespace DAVA;
 
 void DAVA::RegisterDAVAClasses()
 {
     //this code do nothing. Needed to compiler generate code from this cpp file
-    Logger* log = Logger::Instance();
+    Logger* log = GetEngineContext()->logger;
     if (log)
         log->Log(Logger::LEVEL__DISABLE, "");
 }

@@ -3,6 +3,7 @@
 
 #include <Engine/Engine.h>
 #include <Logger/Logger.h>
+#include <UI/Render/UIDebugRenderComponent.h>
 
 using namespace DAVA;
 
@@ -293,7 +294,7 @@ DAVA::UIButton* CoreV2Test::CreateUIButton(DAVA::Font* font, const DAVA::Rect& r
     button->SetStateFont(0xFF, font);
     button->SetStateText(0xFF, UTF8Utils::EncodeToWideString(text));
     button->SetStateFontColor(0xFF, Color::White);
-    button->SetDebugDraw(true);
+    button->GetOrCreateComponent<UIDebugRenderComponent>();
     button->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, onClick));
     AddControl(button);
     return button;

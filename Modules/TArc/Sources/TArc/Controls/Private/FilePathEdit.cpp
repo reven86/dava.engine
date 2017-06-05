@@ -8,24 +8,19 @@
 #include <QHBoxLayout>
 #include <QLineEdit>
 #include <QToolButton>
-#include <QToolTip>
 
 namespace DAVA
 {
 namespace TArc
 {
 FilePathEdit::FilePathEdit(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QWidget>(ControlDescriptor(params.fields), wrappersProcessor, model, parent)
-    , ui(params.ui)
-    , wndKey(params.wndKey)
+    : ControlProxyImpl<QWidget>(params, ControlDescriptor(params.fields), wrappersProcessor, model, parent)
 {
     SetupControl();
 }
 
 FilePathEdit::FilePathEdit(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QWidget>(ControlDescriptor(params.fields), accessor, model, parent)
-    , ui(params.ui)
-    , wndKey(params.wndKey)
+    : ControlProxyImpl<QWidget>(params, ControlDescriptor(params.fields), accessor, model, parent)
 {
     SetupControl();
 }
@@ -34,6 +29,8 @@ void FilePathEdit::SetupControl()
 {
     edit = new QLineEdit(this);
     edit->setObjectName("filePathEdit");
+    setFocusProxy(edit);
+    setFocusPolicy(edit->focusPolicy());
 
     button = new QToolButton(this);
     button->setAutoRaise(true);
@@ -53,44 +50,50 @@ void FilePathEdit::SetupControl()
 
 void FilePathEdit::EditingFinished()
 {
+    RETURN_IF_MODEL_LOST(void());
     if (!edit->isReadOnly())
     {
         FilePath path(edit->text().toStdString());
-        M::ValidationResult validation = Validate(path);
-        ProcessValidationResult(validation, path);
-        if (validation.state == M::ValidationResult::eState::Valid)
+        FilePath currentValue = GetFieldValue<FilePath>(Fields::Value, FilePath());
+        if (path != currentValue)
         {
-            wrapper.SetFieldValue(GetFieldName(Fields::Value), path);
-            if (path.GetStringValue() != path.GetAbsolutePathname())
+            M::ValidationResult validation = Validate(path);
+            ProcessValidationResult(validation, path);
+            if (validation.state == M::ValidationResult::eState::Valid)
             {
-                edit->setText(QString::fromStdString(path.GetAbsolutePathname()));
+                wrapper.SetFieldValue(GetFieldName(Fields::Value), path);
+                if (path.GetStringValue() != path.GetAbsolutePathname())
+                {
+                    edit->setText(QString::fromStdString(path.GetAbsolutePathname()));
+                }
             }
-        }
-        else
-        {
-            Reflection r = model.GetField(GetFieldName(Fields::Value));
-            DVASSERT(r.IsValid());
-            edit->setText(QString::fromStdString(r.GetValue().Cast<FilePath>().GetAbsolutePathname()));
+            else
+            {
+                Reflection r = model.GetField(GetFieldName(Fields::Value));
+                DVASSERT(r.IsValid());
+                edit->setText(QString::fromStdString(r.GetValue().Cast<FilePath>().GetAbsolutePathname()));
+            }
         }
     }
 }
 
 void FilePathEdit::ButtonClicked()
 {
+    RETURN_IF_MODEL_LOST(void());
     if (!edit->isReadOnly())
     {
         QString path;
         if (IsFile() == true)
         {
             FileDialogParams params = GetFileDialogParams();
-            path = ui->GetOpenFileName(wndKey, params);
+            path = controlParams.ui->GetOpenFileName(controlParams.wndKey, params);
         }
         else
         {
             DirectoryDialogParams params;
             params.dir = edit->text();
             params.title = QString::fromStdString("Open directory");
-            path = ui->GetExistingDirectory(wndKey, params);
+            path = controlParams.ui->GetExistingDirectory(controlParams.wndKey, params);
         }
 
         if (path.isEmpty() == false)
@@ -110,6 +113,7 @@ void FilePathEdit::ButtonClicked()
 
 void FilePathEdit::UpdateControl(const ControlDescriptor& descriptor)
 {
+    RETURN_IF_MODEL_LOST(void());
     bool readOnlyChanged = descriptor.IsChanged(Fields::IsReadOnly);
     bool textChanged = descriptor.IsChanged(Fields::Value);
     if (readOnlyChanged || textChanged)
@@ -120,7 +124,15 @@ void FilePathEdit::UpdateControl(const ControlDescriptor& descriptor)
         {
             DAVA::Reflection fieldValue = model.GetField(descriptor.GetName(Fields::Value));
             DVASSERT(fieldValue.IsValid());
-            edit->setText(QString::fromStdString(fieldValue.GetValue().Cast<FilePath>().GetAbsolutePathname()));
+            Any value = fieldValue.GetValue();
+            if (value.CanGet<FilePath>())
+            {
+                edit->setText(QString::fromStdString(value.Get<FilePath>().GetAbsolutePathname()));
+            }
+            else if (value.CanCast<String>())
+            {
+                edit->setText(QString::fromStdString(value.Cast<String>()));
+            }
         }
     }
 
@@ -139,6 +151,7 @@ void FilePathEdit::UpdateControl(const ControlDescriptor& descriptor)
 
 M::ValidationResult FilePathEdit::Validate(const Any& value) const
 {
+    RETURN_IF_MODEL_LOST(M::ValidationResult());
     Reflection field = model.GetField(GetFieldName(Fields::Value));
     DVASSERT(field.IsValid());
 
@@ -207,8 +220,11 @@ void FilePathEdit::ProcessValidationResult(M::ValidationResult& validationResult
 
 void FilePathEdit::ShowHint(const QString& message)
 {
-    QPoint pos = edit->mapToGlobal(QPoint(0, 0));
-    QToolTip::showText(pos, message, this);
+    NotificationParams notif;
+    notif.title = "Incorrect value";
+    notif.message.type = Result::RESULT_ERROR;
+    notif.message.message = message.toStdString();
+    controlParams.ui->ShowNotification(controlParams.wndKey, notif);
 }
 
 } // namespace TArc

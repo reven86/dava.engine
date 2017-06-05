@@ -21,6 +21,7 @@
 #include "UI/Input/UIInputSystem.h"
 #include "UI/Layouts/UIAnchorComponent.h"
 #include "UI/Layouts/UILayoutSystem.h"
+#include "UI/Render/UIClipContentComponent.h"
 #include "UI/Render/UIRenderSystem.h"
 #include "UI/Sound/UISoundSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
@@ -52,14 +53,11 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIControl)
     .Field("visible", &UIControl::GetVisibilityFlag, &UIControl::SetVisibilityFlag)
     .Field("enabled", &UIControl::GetEnabled, &UIControl::SetEnabledNotHierarchic)
     .Field("selected", &UIControl::GetSelected, &UIControl::SetSelectedNotHierarchic)
-    .Field("clip", &UIControl::GetClipContents, &UIControl::SetClipContents)
     .Field("noInput", &UIControl::GetNoInput, &UIControl::SetNoInput)
     .Field("exclusiveInput", &UIControl::GetExclusiveInput, &UIControl::SetExclusiveInputNotHierarchic)
     .Field("wheelSensitivity", &UIControl::GetWheelSensitivity, &UIControl::SetWheelSensitivity)
     .Field("tag", &UIControl::GetTag, &UIControl::SetTag)
     .Field("classes", &UIControl::GetClassesAsString, &UIControl::SetClassesFromString)
-    .Field("debugDraw", &UIControl::GetDebugDraw, &UIControl::SetDebugDrawNotHierarchic)
-    .Field("debugDrawColor", &UIControl::GetDebugDrawColor, &UIControl::SetDebugDrawColor)
     //    .Field("components", &UIControl::GetComponents, nullptr)
     .End();
 }
@@ -109,14 +107,8 @@ UIControl::UIControl(const Rect& rect)
     inputProcessorsCount = 1;
 
     eventDispatcher = NULL;
-    clipContents = false;
 
-    debugDrawEnabled = false;
     hiddenForDebug = false;
-    debugDrawColor = Color(1.0f, 0.0f, 0.0f, 1.0f);
-
-    drawPivotPointMode = DRAW_NEVER;
-
     pivot = Vector2(0.0f, 0.0f);
     scale = Vector2(1.0f, 1.0f);
     angle = 0;
@@ -684,11 +676,6 @@ void UIControl::SetSelected(bool isSelected, bool hierarchic /* = true*/)
     }
 }
 
-void UIControl::SetClipContents(bool isNeedToClipContents)
-{
-    clipContents = isNeedToClipContents;
-}
-
 bool UIControl::GetHover() const
 {
     return (controlState & STATE_HOVER) != 0;
@@ -916,13 +903,8 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
     exclusiveInput = srcControl->exclusiveInput;
     visible = srcControl->visible;
     inputEnabled = srcControl->inputEnabled;
-    clipContents = srcControl->clipContents;
 
-    drawPivotPointMode = srcControl->drawPivotPointMode;
-    debugDrawColor = srcControl->debugDrawColor;
-    debugDrawEnabled = srcControl->debugDrawEnabled;
     hiddenForDebug = srcControl->hiddenForDebug;
-
     classes = srcControl->classes;
     localProperties = srcControl->localProperties;
     styledProperties = srcControl->styledProperties;
@@ -1242,6 +1224,7 @@ bool UIControl::SystemInput(UIEvent* currentInput)
 
     //if(currentInput->touchLocker != this)
     {
+        bool clipContents = (GetComponentCount<UIClipContentComponent>() != 0);
         if (clipContents &&
             (UIEvent::Phase::BEGAN == currentInput->phase || UIEvent::Phase::MOVE == currentInput->phase || UIEvent::Phase::WHEEL == currentInput->phase || UIEvent::Phase::CANCELLED == currentInput->phase))
         {
@@ -1775,29 +1758,6 @@ Animation* UIControl::ColorAnimation(const Color& finalColor, float32 time, Inte
     return animation;
 }
 
-void UIControl::SetDebugDraw(bool _debugDrawEnabled, bool hierarchic /* = false*/)
-{
-    debugDrawEnabled = _debugDrawEnabled;
-    if (hierarchic)
-    {
-        List<UIControl*>::iterator it = children.begin();
-        for (; it != children.end(); ++it)
-        {
-            (*it)->SetDebugDraw(debugDrawEnabled, hierarchic);
-        }
-    }
-}
-
-void UIControl::SetDebugDrawColor(const Color& color)
-{
-    debugDrawColor = color;
-}
-
-const Color& UIControl::GetDebugDrawColor() const
-{
-    return debugDrawColor;
-}
-
 bool UIControl::IsHiddenForDebug() const
 {
     return hiddenForDebug;
@@ -1806,24 +1766,6 @@ bool UIControl::IsHiddenForDebug() const
 void UIControl::SetHiddenForDebug(bool hidden)
 {
     hiddenForDebug = hidden;
-}
-
-void UIControl::SetDrawPivotPointMode(eDebugDrawPivotMode mode, bool hierarchic /*=false*/)
-{
-    drawPivotPointMode = mode;
-    if (hierarchic)
-    {
-        List<UIControl*>::iterator it = children.begin();
-        for (; it != children.end(); ++it)
-        {
-            (*it)->SetDrawPivotPointMode(mode, hierarchic);
-        }
-    }
-}
-
-UIControl::eDebugDrawPivotMode UIControl::GetDrawPivotPointMode() const
-{
-    return drawPivotPointMode;
 }
 
 void UIControl::SystemOnFocusLost()

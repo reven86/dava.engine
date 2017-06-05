@@ -80,37 +80,39 @@ void ParticleDebugDrawModule::PostInit()
     layout->setMargin(0);
     layout->setSpacing(4);
 
+    UI* ui = GetUI();
+
     {
-        ControlDescriptorBuilder<CheckBox::Fields> fields;
-        fields[CheckBox::Fields::IsReadOnly] = "readOnly";
-        fields[CheckBox::Fields::Checked] = "isEnabledProperty";
-        layout->AddControl(new CheckBox(fields, accessor, DAVA::Reflection::Create(DAVA::ReflectedObject(this)), w));
+        CheckBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+        params.fields[CheckBox::Fields::IsReadOnly] = "readOnly";
+        params.fields[CheckBox::Fields::Checked] = "isEnabledProperty";
+        layout->AddControl(new CheckBox(params, accessor, DAVA::Reflection::Create(DAVA::ReflectedObject(this)), w));
     }
 
     {
-        ControlDescriptorBuilder<ComboBox::Fields> fields;
-        fields[ComboBox::Fields::IsReadOnly] = "readOnly";
-        fields[ComboBox::Fields::Value] = "drawModeProperty";
-        layout->AddControl(new ComboBox(fields, accessor, DAVA::Reflection::Create(DAVA::ReflectedObject(this)), w));
+        ComboBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+        params.fields[ComboBox::Fields::IsReadOnly] = "readOnly";
+        params.fields[ComboBox::Fields::Value] = "drawModeProperty";
+        layout->AddControl(new ComboBox(params, accessor, DAVA::Reflection::Create(DAVA::ReflectedObject(this)), w));
     }
 
     {
-        ControlDescriptorBuilder<CheckBox::Fields> fields;
-        fields[CheckBox::Fields::IsReadOnly] = "readOnly";
-        fields[CheckBox::Fields::Checked] = "drawSelectedProperty";
-        layout->AddControl(new CheckBox(fields, accessor, DAVA::Reflection::Create(DAVA::ReflectedObject(this)), w));
+        CheckBox::Params params(accessor, ui, DAVA::TArc::mainWindowKey);
+        params.fields[CheckBox::Fields::IsReadOnly] = "readOnly";
+        params.fields[CheckBox::Fields::Checked] = "drawSelectedProperty";
+        layout->AddControl(new CheckBox(params, accessor, DAVA::Reflection::Create(DAVA::ReflectedObject(this)), w));
     }
 
     QString toolbarName = "ParticleSystemToolbar";
     ActionPlacementInfo toolbarTogglePlacement(CreateMenuPoint(QList<QString>() << "View"
                                                                                 << "Toolbars"));
-    GetUI()->DeclareToolbar(DAVA::TArc::mainWindowKey, toolbarTogglePlacement, toolbarName);
+    ui->DeclareToolbar(DAVA::TArc::mainWindowKey, toolbarTogglePlacement, toolbarName);
 
     QAction* action = new QAction(nullptr);
     AttachWidgetToAction(action, w);
 
     ActionPlacementInfo placementInfo(CreateToolbarPoint(toolbarName));
-    GetUI()->AddAction(DAVA::TArc::mainWindowKey, placementInfo, action);
+    ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, action);
 
     filedBinder.reset(new FieldBinder(accessor));
     DAVA::TArc::FieldDescriptor descr;

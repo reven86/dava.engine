@@ -9,6 +9,12 @@ namespace TArc
 void DataWrappersProcessor::Shoutdown()
 {
     wrappers.clear();
+    justCreatedWrappers.clear();
+}
+
+void DataWrappersProcessor::SetDebugName(const String& debugName_)
+{
+    debugName = debugName_;
 }
 
 DataWrapper DataWrappersProcessor::CreateWrapper(const ReflectedType* type, DataContext* ctx)
@@ -24,6 +30,7 @@ DataWrapper DataWrappersProcessor::CreateWrapper(const DataWrapper::DataAccessor
     DataWrapper wrapper(accessor);
     wrapper.SetContext(ctx);
     justCreatedWrappers.push_back(wrapper);
+    wrapper.SetDebugName(debugName);
     return wrapper;
 }
 

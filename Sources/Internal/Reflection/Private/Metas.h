@@ -19,6 +19,10 @@ class HiddenField
 {
 };
 
+class DeveloperModeOnly
+{
+};
+
 class DisplayName
 {
 public:
@@ -81,7 +85,7 @@ struct ValidationResult
         \anchor validator_state
         Current state of validator
     */
-    eState state;
+    eState state = eState::Invalid;
     /**
         Validator can change value that user inputted
         Control will use this value only if \ref validator_state "state" equal Valid or Intermediate
@@ -220,6 +224,11 @@ class FrequentlyChangedValue
 
 /** Type that derived from Component and marked by this Meta couldn't be created in PropertyPanel */
 class CantBeCreatedManualyComponent
+{
+};
+
+/** Type that derived from Component and marked by this Meta couldn't be deleted in PropertyPanel */
+class CantBeDeletedManualyComponent
 {
 };
 

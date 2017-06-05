@@ -32,6 +32,7 @@ public:
     }
     virtual void CreateTestedModules();
 
+    UI* GetUI();
     MockInvoker* GetMockInvoker();
     DataContext* GetActiveContext();
     const DataContext* GetActiveContext() const;

@@ -2,6 +2,7 @@
 #include "UI/UIScrollViewContainer.h"
 #include "UI/ScrollHelper.h"
 #include "UI/UIControlHelpers.h"
+#include "UI/Render/UIClipContentComponent.h"
 #include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
@@ -28,11 +29,12 @@ UIScrollView::UIScrollView(const Rect& rect)
 {
     SetInputEnabled(false, false);
     multiInput = true;
-    SetClipContents(true);
 
     scrollContainer->SetName(UISCROLL_VIEW_CONTAINER_NAME);
     // Scroll container is a child of ScrollView
     AddControl(scrollContainer);
+
+    GetOrCreateComponent<UIClipContentComponent>();
 }
 
 UIScrollView::~UIScrollView()

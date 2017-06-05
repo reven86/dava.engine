@@ -15,6 +15,8 @@
 #include "UI/Components/UIComponent.h"
 #include "UI/Layouts/UIAnchorComponent.h"
 #include "UI/Layouts/UILinearLayoutComponent.h"
+#include "UI/Render/UIDebugRenderComponent.h"
+#include "UI/Render/UIClipContentComponent.h"
 #include "Utils/Utils.h"
 #include "Logger/Logger.h"
 #include "Reflection/ReflectedTypeDB.h"
@@ -32,23 +34,26 @@ UIPackageLoader::UIPackageLoader(const Map<String, DAVA::Set<FastName>>& legacyP
     version = DAVA::UIPackage::CURRENT_VERSION;
     if (MIN_SUPPORTED_VERSION <= VERSION_WITH_LEGACY_ALIGNS)
     {
-        legacyAlignsMap[FastName("leftAnchorEnabled")] = FastName("leftAlignEnabled");
-        legacyAlignsMap[FastName("leftAnchor")] = FastName("leftAlign");
-        legacyAlignsMap[FastName("hCenterAnchorEnabled")] = FastName("hcenterAlignEnabled");
-        legacyAlignsMap[FastName("hCenterAnchor")] = FastName("hcenterAlign");
-        legacyAlignsMap[FastName("rightAnchorEnabled")] = FastName("rightAlignEnabled");
-        legacyAlignsMap[FastName("rightAnchor")] = FastName("rightAlign");
-        legacyAlignsMap[FastName("topAnchorEnabled")] = FastName("topAlignEnabled");
-        legacyAlignsMap[FastName("topAnchor")] = FastName("topAlign");
-        legacyAlignsMap[FastName("vCenterAnchorEnabled")] = FastName("vcenterAlignEnabled");
-        legacyAlignsMap[FastName("vCenterAnchor")] = FastName("vcenterAlign");
-        legacyAlignsMap[FastName("bottomAnchorEnabled")] = FastName("bottomAlignEnabled");
-        legacyAlignsMap[FastName("bottomAnchor")] = FastName("bottomAlign");
+        legacyAlignsMap["leftAnchorEnabled"] = "leftAlignEnabled";
+        legacyAlignsMap["leftAnchor"] = "leftAlign";
+        legacyAlignsMap["hCenterAnchorEnabled"] = "hcenterAlignEnabled";
+        legacyAlignsMap["hCenterAnchor"] = "hcenterAlign";
+        legacyAlignsMap["rightAnchorEnabled"] = "rightAlignEnabled";
+        legacyAlignsMap["rightAnchor"] = "rightAlign";
+        legacyAlignsMap["topAnchorEnabled"] = "topAlignEnabled";
+        legacyAlignsMap["topAnchor"] = "topAlign";
+        legacyAlignsMap["vCenterAnchorEnabled"] = "vcenterAlignEnabled";
+        legacyAlignsMap["vCenterAnchor"] = "vcenterAlign";
+        legacyAlignsMap["bottomAnchorEnabled"] = "bottomAlignEnabled";
+        legacyAlignsMap["bottomAnchor"] = "bottomAlign";
     }
     else
     {
         DVASSERT(false); // we have to remove legacy aligns support if min supported version more than version with legacy aligns
     }
+
+    legacyDebugDrawMap["enabled"] = "debugDraw";
+    legacyDebugDrawMap["drawColor"] = "debugDrawColor";
 }
 
 UIPackageLoader::~UIPackageLoader()
@@ -357,6 +362,16 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
         {
             ProcessLegacyAligns(node, builder);
         }
+
+        if (version <= LAST_VERSION_WITH_LEGACY_DEBUG_DRAW)
+        {
+            ProcessLegacyDebugDraw(node, builder);
+        }
+
+        if (version <= LAST_VERSION_WITH_LEGACY_CLIP_CONTENT)
+        {
+            ProcessLegacyClipContent(node, builder);
+        }
     }
 
     // load children
@@ -399,7 +414,7 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(const ReflectedType* ref
             Any res;
             if (node)
             {
-                res = ReadAnyFromYamlNode(field.get(), node, field->name);
+                res = ReadAnyFromYamlNode(field.get(), node, field->name.c_str());
                 if (!res.IsEmpty())
                 {
                     builder->BeginControlPropertiesSection(ref->GetPermanentName());
@@ -462,7 +477,7 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(const YamlNode* node, 
 
                 if (res.IsEmpty())
                 {
-                    res = ReadAnyFromYamlNode(field.get(), nodeDescr.node, field->name);
+                    res = ReadAnyFromYamlNode(field.get(), nodeDescr.node, field->name.c_str());
                 }
 
                 builder->ProcessProperty(*field, res);
@@ -473,7 +488,7 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(const YamlNode* node, 
     }
 }
 
-void UIPackageLoader::ProcessLegacyAligns(const YamlNode* node, AbstractUIPackageBuilder* builder)
+void UIPackageLoader::ProcessLegacyAligns(const YamlNode* node, AbstractUIPackageBuilder* builder) const
 {
     bool hasAnchorProperties = false;
     for (const auto& it : legacyAlignsMap)
@@ -493,16 +508,64 @@ void UIPackageLoader::ProcessLegacyAligns(const YamlNode* node, AbstractUIPackag
             const Vector<std::unique_ptr<ReflectedStructure::Field>>& fields = componentRef->GetStructure()->fields;
             for (const std::unique_ptr<ReflectedStructure::Field>& field : fields)
             {
-                const FastName& name = field->name;
+                String name = field->name.c_str();
                 auto iter = legacyAlignsMap.find(name);
                 if (iter != legacyAlignsMap.end())
                 {
-                    Any res = ReadAnyFromYamlNode(field.get(), node, legacyAlignsMap[name]);
+                    Any res = ReadAnyFromYamlNode(field.get(), node, iter->second);
                     builder->ProcessProperty(*field, res);
                 }
             }
         }
 
+        builder->EndComponentPropertiesSection();
+    }
+}
+
+void UIPackageLoader::ProcessLegacyDebugDraw(const YamlNode* node, AbstractUIPackageBuilder* builder) const
+{
+    bool hasDebugDrawProperties = false;
+    for (const auto& it : legacyDebugDrawMap)
+    {
+        if (node->Get(it.second))
+        {
+            hasDebugDrawProperties = true;
+            break;
+        }
+    }
+
+    if (hasDebugDrawProperties)
+    {
+        const ReflectedType* componentRef = builder->BeginComponentPropertiesSection(Type::Instance<UIDebugRenderComponent>(), 0);
+        if (componentRef != nullptr && componentRef->GetStructure() != nullptr)
+        {
+            const Vector<std::unique_ptr<ReflectedStructure::Field>>& fields = componentRef->GetStructure()->fields;
+            for (const std::unique_ptr<ReflectedStructure::Field>& field : fields)
+            {
+                static const FastName enabledFieldName("enabled");
+                String name(field->name.c_str());
+                auto it = legacyDebugDrawMap.find(name);
+                if (it != legacyDebugDrawMap.end())
+                {
+                    Any res = ReadAnyFromYamlNode(field.get(), node, it->second);
+                    if (res.IsEmpty() && enabledFieldName == field->name)
+                    {
+                        res = Any(false);
+                    }
+                    builder->ProcessProperty(*field, res);
+                }
+            }
+        }
+
+        builder->EndComponentPropertiesSection();
+    }
+}
+
+void UIPackageLoader::ProcessLegacyClipContent(const YamlNode* node, AbstractUIPackageBuilder* builder) const
+{
+    if (node->Get("clip"))
+    {
+        builder->BeginComponentPropertiesSection(Type::Instance<UIClipContentComponent>(), 0);
         builder->EndComponentPropertiesSection();
     }
 }
@@ -545,12 +608,12 @@ Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(co
     return components;
 }
 
-Any UIPackageLoader::ReadAnyFromYamlNode(const ReflectedStructure::Field* fieldRef, const YamlNode* node, const FastName& name)
+Any UIPackageLoader::ReadAnyFromYamlNode(const ReflectedStructure::Field* fieldRef, const YamlNode* node, const String& name) const
 {
     Any res;
     if (!name.empty())
     {
-        const YamlNode* valueNode = node->Get(name.c_str());
+        const YamlNode* valueNode = node->Get(name);
 
         if (valueNode)
         {

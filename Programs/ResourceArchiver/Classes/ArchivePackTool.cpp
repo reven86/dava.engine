@@ -7,6 +7,7 @@
 #include <Utils/StringFormat.h>
 #include <Logger/Logger.h>
 #include <Debug/DVAssert.h>
+#include <Engine/Engine.h>
 #include "ResultCodes.h"
 
 namespace OptionNames
@@ -187,7 +188,7 @@ int ArchivePackTool::ProcessInternal()
     if (!logFilePath.IsEmpty())
     {
         FileSystem::Instance()->DeleteFile(logFilePath);
-        Logger::Instance()->SetLogPathname(logFilePath);
+        GetEngineContext()->logger->SetLogPathname(logFilePath);
     }
 
     std::unique_ptr<AssetCacheClient> assetCache;

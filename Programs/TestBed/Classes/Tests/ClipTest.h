@@ -25,8 +25,8 @@ private:
     void DebugDrawPressed(BaseObject* obj, void* data, void* callerData);
     void ClipPressed(BaseObject* obj, void* data, void* callerData);
 
-    bool enableClip = true;
-    bool enableDebugDraw = true;
+    bool enableClip = false;
+    bool enableDebugDraw = false;
     Rect defaultRect;
 
     UIControl* fullSizeWgt;

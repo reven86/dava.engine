@@ -579,14 +579,11 @@ void EngineBackend::HandleAppTerminate(const MainDispatcherEvent& e)
     {
         appIsTerminating = true;
 
-        // Usually windows send blocking event about destruction and aliveWindows can be
-        // modified while iterating over windows, so use such while construction.
-        auto it = aliveWindows.begin();
-        while (it != aliveWindows.end())
+        // WindowBackend::Close can lead to removing a window from aliveWindows list (inside of OnWindowDestroyed)
+        // So copy the vector and iterate over the copy to avoid dealing with invalid iterators
+        std::vector<Window*> aliveWindowsCopy = aliveWindows;
+        for (Window* w : aliveWindowsCopy)
         {
-            Window* w = *it;
-            ++it;
-
             // Directly call Close for WindowBackend to tell important information that application is terminating
             GetWindowBackend(w)->Close(true);
         }
@@ -927,7 +924,12 @@ void EngineBackend::DestroySubsystems()
         context->deviceManager = nullptr;
     }
     SafeDelete(context->componentManager);
-    SafeRelease(context->logger);
+
+    if (context->logger != nullptr)
+    {
+        delete context->logger;
+        context->logger = nullptr;
+    }
 }
 
 void EngineBackend::OnRenderingError(rhi::RenderingError err, void* param)

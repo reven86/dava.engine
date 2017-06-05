@@ -15,10 +15,10 @@ const String MULTIPLAYER_ARCHIVE = "multiplayer";
 
 AutotestingDB::AutotestingDB()
     : logsFolder(FilePath(""))
-    , dbClient(nullptr)
     , logFilePath(FilePath(""))
-    , autoSys(nullptr)
+    , autotestingLogger(new Logger())
 {
+    autotestingLogger->SetLogLevel(Logger::LEVEL_DEBUG);
     autoSys = AutotestingSystem::Instance();
 }
 
@@ -163,6 +163,7 @@ void AutotestingDB::WriteLogHeader()
     {
         FileSystem::Instance()->DeleteFile(logFilePath);
     }
+    autotestingLogger->SetLogPathname(logFilePath);
 
     DateTime time = DateTime::Now();
     //Get time.GetMonth() return month number - 1. Ex for 01(Jan) it return 00(Jan).
@@ -188,14 +189,9 @@ void AutotestingDB::Log(const String& level, const String& message)
 
     Logger::Debug("AutotestingDB::Log: [%s] %s", level.c_str(), message.c_str());
 
-    Logger* logger = Logger::Instance();
-
     auto it = stringToLevel.find(level);
     Logger::eLogLevel logLevel = (it != stringToLevel.end()) ? it->second : Logger::LEVEL_ERROR;
-    Logger::eLogLevel oldLogLevel = logger->GetLogLevel();
-    logger->SetLogLevel(Logger::LEVEL_DEBUG);
-    Logger::LogToFile(logFilePath, logLevel, "%s", message.c_str());
-    logger->SetLogLevel(oldLogLevel);
+    autotestingLogger->Log(logLevel, "%s", message.c_str());
 }
 
 bool AutotestingDB::SaveKeyedArchiveToDevice(const String& archiveName, KeyedArchive* archive)
