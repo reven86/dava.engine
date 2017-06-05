@@ -1,7 +1,5 @@
 #pragma once
 
-#if !defined(__DAVAENGINE_LINUX__)
-
 #include "DAVAEngine.h"
 #include "DLC/DLC.h"
 #include "Infrastructure/BaseScreen.h"
@@ -96,5 +94,3 @@ protected:
     DLC* dlc = nullptr;
     DLCCrashTest crashTest;
 };
-
-#endif // __DAVAENGINE_LINUX__
