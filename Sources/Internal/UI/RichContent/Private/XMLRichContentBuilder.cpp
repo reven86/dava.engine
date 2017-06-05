@@ -5,12 +5,17 @@
 #include "UI/Layouts/UIFlowLayoutHintComponent.h"
 #include "UI/Layouts/UILayoutSourceRectComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
+#include "UI/RichContent/Private/RichContentUIPackageBuilder.h"
 #include "UI/RichContent/Private/RichLink.h"
 #include "UI/RichContent/UIRichAliasMap.h"
 #include "UI/RichContent/UIRichContentAliasesComponent.h"
 #include "UI/RichContent/UIRichContentComponent.h"
 #include "UI/RichContent/UIRichContentObjectComponent.h"
 #include "UI/UIControl.h"
+#include "UI/UIPackageLoader.h"
+#include "UI/UIStaticText.h"
+#include "Utils/StringUtils.h"
+#include "Utils/UTF8Utils.h"
 
 namespace DAVA
 {

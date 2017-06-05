@@ -1,27 +1,12 @@
 #include "UI/RichContent/UIRichContentSystem.h"
 
-#include "Base/ObjectFactory.h"
 #include "Debug/DVAssert.h"
-#include "FileSystem/XMLParser.h"
-#include "Logger/Logger.h"
-#include "UI/DefaultUIPackageBuilder.h"
-#include "UI/UIPackageLoader.h"
-#include "UI/UIControl.h"
-#include "UI/UIControlSystem.h"
-#include "UI/UIStaticText.h"
-#include "UI/Layouts/UISizePolicyComponent.h"
-#include "UI/Layouts/UIFlowLayoutHintComponent.h"
-#include "UI/Layouts/UILayoutSourceRectComponent.h"
 #include "UI/RichContent/Private/RichLink.h"
 #include "UI/RichContent/Private/XMLRichContentBuilder.h"
 #include "UI/RichContent/UIRichAliasMap.h"
 #include "UI/RichContent/UIRichContentAliasesComponent.h"
 #include "UI/RichContent/UIRichContentComponent.h"
 #include "UI/RichContent/UIRichContentObjectComponent.h"
-#include "UI/Styles/UIStyleSheetSystem.h"
-#include "Utils/BiDiHelper.h"
-#include "Utils/UTF8Utils.h"
-#include "Utils/Utils.h"
 
 namespace DAVA
 {

@@ -1,4 +1,4 @@
-#include "UI/RichContent/Private/RichPackageBuilder.h"
+#include "UI/RichContent/Private/RichContentUIPackageBuilder.h"
 
 #include "Base/ObjectFactory.h"
 #include "UI/UIControl.h"
