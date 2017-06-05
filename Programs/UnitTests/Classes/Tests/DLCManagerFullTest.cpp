@@ -16,7 +16,7 @@
 #ifndef __DAVAENGINE_WIN_UAP__
 
 DAVA::FilePath documentRootDir;
-const char* const localPort = "8181";
+const char* const localPort = "8282";
 
 struct FSMTest02
 {
@@ -203,7 +203,7 @@ DAVA_TESTCLASS (DLCManagerFullTest)
 #else
             const char* cant_write_dir = "/"; // root dir
 #endif
-            dlcManager.Initialize(cant_write_dir, "http://127.0.0.1:8181/superpack_for_unittests.dvpk", DLCManager::Hints());
+            dlcManager.Initialize(cant_write_dir, "http://127.0.0.1:8282/superpack_for_unittests.dvpk", DLCManager::Hints());
         }
         catch (Exception& ex)
         {
@@ -261,7 +261,7 @@ DAVA_TESTCLASS (DLCManagerFullTest)
         try
         {
             dlcManager.Initialize(packDir,
-                                  "http://127.0.0.1:8181/superpack_for_unittests.dvpk",
+                                  "http://127.0.0.1:8282/superpack_for_unittests.dvpk",
                                   hints);
             Logger::Info("Initialize called no exception");
         }
