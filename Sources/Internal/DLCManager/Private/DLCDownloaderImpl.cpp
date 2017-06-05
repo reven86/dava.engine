@@ -442,7 +442,7 @@ struct GetSizeSubTask : IDownloaderSubTask
 
         CURLM* multi = task.curlStorage.GetMultiHandle();
         CURLMcode codem = curl_multi_add_handle(multi, easy);
-        if (code != CURLE_OK)
+        if (code != CURLM_OK)
         {
             DLCDownloader::Task::OnErrorCurlMulti(codem, task, __LINE__);
         }
@@ -566,7 +566,11 @@ DLCDownloader::Task::Task(ICurlEasyStorage& storage_,
     status.state = TaskState::JustAdded;
     status.error = TaskError();
     status.sizeDownloaded = 0;
-    status.sizeTotal = info.rangeSize;
+
+    if (-1 != info.rangeSize)
+    {
+        status.sizeTotal = info.rangeSize;
+    }
 
     writer.reset(dstWriter);
     if (writer)

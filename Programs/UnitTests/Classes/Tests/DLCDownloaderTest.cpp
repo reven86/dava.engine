@@ -9,9 +9,10 @@
 #include <Time/SystemTimer.h>
 #include <Utils/CRC32.h>
 #include <EmbeddedWebServer.h>
+#include <Platform/DeviceInfo.h>
+#include <Engine/Engine.h>
 
 #include <iomanip>
-#include <Engine/Engine.h>
 
 #include <Private/mongoose.h>
 
@@ -19,6 +20,21 @@ static const DAVA::String URL = "http://127.0.0.1:8080/superpack_for_unittests.d
 // "http://127.0.0.1:8080/superpack_for_unittests.dvpk"; // embedded web server
 // "http://dl-wotblitz.wargaming.net/dlc/r11608713/3.7.0.236.dvpk"; // CDN
 // "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/smart_dlc/3.7.0.236.dvpk" // local net server
+
+static bool doNotRunOnIos71DevicesCauseHttpServerHang()
+{
+    using namespace DAVA;
+    DeviceInfo::ePlatform platform = DeviceInfo::GetPlatform();
+    if (platform == DeviceInfo::ePlatform::PLATFORM_IOS)
+    {
+        String version = DeviceInfo::GetVersion();
+        if (version.find("7.1"))
+        {
+            return true;
+        }
+    }
+    return false;
+}
 
 class EmbededWebServer
 {
@@ -49,6 +65,10 @@ public:
     EmbededWebServer()
     {
         using namespace DAVA;
+        if (doNotRunOnIos71DevicesCauseHttpServerHang())
+        {
+            return;
+        }
         FilePath downloadedPacksDir("~doc:/UnitTests/DLCManagerTest/packs/");
 
         FileSystem* fs = GetEngineContext()->fileSystem;
@@ -80,6 +100,10 @@ public:
     }
     ~EmbededWebServer()
     {
+        if (doNotRunOnIos71DevicesCauseHttpServerHang())
+        {
+            return;
+        }
         DAVA::StopEmbeddedWebServer();
     }
 };
@@ -94,6 +118,11 @@ DAVA_TESTCLASS (DLCDownloaderTest)
     DAVA_TEST (GetFileSizeTest)
     {
         using namespace DAVA;
+
+        if (doNotRunOnIos71DevicesCauseHttpServerHang())
+        {
+            return;
+        }
 
         DLCDownloader* downloader = DLCDownloader::Create();
         String url = URL;
@@ -129,6 +158,11 @@ DAVA_TESTCLASS (DLCDownloaderTest)
     DAVA_TEST (RangeRequestTest)
     {
         using namespace DAVA;
+
+        if (doNotRunOnIos71DevicesCauseHttpServerHang())
+        {
+            return;
+        }
 
         std::array<char, 4> buf;
         MemoryBufferWriter writer(buf.data(), buf.size());
@@ -172,6 +206,11 @@ DAVA_TESTCLASS (DLCDownloaderTest)
     DAVA_TEST (DowloadLargeFileTest)
     {
         using namespace DAVA;
+
+        if (doNotRunOnIos71DevicesCauseHttpServerHang())
+        {
+            return;
+        }
 
         FileSystem* fs = FileSystem::Instance();
         std::unique_ptr<DLCDownloader> downloader(DLCDownloader::Create());
@@ -302,6 +341,11 @@ DAVA_TESTCLASS (DLCDownloaderTest)
     DAVA_TEST (ISP_return_internalErrorPageTest)
     {
         using namespace DAVA;
+
+        if (doNotRunOnIos71DevicesCauseHttpServerHang())
+        {
+            return;
+        }
 
         EmbededWebServer::allwaysReturnErrorStaticHtml = true;
 
