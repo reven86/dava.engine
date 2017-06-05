@@ -1,4 +1,5 @@
 #include "CommandLine/CommandLineModule.h"
+#include "Engine/Engine.h"
 #include "FileSystem/FilePath.h"
 #include "Logger/Logger.h"
 #include "Logger/TeamcityOutput.h"
@@ -23,7 +24,7 @@ void SetupLogger(const DAVA::String& requestedLevelString)
         requestedLevel = found->second;
     }
 
-    DAVA::Logger::Instance()->SetLogLevel(requestedLevel);
+    DAVA::GetEngineContext()->logger->SetLogLevel(requestedLevel);
 }
 }
 
@@ -50,7 +51,7 @@ void CommandLineModule::PostInit()
         DAVA::FilePath logFile = options.GetOption("-logfile").AsString();
         if (logFile.IsEmpty() == false)
         {
-            DAVA::Logger::Instance()->SetLogPathname(logFile);
+            DAVA::GetEngineContext()->logger->SetLogPathname(logFile);
         }
 
         bool useTeamcity = options.GetOption("-teamcity").AsBool();

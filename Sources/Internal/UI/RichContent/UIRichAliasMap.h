@@ -52,7 +52,7 @@ public:
     bool operator!=(const UIRichAliasMap& b) const;
 
 private:
-    UnorderedMap<String, Alias> aliases;
+    Vector<Alias> aliases;
     bool asStringDirty = false;
     String asStringTemp;
 };

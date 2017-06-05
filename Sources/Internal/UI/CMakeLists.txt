@@ -1,6 +1,7 @@
 set( HPP_FILES *.h
     Components/*.h
     Layouts/*.h
+    Layouts/Private/*.h
     Styles/*.h
     Focus/*.h
     Private/*.h
@@ -19,6 +20,7 @@ set( HPP_FILES *.h
 set( CPP_FILES *.cpp
     Components/*.cpp
     Layouts/*.cpp
+    Layouts/Private/*.cpp
     Styles/*.cpp
     Focus/*.cpp
     Private/*.cpp

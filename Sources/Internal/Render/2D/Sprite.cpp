@@ -889,7 +889,7 @@ File* Sprite::GetSpriteFile(const FilePath& spriteName, int32& resourceSizeIndex
         fp = LoadLocalizedFile(pathName, texturePath);
         if (!fp)
         {
-            Logger::Instance()->Warning("Failed to open sprite file: %s", pathName.GetAbsolutePathname().c_str());
+            Logger::Warning("Failed to open sprite file: %s", pathName.GetAbsolutePathname().c_str());
             return NULL;
         }
 

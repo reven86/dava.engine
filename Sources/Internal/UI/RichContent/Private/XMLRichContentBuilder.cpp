@@ -1,5 +1,7 @@
 #include "UI/RichContent/Private/XMLRichContentBuilder.h"
 
+#include "Logger/Logger.h"
+#include "UI/DefaultUIPackageBuilder.h"
 #include "UI/Layouts/UIFlowLayoutHintComponent.h"
 #include "UI/Layouts/UILayoutSourceRectComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
@@ -7,6 +9,7 @@
 #include "UI/RichContent/UIRichAliasMap.h"
 #include "UI/RichContent/UIRichContentAliasesComponent.h"
 #include "UI/RichContent/UIRichContentComponent.h"
+#include "UI/RichContent/UIRichContentObjectComponent.h"
 #include "UI/UIControl.h"
 
 namespace DAVA
@@ -98,9 +101,9 @@ void XMLRichContentBuilder::OnElementStarted(const String& elementName, const St
     for (UIRichContentAliasesComponent* c : link->aliasesComponents)
     {
         const UIRichAliasMap& aliases = c->GetAliases();
-        if (aliases.HasAlias(elementName))
+        const UIRichAliasMap::Alias& alias = aliases.GetAlias(elementName);
+        if (!alias.tag.empty())
         {
-            const UIRichAliasMap::Alias& alias = aliases.GetAlias(elementName);
             ProcessTagBegin(alias.tag, alias.attributes);
             return;
         }
@@ -113,9 +116,9 @@ void XMLRichContentBuilder::OnElementEnded(const String& elementName, const Stri
     for (UIRichContentAliasesComponent* c : link->aliasesComponents)
     {
         const UIRichAliasMap& aliases = c->GetAliases();
-        if (aliases.HasAlias(elementName))
+        const UIRichAliasMap::Alias& alias = aliases.GetAlias(elementName);
+        if (!alias.tag.empty())
         {
-            const UIRichAliasMap::Alias& alias = aliases.GetAlias(elementName);
             ProcessTagEnd(alias.tag);
             return;
         }
