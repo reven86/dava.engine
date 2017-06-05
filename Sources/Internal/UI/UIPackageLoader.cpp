@@ -572,34 +572,34 @@ void UIPackageLoader::ProcessLegacyClipContent(const YamlNode* node, AbstractUIP
 
 void UIPackageLoader::ProcessLegacyRichSingleAliases(const YamlNode* node, AbstractUIPackageBuilder* builder) const
 {
-    bool hasRichSingleAliases = false;
-    const YamlNode* componentsNode = node->Get("components");
+    static const String COMPONENTS_NAME = "components";
+    static const String RICH_CONTENT_NAME = "RichContent";
+    static const String ALIASES_NAME = "aliases";
+
+    const YamlNode* richContentWithAliasesNode = nullptr;
+    const YamlNode* componentsNode = node->Get(COMPONENTS_NAME);
     if (componentsNode)
     {
-        auto componentsMap = componentsNode->AsMap();
-        for ()
+        richContentWithAliasesNode = componentsNode->Get(RICH_CONTENT_NAME);
+        if (richContentWithAliasesNode && richContentWithAliasesNode->Get(ALIASES_NAME) == nullptr)
+        {
+            richContentWithAliasesNode = nullptr;
+        }
     }
 
+    if (richContentWithAliasesNode != nullptr)
     {
-        hasDebugDrawProperties = true;
-        break;
-    }
-
-    if (hasDebugDrawProperties)
-    {
-        const ReflectedType* componentRef = builder->BeginComponentPropertiesSection(UIComponent::DEBUG_RENDER_COMPONENT, 0);
+        const ReflectedType* componentRef = builder->BeginComponentPropertiesSection(UIComponent::RICH_CONTENT_ALIASES_COMPONENT, 0);
         if (componentRef != nullptr && componentRef->GetStructure() != nullptr)
         {
             const Vector<std::unique_ptr<ReflectedStructure::Field>>& fields = componentRef->GetStructure()->fields;
             for (const std::unique_ptr<ReflectedStructure::Field>& field : fields)
             {
-                static const FastName enabledFieldName("enabled");
                 String name(field->name.c_str());
-                auto it = legacyDebugDrawMap.find(name);
-                if (it != legacyDebugDrawMap.end())
+                if (name == ALIASES_NAME)
                 {
-                    Any res = ReadAnyFromYamlNode(field.get(), node, it->second);
-                    if (res.IsEmpty() && enabledFieldName == field->name)
+                    Any res = ReadAnyFromYamlNode(field.get(), richContentWithAliasesNode, ALIASES_NAME);
+                    if (res.IsEmpty())
                     {
                         res = Any(false);
                     }
