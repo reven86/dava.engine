@@ -368,6 +368,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Engine/Private/Android/JNI/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/Private/Android/Window/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Entity/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Entity/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/FileSystem/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/FileSystem/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Functional/Private/*.cpp) \
@@ -457,6 +458,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/UI/Components/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Styles/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Layouts/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Layouts/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Formula/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Formula/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Focus/*.cpp) \
@@ -484,6 +486,8 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Notification/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/CommandLine/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Logger/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Scene3D/Components/SingleComponents/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Scene3D/Components/SingleComponents/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/AnyCasts/Private/*.cpp))
 
 include $(BUILD_STATIC_LIBRARY)

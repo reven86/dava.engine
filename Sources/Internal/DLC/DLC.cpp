@@ -720,7 +720,7 @@ void DLC::StepDownloadPatchBegin()
 
     // what mode should be used for download?
     // by default - full download
-    DownloadType donwloadType = FULL;
+    DownloadType downloadType = FULL;
 
     // check what URL was downloaded last time
     File* downloadInfoFile = File::Create(dlcContext.downloadInfoStorePath, File::OPEN | File::READ);
@@ -743,7 +743,7 @@ void DLC::StepDownloadPatchBegin()
             dlcContext.remotePatchSize = lastSize;
 
             // now we can resume last download
-            donwloadType = RESUMED;
+            downloadType = RESUMED;
         }
         else
         {
@@ -754,7 +754,7 @@ void DLC::StepDownloadPatchBegin()
         SafeRelease(downloadInfoFile);
     }
 
-    if (donwloadType != RESUMED) //if 'RESUMED' downloadInfoFile contains correct info and we don't want to recreate it to prevent issues when disk is full
+    if (downloadType != RESUMED) //if 'RESUMED' downloadInfoFile contains correct info and we don't want to recreate it to prevent issues when disk is full
     {
         // save URL that we gonna download
         downloadInfoFile = File::Create(dlcContext.downloadInfoStorePath, File::CREATE | File::WRITE);
@@ -771,7 +771,7 @@ void DLC::StepDownloadPatchBegin()
 
     // start download, notifications are handled in StepDownloadPatchFinish
     DownloadManager* dm = DownloadManager::Instance();
-    dlcContext.remotePatchDownloadId = dm->Download(dlcContext.remotePatchUrl, dlcContext.remotePatchStorePath.GetAbsolutePathname(), donwloadType);
+    dlcContext.remotePatchDownloadId = dm->Download(dlcContext.remotePatchUrl, dlcContext.remotePatchStorePath.GetAbsolutePathname(), downloadType, -1, 60); // partsCount = -1 (auto), timeout = 60 sec
 }
 
 void DLC::StepDownloadPatchFinish(uint32 id, DownloadStatus status)

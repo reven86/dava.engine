@@ -835,11 +835,14 @@ DownloadError HttpCodeToDownloadError(long code, bool isRangeRequestSent)
 
 void CurlDownloader::SetTimeout(CURL* easyHandle)
 {
-    curl_easy_setopt(easyHandle, CURLOPT_CONNECTTIMEOUT, operationTimeout);
-    // we could set operation time limit which produce timeout if operation takes setted time.
     curl_easy_setopt(easyHandle, CURLOPT_TIMEOUT, 0L);
+
+    curl_easy_setopt(easyHandle, CURLOPT_CONNECTTIMEOUT, operationTimeout);
     curl_easy_setopt(easyHandle, CURLOPT_DNS_CACHE_TIMEOUT, operationTimeout);
-    curl_easy_setopt(easyHandle, CURLOPT_SERVER_RESPONSE_TIMEOUT, operationTimeout);
+
+    // abort if slower than 30 bytes/sec during operationTimeout seconds
+    curl_easy_setopt(easyHandle, CURLOPT_LOW_SPEED_TIME, 30L);
+    curl_easy_setopt(easyHandle, CURLOPT_LOW_SPEED_LIMIT, operationTimeout);
 }
 
 static DownloadError HandleDownloadResults(CURLM* multiHandle, bool isRangeRequestSent)
