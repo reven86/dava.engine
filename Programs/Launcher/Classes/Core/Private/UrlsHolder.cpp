@@ -15,21 +15,21 @@ QString UrlsHolder::GetURL(eURLType type) const
     switch (type)
     {
     case LauncherInfoURL:
-        return "/panel/modules/jsonAPI/launcher/lite.php?source=launcher";
+        return "/modules/jsonAPI/launcher/lite.php?source=launcher";
     case LauncherTestInfoURL:
-        return "/panel/modules/jsonAPI/launcher/lite4test.php?source=launcher";
+        return "/modules/jsonAPI/launcher/lite4test.php?source=launcher";
     case StringsURL:
-        return "/panel/modules/jsonAPI/launcher/lite.php?source=seo_list";
+        return "/modules/jsonAPI/launcher/lite.php?source=seo_list";
     case FavoritesURL:
-        return "/panel/modules/jsonAPI/launcher/lite.php?source=branches&filter=os:" + platformString;
+        return "/modules/jsonAPI/launcher/lite.php?source=branches&filter=os:" + platformString;
     case AllBuildsCurrentPlatformURL:
-        return "/panel/modules/jsonAPI/launcher/lite.php?source=builds&filter=os:" + platformString;
+        return "/modules/jsonAPI/launcher/lite.php?source=builds&filter=os:" + platformString;
     case AllBuildsAndroidURL:
-        return "/panel/modules/jsonAPI/launcher/lite.php?source=builds&filter=os:android";
+        return "/modules/jsonAPI/launcher/lite.php?source=builds&filter=os:android";
     case AllBuildsIOSURL:
-        return "/panel/modules/jsonAPI/launcher/lite.php?source=builds&filter=os:ios";
+        return "/modules/jsonAPI/launcher/lite.php?source=builds&filter=os:ios";
     case AllBuildsUWPURL:
-        return "/panel/modules/jsonAPI/launcher/lite.php?source=builds&filter=os:uwp";
+        return "/modules/jsonAPI/launcher/lite.php?source=builds&filter=os:uwp";
     default:
         Q_ASSERT(false && "unacceptable request");
         return QString();
