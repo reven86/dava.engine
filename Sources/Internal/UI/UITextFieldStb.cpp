@@ -444,6 +444,11 @@ void TextFieldStbImpl::SystemDraw(const UIGeometricData& d)
     UIGeometricData staticGeometric = staticText->GetLocalGeometricData();
     staticGeometric.AddGeometricData(d);
     staticGeometric.position += staticTextOffset * scale;
+
+    // Send to staticText white color as parent color because under different platforms
+    // we can't mix colors for text fields and parent backgrounds
+    staticText->SetParentColor(Color::White);
+
     staticText->Draw(staticGeometric);
 
     if (showCursor)
