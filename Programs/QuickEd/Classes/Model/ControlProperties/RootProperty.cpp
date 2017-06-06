@@ -423,9 +423,18 @@ uint32 RootProperty::GetComponentAbsIndex(const DAVA::Type* componentType, DAVA:
     ComponentManager* cm = GetEngineContext()->componentManager;
     int32 runtimeType = cm->GetRuntimeType(componentType);
     uint32 i = 0;
+
+    //sort sections in the same order as in ComponentManager
+    HashMap<const Type*, size_t> typeToIndex;
+    Vector<const Type*> sortedTypes = cm->GetRegisteredComponents();
+    for (size_t i = 0, size = sortedTypes.size(); i < size; ++i)
+    {
+        typeToIndex[sortedTypes[i]] = i;
+    }
+    size_t componentIndex = typeToIndex[componentType];
     for (ComponentPropertiesSection* section : componentProperties)
     {
-        if (cm->GetRuntimeType(section->GetComponentType()) >= runtimeType)
+        if (typeToIndex[section->GetComponentType()] >= componentIndex)
         {
             return index + i;
         }
