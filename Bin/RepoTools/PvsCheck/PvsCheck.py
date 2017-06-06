@@ -44,6 +44,12 @@ def main():
 
     return_code = pvs_process.returncode
 
+    if return_code == 0:
+        teamcity_message("PVS not found any issues",
+                         "Analysis was successfully completed, no issues were found in the source code",
+                         "SUCCESS")
+        sys.exit(return_code)
+
     if return_code & ERROR_LEVEL_1:
         teamcity_message("PVS found some issues",
                          "Error (crash) during analysis of some source file(s)",
@@ -89,12 +95,10 @@ def main():
                          "Some issues were found in the source code",
                          "ERROR")
 
-    if return_code == 0:
-        teamcity_message("PVS not found any issues",
-                         "Analysis was successfully completed, no issues were found in the source code",
-                         "SUCCESS")
-
-        sys.exit(return_code)
+    if return_code != 0:
+        teamcity_message("PVS found some issues",
+                         "For more information see log.plog.html",
+                         "ERROR")
 
     sys.stdout.write("##teamcity[progressFinish 'PVS analyze finished...']\n")
     sys.stdout.flush()
