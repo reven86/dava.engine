@@ -43,7 +43,7 @@ private:
     int32 runtimeComponentsCount = 0;
     UnorderedMap<const Type*, int32> typeToRuntimeType;
 
-    Vector<const Type*> sortedTypes;
+    Vector<const Type*> registeredCompoennts;
 };
 
 template <class T>
@@ -55,12 +55,7 @@ void ComponentManager::RegisterComponent()
         const Type* reflectionType = Type::Instance<T>();
         typeToRuntimeType[reflectionType] = runtimeComponentsCount;
 
-        sortedTypes.push_back(reflectionType);
-        std::sort(sortedTypes.begin(), sortedTypes.end(),
-                  [](const Type*& a, const Type*& b) -> bool
-                  {
-                      return ReflectedTypeDB::GetByType(a)->GetPermanentName() < ReflectedTypeDB::GetByType(b)->GetPermanentName();
-                  });
+        registeredCompoennts.push_back(reflectionType);
 
         runtimeComponentsCount++;
     }
@@ -84,7 +79,7 @@ inline int32 ComponentManager::GetRuntimeType(const Type* type)
 
 inline Vector<const Type*>& ComponentManager::GetRegisteredComponents()
 {
-    return sortedTypes;
+    return registeredCompoennts;
 }
 
 inline uint32 ComponentManager::GetComponentsCount()
