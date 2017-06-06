@@ -132,6 +132,7 @@ Semaphore::Semaphore(uint32 count)
 Semaphore::~Semaphore()
 {
     sem_destroy(static_cast<sem_t*>(semaphore));
+    delete static_cast<sem_t*>(semaphore);
 }
 
 void Semaphore::Post(uint32 count)
