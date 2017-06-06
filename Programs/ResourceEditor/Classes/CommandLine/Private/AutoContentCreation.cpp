@@ -11,6 +11,8 @@
 #include <Logger/Logger.h>
 #include <Base/ScopedPtr.h>
 
+#include <TArc/Utils/ModuleCollection.h>
+
 DuplicateObjectTool::DuplicateObjectTool(const DAVA::Vector<DAVA::String>& commandLine)
     : CommandLineModule(commandLine, "-duplicate")
 {
