@@ -170,7 +170,7 @@ void NetworkTaskProcessor::OnTimer()
 {
     if (currentTask != nullptr)
     {
-        currentTask->task->SetError("Operation canceled by timeout");
+        currentTask->task->SetError("Operation cancelled by timeout");
         TerminateImpl();
     }
 }
