@@ -18,10 +18,13 @@ GuidesController::GuidesController(DAVA::TArc::ContextAccessor* accessor_, QWidg
 {
     documentDataWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<DocumentData>());
     preferencesDataWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<PreferencesData>());
+
+    BindFields();
 }
 
 void GuidesController::CreatePreviewGuide()
 {
+    DVASSERT(previewGuide == nullptr);
     previewGuide = new QWidget(container);
     previewGuide->setAttribute(Qt::WA_TransparentForMouseEvents);
 
@@ -48,21 +51,16 @@ void GuidesController::OnCanvasParametersChanged(DAVA::float32 min_, DAVA::float
 
 void GuidesController::OnMousePress(DAVA::float32 position)
 {
-    if (IsEnabled() == false)
+    if (IsEnabled() == false || displayState == NO_DISPLAY)
     {
         return;
     }
 
     //if guides was disabled - enable guides and create new one
-    //else if guides was enabled but we receive mousePress just to hide menu
     if (IsGuidesEnabled() == false)
     {
         SetGuidesEnabled(true);
         SetDisplayState(DISPLAY_PREVIEW);
-    }
-    else if (displayState == NO_DISPLAY)
-    {
-        return;
     }
 
     if (displayState == DISPLAY_PREVIEW)
@@ -193,14 +191,18 @@ void GuidesController::EnableDrag(DAVA::float32 position)
     DVASSERT(IsEnabled());
     DVASSERT(dragState == NO_DRAG);
 
-    dragState = DRAG;
     DVASSERT(valuePtr == nullptr);
     valuePtr = GetNearestValuePtr(position);
-    DVASSERT(valuePtr != nullptr);
 
-    DAVA::TArc::DataContext* active = accessor->GetActiveContext();
-    DocumentData* data = active->GetData<DocumentData>();
-    data->BeginBatch("Dragging guide");
+    DVASSERT(valuePtr != nullptr);
+    if (valuePtr != nullptr)
+    {
+        dragState = DRAG;
+
+        DAVA::TArc::DataContext* active = accessor->GetActiveContext();
+        DocumentData* data = active->GetData<DocumentData>();
+        data->BeginBatch("Dragging guide");
+    }
 }
 
 void GuidesController::DisableDrag()
@@ -223,14 +225,21 @@ void GuidesController::DisableDrag()
 void GuidesController::BindFields()
 {
     using namespace DAVA;
+    using namespace DAVA::TArc;
     {
-        TArc::FieldDescriptor fieldDescr;
+        FieldDescriptor fieldDescr;
         fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
         fieldDescr.fieldName = DocumentData::guidesPropertyName;
         fieldBinder->BindField(fieldDescr, MakeFunction(this, &GuidesController::OnValuesChanged));
     }
     {
-        TArc::FieldDescriptor fieldDescr;
+        FieldDescriptor fieldDescr;
+        fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
+        fieldDescr.fieldName = DocumentData::displayedRootControlsPropertyName;
+        fieldBinder->BindField(fieldDescr, MakeFunction(this, &GuidesController::OnRootControlsChanged));
+    }
+    {
+        FieldDescriptor fieldDescr;
         fieldDescr.type = ReflectedTypeDB::Get<PreferencesData>();
         fieldDescr.fieldName = PreferencesData::guidesEnabledPropertyName;
         fieldBinder->BindField(fieldDescr, MakeFunction(this, &GuidesController::OnGuidesEnabledChanged));
@@ -239,14 +248,14 @@ void GuidesController::BindFields()
 
 void GuidesController::OnValuesChanged(const DAVA::Any&)
 {
-    //this is not good situation, but we can reload or close document by shortcut while we dragging guide
-    if (IsEnabled() == false)
-    {
-        SetDisplayState(NO_DISPLAY);
-        DisableDrag();
-    }
-
     SyncGuidesWithValues();
+}
+
+void GuidesController::OnRootControlsChanged(const DAVA::Any& rootControls)
+{
+    //this is not good situation, but we can reload or close document by shortcut while we dragging guide
+    SetDisplayState(NO_DISPLAY);
+    DisableDrag();
 }
 
 void GuidesController::OnGuidesEnabledChanged(const DAVA::Any&)
@@ -266,8 +275,8 @@ void GuidesController::SyncGuidesWithValues()
         return;
     }
 
-    DAVA::List<DAVA::float32> values = GetValues();
-    auto iter = std::upper_bound(values.begin(), values.end(), minValue);
+    PackageNode::AxisGuides values = GetValues();
+    auto iter = std::lower_bound(values.begin(), values.end(), minValue);
     auto endIter = std::upper_bound(values.begin(), values.end(), maxValue);
 
     int size = std::distance(iter, endIter);
@@ -297,7 +306,7 @@ void GuidesController::SyncGuidesWithValues()
 
 DAVA::float32* GuidesController::GetNearestValuePtr(DAVA::float32 position)
 {
-    const DAVA::float32 range = preferences.detectGuideDistance;
+    const DAVA::float32 range = preferences.detectGuideDistance / scale;
 
     cachedValues = GetValues();
 
@@ -308,10 +317,10 @@ DAVA::float32* GuidesController::GetNearestValuePtr(DAVA::float32 position)
 
     DAVA::float32 value = PositionToValue(position);
 
-    DAVA::List<DAVA::float32>::iterator iter = std::min_element(cachedValues.begin(), cachedValues.end(), [value](DAVA::float32 x, DAVA::float32 y)
-                                                                {
-                                                                    return std::abs(x - value) < std::abs(y - value);
-                                                                });
+    PackageNode::AxisGuides::iterator iter = std::min_element(cachedValues.begin(), cachedValues.end(), [value](DAVA::float32 left, DAVA::float32 right)
+                                                              {
+                                                                  return std::abs(left - value) < std::abs(right - value);
+                                                              });
     if (std::fabs(*iter - value) > range)
     {
         return nullptr;
@@ -332,13 +341,13 @@ bool GuidesController::IsEnabled() const
     return false;
 }
 
-DAVA::List<DAVA::float32> GuidesController::GetValues() const
+PackageNode::AxisGuides GuidesController::GetValues() const
 {
     PackageNode::Guides guides = documentDataWrapper.GetFieldValue(DocumentData::guidesPropertyName).Cast<PackageNode::Guides>(PackageNode::Guides());
-    return GetOrientation() == DAVA::Vector2::AXIS_X ? guides.horizontalGuides : guides.verticalGuides;
+    return guides[GetOrientation()];
 }
 
-void GuidesController::SetValues(const DAVA::List<DAVA::float32>& values)
+void GuidesController::SetValues(const PackageNode::AxisGuides& values)
 {
     using namespace DAVA;
     using namespace DAVA::TArc;
@@ -361,10 +370,10 @@ void GuidesController::SetupPreviewGuide(DAVA::float32 position)
 
 void GuidesController::CreateGuide(DAVA::float32 position)
 {
-    DAVA::List<DAVA::float32> values = GetValues();
+    PackageNode::AxisGuides values = GetValues();
 
     values.push_back(PositionToValue(position));
-    values.sort();
+    std::sort(values.begin(), values.end());
 
     SetValues(values);
 
@@ -374,9 +383,10 @@ void GuidesController::CreateGuide(DAVA::float32 position)
 void GuidesController::DragGuide(DAVA::float32 position)
 {
     DVASSERT(IsEnabled());
+    DVASSERT(valuePtr != nullptr);
 
     *valuePtr = PositionToValue(position);
-    cachedValues.sort();
+    std::sort(cachedValues.begin(), cachedValues.end());
     SetValues(cachedValues);
 
     SyncGuidesWithValues();
@@ -385,13 +395,13 @@ void GuidesController::DragGuide(DAVA::float32 position)
 void GuidesController::RemoveGuide(DAVA::float32 value)
 {
     cachedValues = GetValues();
-    cachedValues.remove(value);
+    cachedValues.erase(std::remove(cachedValues.begin(), cachedValues.end(), value));
     SetValues(cachedValues);
 }
 
 void GuidesController::RemoveAllGuides()
 {
-    SetValues(DAVA::List<DAVA::float32>());
+    SetValues(PackageNode::AxisGuides());
 }
 
 bool GuidesController::IsGuidesEnabled() const
@@ -411,7 +421,7 @@ void GuidesController::SetGuidesEnabled(bool enabled)
 
 DAVA::float32 GuidesController::PositionToValue(DAVA::float32 position) const
 {
-    return minValue + position / scale;
+    return std::floor(minValue + position / scale);
 }
 
 DAVA::float32 GuidesController::ValueToPosition(DAVA::float32 value) const
@@ -420,11 +430,6 @@ DAVA::float32 GuidesController::ValueToPosition(DAVA::float32 value) const
 }
 
 HGuidesController::HGuidesController(DAVA::TArc::ContextAccessor* accessor, QWidget* container)
-    : GuidesController(accessor, container)
-{
-}
-
-VGuidesController::VGuidesController(DAVA::TArc::ContextAccessor* accessor, QWidget* container)
     : GuidesController(accessor, container)
 {
 }
@@ -438,6 +443,26 @@ void HGuidesController::ProcessGeometryChanged(const QPoint& bottomLeft, const Q
     size = bottom - top;
 }
 
+void HGuidesController::ResizeGuide(QWidget* guide) const
+{
+    guide->resize(1, size);
+}
+
+void HGuidesController::MoveGuide(DAVA::float32 value, QWidget* guide) const
+{
+    guide->move(ValueToPosition(value), guideStartPosition);
+}
+
+DAVA::Vector2::eAxis HGuidesController::GetOrientation() const
+{
+    return DAVA::Vector2::AXIS_X;
+}
+
+VGuidesController::VGuidesController(DAVA::TArc::ContextAccessor* accessor, QWidget* container)
+    : GuidesController(accessor, container)
+{
+}
+
 void VGuidesController::ProcessGeometryChanged(const QPoint& bottomLeft, const QPoint& topRight)
 {
     int left = bottomLeft.x();
@@ -447,29 +472,14 @@ void VGuidesController::ProcessGeometryChanged(const QPoint& bottomLeft, const Q
     size = right - left;
 }
 
-void HGuidesController::ResizeGuide(QWidget* guide) const
-{
-    guide->resize(1, size);
-}
-
 void VGuidesController::ResizeGuide(QWidget* guide) const
 {
     guide->resize(size, 1);
 }
 
-void HGuidesController::MoveGuide(DAVA::float32 value, QWidget* guide) const
-{
-    guide->move(ValueToPosition(value), guideStartPosition);
-}
-
 void VGuidesController::MoveGuide(DAVA::float32 value, QWidget* guide) const
 {
     guide->move(guideStartPosition, ValueToPosition(value));
-}
-
-DAVA::Vector2::eAxis HGuidesController::GetOrientation() const
-{
-    return DAVA::Vector2::AXIS_X;
 }
 
 DAVA::Vector2::eAxis VGuidesController::GetOrientation() const

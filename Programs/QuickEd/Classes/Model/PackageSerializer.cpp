@@ -144,7 +144,7 @@ void PackageSerializer::VisitPackage(PackageNode* node)
         EndArray();
     }
 
-    PutGuides(node);
+    PutCustomData(node);
 }
 
 void PackageSerializer::VisitImportedPackages(ImportedPackagesNode* node)
@@ -520,41 +520,46 @@ void PackageSerializer::PutValueProperty(const DAVA::String& name, ValueProperty
     }
 }
 
-void PackageSerializer::PutGuides(const PackageNode* node)
+void PackageSerializer::PutCustomData(const PackageNode* node)
 {
     BeginMap("CustomData");
+    PutGuides(node);
+    EndMap();
+}
+
+void PackageSerializer::PutGuides(const PackageNode* node)
+{
+    BeginMap("Guides");
+    PackageControlsNode* controlsContainer = node->GetPackageControlsNode();
+    for (int i = 0, count = controlsContainer->GetCount(); i < count; ++i)
     {
-        BeginMap("Guides");
-        for (const auto& mapItem : node->GetAllGuidesForAllControls())
+        ControlNode* rootControl = controlsContainer->Get(i);
+        const String& name = rootControl->GetName();
+        const PackageNode::Guides& mapItemValue = node->GetGuides(name);
+        if (mapItemValue[Vector2::AXIS_X].empty() == false || mapItemValue[Vector2::AXIS_Y].empty() == false)
         {
-            const String& name = mapItem.first;
-            const PackageNode::Guides& mapItemValue = mapItem.second;
-            if (mapItemValue.horizontalGuides.empty() == false || mapItemValue.verticalGuides.empty() == false)
+            BeginMap(name);
             {
-                BeginMap(name);
+                if (mapItemValue[Vector2::AXIS_X].empty() == false)
                 {
-                    if (mapItemValue.horizontalGuides.empty() == false)
-                    {
-                        BeginArray("Horizontal");
-                        PutGuidesList(mapItemValue.horizontalGuides);
-                        EndArray();
-                    }
-                    if (mapItemValue.verticalGuides.empty() == false)
-                    {
-                        BeginArray("Vertical");
-                        PutGuidesList(mapItemValue.verticalGuides);
-                        EndArray();
-                    }
+                    BeginArray("Horizontal");
+                    PutGuidesList(mapItemValue[Vector2::AXIS_X]);
+                    EndArray();
                 }
-                EndMap();
+                if (mapItemValue[Vector2::AXIS_Y].empty() == false)
+                {
+                    BeginArray("Vertical");
+                    PutGuidesList(mapItemValue[Vector2::AXIS_Y]);
+                    EndArray();
+                }
             }
+            EndMap();
         }
-        EndMap();
     }
     EndMap();
 }
 
-void PackageSerializer::PutGuidesList(const List<float32>& values)
+void PackageSerializer::PutGuidesList(const PackageNode::AxisGuides& values)
 {
     for (float32 value : values)
     {

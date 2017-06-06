@@ -93,22 +93,13 @@ public:
     void SetCanUpdateAll(bool canUpdate);
     bool CanUpdateAll() const;
 
-    struct Guides
-    {
-        DAVA::List<DAVA::float32> horizontalGuides;
-        DAVA::List<DAVA::float32> verticalGuides;
+    using AxisGuides = DAVA::Vector<DAVA::float32>;
+    AxisGuides GetAxisGuides(const DAVA::String& name, DAVA::Vector2::eAxis orientation);
+    void SetAxisGuides(const DAVA::String& name, DAVA::Vector2::eAxis orientation, const AxisGuides& guides);
 
-        bool operator==(const Guides& another) const;
-    };
-
-    DAVA::List<DAVA::float32> GetGuides(const DAVA::String& name, DAVA::Vector2::eAxis orientation);
-    void SetGuides(const DAVA::String& name, DAVA::Vector2::eAxis orientation, const DAVA::List<DAVA::float32>& guides);
-
-    Guides GetAllGuides(const DAVA::String& name) const;
-    void SetAllGuides(const DAVA::String& name, const Guides& guides);
-
-    const DAVA::Map<DAVA::String, Guides>& GetAllGuidesForAllControls() const;
-    void SetAllGuidesForAllControls(const DAVA::Map<DAVA::String, Guides>& allGuides);
+    using Guides = std::array<AxisGuides, DAVA::Vector2::AXIS_COUNT>;
+    Guides GetGuides(const DAVA::String& name) const;
+    void SetGuides(const DAVA::String& name, const Guides& guides);
 
 private:
     struct DepthPackageNode

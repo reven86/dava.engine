@@ -73,7 +73,11 @@ private:
 
     void ClampAngle();
     struct MagnetLine;
-    DAVA::Vector<MagnetLine> CreateMagnetPairs(const DAVA::Rect& box, const DAVA::UIGeometricData* parentGD, const DAVA::Vector<DAVA::UIControl*>& neighbours, DAVA::Vector2::eAxis axis);
+    DAVA::Vector<MagnetLine> CreateMagnetLines(const DAVA::Rect& box, const DAVA::UIGeometricData* parentGD, const DAVA::Vector<DAVA::UIControl*>& neighbours, DAVA::Vector2::eAxis axis);
+    void CreateMagnetLinesToParent(const DAVA::Rect& box, const DAVA::UIGeometricData* parentGD, DAVA::Vector2::eAxis axis, DAVA::Vector<MagnetLine>& lines);
+    void CreateMagnetLinesToNeghbours(const DAVA::Rect& box, const DAVA::Vector<DAVA::UIControl*>& neighbours, DAVA::Vector2::eAxis axis, DAVA::Vector<MagnetLine>& lines);
+    void CreateMagnetLinesToGuides(const DAVA::Rect& box, const DAVA::UIGeometricData* parentGD, DAVA::Vector2::eAxis axis, DAVA::Vector<MagnetLine>& lines);
+
     void ExtractMatchedLines(DAVA::Vector<MagnetLineInfo>& magnets, const DAVA::Vector<MagnetLine>& magnetLines, const DAVA::UIControl* control, DAVA::Vector2::eAxis axis);
     bool IsShiftPressed() const;
 

@@ -3,6 +3,7 @@
 #include "Base/BaseObject.h"
 
 #include "PackageHierarchy/PackageVisitor.h"
+#include "PackageHierarchy/PackageNode.h"
 #include "ControlProperties/PropertyVisitor.h"
 
 #include <Base/Result.h>
@@ -72,8 +73,9 @@ private:
     void AcceptChildren(AbstractProperty* property);
     void PutValueProperty(const DAVA::String& name, ValueProperty* property);
 
+    void PutCustomData(const PackageNode* node);
     void PutGuides(const PackageNode* node);
-    void PutGuidesList(const DAVA::List<DAVA::float32>& values);
+    void PutGuidesList(const PackageNode::AxisGuides& values);
 
 private:
     DAVA::Vector<PackageNode*> importedPackages;

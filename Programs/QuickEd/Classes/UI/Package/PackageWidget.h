@@ -32,7 +32,7 @@ class FilteredPackageModel;
 class PackageModel;
 class PackageNode;
 class QItemSelection;
-class QtModelPackageCommandExecutor;
+class CommandExecutor;
 
 class PackageWidget : public QDockWidget, public Ui::PackageWidget
 {

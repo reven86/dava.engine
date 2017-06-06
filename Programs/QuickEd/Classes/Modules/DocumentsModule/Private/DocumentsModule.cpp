@@ -6,7 +6,7 @@
 
 #include "QECommands/ChangePropertyValueCommand.h"
 
-#include "UI/QtModelPackageCommandExecutor.h"
+#include "UI/CommandExecutor.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"

@@ -3,7 +3,7 @@
 #include "PackageWidget.h"
 #include "PackageModel.h"
 
-#include "UI/QtModelPackageCommandExecutor.h"
+#include "UI/CommandExecutor.h"
 
 #include "UI/Package/FilteredPackageModel.h"
 #include "Model/PackageHierarchy/PackageBaseNode.h"
@@ -465,7 +465,7 @@ void PackageWidget::OnImport()
         packages.push_back(FilePath(fileName.toStdString()));
     }
     DVASSERT(!packages.empty());
-    QtModelPackageCommandExecutor commandExecutor(accessor, ui);
+    CommandExecutor commandExecutor(accessor, ui);
     commandExecutor.AddImportedPackagesIntoPackage(packages, documentData->GetPackageNode());
 }
 
@@ -500,7 +500,7 @@ void PackageWidget::OnPaste()
             DocumentData* documentData = activeContext->GetData<DocumentData>();
             DVASSERT(nullptr != documentData);
             PackageNode* package = documentData->GetPackageNode();
-            QtModelPackageCommandExecutor executor(accessor, ui);
+            CommandExecutor executor(accessor, ui);
             SelectedNodes selection = executor.Paste(package, baseNode, baseNode->GetCount(), string);
             if (selection.empty() == false)
             {
@@ -544,7 +544,7 @@ void PackageWidget::OnDuplicate()
             String string = clipboard->mimeData()->text().toStdString();
 
             PackageNode* package = documentData->GetPackageNode();
-            QtModelPackageCommandExecutor executor(accessor, ui);
+            CommandExecutor executor(accessor, ui);
 
             PackageBaseNode* lastSelected = sortedSelection.back();
             int index = parent->GetIndex(lastSelected);
@@ -567,7 +567,7 @@ void PackageWidget::OnCut()
 
     CopyNodesToClipboard(controls, styles);
 
-    QtModelPackageCommandExecutor executor(accessor, ui);
+    CommandExecutor executor(accessor, ui);
     executor.Remove(controls, styles);
 }
 
@@ -577,7 +577,7 @@ void PackageWidget::OnDelete()
     {
         return;
     }
-    QtModelPackageCommandExecutor executor(accessor, ui);
+    CommandExecutor executor(accessor, ui);
 
     Vector<ControlNode*> controls;
     CollectSelectedControls(controls, false, true);
@@ -623,7 +623,7 @@ void PackageWidget::OnAddStyle()
     DVASSERT(documentData != nullptr);
     ScopedPtr<StyleSheetNode> style(new StyleSheetNode(UIStyleSheetSourceInfo(documentData->GetPackagePath()), selectorChains, properties));
     PackageNode* package = documentData->GetPackageNode();
-    QtModelPackageCommandExecutor commandExecutor(accessor, ui);
+    CommandExecutor commandExecutor(accessor, ui);
     StyleSheetsNode* styleSheets = package->GetStyleSheets();
     commandExecutor.InsertStyle(style, styleSheets, styleSheets->GetCount());
 }
@@ -724,7 +724,7 @@ void PackageWidget::OnMoveRight()
 
 void PackageWidget::MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, uint32 destIndex)
 {
-    QtModelPackageCommandExecutor executor(accessor, ui);
+    CommandExecutor executor(accessor, ui);
     if (dynamic_cast<ControlNode*>(node) != nullptr)
     {
         Vector<ControlNode*> nodes = { static_cast<ControlNode*>(node) };

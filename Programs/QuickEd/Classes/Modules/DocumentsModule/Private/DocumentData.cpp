@@ -148,7 +148,7 @@ PackageNode::Guides DocumentData::GetGuides() const
     if (displayedRootControls.size() == 1)
     {
         PackageBaseNode* firstNode = *displayedRootControls.begin();
-        return package->GetAllGuides(firstNode->GetName());
+        return package->GetGuides(firstNode->GetName());
     }
     return PackageNode::Guides();
 }

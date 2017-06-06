@@ -9,16 +9,11 @@ DAVA_VIRTUAL_REFLECTION_IMPL(PreferencesData)
     .End();
 }
 
-namespace PreferencesDataDetails
-{
-const DAVA::FastName guidesEnabledSettingsKey{ "guides enabled" };
-}
-
 bool PreferencesData::IsGuidesEnabled() const
 {
     using namespace DAVA;
     PreferencesStorage* storage = PreferencesStorage::Instance();
-    VariantType currentValue = storage->GetValue(PreferencesDataDetails::guidesEnabledSettingsKey);
+    VariantType currentValue = storage->GetValue(guidesEnabledPropertyName);
     if (currentValue.type != VariantType::TYPE_BOOLEAN)
     {
         return true;
@@ -30,7 +25,7 @@ void PreferencesData::SetGuidesEnabled(bool value)
 {
     using namespace DAVA;
     PreferencesStorage* storage = PreferencesStorage::Instance();
-    storage->SetValue(PreferencesDataDetails::guidesEnabledSettingsKey, VariantType(value));
+    storage->SetValue(guidesEnabledPropertyName, VariantType(value));
 }
 
 DAVA::FastName PreferencesData::guidesEnabledPropertyName{ "guides enabled" };

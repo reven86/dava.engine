@@ -11,7 +11,7 @@
 
 #include "UI/Find/Widgets/FindInDocumentWidget.h"
 #include "UI/Package/PackageMimeData.h"
-#include "UI/QtModelPackageCommandExecutor.h"
+#include "UI/CommandExecutor.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/PackageBaseNode.h"
@@ -61,9 +61,6 @@ PreviewWidget::PreviewWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::Rende
     , vGuidesController(new VGuidesController(accessor, this))
     , hGuidesController(new HGuidesController(accessor, this))
 {
-    vGuidesController->BindFields();
-    hGuidesController->BindFields();
-
     qRegisterMetaType<SelectedNodes>("SelectedNodes");
 
     InjectRenderWidget(renderWidget);

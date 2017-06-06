@@ -33,10 +33,10 @@ class AbstractProperty;
 class ControlsContainerNode;
 class ComponentPropertiesSection;
 
-class QtModelPackageCommandExecutor
+class CommandExecutor
 {
 public:
-    QtModelPackageCommandExecutor(DAVA::TArc::ContextAccessor* accessor, DAVA::TArc::UI* ui);
+    CommandExecutor(DAVA::TArc::ContextAccessor* accessor, DAVA::TArc::UI* ui);
 
     void AddImportedPackagesIntoPackage(const DAVA::Vector<DAVA::FilePath> packagePaths, const PackageNode* package);
     void RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*>& importedPackage, const PackageNode* package);

@@ -2,6 +2,8 @@
 
 #include "UI/Preview/Guides/IRulerListener.h"
 
+#include "Model/PackageHierarchy/PackageNode.h"
+
 #include <TArc/DataProcessing/DataWrapper.h>
 
 #include <Base/Any.h>
@@ -60,6 +62,10 @@ private:
     void OnMouseLeave() override;
     QList<QAction*> GetActions(DAVA::float32 position, QObject* parent) override;
 
+    //cursor and preview guide states
+    //NO_DISPLAY: normal cursor and no preview guide
+    //DISPLAY_PREVIEW: normal cursor and preview guide are shown
+    //DISPLAY_DRAG: drag cursor and no preview guide
     enum eDisplayState
     {
         NO_DISPLAY,
@@ -69,6 +75,9 @@ private:
     eDisplayState displayState = NO_DISPLAY;
     void SetDisplayState(eDisplayState state);
 
+    //controller state. Used only to wrap valuePtr pointer
+    //NO_DRAG: do nothing
+    //DRAG: store copy of current guides and pointer to a modified guide
     enum eDragState
     {
         NO_DRAG,
@@ -79,6 +88,7 @@ private:
     void DisableDrag();
 
     void OnValuesChanged(const DAVA::Any& values);
+    void OnRootControlsChanged(const DAVA::Any& rootControls);
     void OnGuidesEnabledChanged(const DAVA::Any& guidesEnabled);
 
     void SyncGuidesWithValues();
@@ -88,8 +98,8 @@ private:
     DAVA::float32* GetNearestValuePtr(DAVA::float32 position);
 
     bool IsEnabled() const;
-    DAVA::List<DAVA::float32> GetValues() const;
-    void SetValues(const DAVA::List<DAVA::float32>& values);
+    PackageNode::AxisGuides GetValues() const;
+    void SetValues(const PackageNode::AxisGuides& values);
 
     void SetupPreviewGuide(DAVA::float32 position);
     void CreateGuide(DAVA::float32 position);
@@ -124,7 +134,7 @@ private:
     QWidgetList guides;
 
     //use it only for drag-n-drop
-    DAVA::List<DAVA::float32> cachedValues;
+    PackageNode::AxisGuides cachedValues;
 
     //guide value on ruler
     DAVA::float32 minValue = 0.0f;

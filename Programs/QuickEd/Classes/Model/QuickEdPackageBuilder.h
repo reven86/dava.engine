@@ -41,6 +41,7 @@ public:
     virtual void ProcessProperty(const DAVA::ReflectedStructure::Field& field, const DAVA::Any& value) override;
 
     virtual void ProcessCustomData(const DAVA::YamlNode* customDataNode) override;
+    void ProcessGuides(const DAVA::YamlNode* guidesNode);
 
     DAVA::RefPtr<PackageNode> BuildPackage() const;
     const DAVA::Vector<ControlNode*>& GetRootControls() const;

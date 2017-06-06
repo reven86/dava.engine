@@ -16,18 +16,10 @@ RemoveControlCommand::RemoveControlCommand(PackageNode* package, ControlNode* no
 
 void RemoveControlCommand::Redo()
 {
-    if (dynamic_cast<ControlsContainerNode*>(node->GetParent()) != nullptr)
-    {
-        nodeGuides = package->GetAllGuides(node->GetName());
-    }
     package->RemoveControl(node.Get(), from.Get());
 }
 
 void RemoveControlCommand::Undo()
 {
     package->InsertControl(node.Get(), from.Get(), index);
-    if (nodeGuides.verticalGuides.empty() == false && nodeGuides.horizontalGuides.empty() == false)
-    {
-        package->SetAllGuides(node->GetName(), nodeGuides);
-    }
 }

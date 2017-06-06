@@ -18,6 +18,8 @@ RulerWidget::RulerWidget(IRulerListener* listener_, QWidget* parent)
     : QWidget(parent)
     , listener(listener_)
 {
+    DVASSERT(listener != nullptr);
+
     setMouseTracking(true);
 
     setContextMenuPolicy(Qt::CustomContextMenu);

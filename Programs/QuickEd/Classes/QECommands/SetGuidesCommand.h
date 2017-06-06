@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Model/PackageHierarchy/PackageNode.h"
 #include "QECommands/Private/QEPackageCommand.h"
 
 #include <Math/Vector.h>
@@ -9,7 +10,7 @@ class PackageBaseNode;
 class SetGuidesCommand : public QEPackageCommand
 {
 public:
-    SetGuidesCommand(PackageNode* package, const DAVA::String& controlName, DAVA::Vector2::eAxis orientation, const DAVA::List<DAVA::float32>& guides);
+    SetGuidesCommand(PackageNode* package, const DAVA::String& controlName, DAVA::Vector2::eAxis orientation, const PackageNode::AxisGuides& guides);
 
     void Redo() override;
     void Undo() override;
@@ -17,6 +18,6 @@ public:
 private:
     DAVA::String controlName;
     const DAVA::Vector2::eAxis orientation;
-    DAVA::List<DAVA::float32> guides;
-    DAVA::List<DAVA::float32> oldGuides;
+    PackageNode::AxisGuides guides;
+    PackageNode::AxisGuides oldGuides;
 };

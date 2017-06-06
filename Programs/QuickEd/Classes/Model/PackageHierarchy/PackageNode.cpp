@@ -445,31 +445,24 @@ bool PackageNode::CanUpdateAll() const
     return canUpdateAll;
 }
 
-DAVA::List<DAVA::float32> PackageNode::GetGuides(const DAVA::String& name, DAVA::Vector2::eAxis orientation)
+PackageNode::AxisGuides PackageNode::GetAxisGuides(const DAVA::String& name, DAVA::Vector2::eAxis orientation)
 {
     auto iter = allGuides.find(name);
     if (iter != allGuides.end())
     {
-        return orientation == Vector2::AXIS_X ? iter->second.horizontalGuides : iter->second.verticalGuides;
+        return iter->second[orientation];
     }
-    return DAVA::List<DAVA::float32>();
+    return AxisGuides();
 }
 
-void PackageNode::SetGuides(const DAVA::String& name, DAVA::Vector2::eAxis orientation, const DAVA::List<DAVA::float32>& guidesValues)
+void PackageNode::SetAxisGuides(const DAVA::String& name, DAVA::Vector2::eAxis orientation, const PackageNode::AxisGuides& guidesValues)
 {
     DVASSERT(name.empty() == false);
     Guides& guides = allGuides[name];
-    if (orientation == Vector2::AXIS_X)
-    {
-        guides.horizontalGuides = guidesValues;
-    }
-    else
-    {
-        guides.verticalGuides = guidesValues;
-    }
+    guides[orientation] = guidesValues;
 }
 
-PackageNode::Guides PackageNode::GetAllGuides(const DAVA::String& name) const
+PackageNode::Guides PackageNode::GetGuides(const DAVA::String& name) const
 {
     auto iter = allGuides.find(name);
     if (iter != allGuides.end())
@@ -479,19 +472,9 @@ PackageNode::Guides PackageNode::GetAllGuides(const DAVA::String& name) const
     return Guides();
 }
 
-void PackageNode::SetAllGuides(const DAVA::String& name, const Guides& guides)
+void PackageNode::SetGuides(const DAVA::String& name, const PackageNode::Guides& guides)
 {
     allGuides[name] = guides;
-}
-
-const DAVA::Map<DAVA::String, PackageNode::Guides>& PackageNode::GetAllGuidesForAllControls() const
-{
-    return allGuides;
-}
-
-void PackageNode::SetAllGuidesForAllControls(const DAVA::Map<DAVA::String, Guides>& allGuides_)
-{
-    allGuides = allGuides_;
 }
 
 void PackageNode::RefreshPropertiesInInstances(ControlNode* node, AbstractProperty* property)
@@ -547,10 +530,4 @@ Vector<PackageNode::DepthPackageNode> PackageNode::CollectImportedPackagesRecurs
     }
 
     return result;
-}
-
-bool PackageNode::Guides::operator==(const Guides& another) const
-{
-    return horizontalGuides == another.horizontalGuides &&
-    verticalGuides == another.verticalGuides;
 }
