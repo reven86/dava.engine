@@ -8,11 +8,17 @@
 #include "Platform/Linux/DeviceInfoLinux.h"
 #include "Utils/UTF8Utils.h"
 
+#include <clocale>
 #include <sys/utsname.h>
 
 namespace DAVA
 {
-DeviceInfoPrivate::DeviceInfoPrivate() = default;
+DeviceInfoPrivate::DeviceInfoPrivate()
+{
+    // On startup `C` locale is selected by default.
+    // Here set current locale according to environment variables
+    setlocale(LC_ALL, "");
+}
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
 {
@@ -26,9 +32,7 @@ String DeviceInfoPrivate::GetPlatformString()
 
 String DeviceInfoPrivate::GetVersion()
 {
-    struct utsname buf
-    {
-    };
+    struct utsname buf = {};
     if (uname(&buf) == 0)
     {
         return String(buf.release);
@@ -48,7 +52,7 @@ String DeviceInfoPrivate::GetModel()
 
 String DeviceInfoPrivate::GetLocale()
 {
-    return String();
+    return String(setlocale(LC_ALL, nullptr));
 }
 
 String DeviceInfoPrivate::GetRegion()
@@ -93,9 +97,7 @@ String DeviceInfoPrivate::GetUDID()
 
 WideString DeviceInfoPrivate::GetName()
 {
-    struct utsname buf
-    {
-    };
+    struct utsname buf = {};
     if (uname(&buf) == 0)
     {
         return UTF8Utils::EncodeToWideString(buf.nodename);

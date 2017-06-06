@@ -38,8 +38,6 @@ String disableTheseTestClasses = "ScriptTest";
 #else
 // TODO: linux
 String disableTheseTestClasses =
-"DateTimeTest "
-"LocalizationTest "
 "UILayoutSystemTest "
 "UIControlHelpersTest "
 "UIControlHierarhyTest "
@@ -244,11 +242,6 @@ void GameCore::OnTestFinished(const DAVA::String& testClassName, const DAVA::Str
 
 void GameCore::OnTestFailed(const String& testClassName, const String& testName, const String& condition, const char* filename, int lineno, const String& userMessage)
 {
-    if (teamcityOutputEnabled == false)
-    {
-        OnError();
-    }
-
     String errorString;
     if (userMessage.empty())
     {
@@ -259,6 +252,12 @@ void GameCore::OnTestFailed(const String& testClassName, const String& testName,
         errorString = Format("%s:%d: %s (%s)", filename, lineno, testName.c_str(), userMessage.c_str());
     }
     Logger::Error("%s", TeamcityTestsOutput::FormatTestFailed(testClassName, testName, condition, errorString).c_str());
+
+    if (teamcityOutputEnabled == false)
+    {
+        // Call OnError here to log failed test condition
+        OnError();
+    }
 }
 
 void GameCore::ProcessTestCoverage()

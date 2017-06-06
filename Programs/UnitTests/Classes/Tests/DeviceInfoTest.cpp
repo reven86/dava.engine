@@ -20,10 +20,10 @@ DAVA_TESTCLASS (DeviceInfoTest)
         eGPUFamily gpuModel = DeviceInfo::GetGPUFamily();
         DeviceInfo::NetworkInfo ninfo = DeviceInfo::GetNetworkInfo();
 
-#if !defined(__DAVAENGINE_LINUX__)
         String locale = DeviceInfo::GetLocale();
         TEST_VERIFY("" != locale && "Not yet implemented" != locale);
 
+#if !defined(__DAVAENGINE_LINUX__)
         String region = DeviceInfo::GetRegion();
         TEST_VERIFY("" != region && "Not yet implemented" != region);
 
