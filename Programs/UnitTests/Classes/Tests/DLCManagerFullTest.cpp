@@ -203,7 +203,9 @@ DAVA_TESTCLASS (DLCManagerFullTest)
 #else
             const char* cant_write_dir = "/"; // root dir
 #endif
-            dlcManager.Initialize(cant_write_dir, "http://127.0.0.1:8282/superpack_for_unittests.dvpk", DLCManager::Hints());
+            char fullUrl[1024] = { 0 };
+            sprintf(fullUrl, "http://127.0.0.1:%s/superpack_for_unittests.dvpk", localPort);
+            dlcManager.Initialize(cant_write_dir, fullUrl, DLCManager::Hints());
         }
         catch (Exception& ex)
         {
@@ -260,8 +262,10 @@ DAVA_TESTCLASS (DLCManagerFullTest)
 
         try
         {
+            char fullUrl[1024] = { 0 };
+            sprintf(fullUrl, "http://127.0.0.1:%s/superpack_for_unittests.dvpk", localPort);
             dlcManager.Initialize(packDir,
-                                  "http://127.0.0.1:8282/superpack_for_unittests.dvpk",
+                                  fullUrl,
                                   hints);
             Logger::Info("Initialize called no exception");
         }
