@@ -34,6 +34,15 @@ if (NOT ANDROID)
     list ( APPEND DAVA_COMPONENTS "SampleModule" )
 endif()
 
+# add physics
+if(ANDROID AND ANDROID_ABI STREQUAL "x86" )
+    # we don't have physx for android x86, so skip this
+elseif (WINDOWS_UAP AND WINDOWS_UAP_PLATFORMS STREQUAL "ARM")
+    # we don't have physx for win uap arm, so skip this
+else()
+     list ( APPEND DAVA_COMPONENTS "Physics" )
+endif()
+
 find_package( Steam REQUIRED )
 find_package( DavaFramework REQUIRED COMPONENTS "${DAVA_COMPONENTS}" )
 find_package( EmbeddedWebServer REQUIRED )

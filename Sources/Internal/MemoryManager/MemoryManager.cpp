@@ -141,6 +141,7 @@ MemoryManager::MemoryManager()
 
     RegisterAllocPoolName(ALLOC_POOL_LUA, "lua engine");
     RegisterAllocPoolName(ALLOC_POOL_SQLITE, "sqlite");
+    RegisterAllocPoolName(ALLOC_POOL_PHYSICS, "physics");
 }
 
 MemoryManager* MemoryManager::Instance()

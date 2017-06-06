@@ -1,0 +1,17 @@
+#include "UnitTests/UnitTests.h"
+
+#include "Engine/Engine.h"
+
+#include "Physics/PhysicsModule.h"
+
+using namespace DAVA;
+
+DAVA_TESTCLASS(PhysicsTest)
+{
+    DAVA_TEST(InitTest)
+    {
+        const ModuleManager& moduleManager = *GetEngineContext()->moduleManager;
+        Physics* physicsModule = moduleManager.GetModule<Physics>();
+        TEST_VERIFY(physicsModule->IsInitialized());
+    }
+};

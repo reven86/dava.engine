@@ -32,6 +32,8 @@ enum ePredefAllocPools
     ALLOC_POOL_LUA,
     ALLOC_POOL_SQLITE,
 
+    ALLOC_POOL_PHYSICS,
+
     PREDEF_POOL_COUNT,
     FIRST_CUSTOM_ALLOC_POOL = PREDEF_POOL_COUNT // First custom allocation pool must be FIRST_CUSTOM_ALLOC_POOL
 };
