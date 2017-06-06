@@ -24,16 +24,16 @@ static const DAVA::uint32 CUBEMAP_SIZE = 2048;
 static DAVA::Array<DAVA::Texture*, CUBEMAPS_POOL_SIZE> cubemapPool;
 
 DAVA::Texture* CubemapRenderTargetAtIndex(DAVA::uint32 index)
+{
+    DVASSERT(index < CUBEMAPS_POOL_SIZE);
+    if (cubemapPool[index] == nullptr)
     {
-        DVASSERT(index < CUBEMAPS_POOL_SIZE);
-        if (cubemapPool[index] == nullptr)
-        {
-            const DAVA::PixelFormatDescriptor& pfd = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(VisibilityCheckRenderer::TEXTURE_FORMAT);
-            DVASSERT(rhi::TextureFormatSupported(pfd.format, rhi::PROG_FRAGMENT));
-            cubemapPool[index] = DAVA::Texture::CreateFBO(CUBEMAP_SIZE, CUBEMAP_SIZE, VisibilityCheckRenderer::TEXTURE_FORMAT, true, rhi::TEXTURE_TYPE_CUBE);
-        }
-        return cubemapPool[index];
+        const DAVA::PixelFormatDescriptor& pfd = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(VisibilityCheckRenderer::TEXTURE_FORMAT);
+        DVASSERT(rhi::TextureFormatSupported(pfd.format, rhi::PROG_FRAGMENT));
+        cubemapPool[index] = DAVA::Texture::CreateFBO(CUBEMAP_SIZE, CUBEMAP_SIZE, VisibilityCheckRenderer::TEXTURE_FORMAT, true, rhi::TEXTURE_TYPE_CUBE);
     }
+    return cubemapPool[index];
+}
 }
 
 VisibilityCheckSystem::VisibilityCheckSystem(DAVA::Scene* scene)
