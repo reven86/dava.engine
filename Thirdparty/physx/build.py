@@ -193,7 +193,11 @@ def _build_win10(working_directory_path, root_project_path):
     _copy_libs(os.path.join(source_folder_path, 'PxShared', 'lib', 'vc14win64'), x64_binary_dst_path,  '.lib')
 
 def _copy_headers(source_folder_path, root_project_path):
-    copy_to_folder = os.path.join(root_project_path, 'Modules', 'Physics', 'Libs', 'Include')
+    copy_to_folder = os.path.join(root_project_path, 'Modules', 'Physics', 'Libs', 'Include', 'physx')
     copy_from_folder = os.path.join(source_folder_path, 'PhysX_3.4', 'Include')
     _create_folder_if_not_exists(copy_to_folder)
     build_utils.clean_copy_includes(copy_from_folder, copy_to_folder)
+
+    shared_copy_to_folder = os.path.join(root_project_path, 'Modules', 'Physics', 'Libs', 'Include', 'PxShared')
+    shared_copy_from_folder = os.path.join(source_folder_path, 'PxShared', 'include')
+    build_utils.clean_copy_includes(shared_copy_from_folder, shared_copy_to_folder)
