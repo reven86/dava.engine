@@ -14,8 +14,8 @@
 #include "UI/UIControl.h"
 #include "UI/UIPackageLoader.h"
 #include "UI/UIStaticText.h"
-#include "Utils/StringUtils.h"
 #include "Utils/UTF8Utils.h"
+#include "Utils/Utils.h"
 
 namespace DAVA
 {

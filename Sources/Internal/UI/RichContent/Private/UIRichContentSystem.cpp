@@ -7,6 +7,7 @@
 #include "UI/RichContent/UIRichContentAliasesComponent.h"
 #include "UI/RichContent/UIRichContentComponent.h"
 #include "UI/RichContent/UIRichContentObjectComponent.h"
+#include "UI/UIControl.h"
 
 namespace DAVA
 {
