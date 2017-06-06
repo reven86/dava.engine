@@ -45,9 +45,12 @@ void NetworkTaskProcessor::Terminate()
     {
         return;
     }
-
     currentTask->task->SetCancelled(true);
+    TerminateImpl();
+}
 
+void NetworkTaskProcessor::TerminateImpl()
+{
     std::list<QNetworkReply*> requests = currentTask->requests;
     for (QNetworkReply* reply : requests)
     {
@@ -167,7 +170,7 @@ void NetworkTaskProcessor::OnTimer()
 {
     if (currentTask != nullptr)
     {
-        currentTask->task->SetError("Operation cancelled by timeout");
+        currentTask->task->SetError("Operation canceled by timeout");
+        TerminateImpl();
     }
-    Terminate();
 }
