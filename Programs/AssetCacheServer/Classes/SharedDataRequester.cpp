@@ -38,7 +38,7 @@ void SharedDataRequester::RequestSharedData(ServerID ownID)
         DeleteLater(getServersRequest);
     }
 
-    static const QNetworkRequest GET_POOLS_REQUEST = QNetworkRequest(QUrl(QString("http://ba-manager.wargaming.net/panel/modules/jsonAPI/acs/api.php?cmd=getPools")));
+    static const QNetworkRequest GET_POOLS_REQUEST = QNetworkRequest(QUrl(QString("http://ba-manager.wargaming.net/modules/jsonAPI/acs/api.php?cmd=getPools")));
 
     //DAVA::Logger::Debug("Sending request: %s", GET_POOLS_REQUEST.url().toString().toStdString().c_str());
     getPoolsRequest = networkManager->get(GET_POOLS_REQUEST);
@@ -62,7 +62,7 @@ void SharedDataRequester::OnGetPoolsFinished()
     //DAVA::Logger::Debug("Get pools done");
     pools = SharedDataParser::ParsePoolsReply(reply->readAll());
 
-    QString s = QString("http://ba-manager.wargaming.net/panel/modules/jsonAPI/acs/api.php?cmd=getShared&key=%1").arg(getRequestOwnID ? QString::number(getRequestOwnID) : "NULL");
+    QString s = QString("http://ba-manager.wargaming.net/modules/jsonAPI/acs/api.php?cmd=getShared&key=%1").arg(getRequestOwnID ? QString::number(getRequestOwnID) : "NULL");
 
     //DAVA::Logger::Debug("Sending request: %s", s.toStdString().c_str());
     getServersRequest = networkManager->get(QNetworkRequest(QUrl(s)));
@@ -103,7 +103,7 @@ void SharedDataRequester::AddSharedServer(SharedServerParams serverParams, const
     static DAVA::uint32 osKey = 2;
 #endif
 
-    QString url = QString("http://ba-manager.wargaming.net/panel/modules/jsonAPI/acs/api.php?cmd=share&port=%1&name=%2&poolKey=%3&instPath=%4&os=%5")
+    QString url = QString("http://ba-manager.wargaming.net/modules/jsonAPI/acs/api.php?cmd=share&port=%1&name=%2&poolKey=%3&instPath=%4&os=%5")
                   .arg(serverParams.port)
                   .arg(serverParams.name.c_str())
                   .arg(serverParams.poolID)
@@ -143,7 +143,7 @@ void SharedDataRequester::RemoveSharedServer(ServerID serverID)
         DeleteLater(unshareRequest);
     }
 
-    QString s = QString("http://ba-manager.wargaming.net/panel/modules/jsonAPI/acs/api.php?cmd=unshare&key=%1").arg(serverID);
+    QString s = QString("http://ba-manager.wargaming.net/modules/jsonAPI/acs/api.php?cmd=unshare&key=%1").arg(serverID);
     //DAVA::Logger::Debug("Sending request: %s", s.toStdString().c_str());
     unshareRequest = networkManager->get(QNetworkRequest(QUrl(s)));
     connect(unshareRequest, &QNetworkReply::finished, this, &SharedDataRequester::OnRemoveServerFinished);
