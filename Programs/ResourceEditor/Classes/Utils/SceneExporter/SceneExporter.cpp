@@ -33,7 +33,7 @@
 namespace SceneExporterCache
 {
 const DAVA::uint32 EXPORTER_VERSION = 1;
-const DAVA::uint32 LINKS_PARSER_VERSION = 1;
+const DAVA::uint32 LINKS_PARSER_VERSION = 2;
 const DAVA::String LINKS_NAME = "links.txt";
 
 void CalculateSceneKey(const DAVA::FilePath& scenePathname, const DAVA::String& sceneLink, DAVA::AssetCache::CacheItemKey& key, DAVA::uint32 optimize)
@@ -81,6 +81,11 @@ bool SaveExportedObjects(const DAVA::FilePath& linkPathname, const DAVA::Vector<
         linksFile->WriteLine(Format("%d", static_cast<int32>(exportedObjects.size())));
         for (const SceneExporter::ExportedObjectCollection& collection : exportedObjects)
         {
+            linksFile->WriteLine(Format("%d", static_cast<int32>(collection.size())));
+        }
+
+        for (const SceneExporter::ExportedObjectCollection& collection : exportedObjects)
+        {
             for (const SceneExporter::ExportedObject& object : collection)
             {
                 linksFile->WriteLine(Format("%d,%s", object.type, object.relativePathname.c_str()));
@@ -95,6 +100,17 @@ bool SaveExportedObjects(const DAVA::FilePath& linkPathname, const DAVA::Vector<
     }
 }
 
+std::pair<bool, DAVA::int32> ReadInt(File* file)
+{
+    using namespace DAVA;
+
+    String numStr = file->ReadLine();
+    int32 numValue = 0;
+    int32 numbers = sscanf(numStr.c_str(), "%d", &numValue);
+
+    return std::pair<bool, DAVA::int32>((numbers == 1), numValue);
+}
+
 bool LoadExportedObjects(const DAVA::FilePath& linkPathname, DAVA::Vector<SceneExporter::ExportedObjectCollection>& exportedObjects)
 {
     using namespace DAVA;
@@ -102,12 +118,22 @@ bool LoadExportedObjects(const DAVA::FilePath& linkPathname, DAVA::Vector<SceneE
     ScopedPtr<File> linksFile(File::Create(linkPathname, File::OPEN | File::READ));
     if (linksFile)
     {
-        String sizeStr = linksFile->ReadLine();
-        int32 size = 0;
-        int32 number = sscanf(sizeStr.c_str(), "%d", &size);
-        if (size > 0 && number == 1)
+        std::pair<bool, DAVA::int32> collectionsCount = ReadInt(linksFile);
+        if (collectionsCount.first == true && collectionsCount.second > 0)
         {
-            exportedObjects.reserve(size);
+            exportedObjects.resize(collectionsCount.second);
+
+            uint32 size = 0;
+            for (SceneExporter::ExportedObjectCollection& collection : exportedObjects)
+            {
+                std::pair<bool, DAVA::int32> objectsCount = ReadInt(linksFile);
+                if (objectsCount.first == true && objectsCount.second > 0)
+                {
+                    collection.reserve(objectsCount.second);
+                    size += objectsCount.second;
+                }
+            }
+
             while (size--)
             {
                 if (linksFile->IsEof())
@@ -130,7 +156,7 @@ bool LoadExportedObjects(const DAVA::FilePath& linkPathname, DAVA::Vector<SceneE
                 exportedObjects[type].emplace_back(type, formatedString.substr(dividerPos + 1));
             }
         }
-        else if (number != 1)
+        else if (collectionsCount.second != 1)
         {
             Logger::Error("Cannot read size value from file: %s", linkPathname.GetAbsolutePathname().c_str());
             return false;
@@ -888,6 +914,10 @@ void SceneExporter::CreateFoldersStructure(const ExportedObjectCollection& expor
         if (slashpos != String::npos)
         {
             foldersStructure.insert(link.substr(0, slashpos + 1));
+        }
+        else
+        {
+            foldersStructure.insert("/");
         }
     }
 
