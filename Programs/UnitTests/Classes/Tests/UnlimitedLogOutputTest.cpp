@@ -65,7 +65,7 @@ DAVA_TESTCLASS (UnlimitedLogOutputTest)
 
             testOutput.currentMessageRawSize = bufSizeLocal;
 
-            Logger::Instance()->Info("%s", str.c_str());
+            Logger::Info("%s", str.c_str());
         }
         Logger::RemoveCustomOutput(&testOutput);
 

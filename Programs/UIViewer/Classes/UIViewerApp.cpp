@@ -7,9 +7,12 @@
 #include <Utils/StringFormat.h>
 #include <UI/UIScreenManager.h>
 
-UIViewerApp::UIViewerApp(DAVA::Engine& engine_)
+UIViewerApp::UIViewerApp(DAVA::Engine& engine_, const DAVA::Vector<DAVA::String>& cmdLine)
     : engine(engine_)
+    , options("options")
 {
+    using namespace DAVA;
+
     engine.gameLoopStarted.Connect(this, &UIViewerApp::OnAppStarted);
     engine.windowCreated.Connect(this, &UIViewerApp::OnWindowCreated);
     engine.gameLoopStopped.Connect(this, &UIViewerApp::OnAppFinished);
@@ -17,6 +20,15 @@ UIViewerApp::UIViewerApp(DAVA::Engine& engine_)
     engine.resumed.Connect(this, &UIViewerApp::OnResume);
     engine.beginFrame.Connect(this, &UIViewerApp::BeginFrame);
     engine.endFrame.Connect(this, &UIViewerApp::EndFrame);
+
+    options.AddOption("-project", VariantType(String("")), "Path to project folder");
+    options.AddOption("-holderYaml", VariantType(String("")), "Path to placeholder yaml");
+    options.AddOption("-holderRoot", VariantType(String("")), "Name pf placeholder root control");
+    options.AddOption("-holderCtrl", VariantType(String("")), "Path to placeholder control");
+    options.AddOption("-testedYaml", VariantType(String("")), "Path to tested yaml");
+    options.AddOption("-testedCtrl", VariantType(String("")), "Name of tested control");
+
+    optionsAreParsed = options.Parse(cmdLine);
 }
 
 void UIViewerApp::OnAppStarted()
@@ -48,7 +60,7 @@ void UIViewerApp::OnWindowCreated(DAVA::Window* w)
 
     Renderer::SetDesiredFPS(60);
 
-    uiViewScreen = new UIViewScreen(w);
+    uiViewScreen = new UIViewScreen(w, (optionsAreParsed) ? &options : nullptr);
     UIScreenManager::Instance()->SetFirst(uiViewScreen->GetScreenID());
 }
 
@@ -137,6 +149,6 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
     DAVA::Engine e;
     e.Init(DAVA::eEngineRunMode::GUI_STANDALONE, modules, CreateOptions());
 
-    UIViewerApp app(e);
+    UIViewerApp app(e, cmdline);
     return e.Run();
 }

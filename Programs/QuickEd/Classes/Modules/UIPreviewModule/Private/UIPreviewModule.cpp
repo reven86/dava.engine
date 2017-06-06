@@ -1,5 +1,6 @@
 #include "Modules/UIPreviewModule/UIPreviewModule.h"
 #include "Modules/UIPreviewModule/Private/UIPreviewPackageBuilder.h"
+#include "Modules/UIPreviewModule/Private/RunUIViewerDialog.h"
 
 #include "Modules/ProjectModule/ProjectData.h"
 
@@ -181,6 +182,21 @@ void UIPreviewModule::PostInit()
     using namespace DAVA::TArc;
 
     {
+        QtAction* action = new QtAction(GetAccessor(), QString("Run UIViewer"));
+        connections.AddConnection(action, &QAction::triggered, MakeFunction(this, &UIPreviewModule::RunUIViewer));
+        FieldDescriptor fieldDescr;
+        fieldDescr.type = DAVA::ReflectedTypeDB::Get<ProjectData>();
+        fieldDescr.fieldName = DAVA::FastName(ProjectData::projectPathPropertyName);
+        action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& fieldValue) -> DAVA::Any {
+            return !fieldValue.Cast<DAVA::FilePath>(DAVA::FilePath()).IsEmpty();
+        });
+
+        ActionPlacementInfo placementInfo;
+        placementInfo.AddPlacementPoint(CreateMenuPoint("UIPreview", { InsertionParams::eInsertionMethod::AfterItem }));
+        GetUI()->AddAction(DAVA::TArc::mainWindowKey, placementInfo, action);
+    }
+
+    {
         QtAction* action = new QtAction(GetAccessor(), QString("Collect All Files"));
         connections.AddConnection(action, &QAction::triggered, MakeFunction(this, &UIPreviewModule::CollectAllFiles));
         FieldDescriptor fieldDescr;
@@ -209,6 +225,12 @@ void UIPreviewModule::PostInit()
         placementInfo.AddPlacementPoint(CreateMenuPoint("UIPreview", { InsertionParams::eInsertionMethod::AfterItem }));
         GetUI()->AddAction(DAVA::TArc::mainWindowKey, placementInfo, action);
     }
+}
+
+void UIPreviewModule::RunUIViewer()
+{
+    RunUIViewerDialog dlg(GetAccessor(), GetUI(), GetUI()->GetWindow(DAVA::TArc::mainWindowKey));
+    dlg.exec();
 }
 
 void UIPreviewModule::CollectAllFiles()

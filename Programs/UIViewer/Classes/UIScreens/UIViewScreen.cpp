@@ -2,6 +2,7 @@
 
 #include <Base/ScopedPtr.h>
 #include <Base/ObjectFactory.h>
+#include <CommandLine/ProgramOptions.h>
 #include <Engine/Engine.h>
 #include <FileSystem/LocalizationSystem.h>
 #include <FileSystem/FileSystem.h>
@@ -61,11 +62,21 @@ DAVA::RefPtr<DAVA::UIControl> LoadControl(const DAVA::FilePath& yamlPath, const 
 }
 }
 
-UIViewScreen::UIViewScreen(DAVA::Window* window_)
+UIViewScreen::UIViewScreen(DAVA::Window* window_, DAVA::ProgramOptions* options_)
     : BaseScreen()
     , window(window_)
+    , options(options_)
 {
     GetOrCreateComponent<DAVA::UIUpdateComponent>();
+
+    if (options != nullptr)
+    {
+        projectPath = options->GetOption("-project").AsString();
+    }
+    else
+    {
+        projectPath = "~doc:/UIViewer/Project/";
+    }
 }
 
 void UIViewScreen::LoadResources()
@@ -88,8 +99,8 @@ void UIViewScreen::SetupEnvironment()
 
     //All this settings should be transfered from QuickEd
 
-    FilePath projectPath("~doc:/UIViewer/Project/");
-    FilePath::AddResourcesFolder(projectPath);
+    FilePath::AddResourcesFolder(projectPath + "/Data/");
+    FilePath::AddResourcesFolder(projectPath + "/DataSource/");
 
     String locale = "en";
     { //  localization
@@ -146,7 +157,6 @@ void UIViewScreen::ClearEnvironment()
 {
     using namespace DAVA;
 
-    FilePath projectPath("~doc:/UIViewer/Project/");
     FilePath::RemoveResourcesFolder(projectPath);
 }
 
@@ -165,12 +175,30 @@ void UIViewScreen::SetupUI()
 {
     using namespace DAVA;
 
-    FilePath placeHolderYaml = "~res:/UI/Screens/Battle/BattleLoadingScreen.yaml";
-    String placeHolderRootControl = "BattleLoadingScreen";
-    String placeHolderControl = "**/MapNameLeftBg";
+    FilePath placeHolderYaml;
+    String placeHolderRootControl;
+    String placeHolderControl;
+    FilePath testedYaml;
+    String testedControlName;
 
-    FilePath testedYaml = "~res:/UI/Screens/Battle/ChatButton.yaml";
-    String testedControlName = "ChatButton";
+    if (options != nullptr)
+    {
+        placeHolderYaml = options->GetOption("-holderYaml").AsString();
+        placeHolderRootControl = options->GetOption("-holderRoot").AsString();
+        placeHolderControl = options->GetOption("-holderCtrl").AsString();
+
+        testedYaml = options->GetOption("-testedYaml").AsString();
+        testedControlName = options->GetOption("-testedCtrl").AsString();
+    }
+    else
+    {
+        placeHolderYaml = "~res:/UI/Screens/Battle/BattleLoadingScreen.yaml";
+        placeHolderRootControl = "BattleLoadingScreen";
+        placeHolderControl = "**/MapNameLeftBg";
+
+        testedYaml = "~res:/UI/Screens/Battle/ChatButton.yaml";
+        testedControlName = "ChatButton";
+    }
 
     RefPtr<UIControl> placeHolderRoot = UIViewScreenDetails::LoadControl(placeHolderYaml, placeHolderRootControl);
     if (placeHolderRoot)

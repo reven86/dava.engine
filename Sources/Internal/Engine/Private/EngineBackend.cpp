@@ -129,7 +129,7 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     //  - Logger, to log messages on startup
     //  - FileSystem, to load config files with init options
     //  - DeviceManager, to check what hatdware is available
-    context->logger = new Logger;
+    context->logger = new Logger();
     context->settings = new EngineSettings();
     context->fileSystem = new FileSystem;
     FilePath::InitializeBundleName();
@@ -1015,9 +1015,10 @@ void EngineBackend::DestroySubsystems()
         delete context->deviceManager;
         context->deviceManager = nullptr;
     }
+
     if (context->logger != nullptr)
     {
-        context->logger->Release();
+        delete context->logger;
         context->logger = nullptr;
     }
 }
