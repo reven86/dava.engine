@@ -486,6 +486,27 @@ set(IOS_STATIC_RELEASE_LIBS "${LibsPath}/iOS/libLowLevel.a"
                             "${LibsPath}/iOS/libSceneQuery.a"
                             "${LibsPath}/iOS/libSimulationController.a")
 
+set(ANDROID_STATIC_LIBS 
+                            "-Wl,--start-group"
+                            "${LibsPath}/Android/armeabi-v7a/libLowLevel.a"
+                            "${LibsPath}/Android/armeabi-v7a/libLowLevelAABB.a"
+                            "${LibsPath}/Android/armeabi-v7a/libLowLevelCloth.a"
+                            "${LibsPath}/Android/armeabi-v7a/libLowLevelDynamics.a"
+                            "${LibsPath}/Android/armeabi-v7a/libLowLevelParticles.a"
+                            "${LibsPath}/Android/armeabi-v7a/libSceneQuery.a"
+                            "${LibsPath}/Android/armeabi-v7a/libSimulationController.a"
+                            "${LibsPath}/Android/armeabi-v7a/libPxFoundation.a"
+                            "${LibsPath}/Android/armeabi-v7a/libPsFastXml.a"
+                            "${LibsPath}/Android/armeabi-v7a/libPhysX3Common.a"
+                            "${LibsPath}/Android/armeabi-v7a/libPhysX3Extensions.a"
+                            "${LibsPath}/Android/armeabi-v7a/libPhysX3CharacterKinematic.a"
+                            "${LibsPath}/Android/armeabi-v7a/libPhysX3Cooking.a"
+                            "${LibsPath}/Android/armeabi-v7a/libPhysX3Vehicle.a"
+                            "${LibsPath}/Android/armeabi-v7a/libPxPvdSDK.a"
+                            "${LibsPath}/Android/armeabi-v7a/libPxTask.a"
+                            "${LibsPath}/Android/armeabi-v7a/libPhysX3.a"
+                            "-Wl,--end-group")
+
 set(STATIC_LIBRARIES_WIN32_RELEASE "${WIN32_STATIC_RELEASE_LIBS}")
 set(DYNAMIC_LIBRARIES_WIN32_RELEASE "${WIN32_DYNAMIC_RELEASE_LIBS}")
 
@@ -509,6 +530,9 @@ set(STATIC_LIBRARIES_MACOS_DEBUG "${MACOS_STATIC_DEBUG_LIBS}")
 
 set(STATIC_LIBRARIES_IOS_RELEASE "${IOS_STATIC_RELEASE_LIBS}")
 set(STATIC_LIBRARIES_IOS_DEBUG "${IOS_STATIC_DEBUG_LIBS}")
+
+set(STATIC_LIBRARIES_ANDROID_RELEASE "${ANDROID_STATIC_LIBS}")
+set(STATIC_LIBRARIES_ANDOIRD_DEBUG "${ANDROID_STATIC_LIBS}")
 
 set(BINARY_WIN32_DIR_RELEASE "${LibsPath}/Win32/x86")
 set(BINARY_WIN32_DIR_RELWITHDEB "${LibsPath}/Win32/x86")
