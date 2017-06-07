@@ -30,8 +30,8 @@ void UIRichContentAliasesComponent::SetAliases(const UIRichAliasMap& _aliases)
     if (aliases != _aliases)
     {
         aliases = _aliases;
+        modified = true;
     }
-    modified = true;
 }
 
 void UIRichContentAliasesComponent::SetModified(bool _modified)
