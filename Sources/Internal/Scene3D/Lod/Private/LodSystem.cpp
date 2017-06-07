@@ -4,6 +4,7 @@
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
+#include "Scene3D/Components/SingleComponents/TransformSingleComponent.h"
 #include "Render/Highlevel/Camera.h"
 #include "Time/SystemTimer.h"
 #include "Core/PerformanceSettings.h"
@@ -16,7 +17,6 @@ namespace DAVA
 LodSystem::LodSystem(Scene* scene)
     : SceneSystem(scene)
 {
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::START_PARTICLE_EFFECT);
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STOP_PARTICLE_EFFECT);
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::LOD_DISTANCE_CHANGED);
@@ -26,6 +26,24 @@ LodSystem::LodSystem(Scene* scene)
 void LodSystem::Process(float32 timeElapsed)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_LOD_SYSTEM);
+
+    TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+    for (auto& pair : tsc->worldTransformChanged.map)
+    {
+        if (pair.first->GetComponentsCount(Component::LOD_COMPONENT) > 0)
+        {
+            for (Entity* entity : pair.second)
+            {
+                auto iter = fastMap.find(entity);
+                if (iter != fastMap.end())
+                {
+                    int32 index = iter->second;
+                    FastStruct* fast = &fastVector[index];
+                    fast->position = static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransform().GetTranslationVector();
+                }
+            }
+        }
+    }
 
     Camera* camera = GetScene()->GetCurrentCamera();
     if (!camera)
@@ -266,21 +284,6 @@ void LodSystem::ImmediateEvent(Component* component, uint32 event)
 {
     switch (event)
     {
-    case EventSystem::WORLD_TRANSFORM_CHANGED:
-    {
-        DVASSERT(component->GetType() == Component::TRANSFORM_COMPONENT);
-        TransformComponent* transform = static_cast<TransformComponent*>(component);
-        Entity* entity = component->GetEntity();
-        auto iter = fastMap.find(entity);
-        if (iter != fastMap.end())
-        {
-            int32 index = iter->second;
-            FastStruct* fast = &fastVector[index];
-            fast->position = transform->GetWorldTransform().GetTranslationVector();
-        }
-    }
-    break;
-
     case EventSystem::START_PARTICLE_EFFECT:
     case EventSystem::STOP_PARTICLE_EFFECT:
     {

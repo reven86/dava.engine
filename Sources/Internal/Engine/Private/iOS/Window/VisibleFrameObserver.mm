@@ -44,14 +44,15 @@
         return;
     }
 
-    CGRect visibleFrame = bridge->renderView.frame;
+    // Convert window frame to render view coordinates
+    CGRect visibleFrame = [bridge->uiwindow convertRect:bridge->uiwindow.frame toView:bridge->renderView];
+
     if (keyboardFrame != nil)
     {
-        // Convert renverView frame to window coordinates, frame is in superview's coordinates
-        visibleFrame = [bridge->uiwindow convertRect:visibleFrame fromView:bridge->renderView];
-        visibleFrame.size.height = keyboardFrame->origin.y - visibleFrame.origin.y;
-        // Now this might be rotated, so convert it back
-        visibleFrame = [bridge->uiwindow convertRect:visibleFrame toView:bridge->renderView];
+        // Convert keyboard frame to render view coordinates
+        CGRect convertedKeyboardFrame = [bridge->uiwindow convertRect:*keyboardFrame toView:bridge->renderView];
+        // Calculate visible frame
+        visibleFrame.size.height = convertedKeyboardFrame.origin.y - visibleFrame.origin.y;
     }
 
     bridge->mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateWindowVisibleFrameChangedEvent(bridge->window, visibleFrame.origin.x, visibleFrame.origin.y, visibleFrame.size.width, visibleFrame.size.height));

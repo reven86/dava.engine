@@ -2,6 +2,7 @@
 #include "Scripting/LuaException.h"
 #include "Debug/DVAssert.h"
 #include "LuaBridge.h"
+#include "Engine/Engine.h"
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 #include "MemoryManager/MemoryProfiler.h"
@@ -176,7 +177,7 @@ void LuaScript::DumpStackToLog(Logger::eLogLevel level) const
 {
     std::ostringstream os;
     DumpStack(os);
-    Logger* logger = Logger::Instance();
+    Logger* logger = GetEngineContext()->logger;
     if (logger)
     {
         logger->Log(level, os.str().c_str());

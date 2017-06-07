@@ -1,5 +1,6 @@
 #include "CacheRequest.h"
 
+#include <Engine/Engine.h>
 #include <Tools/AssetCache/AssetCacheConstants.h>
 
 #include <Time/SystemTimer.h>
@@ -21,7 +22,7 @@ AssetCache::Error CacheRequest::Process(AssetCacheClient& cacheClient)
 {
     if (options.GetOption("-v").AsBool())
     {
-        Logger::Instance()->SetLogLevel(Logger::LEVEL_FRAMEWORK);
+        GetEngineContext()->logger->SetLogLevel(Logger::LEVEL_FRAMEWORK);
     }
 
     AssetCacheClient::ConnectionParams params;
