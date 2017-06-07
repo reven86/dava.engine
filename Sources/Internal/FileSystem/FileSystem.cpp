@@ -297,7 +297,7 @@ bool FileSystem::DeleteDirectory(const FilePath& path, bool isRecursive)
         return false;
     }
 
-    ScopedPtr<FileList> fileList(new FileList(path));
+    FileList* fileList = new FileList(path);
     for (uint32 i = 0; i < fileList->GetCount(); ++i)
     {
         if (fileList->IsDirectory(i))
@@ -322,9 +322,7 @@ bool FileSystem::DeleteDirectory(const FilePath& path, bool isRecursive)
                 return false;
         }
     }
-
-    fileList.reset(nullptr);
-    
+    SafeRelease(fileList);
 #ifdef __DAVAENGINE_WINDOWS__
     WideString sysPath = UTF8Utils::EncodeToWideString(path.GetAbsolutePathname());
     int32 chmodres = _wchmod(sysPath.c_str(), _S_IWRITE); // change read-only file mode
@@ -343,7 +341,7 @@ uint32 FileSystem::DeleteDirectoryFiles(const FilePath& path, bool isRecursive)
 
     uint32 fileCount = 0;
 
-    ScopedPtr<FileList> fileList(new FileList(path));
+    FileList* fileList = new FileList(path);
     for (uint32 i = 0; i < fileList->GetCount(); ++i)
     {
         if (fileList->IsDirectory(i))
@@ -363,6 +361,7 @@ uint32 FileSystem::DeleteDirectoryFiles(const FilePath& path, bool isRecursive)
                 fileCount++;
         }
     }
+    SafeRelease(fileList);
 
     return fileCount;
 }
@@ -692,11 +691,6 @@ bool FileSystem::IsFileLocked(const FilePath& filePath) const
     HANDLE hFile = CreateFileWin(path);
     if (hFile == INVALID_HANDLE_VALUE || GetLastError() == ERROR_SHARING_VIOLATION)
     {
-        if (hFile != INVALID_HANDLE_VALUE)
-        {
-            CloseHandle(hFile);
-        }
-
         return true;
     }
 
