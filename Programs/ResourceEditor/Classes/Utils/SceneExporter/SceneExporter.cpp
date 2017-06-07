@@ -82,10 +82,6 @@ bool SaveExportedObjects(const DAVA::FilePath& linkPathname, const DAVA::Vector<
         for (const SceneExporter::ExportedObjectCollection& collection : exportedObjects)
         {
             linksFile->WriteLine(Format("%d", static_cast<int32>(collection.size())));
-        }
-
-        for (const SceneExporter::ExportedObjectCollection& collection : exportedObjects)
-        {
             for (const SceneExporter::ExportedObject& object : collection)
             {
                 linksFile->WriteLine(Format("%d,%s", object.type, object.relativePathname.c_str()));
@@ -123,37 +119,45 @@ bool LoadExportedObjects(const DAVA::FilePath& linkPathname, DAVA::Vector<SceneE
         {
             exportedObjects.resize(collectionsCount.second);
 
-            uint32 size = 0;
+            int32 collectionType = SceneExporter::eExportedObjectType::OBJECT_SCENE;
             for (SceneExporter::ExportedObjectCollection& collection : exportedObjects)
             {
                 std::pair<bool, DAVA::int32> objectsCount = ReadInt(linksFile);
                 if (objectsCount.first == true && objectsCount.second > 0)
                 {
                     collection.reserve(objectsCount.second);
-                    size += objectsCount.second;
+                    uint32 size = objectsCount.second;
+                    while (size--)
+                    {
+                        if (linksFile->IsEof())
+                        {
+                            Logger::Warning("Reading of file stopped by EOF: %s", linkPathname.GetAbsolutePathname().c_str());
+                            break;
+                        }
+
+                        String formatedString = linksFile->ReadLine();
+                        if (formatedString.empty())
+                        {
+                            Logger::Warning("Reading of file stopped by empty string: %s", linkPathname.GetAbsolutePathname().c_str());
+                            break;
+                        }
+
+                        auto dividerPos = formatedString.find(',', 1); //skip first number
+                        DVASSERT(dividerPos != String::npos);
+
+                        SceneExporter::eExportedObjectType type = static_cast<SceneExporter::eExportedObjectType>(atoi(formatedString.substr(0, dividerPos).c_str()));
+
+                        if (collectionType == type)
+                        {
+                            collection.emplace_back(type, formatedString.substr(dividerPos + 1));
+                        }
+                        else
+                        {
+                            Logger::Error("Read wrong object at links file (%d instead %d)", type, collectionType);
+                        }
+                    }
                 }
-            }
-
-            while (size--)
-            {
-                if (linksFile->IsEof())
-                {
-                    Logger::Warning("Reading of file stopped by EOF: %s", linkPathname.GetAbsolutePathname().c_str());
-                    break;
-                }
-
-                String formatedString = linksFile->ReadLine();
-                if (formatedString.empty())
-                {
-                    Logger::Warning("Reading of file stopped by empty string: %s", linkPathname.GetAbsolutePathname().c_str());
-                    break;
-                }
-
-                auto dividerPos = formatedString.find(',', 1); //skip first number
-                DVASSERT(dividerPos != String::npos);
-
-                SceneExporter::eExportedObjectType type = static_cast<SceneExporter::eExportedObjectType>(atoi(formatedString.substr(0, dividerPos).c_str()));
-                exportedObjects[type].emplace_back(type, formatedString.substr(dividerPos + 1));
+                ++collectionType;
             }
         }
         else if (collectionsCount.second != 1)
