@@ -205,6 +205,8 @@ public final class DeviceManager
 
     // CPU stats
 
+    static boolean firstTimeCpuTempException = true;
+
     float getCpuTemperature()
     {
         // Even though Android provides API for getting temperature from two sensors (TYPE_TEMPERATURE and TYPE_AMBIENT_TEMPERATURE),
@@ -215,6 +217,7 @@ public final class DeviceManager
         // The workaround is to read system files CPU temperature is written into.
         // The most common one seems to be /sys/class/thermal/thermal_zone0/temp
         // There are other files we can read this data from, but it seems to be sufficient to use only this one for now
+        // TODO we can do it from C++ code
 
         float temperature = 0.0f;
 
@@ -236,7 +239,11 @@ public final class DeviceManager
         }
         catch (IOException e)
         {
-            Log.e(DavaActivity.LOG_TAG, "Could not retrieve CPU temperature from file: " + filepath + ", exception: " + e.getMessage());
+            if (firstTimeCpuTempException)
+            {
+                Log.e(DavaActivity.LOG_TAG, "Could not retrieve CPU temperature from file: " + filepath + ", exception: " + e.getMessage());
+                firstTimeCpuTempException = false;
+            }
         }
 
         // Some vendors use thousands to represent one celsius degree

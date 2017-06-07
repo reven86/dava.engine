@@ -44,14 +44,14 @@ struct DownloaderTest
             return;
         }
 
-        if (!StartEmbeddedWebServer(downloadedPacksDir.GetAbsolutePathname().c_str(), "8080"))
+        if (!StartEmbeddedWebServer(downloadedPacksDir.GetAbsolutePathname().c_str(), "8383"))
         {
             Logger::Error("can't start embedded web server");
             TEST_VERIFY(false);
             return;
         }
 
-        String superPackUrl("http://127.0.0.1:8080/superpack_for_unittests.dvpk");
+        String superPackUrl("http://127.0.0.1:8383/superpack_for_unittests.dvpk");
 
         DLCManager& dlcManager = *GetEngineContext()->dlcManager;
 
