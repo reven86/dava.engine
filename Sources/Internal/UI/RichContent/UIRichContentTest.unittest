@@ -150,6 +150,13 @@ DAVA_TESTCLASS(UIRichContentTest)
             TEST_VERIFY(aliases.Count() == 0);
         }
         ca->SetAliases(aliases);
+
+        // Append and remove new aliases compoent
+        UIRichContentAliasesComponent* ca2 = new UIRichContentAliasesComponent();
+        richControl->AddComponent(ca2);
+        TEST_VERIFY(richControl->GetComponentCount<UIRichContentAliasesComponent>() == 2);
+        richControl->RemoveComponent(ca2);
+        TEST_VERIFY(richControl->GetComponentCount<UIRichContentAliasesComponent>() == 1);
     }
 
     DAVA_TEST(RichComponentTest)
