@@ -56,6 +56,18 @@ public:
         return true;
     }
 
+    void Close() override
+    {
+        start = nullptr;
+        current = nullptr;
+        end = nullptr;
+    }
+
+    bool IsClosed() const override
+    {
+        return current == nullptr;
+    }
+
     uint64 SpaceLeft() const
     {
         return end - current;
@@ -219,8 +231,8 @@ private:
     struct LocalFileInfo
     {
         String relativeName;
-        uint32 compressedSize = 0;
-        uint32 crc32Hash = 0;
+        uint32 compressedSize = std::numeric_limits<uint32>::max(); // file size can be 0 so use max value default
+        uint32 crc32Hash = std::numeric_limits<uint32>::max();
     };
     // fill during scan local pack files, empty after finish scan
     Vector<LocalFileInfo> localFiles;

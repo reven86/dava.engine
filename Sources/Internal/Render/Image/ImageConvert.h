@@ -276,10 +276,11 @@ struct ConvertRGB565toRGBA8888
 {
     inline void operator()(const uint16* input, uint32* output)
     {
+        //r-channel in least significant bits
         uint16 pixel = *input;
-        uint32 r = (((pixel >> 11) & 0x01F) << 3);
+        uint32 b = (((pixel >> 11) & 0x01F) << 3);
         uint32 g = (((pixel >> 5) & 0x03F) << 2);
-        uint32 b = (((pixel >> 0) & 0x01F) << 3);
+        uint32 r = (((pixel >> 0) & 0x01F) << 3);
         uint32 a = 0xFF;
 
         *output = (r) | (g << 8) | (b << 16) | (a << 24);

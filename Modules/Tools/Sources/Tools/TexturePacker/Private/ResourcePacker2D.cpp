@@ -21,7 +21,7 @@
 
 namespace DAVA
 {
-const String ResourcePacker2D::VERSION = "0.0.4";
+const String ResourcePacker2D::VERSION = "0.0.5";
 const String ResourcePacker2D::INTERNAL_LIBPSD_VERSION = "0.0.1";
 
 String ResourcePacker2D::GetProcessFolderName()

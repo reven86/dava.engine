@@ -1,13 +1,14 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "DLCManager/DLCDownloader.h"
 #include "DLCManager/DLCManager.h"
 #include "Compression/Compressor.h"
-#include "DLCManager/DLCDownloader.h"
 
 namespace DAVA
 {
 class DLCManagerImpl;
+class FileSystem;
 
 /**
 	Download several files with one request
@@ -16,7 +17,7 @@ class PackRequest : public DLCManager::IRequest
 {
 public:
     PackRequest(DLCManagerImpl& packManager_, const String& packName, Vector<uint32> fileIndexes_);
-    void CancelCurrentsDownloads();
+    void CancelCurrentDownloadRequests();
     PackRequest(DLCManagerImpl& packManager_, const String& requestedPackName);
 
     ~PackRequest() override;
@@ -69,7 +70,7 @@ private:
         uint64 sizeOfCompressedFile = 0;
         uint64 sizeOfUncompressedFile = 0;
         uint64 downloadedFileSize = 0;
-        DLCDownloader::Task* taskId = nullptr;
+        DLCDownloader::Task* task = nullptr;
         Compressor::Type compressionType = Compressor::Type::Lz4HC;
         Status status = Wait;
     };
@@ -86,6 +87,10 @@ private:
 
     static void DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest);
     void DisableRequestingAndFireSignalNoSpaceLeft(FileRequest& fileRequest) const;
+    bool CheckLocalFileState(FileSystem* fs, FileRequest& fileRequest);
+    bool CheckLoadingStatusOfFileRequest(FileRequest& fileRequest, DLCDownloader* dm, const String& dstPath);
+    bool LoadingPackFileState(FileSystem* fs, FileRequest& fileRequest);
+    bool CheckHaskState(FileRequest& fileRequest);
     bool UpdateFileRequests();
 
     DLCManagerImpl* packManagerImpl = nullptr;

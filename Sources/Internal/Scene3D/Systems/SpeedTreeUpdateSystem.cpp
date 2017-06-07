@@ -4,6 +4,7 @@
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/SpeedTreeComponent.h"
+#include "Scene3D/Components/SingleComponents/TransformSingleComponent.h"
 #include "Scene3D/Systems/WindSystem.h"
 #include "Scene3D/Systems/WaveSystem.h"
 #include "Scene3D/Systems/EventSystem.h"
@@ -27,7 +28,6 @@ SpeedTreeUpdateSystem::SpeedTreeUpdateSystem(Scene* scene)
 
     isVegetationAnimationEnabled = QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_VEGETATION_ANIMATION);
 
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SPEED_TREE_MAX_ANIMATED_LOD_CHANGED);
 }
 
@@ -41,16 +41,6 @@ SpeedTreeUpdateSystem::~SpeedTreeUpdateSystem()
 void SpeedTreeUpdateSystem::ImmediateEvent(Component* _component, uint32 event)
 {
     Entity* entity = _component->GetEntity();
-    if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
-    {
-        SpeedTreeComponent* component = GetSpeedTreeComponent(entity);
-        if (component)
-        {
-            Matrix4* wtMxPrt = GetTransformComponent(component->GetEntity())->GetWorldTransformPtr();
-            component->wtPosition = wtMxPrt->GetTranslationVector();
-            wtMxPrt->GetInverse(component->wtInvMx);
-        }
-    }
     if (event == EventSystem::SPEED_TREE_MAX_ANIMATED_LOD_CHANGED)
     {
         UpdateAnimationFlag(_component->GetEntity());
@@ -91,6 +81,21 @@ void SpeedTreeUpdateSystem::UpdateAnimationFlag(Entity* entity)
 void SpeedTreeUpdateSystem::Process(float32 timeElapsed)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_SPEEDTREE_SYSTEM);
+
+    TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+    for (auto& pair : tsc->worldTransformChanged.map)
+    {
+        if (pair.first->GetComponentsCount(Component::SPEEDTREE_COMPONENT) > 0)
+        {
+            for (Entity* entity : pair.second)
+            {
+                SpeedTreeComponent* component = static_cast<SpeedTreeComponent*>(entity->GetComponent(Component::SPEEDTREE_COMPONENT));
+                Matrix4* wtMxPrt = GetTransformComponent(component->GetEntity())->GetWorldTransformPtr();
+                component->wtPosition = wtMxPrt->GetTranslationVector();
+                wtMxPrt->GetInverse(component->wtInvMx);
+            }
+        }
+    }
 
     if (!isAnimationEnabled || !isVegetationAnimationEnabled)
         return;
