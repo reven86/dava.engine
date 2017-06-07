@@ -414,8 +414,77 @@ set(MACOS_STATIC_RELEASE_LIBS "${LibsPath}/MacOS/libLowLevel.a"
                               "${LibsPath}/MacOS/libSceneQuery.a"
                               "${LibsPath}/MacOS/libSimulationController.a")
 
-set(STATIC_LIBRARIES_MACOS_RELEASE "${MACOS_STATIC_RELEASE_LIBS}")
-set(STATIC_LIBRARIES_MACOS_DEBUG "${MACOS_STATIC_DEBUG_LIBS}")
+set(IOS_STATIC_DEBUG_LIBS "${LibsPath}/iOS/libLowLevelDEBUG.a"
+                          "${LibsPath}/iOS/libLowLevelAABBDEBUG.a"
+                          "${LibsPath}/iOS/libLowLevelClothDEBUG.a"
+                          "${LibsPath}/iOS/libLowLevelDynamicsDEBUG.a"
+                          "${LibsPath}/iOS/libLowLevelParticlesDEBUG.a"
+                          "${LibsPath}/iOS/libPhysX3DEBUG.a"
+                          "${LibsPath}/iOS/libPhysX3CharacterKinematicDEBUG.a"
+                          "${LibsPath}/iOS/libPhysX3CommonDEBUG.a"
+                          "${LibsPath}/iOS/libPhysX3CookingDEBUG.a"
+                          "${LibsPath}/iOS/libPhysX3ExtensionsDEBUG.a"
+                          "${LibsPath}/iOS/libPhysX3VehicleDEBUG.a"
+                          "${LibsPath}/iOS/libPsFastXmlDEBUG.a"
+                          "${LibsPath}/iOS/libPxFoundationDEBUG.a"
+                          "${LibsPath}/iOS/libPxPvdSDKDEBUG.a"
+                          "${LibsPath}/iOS/libPxTaskDEBUG.a"
+                          "${LibsPath}/iOS/libSceneQueryDEBUG.a"
+                          "${LibsPath}/iOS/libSimulationControllerDEBUG.a")
+
+set(IOS_STATIC_CHECKED_LIBS "${LibsPath}/iOS/libLowLevelCHECKED.a"
+                            "${LibsPath}/iOS/libLowLevelAABBCHECKED.a"
+                            "${LibsPath}/iOS/libLowLevelClothCHECKED.a"
+                            "${LibsPath}/iOS/libLowLevelDynamicsCHECKED.a"
+                            "${LibsPath}/iOS/libLowLevelParticlesCHECKED.a"
+                            "${LibsPath}/iOS/libPhysX3CHECKED.a"
+                            "${LibsPath}/iOS/libPhysX3CharacterKinematicCHECKED.a"
+                            "${LibsPath}/iOS/libPhysX3CommonCHECKED.a"
+                            "${LibsPath}/iOS/libPhysX3CookingCHECKED.a"
+                            "${LibsPath}/iOS/libPhysX3ExtensionsCHECKED.a"
+                            "${LibsPath}/iOS/libPhysX3VehicleCHECKED.a"
+                            "${LibsPath}/iOS/libPsFastXmlCHECKED.a"
+                            "${LibsPath}/iOS/libPxFoundationCHECKED.a"
+                            "${LibsPath}/iOS/libPxPvdSDKCHECKED.a"
+                            "${LibsPath}/iOS/libPxTaskCHECKED.a"
+                            "${LibsPath}/iOS/libSceneQueryCHECKED.a"
+                            "${LibsPath}/iOS/libSimulationControllerCHECKED.a")
+
+set(IOS_STATIC_PROFILE_LIBS "${LibsPath}/iOS/libLowLevelPROFILE.a"
+                            "${LibsPath}/iOS/libLowLevelAABBPROFILE.a"
+                            "${LibsPath}/iOS/libLowLevelClothPROFILE.a"
+                            "${LibsPath}/iOS/libLowLevelDynamicsPROFILE.a"
+                            "${LibsPath}/iOS/libLowLevelParticlesPROFILE.a"
+                            "${LibsPath}/iOS/libPhysX3PROFILE.a"
+                            "${LibsPath}/iOS/libPhysX3CharacterKinematicPROFILE.a"
+                            "${LibsPath}/iOS/libPhysX3CommonPROFILE.a"
+                            "${LibsPath}/iOS/libPhysX3CookingPROFILE.a"
+                            "${LibsPath}/iOS/libPhysX3ExtensionsPROFILE.a"
+                            "${LibsPath}/iOS/libPhysX3VehiclePROFILE.a"
+                            "${LibsPath}/iOS/libPsFastXmlPROFILE.a"
+                            "${LibsPath}/iOS/libPxFoundationPROFILE.a"
+                            "${LibsPath}/iOS/libPxPvdSDKPROFILE.a"
+                            "${LibsPath}/iOS/libPxTaskPROFILE.a"
+                            "${LibsPath}/iOS/libSceneQueryPROFILE.a"
+                            "${LibsPath}/iOS/libSimulationControllerPROFILE.a")
+
+set(IOS_STATIC_RELEASE_LIBS "${LibsPath}/iOS/libLowLevel.a"
+                            "${LibsPath}/iOS/libLowLevelAABB.a"
+                            "${LibsPath}/iOS/libLowLevelCloth.a"
+                            "${LibsPath}/iOS/libLowLevelDynamics.a"
+                            "${LibsPath}/iOS/libLowLevelParticles.a"
+                            "${LibsPath}/iOS/libPhysX3.a"
+                            "${LibsPath}/iOS/libPhysX3CharacterKinematic.a"
+                            "${LibsPath}/iOS/libPhysX3Common.a"
+                            "${LibsPath}/iOS/libPhysX3Cooking.a"
+                            "${LibsPath}/iOS/libPhysX3Extensions.a"
+                            "${LibsPath}/iOS/libPhysX3Vehicle.a"
+                            "${LibsPath}/iOS/libPsFastXml.a"
+                            "${LibsPath}/iOS/libPxFoundation.a"
+                            "${LibsPath}/iOS/libPxPvdSDK.a"
+                            "${LibsPath}/iOS/libPxTask.a"
+                            "${LibsPath}/iOS/libSceneQuery.a"
+                            "${LibsPath}/iOS/libSimulationController.a")
 
 set(STATIC_LIBRARIES_WIN32_RELEASE "${WIN32_STATIC_RELEASE_LIBS}")
 set(DYNAMIC_LIBRARIES_WIN32_RELEASE "${WIN32_DYNAMIC_RELEASE_LIBS}")
@@ -434,6 +503,12 @@ set(DYNAMIC_LIBRARIES_WINUAP_RELEASE "${WIN_UAP_DYNAMIC_RELEASE_LIBS}")
 
 set(STATIC_LIBRARIES_WINUAP_DEBUG "${WIN_UAP_STATIC_DEBUG_LIBS}")
 set(DYNAMIC_LIBRARIES_WINUAP_DEBUG "${WIN_UAP_DYNAMIC_DEBUG_LIBS}")
+
+set(STATIC_LIBRARIES_MACOS_RELEASE "${MACOS_STATIC_RELEASE_LIBS}")
+set(STATIC_LIBRARIES_MACOS_DEBUG "${MACOS_STATIC_DEBUG_LIBS}")
+
+set(STATIC_LIBRARIES_IOS_RELEASE "${IOS_STATIC_RELEASE_LIBS}")
+set(STATIC_LIBRARIES_IOS_DEBUG "${IOS_STATIC_DEBUG_LIBS}")
 
 set(BINARY_WIN32_DIR_RELEASE "${LibsPath}/Win32/x86")
 set(BINARY_WIN32_DIR_RELWITHDEB "${LibsPath}/Win32/x86")
