@@ -194,6 +194,8 @@ public:
         return downloader.get();
     }
 
+    void AddToInformSetAfterInitializationDone(PackRequest* request);
+
 private:
     // initialization state functions
     void AskFooter();

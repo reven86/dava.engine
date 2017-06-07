@@ -33,6 +33,7 @@ public:
     uint64 GetSize() const override;
     /** recalculate current downloaded size without dependencies */
     uint64 GetDownloadedSize() const override;
+    bool IsDownloadedCheck() const;
     /** return true when all files loaded and ready */
     bool IsDownloaded() const override;
 

@@ -121,8 +121,8 @@ uint64 PackRequest::GetDownloadedSize() const
     });
     return requestsSize;
 }
-/** return true when all files loaded and ready */
-bool PackRequest::IsDownloaded() const
+
+bool PackRequest::IsDownloadedCheck() const
 {
     if (delayedRequest)
     {
@@ -131,7 +131,8 @@ bool PackRequest::IsDownloaded() const
 
     if (requests.size() != fileIndexes.size())
     {
-        return false; // not initialized yet
+        return false;
+        // not initialized yet
     }
 
     if (!packManagerImpl->IsInitialized())
@@ -151,11 +152,28 @@ bool PackRequest::IsDownloaded() const
     {
         if (!packManagerImpl->IsTop(this))
         {
-            return false; // wait for dependencies to download first
+            return false;
+            // wait for dependencies to download first
         }
     }
 
     return true;
+}
+
+/** return true when all files loaded and ready */
+bool PackRequest::IsDownloaded() const
+{
+    bool alreadyDownloaded = IsDownloadedCheck();
+    if (!alreadyDownloaded && !packManagerImpl->IsInitialized())
+    {
+        // if user want's to know if pack already downloaded, we need
+        // set flag about it in case of False result, because during this
+        // in other thread local files can be scanning and after scan finished
+        // we need inform user about all finished request, may be this request
+        // already downloaded
+        packManagerImpl->AddToInformSetAfterInitializationDone(this);
+    }
+    return alreadyDownloaded;
 }
 
 void PackRequest::SetFileIndexes(Vector<uint32> fileIndexes_)
