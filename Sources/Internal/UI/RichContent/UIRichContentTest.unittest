@@ -67,7 +67,7 @@ DAVA_TESTCLASS(UIRichContentTest)
     DAVA_TEST(BaseClassesTest)
     {
         const String testData = R"(
-            Simple <span class="red">red</span> text
+            Simple <span class="text-green">green</span> text
         )";
         UIRichContentComponent* c = richControl->GetOrCreateComponent<UIRichContentComponent>();
         DVASSERT(c);

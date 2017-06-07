@@ -5,7 +5,7 @@
 
 ////Global launcher defines
 
-#define LAUNCHER_VER "0.9 build 28"
+#define LAUNCHER_VER __DATE__
 
 #define LOCAL_CONFIG_NAME "localConfig.yaml"
 
