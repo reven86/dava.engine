@@ -11,6 +11,7 @@
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Scene3D/Scene.h"
 #include "Render/Highlevel/SpeedTreeObject.h"
+#include "Render/3D/MeshUtils.h"
 #include "Utils/Random.h"
 #include "Math/Math2D.h"
 #include "Debug/ProfilerCPU.h"
@@ -50,7 +51,7 @@ void SpeedTreeUpdateSystem::ImmediateEvent(Component* _component, uint32 event)
 void SpeedTreeUpdateSystem::AddEntity(Entity* entity)
 {
     SpeedTreeComponent* component = GetSpeedTreeComponent(entity);
-    DVASSERT(component);
+    DVASSERT(component != nullptr);
     component->leafTime = static_cast<float32>(Random::Instance()->RandFloat(1000.f));
     allTrees.push_back(component);
 }
@@ -93,6 +94,9 @@ void SpeedTreeUpdateSystem::Process(float32 timeElapsed)
                 Matrix4* wtMxPrt = GetTransformComponent(component->GetEntity())->GetWorldTransformPtr();
                 component->wtPosition = wtMxPrt->GetTranslationVector();
                 wtMxPrt->GetInverse(component->wtInvMx);
+
+                DVASSERT(GetSpeedTreeObject(entity) != nullptr);
+                GetSpeedTreeObject(entity)->SetInvWorldTransformPtr(&component->wtInvMx);
             }
         }
     }

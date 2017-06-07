@@ -159,11 +159,11 @@ void EditorSystemsManager::SetEmulationMode(bool emulationMode)
     SetDisplayState(emulationMode ? Emulation : previousDisplayState);
 }
 
-ControlNode* EditorSystemsManager::GetControlNodeAtPoint(const DAVA::Vector2& point) const
+ControlNode* EditorSystemsManager::GetControlNodeAtPoint(const DAVA::Vector2& point, bool canGoDeeper) const
 {
     if (!KeyboardProxy::IsKeyPressed(KeyboardProxy::KEY_ALT))
     {
-        return selectionSystemPtr->GetCommonNodeUnderPoint(point);
+        return selectionSystemPtr->GetCommonNodeUnderPoint(point, canGoDeeper);
     }
     return selectionSystemPtr->GetNearestNodeUnderPoint(point);
 }

@@ -3,6 +3,7 @@
 
 #include "Base/Platform.h"
 #include "Base/Exception.h"
+#include "Debug/Backtrace.h"
 
 #include "FileSystem/FileAPIHelper.h"
 #include "FileSystem/FileSystem.h"
@@ -272,7 +273,8 @@ bool FileSystem::DeleteFile(const FilePath& filePath)
     DVASSERT(filePath.GetType() != FilePath::PATH_IN_RESOURCES);
 
     // function unlink return 0 on success, -1 on error
-    const auto& fileName = filePath.GetAbsolutePathname();
+    String fileName = filePath.GetAbsolutePathname();
+
     int res = FileAPI::RemoveFile(fileName);
     if (res == 0)
     {
@@ -511,7 +513,7 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
         return true;
     }
 
-    nativePath += ".dvpl";
+    nativePath += extDvpl;
 
     if (FileAPI::IsRegularFile(nativePath))
     {
