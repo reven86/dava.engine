@@ -532,10 +532,16 @@ void DLCManagerImpl::AskFooter()
             {
                 initError = InitError::LoadingRequestFailed;
                 initErrorMsg = "failed get superpack size on server, download error: ";
-                log << initErrorMsg << std::endl;
+                PrintErrMsgAndGpuToLog();
             }
         }
     }
+}
+
+void DLCManagerImpl::PrintErrMsgAndGpuToLog()
+{
+    const char* gpuFamily = GlobalEnumMap<eGPUFamily>::Instance()->ToString(static_cast<eGPUFamily>(DeviceInfo::GetGPUFamily()));
+    log << initErrorMsg << " current_device_gpu: " << gpuFamily << std::endl;
 }
 
 void DLCManagerImpl::GetFooter()
@@ -565,8 +571,7 @@ void DLCManagerImpl::GetFooter()
         {
             initError = InitError::LoadingRequestFailed;
             initErrorMsg = "failed get footer from server, download error: ";
-            const char* gpuFamily = GlobalEnumMap<eGPUFamily>::Instance()->ToString(static_cast<eGPUFamily>(DeviceInfo::GetGPUFamily()));
-            log << initErrorMsg << " current_device_gpu: " << gpuFamily << std::endl;
+            PrintErrMsgAndGpuToLog();
         }
     }
 }
@@ -894,7 +899,7 @@ void DLCManagerImpl::StartDelayedRequests()
         requestManager->Remove(request);
     }
 
-    for (auto request : tmpRequests)
+    for (PackRequest* request : tmpRequests)
     {
         const String& requestedPackName = request->GetRequestedPackName();
         PackRequest* r = FindRequest(requestedPackName);
@@ -922,6 +927,13 @@ void DLCManagerImpl::StartDelayedRequests()
     size_t numDownloaded = std::count(begin(scanFileReady), end(scanFileReady), true);
 
     initializeFinished.Emit(numDownloaded, meta->GetFileCount());
+
+    for (PackRequest* request : tmpRequests)
+    {
+        // we have to inform user because after scanning is finished
+        // some request may be already downloaded (all files found)
+        requestUpdated.Emit(*request);
+    }
 }
 
 void DLCManagerImpl::DeleteLocalMetaFiles()

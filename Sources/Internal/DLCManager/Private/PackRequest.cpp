@@ -122,7 +122,8 @@ uint64 PackRequest::GetDownloadedSize() const
     return requestsSize;
 }
 
-bool PackRequest::IsDownloadedCheck() const
+/** return true when all files loaded and ready */
+bool PackRequest::IsDownloaded() const
 {
     if (delayedRequest)
     {
@@ -158,22 +159,6 @@ bool PackRequest::IsDownloadedCheck() const
     }
 
     return true;
-}
-
-/** return true when all files loaded and ready */
-bool PackRequest::IsDownloaded() const
-{
-    bool alreadyDownloaded = IsDownloadedCheck();
-    if (!alreadyDownloaded && !packManagerImpl->IsInitialized())
-    {
-        // if user want's to know if pack already downloaded, we need
-        // set flag about it in case of False result, because during this
-        // in other thread local files can be scanning and after scan finished
-        // we need inform user about all finished request, may be this request
-        // already downloaded
-        packManagerImpl->AddToInformSetAfterInitializationDone(this);
-    }
-    return alreadyDownloaded;
 }
 
 void PackRequest::SetFileIndexes(Vector<uint32> fileIndexes_)
@@ -428,8 +413,6 @@ bool PackRequest::CheckHaskState(FileRequest& fileRequest)
                 return false;
             }
         }
-
-        DVASSERT(fileRequest.downloadedFileSize == footer.sizeCompressed);
 
         fileRequest.downloadedFileSize += sizeof(footer);
         fileRequest.status = Ready;
