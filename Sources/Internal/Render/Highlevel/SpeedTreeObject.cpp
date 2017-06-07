@@ -1,3 +1,4 @@
+#include "Render/3D/MeshUtils.H"
 #include "Render/Highlevel/SpeedTreeObject.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Utils/Utils.h"
@@ -24,6 +25,8 @@ SpeedTreeObject::SpeedTreeObject()
     type = TYPE_SPEED_TREE;
 
     sphericalHarmonics = { 1.f / 0.564188f, 1.f / 0.564188f, 1.f / 0.564188f }; //fake SH value to make original object color
+
+    AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
 }
 
 SpeedTreeObject::~SpeedTreeObject()
@@ -76,6 +79,33 @@ void SpeedTreeObject::BindDynamicParameters(Camera* camera)
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SPEED_TREE_LIGHT_SMOOTHING, &lightSmoothing, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SPHERICAL_HARMONICS, sphericalHarmonics.data(), DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
+}
+
+void SpeedTreeObject::PrepareToRender(Camera* camera)
+{
+    RenderObject::PrepareToRender(camera);
+
+    Vector3 direction = GetWorldBoundingBox().GetCenter() - camera->GetPosition();
+    direction = MultiplyVectorMat3x3(direction, *invWorldTransform);
+    direction.z = 0.f;
+    direction.Normalize();
+    uint32 directionIndex = SelectDirectionIndex(direction);
+
+    for (RenderBatch* batch : activeRenderBatchArray)
+    {
+        PolygonGroup* pg = batch->GetPolygonGroup();
+        if (pg)
+        {
+            int32 meshIndexCount = pg->GetPrimitiveCount() * 3;
+            if (meshIndexCount != pg->GetIndexCount()) //sorted polygon group
+            {
+                uint32 startIndex = meshIndexCount * directionIndex;
+                DVASSERT(uint32(pg->GetIndexCount()) >= uint32(startIndex + meshIndexCount));
+
+                batch->startIndex = startIndex;
+            }
+        }
+    }
 }
 
 void SpeedTreeObject::UpdateAnimationFlag(int32 maxAnimatedLod)
@@ -152,51 +182,89 @@ void SpeedTreeObject::Load(KeyedArchive* archive, SerializationContext* serializ
 
 AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeGeometry(RenderBatch* rb)
 {
-    if (IsTreeLeafBatch(rb))
+    AABBox3 pgBbox;
+    PolygonGroup* pg = rb->GetPolygonGroup();
+
+    if ((pg->GetFormat() & EVF_PIVOT4) == 0)
+        return rb->GetBoundingBox();
+
+    int32 vertexCount = pg->GetVertexCount();
+    for (int32 vi = 0; vi < vertexCount; vi++)
     {
-        AABBox3 pgBbox;
-        PolygonGroup* pg = rb->GetPolygonGroup();
+        Vector4 pivot;
+        pg->GetPivot(vi, pivot);
 
-        if ((pg->GetFormat() & EVF_PIVOT) == 0)
-            return rb->GetBoundingBox();
-
-        int32 vertexCount = pg->GetVertexCount();
-        for (int32 vi = 0; vi < vertexCount; vi++)
+        if (pivot.w > 0.f)
         {
-            Vector3 pivot;
-            pg->GetPivot(vi, pivot);
-
             Vector3 pointX, pointY, pointZ;
             Vector3 offsetX, offsetY;
 
             pg->GetCoord(vi, pointZ);
-            offsetX = offsetY = pointZ - pivot;
+            offsetX = offsetY = pointZ - Vector3(pivot);
 
             Swap(offsetX.x, offsetX.z);
             Swap(offsetX.y, offsetX.z);
 
-            pointX = pivot + offsetX;
-            pointY = pivot + offsetY;
+            pointX = Vector3(pivot) + offsetX;
+            pointY = Vector3(pivot) + offsetY;
 
             pgBbox.AddPoint(pointX);
             pgBbox.AddPoint(pointY);
             pgBbox.AddPoint(pointZ);
         }
-
-        return pgBbox;
+        else
+        {
+            Vector3 position;
+            pg->GetCoord(vi, position);
+            pgBbox.AddPoint(position);
+        }
     }
 
-    return rb->GetBoundingBox();
+    return pgBbox;
 }
 
-bool SpeedTreeObject::IsTreeLeafBatch(RenderBatch* batch)
+Vector3 SpeedTreeObject::GetSortingDirection(uint32 directionIndex)
 {
-    if (batch && batch->GetMaterial())
+    float32 angle = (PI_2 / SpeedTreeObject::SORTING_DIRECTION_COUNT) * directionIndex;
+    return Vector3(std::cos(angle), std::sin(angle), 0.f);
+}
+
+uint32 SpeedTreeObject::SelectDirectionIndex(const Vector3& direction)
+{
+    uint32 index = 0;
+    float32 dp0 = -1.f;
+    for (uint32 i = 0; i < SORTING_DIRECTION_COUNT; ++i)
     {
-        const FastName& materialFXName = batch->GetMaterial()->GetEffectiveFXName();
-        return (materialFXName == NMaterialName::SPEEDTREE_LEAF) || (materialFXName == NMaterialName::SPHERICLIT_SPEEDTREE_LEAF);
+        float32 dp = GetSortingDirection(i).DotProduct(direction);
+        if (dp > dp0)
+        {
+            dp0 = dp;
+            index = i;
+        }
     }
 
-    return false;
+    return index;
+}
+
+PolygonGroup* SpeedTreeObject::CreateSortedPolygonGroup(PolygonGroup* pg)
+{
+    DVASSERT(pg->GetPrimitiveType() == rhi::PRIMITIVE_TRIANGLELIST);
+
+    uint32 meshIndexCount = pg->GetPrimitiveCount() * 3;
+
+    PolygonGroup* spg = new PolygonGroup();
+    spg->AllocateData(pg->GetFormat(), pg->GetVertexCount(), meshIndexCount * SORTING_DIRECTION_COUNT, pg->GetPrimitiveCount());
+    Memcpy(spg->meshData, pg->meshData, pg->GetVertexCount() * pg->vertexStride);
+
+    for (uint32 dir = 0; dir < SpeedTreeObject::SORTING_DIRECTION_COUNT; ++dir)
+    {
+        Vector<uint16> bufferData = MeshUtils::BuildSortedIndexBufferData(pg, SpeedTreeObject::GetSortingDirection(dir));
+        Memcpy(spg->indexArray + meshIndexCount * dir, bufferData.data(), bufferData.size() * sizeof(uint16));
+    }
+
+    spg->RecalcAABBox();
+    spg->BuildBuffers();
+
+    return spg;
 }
 };
