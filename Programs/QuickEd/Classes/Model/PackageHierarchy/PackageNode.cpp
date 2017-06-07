@@ -195,6 +195,7 @@ void PackageNode::RemoveListener(PackageListener* listener)
 
 void PackageNode::SetControlProperty(ControlNode* node, AbstractProperty* property, const DAVA::Any& newValue)
 {
+    OnControlPropertyWillBeChanged(node, property, property->GetValue(), newValue);
     node->GetRootProperty()->SetProperty(property, newValue);
     RefreshProperty(node, property);
 }
@@ -203,6 +204,7 @@ void PackageNode::ResetControlProperty(ControlNode* node, AbstractProperty* prop
 {
     if (property->IsOverriddenLocally())
     {
+        OnControlPropertyWillBeChanged(node, property, property->GetValue(), property->GetDefaultValue());
         node->GetRootProperty()->ResetProperty(property);
         RefreshProperty(node, property);
     }
@@ -530,4 +532,26 @@ Vector<PackageNode::DepthPackageNode> PackageNode::CollectImportedPackagesRecurs
     }
 
     return result;
+}
+
+void PackageNode::OnControlPropertyWillBeChanged(ControlNode* node, AbstractProperty* property, const Any& oldValue, const Any& newValue)
+{
+    using namespace DAVA;
+    DVASSERT(node != nullptr);
+    DVASSERT(property != nullptr);
+
+    if (node->GetParent() == packageControlsNode && property->GetName() == "Name")
+    {
+        String name = oldValue.Cast<String>(String());
+        PackageNode::Guides guides = GetGuides(name);
+        SetGuides(name, PackageNode::Guides());
+
+        String newName = newValue.Cast<String>(String());
+        //we don't support root controls without name
+        //all notification messages must be separate from this logic
+        if (newName.empty() == false)
+        {
+            SetGuides(newName, guides);
+        }
+    }
 }

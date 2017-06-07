@@ -385,7 +385,7 @@ void QuickEdPackageBuilder::ProcessGuides(const DAVA::YamlNode* guidesNode)
         YamlNode* allGuidesNode = controlsMapItem.second;
         PackageNode::Guides& guides = allGuides[controlName];
 
-        Vector<QuickEdPackageBuilderDetails::GuidesOrientation> orientations = { { "Horizontal", &guides[Vector2::AXIS_X] }, { "Vertical", &guides[Vector2::AXIS_Y] } };
+        Vector<QuickEdPackageBuilderDetails::GuidesOrientation> orientations = { { "Vertical", &guides[Vector2::AXIS_X] }, { "Horizontal", &guides[Vector2::AXIS_Y] } };
         for (QuickEdPackageBuilderDetails::GuidesOrientation& orientation : orientations)
         {
             const YamlNode* guideValuesNode = allGuidesNode->Get(orientation.type);

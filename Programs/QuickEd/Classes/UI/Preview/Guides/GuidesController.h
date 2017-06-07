@@ -6,9 +6,12 @@
 
 #include <TArc/DataProcessing/DataWrapper.h>
 
+#include <QtTools/Updaters/LazyUpdater.h>
+
 #include <Base/Any.h>
 #include <Base/Introspection.h>
 #include <Math/Vector.h>
+#include <Math/Color.h>
 
 #include <QWidget>
 #include <QMap>
@@ -35,9 +38,13 @@ public:
 
     //preferences
     DAVA::float32 detectGuideDistance;
+    DAVA::Color guideColor;
+    DAVA::Color previewGuideColor;
 
     INTROSPECTION(GuidesControllerPreferences,
                   MEMBER(detectGuideDistance, "Rulers/distance from guide to drag", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  MEMBER(guideColor, "Rulers/guide color", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  MEMBER(previewGuideColor, "Rulers/preview guide color", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   )
 };
 
@@ -64,7 +71,7 @@ private:
 
     //cursor and preview guide states
     //NO_DISPLAY: normal cursor and no preview guide
-    //DISPLAY_PREVIEW: normal cursor and preview guide are shown
+    //DISPLAY_PREVIEW: normal cursor and preview guide is visible
     //DISPLAY_DRAG: drag cursor and no preview guide
     enum eDisplayState
     {
@@ -111,6 +118,8 @@ private:
     bool IsGuidesEnabled() const;
     void SetGuidesEnabled(bool enabled);
 
+    void SetGuideColor(QWidget* guide, const DAVA::Color& color);
+
     //behavior
     virtual void ProcessGeometryChanged(const QPoint& bottomLeft, const QPoint& topRight) = 0;
     virtual void ResizeGuide(QWidget* guide) const = 0;
@@ -155,6 +164,7 @@ private:
     QWidget* previewGuide = nullptr;
 
     GuidesControllerPreferences preferences;
+    LazyUpdater visualUpdater;
 };
 
 class HGuidesController : public GuidesController

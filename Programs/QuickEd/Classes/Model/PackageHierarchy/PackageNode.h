@@ -93,7 +93,7 @@ public:
     void SetCanUpdateAll(bool canUpdate);
     bool CanUpdateAll() const;
 
-    using AxisGuides = DAVA::Vector<DAVA::float32>;
+    using AxisGuides = DAVA::List<DAVA::float32>;
     AxisGuides GetAxisGuides(const DAVA::String& name, DAVA::Vector2::eAxis orientation);
     void SetAxisGuides(const DAVA::String& name, DAVA::Vector2::eAxis orientation, const AxisGuides& guides);
 
@@ -118,6 +118,7 @@ private:
 
     void NotifyPropertyChanged(ControlNode* control);
     DAVA::Vector<DepthPackageNode> CollectImportedPackagesRecursively();
+    void OnControlPropertyWillBeChanged(ControlNode* node, AbstractProperty* property, const DAVA::Any& oldValue, const DAVA::Any& newValue);
 
     enum eSection
     {

@@ -531,10 +531,15 @@ void PackageSerializer::PutGuides(const PackageNode* node)
 {
     BeginMap("Guides");
     PackageControlsNode* controlsContainer = node->GetPackageControlsNode();
+    Set<String> names;
     for (int i = 0, count = controlsContainer->GetCount(); i < count; ++i)
     {
         ControlNode* rootControl = controlsContainer->Get(i);
-        const String& name = rootControl->GetName();
+        names.insert(rootControl->GetName());
+    }
+
+    for (const String& name : names)
+    {
         const PackageNode::Guides& mapItemValue = node->GetGuides(name);
         if (mapItemValue[Vector2::AXIS_X].empty() == false || mapItemValue[Vector2::AXIS_Y].empty() == false)
         {
@@ -542,13 +547,13 @@ void PackageSerializer::PutGuides(const PackageNode* node)
             {
                 if (mapItemValue[Vector2::AXIS_X].empty() == false)
                 {
-                    BeginArray("Horizontal");
+                    BeginArray("Vertical");
                     PutGuidesList(mapItemValue[Vector2::AXIS_X]);
                     EndArray();
                 }
                 if (mapItemValue[Vector2::AXIS_Y].empty() == false)
                 {
-                    BeginArray("Vertical");
+                    BeginArray("Horizontal");
                     PutGuidesList(mapItemValue[Vector2::AXIS_Y]);
                     EndArray();
                 }

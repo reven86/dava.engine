@@ -15,6 +15,7 @@ GuidesController::GuidesController(DAVA::TArc::ContextAccessor* accessor_, QWidg
     : accessor(accessor_)
     , fieldBinder(new DAVA::TArc::FieldBinder(accessor))
     , container(container_)
+    , visualUpdater(DAVA::MakeFunction(this, &GuidesController::SyncGuidesWithValues), nullptr)
 {
     documentDataWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<DocumentData>());
     preferencesDataWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<PreferencesData>());
@@ -27,8 +28,7 @@ void GuidesController::CreatePreviewGuide()
     DVASSERT(previewGuide == nullptr);
     previewGuide = new QWidget(container);
     previewGuide->setAttribute(Qt::WA_TransparentForMouseEvents);
-
-    previewGuide->setStyleSheet("QWidget { background-color: rgba(255, 0, 0, 50%); }");
+    SetGuideColor(previewGuide, preferences.previewGuideColor);
     previewGuide->hide();
 }
 
@@ -36,8 +36,7 @@ void GuidesController::OnContainerGeometryChanged(const QPoint& bottomLeft, cons
 {
     ProcessGeometryChanged(bottomLeft, topRight);
     rulerRelativePos = rulerRelativePos_;
-
-    SyncGuidesWithValues();
+    visualUpdater.Update();
 }
 
 void GuidesController::OnCanvasParametersChanged(DAVA::float32 min_, DAVA::float32 max_, DAVA::float32 scale_)
@@ -46,7 +45,7 @@ void GuidesController::OnCanvasParametersChanged(DAVA::float32 min_, DAVA::float
     maxValue = max_;
     scale = scale_;
 
-    SyncGuidesWithValues();
+    visualUpdater.Update();
 }
 
 void GuidesController::OnMousePress(DAVA::float32 position)
@@ -141,7 +140,7 @@ QList<QAction*> GuidesController::GetActions(DAVA::float32 position, QObject* pa
         actions << removeGuideAction;
     }
 
-    QAction* removeAllGuidesAction = new QAction(QString("Remove All %1 Guides").arg(GetOrientation() == DAVA::Vector2::AXIS_X ? "Horizontal" : "Vertical"), parent);
+    QAction* removeAllGuidesAction = new QAction(QString("Remove All %1 Guides").arg(GetOrientation() == DAVA::Vector2::AXIS_X ? "Vertical" : "Horizontal"), parent);
     connect(removeAllGuidesAction, &QAction::triggered, this, &GuidesController::RemoveAllGuides);
     if (GetValues().empty())
     {
@@ -177,6 +176,7 @@ void GuidesController::SetDisplayState(eDisplayState state)
     switch (displayState)
     {
     case DISPLAY_PREVIEW:
+        SetGuideColor(previewGuide, preferences.previewGuideColor);
         previewGuide->show();
         break;
     case DISPLAY_DRAG:
@@ -248,7 +248,7 @@ void GuidesController::BindFields()
 
 void GuidesController::OnValuesChanged(const DAVA::Any&)
 {
-    SyncGuidesWithValues();
+    visualUpdater.Update();
 }
 
 void GuidesController::OnRootControlsChanged(const DAVA::Any& rootControls)
@@ -256,6 +256,7 @@ void GuidesController::OnRootControlsChanged(const DAVA::Any& rootControls)
     //this is not good situation, but we can reload or close document by shortcut while we dragging guide
     SetDisplayState(NO_DISPLAY);
     DisableDrag();
+    SyncGuidesWithValues();
 }
 
 void GuidesController::OnGuidesEnabledChanged(const DAVA::Any&)
@@ -269,11 +270,18 @@ void GuidesController::SyncGuidesWithValues()
     {
         while (guides.empty() == false)
         {
-            guides.front()->deleteLater();
-            guides.pop_front();
+            delete guides.takeLast();
         }
         return;
     }
+
+    //this function can be called recursively because we creating container child here
+    static bool syncGuard = false;
+    SCOPE_EXIT
+    {
+        syncGuard = false;
+    };
+    syncGuard = true;
 
     PackageNode::AxisGuides values = GetValues();
     auto iter = std::lower_bound(values.begin(), values.end(), minValue);
@@ -288,7 +296,6 @@ void GuidesController::SyncGuidesWithValues()
     {
         QWidget* guide = new QWidget(container);
         guide->setAttribute(Qt::WA_TransparentForMouseEvents);
-        guide->setStyleSheet("QWidget { background-color: rgba(255, 0, 0, 100%); }");
 
         guide->show();
 
@@ -301,6 +308,7 @@ void GuidesController::SyncGuidesWithValues()
         QWidget* guide = guides.at(index);
         ResizeGuide(guide);
         MoveGuide(*iter, guide);
+        SetGuideColor(guide, preferences.guideColor);
     }
 }
 
@@ -373,7 +381,7 @@ void GuidesController::CreateGuide(DAVA::float32 position)
     PackageNode::AxisGuides values = GetValues();
 
     values.push_back(PositionToValue(position));
-    std::sort(values.begin(), values.end());
+    values.sort();
 
     SetValues(values);
 
@@ -386,7 +394,7 @@ void GuidesController::DragGuide(DAVA::float32 position)
     DVASSERT(valuePtr != nullptr);
 
     *valuePtr = PositionToValue(position);
-    std::sort(cachedValues.begin(), cachedValues.end());
+    cachedValues.sort();
     SetValues(cachedValues);
 
     SyncGuidesWithValues();
@@ -417,6 +425,17 @@ void GuidesController::SetGuidesEnabled(bool enabled)
         DisableDrag();
         SetDisplayState(NO_DISPLAY);
     }
+}
+
+void GuidesController::SetGuideColor(QWidget* guide, const DAVA::Color& color)
+{
+    QString colorString = QString("rgba(%1, %2, %3, %4)")
+                          .arg(color.r * 255.0f)
+                          .arg(color.g * 255.0f)
+                          .arg(color.b * 255.0f)
+                          .arg(color.a * 255.0f);
+
+    guide->setStyleSheet(QString("QWidget { background-color: %1; }").arg(colorString));
 }
 
 DAVA::float32 GuidesController::PositionToValue(DAVA::float32 position) const
@@ -498,5 +517,7 @@ GuidesControllerPreferences::~GuidesControllerPreferences()
 }
 
 REGISTER_PREFERENCES_ON_START(GuidesControllerPreferences,
-                              PREF_ARG("detectGuideDistance", DAVA::float32(3.0f))
+                              PREF_ARG("detectGuideDistance", DAVA::float32(3.0f)),
+                              PREF_ARG("guideColor", DAVA::Color(1.0f, 0.0f, 0.0f, 1.0f)),
+                              PREF_ARG("previewGuideColor", DAVA::Color(1.0f, 0.0f, 0.0f, 0.5f))
                               )

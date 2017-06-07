@@ -50,21 +50,6 @@ void ChangePropertyValueCommand::Undo()
 
 void ChangePropertyValueCommand::ApplyProperty(ControlNode* node, AbstractProperty* property, const DAVA::Any& value)
 {
-    using namespace DAVA;
-    if (dynamic_cast<ControlsContainerNode*>(node->GetParent()) != nullptr && property->GetName() == "Name")
-    {
-        String name = node->GetName();
-        PackageNode::Guides guides = package->GetGuides(name);
-        package->SetGuides(name, PackageNode::Guides());
-
-        String newName = value.Cast<String>(String());
-        DVASSERT(newName.empty() == false, "You can not remove name for root control. Guides for this control will be removed");
-        if (newName.empty() == false)
-        {
-            package->SetGuides(newName, guides);
-        }
-    }
-
     if (value.IsEmpty())
     {
         package->ResetControlProperty(node, property);
