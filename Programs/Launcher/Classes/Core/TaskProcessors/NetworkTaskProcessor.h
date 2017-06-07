@@ -32,6 +32,7 @@ private slots:
 
 private:
     void StartNextTask();
+    void TerminateImpl();
 
     struct TaskParams
     {
