@@ -153,7 +153,7 @@ bool LoadExportedObjects(const DAVA::FilePath& linkPathname, DAVA::Vector<SceneE
                         }
                         else
                         {
-                            Logger::Error("Read wrong object at links file (%d instead %d)", type, collectionType);
+                            Logger::Error("Read wrong object at links file (%d instead of %d)", type, collectionType);
                         }
                     }
                 }
