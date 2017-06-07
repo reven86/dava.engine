@@ -1,3 +1,5 @@
+#pragma once
+
 #include "DataStorage/DataStorage.h"
 
 #if defined(__DAVAENGINE_LINUX__) && !defined(__DAVAENGINE_STEAM__)
