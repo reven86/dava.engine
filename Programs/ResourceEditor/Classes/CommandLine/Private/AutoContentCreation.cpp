@@ -10,6 +10,7 @@
 #include <FileSystem/File.h>
 #include <Logger/Logger.h>
 #include <Base/ScopedPtr.h>
+#include <Tarc/Utils/ModuleCollection.h>
 
 DuplicateObjectTool::DuplicateObjectTool(const DAVA::Vector<DAVA::String>& commandLine)
     : CommandLineModule(commandLine, "-duplicate")
