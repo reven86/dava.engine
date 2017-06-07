@@ -3,7 +3,7 @@ RenderTechnique:
     RenderPass:
         Name: "ForwardPass"
         Shader: "~res:/Materials/Shaders/Default/materials"
-        UniqueDefines: ["MATERIAL_TEXTURE", "SPEED_TREE_LEAF", "VERTEX_COLOR", "ALPHATEST", "SPHERICAL_LIT", "SPHERICAL_HARMONICS_9"]
+        UniqueDefines: ["MATERIAL_TEXTURE", "SPEED_TREE_OBJECT", "VERTEX_COLOR", "ALPHATEST", "SPHERICAL_LIT"]
         RenderState:
             alphaFunc: "CMP_ALWAYS"
             alphaFuncCmpValue: 0.0000

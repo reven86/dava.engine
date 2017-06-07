@@ -45,7 +45,10 @@
                 DAVA::String uidStr = DAVA::StringFromNSString(uid);
                 auto func = [self, uidStr]()
                 {
-                    notificationController->OnNotificationPressed(uidStr);
+                    if (notificationController != nullptr)
+                    {
+                        notificationController->OnNotificationPressed(uidStr);
+                    }
                 };
                 DAVA::RunOnMainThreadAsync(func);
             }
@@ -68,7 +71,10 @@
         {
             DAVA::String uidStr = DAVA::StringFromNSString(uid);
             auto func = [self, uidStr]() {
-                notificationController->OnNotificationPressed(uidStr);
+                if (notificationController != nullptr)
+                {
+                    notificationController->OnNotificationPressed(uidStr);
+                }
             };
             DAVA::RunOnMainThreadAsync(func);
         }

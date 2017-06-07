@@ -390,7 +390,7 @@ void MainWindow::ShowTable(QString branchID)
 
 void MainWindow::OnConnectedChanged(bool connected)
 {
-    QString text = QString("BAManager is ") + (connected ? "connected" : "disconnected");
+    QString text = QString("BA-Manager is ") + (connected ? "connected" : "disconnected");
     ui->label_BAManagerStatusText->setText(text);
     QString iconPath = QString(":/Icons/") + (connected ? "green" : "red") + ".png";
     ui->label_BAManagerStatusIcon->setPixmap(QPixmap(iconPath));

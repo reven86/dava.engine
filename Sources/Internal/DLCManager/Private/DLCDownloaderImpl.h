@@ -73,24 +73,24 @@ struct DLCDownloader::Task
          int64 rangeOffset,
          int64 rangeSize,
          int32 timeout);
-    void FlushWriterAndReset();
     ~Task();
 
+    void FlushWriterAndReset();
     void PrepareForDownloading();
     bool IsDone() const;
-    bool NeedHandle() const;
+    bool NeedDownloadMoreData() const;
     void OnSubTaskDone();
     void GenerateChunkSubRequests(const int chankSize);
-    void SetupFullDownload();
     void CorrectRangeToResumeDownloading();
+    void SetupFullDownload();
     void SetupResumeDownload();
     void SetupGetSizeDownload();
 
     // error handles
-    static void OnErrorCurlMulti(int32 multiCode, Task& task);
-    static void OnErrorCurlEasy(int32 easyCode, Task& task);
-    static void OnErrorCurlErrno(int32 errnoVal, Task& task);
-    static void OnErrorHttpCode(long httpCode, Task& task);
+    static void OnErrorCurlMulti(int32 multiCode, Task& task, int32 line);
+    static void OnErrorCurlEasy(int32 easyCode, Task& task, int32 line);
+    static void OnErrorCurlErrno(int32 errnoVal, Task& task, int32 line);
+    static void OnErrorHttpCode(long httpCode, Task& task, int32 line);
 };
 
 class DLCDownloaderImpl : public DLCDownloader, public ICurlEasyStorage
@@ -130,6 +130,7 @@ private:
     bool TakeNewTaskFromInputList();
     void SignalOnFinishedWaitingTasks();
     void AddNewTasks();
+    void ConsumeSubTask(CURLMsg* curlMsg, CURL* easyHandle);
     void ProcessMessagesFromMulti();
     void BalancingHandles();
 
@@ -148,7 +149,6 @@ private:
     IDownloaderSubTask& FindInMap(CURL* easy) override;
     void UnMap(CURL* easy) override;
     int GetChunkSize() override;
-    void DeleteSubTaskHandler(IDownloaderSubTask* t);
     // [end] implement ICurlEasyStorage interface
 
     void DownloadThreadFunc();
@@ -174,7 +174,7 @@ private:
 
     // [start] next variables used only from Download thread
     List<Task*> tasks;
-    UnorderedMap<CURL*, IDownloaderSubTask*> taskMap;
+    UnorderedMap<CURL*, IDownloaderSubTask*> subtaskMap;
     List<CURL*> reusableHandles;
     CURLM* multiHandle = nullptr;
     Thread* downloadThread = nullptr;
