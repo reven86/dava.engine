@@ -171,7 +171,7 @@ def _build_win10(working_directory_path, root_project_path):
     project_x64_path = os.path.join(source_folder_path, 'PhysX_3.4', 'Source', 'compiler', 'vc14win64', 'PhysX.sln')
 
     binary_dst_path = os.path.join(root_project_path, 'Modules', 'Physics', 'Libs', 'Win10')
-    x86_binary_dst_path = os.path.join(binary_dst_path, 'x86')
+    x86_binary_dst_path = os.path.join(binary_dst_path, 'Win32')
     x64_binary_dst_path = os.path.join(binary_dst_path, 'x64')
 
     build_utils.build_vs(project_x86_path, 'debug')
