@@ -155,7 +155,7 @@ Vector2 RotateVectorForMove(const Vector2& delta, float32 angle)
 
 void ClampProperty(Vector2& propertyValue, Vector2& extraDelta)
 {
-    Vector2 clampedValue(std::floor(propertyValue.x), std::floor(propertyValue.y));
+    Vector2 clampedValue(std::floor(propertyValue.x + TRANSFORM_EPSILON), std::floor(propertyValue.y + TRANSFORM_EPSILON));
     extraDelta += (propertyValue - clampedValue);
     propertyValue = clampedValue;
 }
