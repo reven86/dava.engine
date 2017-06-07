@@ -16,16 +16,18 @@ public:
     {
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
         return MemoryManager::Instance()->AlignedAllocate(size, 16, ALLOC_POOL_PHYSICS);
-#endif
+#else
         return defaultAllocator.allocate(size, typeName, filename, line);
+#endif
     }
 
     void deallocate(void* ptr) override
     {
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
         MemoryManager::Instance()->Deallocate(ptr);
-#endif
+#else
         defaultAllocator.deallocate(ptr);
+#endif
     }
 
 private:
