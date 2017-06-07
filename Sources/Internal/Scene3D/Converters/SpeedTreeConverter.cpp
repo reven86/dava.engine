@@ -1,4 +1,4 @@
-#include "TreeToAnimatedTreeConverter.h"
+#include "SpeedTreeConverter.h"
 #include "Scene3D/Components/SpeedTreeComponent.h"
 #include "Render/Highlevel/SpeedTreeObject.h"
 #include "Render/Highlevel/RenderObject.h"
@@ -11,7 +11,10 @@
 
 namespace DAVA
 {
-void TreeToAnimatedTreeConverter::CalculateAnimationParams(SpeedTreeObject* object)
+const FastName SpeedTreeConverter::SPEED_TREE_MATERIAL_NAME_OLD("~res:/Materials/SpeedTreeLeaf.material");
+const FastName SpeedTreeConverter::SPEED_TREE_SPERICAL_LIT_MATERIAL_NAME_OLD("~res:/Materials/SphericalLitAllQualities.SpeedTreeLeaf.material");
+
+void SpeedTreeConverter::CalculateAnimationParams(SpeedTreeObject* object)
 {
     float32 treeHeight = object->GetBoundingBox().GetSize().z;
 
@@ -28,23 +31,12 @@ void TreeToAnimatedTreeConverter::CalculateAnimationParams(SpeedTreeObject* obje
             int32 vxCount = pg->GetVertexCount();
             for (int32 i = 0; i < vxCount; ++i)
             {
-                Vector3 vxPosition;
+                float32 flexebility = CalculateVertexFlexibility(pg, i, treeHeight);
+                pg->SetFlexibility(i, flexebility);
 
-                pg->GetCoord(i, vxPosition);
-                float32 t0 = vxPosition.Length() * LEAF_BASE_ANGLE_DIFFERENCE_FACTOR;
-
-                float32 x = vxPosition.z / treeHeight;
-                float32 flexebility = std::log((std::exp(1.0f) - 1) * x + 1);
-
-                pg->SetFlexibility(i, flexebility * TRUNK_AMPLITUDE_USERFRIENDLY_FACTOR);
-
-                if (SpeedTreeObject::IsTreeLeafBatch(rb)) //leafs geometry
+                if ((pg->GetFormat() & EVF_ANGLE_SIN_COS) > 0)
                 {
-                    float32 leafHeightOscillationCoeff = (.5f + x / 2);
-                    //leafAngle: x: cos(T0);  y: sin(T0)
-                    Vector2 leafAngle(std::cos(t0) * leafHeightOscillationCoeff * LEAF_AMPLITUDE_USERFRIENDLY_FACTOR,
-                                      std::sin(t0) * leafHeightOscillationCoeff * LEAF_AMPLITUDE_USERFRIENDLY_FACTOR);
-
+                    Vector2 leafAngle = CalculateVertexAngle(pg, i, treeHeight);
                     pg->SetAngle(i, leafAngle);
                 }
             }
@@ -54,7 +46,46 @@ void TreeToAnimatedTreeConverter::CalculateAnimationParams(SpeedTreeObject* obje
     }
 }
 
-void TreeToAnimatedTreeConverter::ConvertTrees(Entity* scene)
+float32 SpeedTreeConverter::CalculateVertexFlexibility(PolygonGroup* pg, int32 vi, float32 treeHeight)
+{
+    Vector3 vxPosition;
+    pg->GetCoord(vi, vxPosition);
+    float32 t0 = vxPosition.Length() * LEAF_BASE_ANGLE_DIFFERENCE_FACTOR;
+
+    float32 x = vxPosition.z / treeHeight;
+    float32 flexebility = std::log((std::exp(1.0f) - 1) * x + 1);
+
+    return flexebility * TRUNK_AMPLITUDE_USERFRIENDLY_FACTOR;
+}
+
+Vector2 SpeedTreeConverter::CalculateVertexAngle(PolygonGroup* pg, int32 vi, float32 treeHeight)
+{
+    Vector3 vxPosition;
+    pg->GetCoord(vi, vxPosition);
+
+    float32 t0 = vxPosition.Length() * LEAF_BASE_ANGLE_DIFFERENCE_FACTOR;
+    float32 x = vxPosition.z / treeHeight;
+
+    float32 leafHeightOscillationCoeff = (.5f + x / 2);
+    //leafAngle: x: cos(T0);  y: sin(T0)
+    Vector2 leafAngle(std::cos(t0) * leafHeightOscillationCoeff * LEAF_AMPLITUDE_USERFRIENDLY_FACTOR,
+                      std::sin(t0) * leafHeightOscillationCoeff * LEAF_AMPLITUDE_USERFRIENDLY_FACTOR);
+
+    return leafAngle;
+}
+
+bool SpeedTreeConverter::IsTreeLeafBatch(RenderBatch* batch)
+{
+    if (batch && batch->GetPolygonGroup())
+    {
+        const FastName& materialFXName = batch->GetMaterial()->GetEffectiveFXName();
+        return (materialFXName == SPEED_TREE_MATERIAL_NAME_OLD) || (materialFXName == SPEED_TREE_SPERICAL_LIT_MATERIAL_NAME_OLD);
+    }
+
+    return false;
+}
+
+void SpeedTreeConverter::ConvertTrees(Entity* scene)
 {
     uniqLeafPGs.clear();
     uniqTrunkPGs.clear();
@@ -78,7 +109,7 @@ void TreeToAnimatedTreeConverter::ConvertTrees(Entity* scene)
     }
 }
 
-void TreeToAnimatedTreeConverter::ConvertingPathRecursive(Entity* node)
+void SpeedTreeConverter::ConvertingPathRecursive(Entity* node)
 {
     for (int32 c = 0; c < node->GetChildrenCount(); ++c)
     {
@@ -104,7 +135,7 @@ void TreeToAnimatedTreeConverter::ConvertingPathRecursive(Entity* node)
     for (uint32 b = 0; b < count && !isSpeedTree; ++b)
     {
         RenderBatch* renderBatch = ro->GetRenderBatch(b);
-        isSpeedTree |= SpeedTreeObject::IsTreeLeafBatch(renderBatch);
+        isSpeedTree |= IsTreeLeafBatch(renderBatch);
     }
 
     if (!isSpeedTree)
@@ -129,14 +160,23 @@ void TreeToAnimatedTreeConverter::ConvertingPathRecursive(Entity* node)
     {
         RenderBatch* rb = treeObject->GetRenderBatch(k);
         PolygonGroup* pg = rb->GetPolygonGroup();
-        if (SpeedTreeObject::IsTreeLeafBatch(rb))
+        if (IsTreeLeafBatch(rb))
             uniqLeafPGs.insert(pg);
         else
             uniqTrunkPGs.insert(pg);
+
+        uniqPGs.insert(pg);
+
+        NMaterial* mat = rb->GetMaterial();
+        while (mat)
+        {
+            materials.insert(mat);
+            mat = mat->GetParent();
+        }
     }
 }
 
-void TreeToAnimatedTreeConverter::ConvertLeafPGForAnimations(PolygonGroup* pg)
+void SpeedTreeConverter::ConvertLeafPGForAnimations(PolygonGroup* pg)
 {
     int32 vertexFormat = pg->GetFormat();
     int32 vxCount = pg->GetVertexCount();
@@ -152,7 +192,7 @@ void TreeToAnimatedTreeConverter::ConvertLeafPGForAnimations(PolygonGroup* pg)
     Memcpy(pgCopy->indexArray, pg->indexArray, indCount * sizeof(int16));
 
     pg->ReleaseData();
-    pg->AllocateData(EVF_VERTEX | EVF_COLOR | EVF_TEXCOORD0 | EVF_PIVOT | EVF_FLEXIBILITY | EVF_ANGLE_SIN_COS, vxCount, indCount);
+    pg->AllocateData(EVF_VERTEX | EVF_COLOR | EVF_TEXCOORD0 | EVF_PIVOT_DEPRECATED | EVF_FLEXIBILITY | EVF_ANGLE_SIN_COS, vxCount, indCount);
 
     //copy indices
     for (int32 i = 0; i < indCount; ++i)
@@ -178,14 +218,14 @@ void TreeToAnimatedTreeConverter::ConvertLeafPGForAnimations(PolygonGroup* pg)
         pg->SetCoord(i, vxPosition);
         pg->SetColor(i, color);
         pg->SetTexcoord(0, i, vxTx);
-        pg->SetPivot(i, vxPivot);
+        pg->SetPivotDeprecated(i, vxPivot);
     }
     SafeRelease(pgCopy);
 
     pg->BuildBuffers();
 }
 
-void TreeToAnimatedTreeConverter::ConvertTrunkForAnimations(PolygonGroup* pg)
+void SpeedTreeConverter::ConvertTrunkForAnimations(PolygonGroup* pg)
 {
     int32 vertexFormat = pg->GetFormat();
     int32 vxCount = pg->GetVertexCount();
@@ -226,5 +266,85 @@ void TreeToAnimatedTreeConverter::ConvertTrunkForAnimations(PolygonGroup* pg)
     SafeRelease(pgCopy);
 
     pg->BuildBuffers();
+}
+
+void SpeedTreeConverter::ConvertPolygonGroupsPivot3(Entity* scene)
+{
+    uniqPGs.clear();
+    materials.clear();
+    uniqTreeObjects.clear();
+
+    ConvertingPathRecursive(scene);
+
+    Map<PolygonGroup*, PolygonGroup*> convertedPGs;
+    for (PolygonGroup* dataSource : uniqPGs)
+    {
+        int32 vertexFormat = dataSource->GetFormat();
+        int32 vxCount = dataSource->GetVertexCount();
+        int32 indCount = dataSource->GetIndexCount();
+
+        int32 convertedFormat = (vertexFormat & ~EVF_PIVOT_DEPRECATED) | EVF_PIVOT4;
+        PolygonGroup* pg = new PolygonGroup();
+        pg->AllocateData(convertedFormat, vxCount, indCount);
+
+        Memcpy(pg->indexArray, dataSource->indexArray, indCount * sizeof(int16));
+
+        uint8* dst = pg->meshData;
+        const uint8* src = dataSource->meshData;
+        for (int32 i = 0; i < vxCount; ++i)
+        {
+            for (uint32 mask = EVF_LOWER_BIT; mask <= EVF_HIGHER_BIT; mask = mask << 1)
+                PolygonGroup::CopyData(&src, &dst, vertexFormat, convertedFormat, mask);
+
+            if (vertexFormat & EVF_PIVOT_DEPRECATED)
+            {
+                Vector3 pivot3;
+                dataSource->GetPivotDeprecated(i, pivot3);
+
+                Vector4 pivot4(pivot3, 1.f);
+                pg->SetPivot(i, pivot4);
+            }
+            else
+            {
+                pg->SetPivot(i, Vector4());
+            }
+        }
+
+        pg->RecalcAABBox();
+        pg->BuildBuffers();
+
+        convertedPGs[dataSource] = pg;
+    }
+
+    static const FastName FLAG_SPEED_TREE_LEAF("SPEED_TREE_LEAF");
+    for (NMaterial* material : materials)
+    {
+        if (material->HasLocalFlag(FLAG_SPEED_TREE_LEAF))
+        {
+            material->AddFlag(NMaterialFlagName::FLAG_SPEED_TREE_OBJECT, material->GetLocalFlagValue(FLAG_SPEED_TREE_LEAF));
+            material->RemoveFlag(FLAG_SPEED_TREE_LEAF);
+        }
+
+        if (material->HasLocalFXName())
+        {
+            if (material->GetLocalFXName() == SPEED_TREE_MATERIAL_NAME_OLD)
+                material->SetFXName(NMaterialName::SPEEDTREE_ALPHATEST);
+
+            if (material->GetLocalFXName() == SPEED_TREE_SPERICAL_LIT_MATERIAL_NAME_OLD)
+                material->SetFXName(NMaterialName::SPHERICLIT_SPEEDTREE_ALPHATEST);
+        }
+    }
+
+    for (SpeedTreeObject* object : uniqTreeObjects)
+    {
+        for (uint32 ri = 0, rCount = object->GetRenderBatchCount(); ri < rCount; ++ri)
+        {
+            RenderBatch* batch = object->GetRenderBatch(ri);
+            batch->SetPolygonGroup(convertedPGs[batch->GetPolygonGroup()]);
+        }
+    }
+
+    for (auto& it : convertedPGs)
+        SafeRelease(it.second);
 }
 };
