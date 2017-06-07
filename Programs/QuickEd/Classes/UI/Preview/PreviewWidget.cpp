@@ -497,6 +497,7 @@ void PreviewWidget::OnMouseReleased(QMouseEvent* event)
 {
     if (event->button() == Qt::RightButton)
     {
+        DVASSERT(nodeToChangeTextOnMouseRelease == nullptr);
         ShowMenu(event);
     }
 
