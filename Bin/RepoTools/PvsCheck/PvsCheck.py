@@ -14,11 +14,14 @@ ERROR_LEVEL_9 = 256  # AnalysisDiff
 
 PVS_STUDIO_PATH = 'C:\Program Files (x86)\PVS-Studio'
 
+teamcity_messages = []
+
+exit_code = 0
+
 def teamcity_message(error, errorDetails, status):
-    sys.stdout.write("##teamcity[message text='{0}' errorDetails='{1}' status='{2}']\n".format(error,
-                                                                                               errorDetails,
-                                                                                               status))
-    sys.stdout.flush()
+    teamcity_messages.append("##teamcity[message text='{0}' errorDetails='{1}' status='{2}']\n".format(error,
+                                                                                                       errorDetails,
+                                                                                                       status))
 
 def main():
     sys.stdout.write("##teamcity[progressStart 'PVS analyze started...']\n")
@@ -100,9 +103,6 @@ def main():
                          "For more information see log.plog.html",
                          "ERROR")
 
-    sys.stdout.write("##teamcity[progressFinish 'PVS analyze finished...']\n")
-    sys.stdout.flush()
-
     if return_code != 0:
         converter_process = subprocess.Popen([args.pvs_path + "\PlogConverter.exe",
                                               "-t", "Html",
@@ -113,9 +113,36 @@ def main():
         converter_process.communicate()
 
         if converter_process.returncode != 0:
-            sys.exit(converter_process.returncode)
-    else:
-        sys.exit(return_code)
+
+            teamcity_message("Plog converter exit with error",
+                             "",
+                             "ERROR")
+            exit_code = converter_process.returncode
+
+        else:
+
+            log_file = open(args.output_log + ".html", "r")
+            content = log_file.read()
+
+            if "No Messages Generated" in content:
+                teamcity_messages = []
+                teamcity_message("PVS not found any issues",
+                                 "Analysis was successfully completed, no issues were found in the source code",
+                                 "SUCCESS")
+                exit_code = 0
+            else:
+                exit_code = return_code
+
+
+        for message in teamcity_messages:
+            sys.stdout.write(message)
+            sys.stdout.flush()
+
+
+    sys.stdout.write("##teamcity[progressFinish 'PVS analyze finished...']\n")
+    sys.stdout.flush()
+
+    sys.exit(exit_code)
 
 if "__main__" == __name__:
     main()
