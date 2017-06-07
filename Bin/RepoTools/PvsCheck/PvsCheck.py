@@ -103,7 +103,6 @@ def main():
                          "For more information see log.plog.html",
                          "ERROR")
 
-    if return_code != 0:
         converter_process = subprocess.Popen([args.pvs_path + "\PlogConverter.exe",
                                               "-t", "Html",
                                               "-a", "GA:1",
