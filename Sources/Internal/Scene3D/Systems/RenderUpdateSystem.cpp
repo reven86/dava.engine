@@ -1,11 +1,11 @@
 #include "Scene3D/Systems/RenderUpdateSystem.h"
-#include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Lod/LodComponent.h"
 #include "Scene3D/Components/SwitchComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/SingleComponents/TransformSingleComponent.h"
 #include "Render/Highlevel/Frustum.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Landscape.h"
@@ -24,27 +24,6 @@ namespace DAVA
 RenderUpdateSystem::RenderUpdateSystem(Scene* scene)
     : SceneSystem(scene)
 {
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
-}
-
-RenderUpdateSystem::~RenderUpdateSystem()
-{
-}
-
-void RenderUpdateSystem::ImmediateEvent(Component* component, uint32 event)
-{
-    if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
-    {
-        Entity* entity = component->GetEntity();
-        // Update new transform pointer, and mark that transform is changed
-        Matrix4* worldTransformPointer = (static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT)))->GetWorldTransformPtr();
-        RenderObject* object = (static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT)))->GetRenderObject();
-        if (nullptr != object)
-        {
-            object->SetWorldTransformPtr(worldTransformPointer);
-            entity->GetScene()->renderSystem->MarkForUpdate(object);
-        }
-    }
 }
 
 void RenderUpdateSystem::AddEntity(Entity* entity)
@@ -75,6 +54,26 @@ void RenderUpdateSystem::RemoveEntity(Entity* entity)
 void RenderUpdateSystem::Process(float32 timeElapsed)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_RENDER_UPDATE_SYSTEM);
+
+    TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+    for (auto& pair : tsc->worldTransformChanged.map)
+    {
+        if (pair.first->GetComponentsCount(Component::RENDER_COMPONENT) > 0)
+        {
+            for (Entity* entity : pair.second)
+            {
+                RenderComponent* rc = static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT));
+                if (rc->GetRenderObject())
+                {
+                    RenderObject* object = rc->GetRenderObject();
+                    // Update new transform pointer, and mark that transform is changed
+                    Matrix4* worldTransformPointer = (static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT)))->GetWorldTransformPtr();
+                    object->SetWorldTransformPtr(worldTransformPointer);
+                    entity->GetScene()->renderSystem->MarkForUpdate(object);
+                }
+            }
+        }
+    }
 
     RenderSystem* renderSystem = GetScene()->GetRenderSystem();
     renderSystem->SetMainCamera(GetScene()->GetCurrentCamera());
