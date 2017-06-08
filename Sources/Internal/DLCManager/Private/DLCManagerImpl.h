@@ -197,7 +197,6 @@ public:
 private:
     // initialization state functions
     void AskFooter();
-    void PrintErrMsgAndGpuToLog();
     void GetFooter();
     void AskFileTable();
     void GetFileTable();

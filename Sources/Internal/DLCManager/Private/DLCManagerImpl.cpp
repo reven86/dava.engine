@@ -536,16 +536,10 @@ void DLCManagerImpl::AskFooter()
             {
                 initError = InitError::LoadingRequestFailed;
                 initErrorMsg = "failed get superpack size on server, download error: ";
-                PrintErrMsgAndGpuToLog();
+                log << initErrorMsg << " " << status << std::endl;
             }
         }
     }
-}
-
-void DLCManagerImpl::PrintErrMsgAndGpuToLog()
-{
-    const char* gpuFamily = GlobalEnumMap<eGPUFamily>::Instance()->ToString(static_cast<eGPUFamily>(DeviceInfo::GetGPUFamily()));
-    log << initErrorMsg << " current_device_gpu: " << gpuFamily << std::endl;
 }
 
 void DLCManagerImpl::GetFooter()
@@ -575,7 +569,7 @@ void DLCManagerImpl::GetFooter()
         {
             initError = InitError::LoadingRequestFailed;
             initErrorMsg = "failed get footer from server, download error: ";
-            PrintErrMsgAndGpuToLog();
+            log << initErrorMsg << " " << status << std::endl;
         }
     }
 }
