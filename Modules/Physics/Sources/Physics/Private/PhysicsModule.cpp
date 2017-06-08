@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Physics/PhysicsModule.h"
 
 #include <Logger/Logger.h>

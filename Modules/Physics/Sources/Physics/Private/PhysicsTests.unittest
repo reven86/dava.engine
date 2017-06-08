@@ -1,5 +1,6 @@
 #include "UnitTests/UnitTests.h"
 
+#if defined(__DAVAENGINE_PHYSICS_ENABLED__)
 #include "Engine/Engine.h"
 
 #include "Physics/PhysicsModule.h"
@@ -15,3 +16,4 @@ DAVA_TESTCLASS(PhysicsTest)
         TEST_VERIFY(physicsModule->IsInitialized());
     }
 };
+#endif()
