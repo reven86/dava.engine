@@ -259,7 +259,7 @@ void DLCManagerImpl::Deinitialize()
 bool DLCManagerImpl::IsInitialized() const
 {
     DVASSERT(Thread::IsMainThread());
-    return nullptr != requestManager && delayedRequests.empty();
+    return nullptr != requestManager && delayedRequests.empty() && scanThread == nullptr;
 }
 
 DLCManagerImpl::InitState DLCManagerImpl::GetInitState() const
