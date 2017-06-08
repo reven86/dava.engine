@@ -540,7 +540,7 @@ void PackageNode::OnControlPropertyWillBeChanged(ControlNode* node, AbstractProp
     DVASSERT(node != nullptr);
     DVASSERT(property != nullptr);
 
-    if (node->GetParent() == packageControlsNode && property->GetName() == "Name")
+    if (dynamic_cast<PackageControlsNode*>(node->GetParent()) != nullptr && property->GetName() == "Name")
     {
         String name = oldValue.Cast<String>(String());
         PackageNode::Guides guides = GetGuides(name);

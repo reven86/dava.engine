@@ -528,7 +528,7 @@ void CommandExecutor::Remove(const Vector<ControlNode*>& controls, const Vector<
         data->BeginBatch(Format("Remove %s", FormatNodeNames(nodesToRemove).c_str()), static_cast<uint32>(stylesToRemove.size()));
         for (ControlNode* control : controlsToRemove)
         {
-            if (dynamic_cast<ControlsContainerNode*>(control->GetParent()) != nullptr)
+            if (dynamic_cast<PackageControlsNode*>(control->GetParent()) != nullptr)
             {
                 data->ExecCommand<SetGuidesCommand>(control->GetName(), Vector2::AXIS_X, PackageNode::AxisGuides());
                 data->ExecCommand<SetGuidesCommand>(control->GetName(), Vector2::AXIS_Y, PackageNode::AxisGuides());

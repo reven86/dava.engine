@@ -530,14 +530,19 @@ void PackageSerializer::PutCustomData(const PackageNode* node)
 void PackageSerializer::PutGuides(const PackageNode* node)
 {
     BeginMap("Guides");
-    PackageControlsNode* controlsContainer = node->GetPackageControlsNode();
-    Set<String> names;
-    for (int i = 0, count = controlsContainer->GetCount(); i < count; ++i)
-    {
-        ControlNode* rootControl = controlsContainer->Get(i);
-        names.insert(rootControl->GetName());
-    }
 
+    Vector<PackageControlsNode*> packageControlsContainers = {
+        node->GetPackageControlsNode(), node->GetPrototypes()
+    };
+    Set<String> names;
+    for (PackageControlsNode* packageControlsContainer : packageControlsContainers)
+    {
+        for (int i = 0, count = packageControlsContainer->GetCount(); i < count; ++i)
+        {
+            ControlNode* rootControl = packageControlsContainer->Get(i);
+            names.insert(rootControl->GetName());
+        }
+    }
     for (const String& name : names)
     {
         const PackageNode::Guides& mapItemValue = node->GetGuides(name);
