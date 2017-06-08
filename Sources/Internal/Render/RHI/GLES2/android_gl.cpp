@@ -144,6 +144,11 @@ bool android_gl_checkSurface()
 {
     DAVA::LockGuard<DAVA::Mutex> guard(surfaceMutex);
 
+    if (_nativeWindow == nullptr)
+    {
+        return false;
+    }
+
     if (needRecreateSurface)
     {
         // Why this should work I do not fully understand, but this solution works
