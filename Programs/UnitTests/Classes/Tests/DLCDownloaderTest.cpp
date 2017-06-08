@@ -9,13 +9,14 @@
 #include <Time/SystemTimer.h>
 #include <Utils/CRC32.h>
 #include <EmbeddedWebServer.h>
+#include <Platform/DeviceInfo.h>
+#include <Engine/Engine.h>
 
 #include <iomanip>
-#include <Engine/Engine.h>
 
 #include <Private/mongoose.h>
 
-static const DAVA::String URL = "http://127.0.0.1:8080/superpack_for_unittests.dvpk";
+static const DAVA::String URL = "http://127.0.0.1:8181/superpack_for_unittests.dvpk";
 // "http://127.0.0.1:8080/superpack_for_unittests.dvpk"; // embedded web server
 // "http://dl-wotblitz.wargaming.net/dlc/r11608713/3.7.0.236.dvpk"; // CDN
 // "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/smart_dlc/3.7.0.236.dvpk" // local net server
@@ -73,7 +74,7 @@ public:
 
         String path = downloadedPacksDir.GetAbsolutePathname();
 
-        if (!StartEmbeddedWebServer(path.c_str(), "8080", &OnHttpRequestHandler))
+        if (!StartEmbeddedWebServer(path.c_str(), "8181", &OnHttpRequestHandler))
         {
             DAVA_THROW(DAVA::Exception, "can't start embedded web server");
         }
@@ -182,8 +183,8 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         int64 start = 0;
         DLCDownloader::Task* task = nullptr;
         int64 finish = 0;
-        float seconds = 0.f;
-        float sizeInGb = FULL_SIZE_ON_SERVER / (1024.f * 1024.f * 1024.f);
+        float64 seconds = 0.0;
+        float64 sizeInGb = FULL_SIZE_ON_SERVER / (1024.0 * 1024.0 * 1024.0);
 
         DownloadManager* dm = DownloadManager::Instance();
 
@@ -201,7 +202,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
 
         finish = SystemTimer::GetMs();
 
-        seconds = (finish - start) / 1000.f;
+        seconds = (finish - start) / 1000.0;
 
         Logger::Info("old downloader %f Gb parts(%d) download from in house server for: %f", sizeInGb, numOfParts, seconds);
         //// ----next-------------------------------------------------------
@@ -215,7 +216,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
 
         finish = SystemTimer::GetMs();
 
-        seconds = (finish - start) / 1000.f;
+        seconds = (finish - start) / 1000.0;
 
         Logger::Info("new downloader %f Gb download from in house server for: %f", sizeInGb, seconds);
 
@@ -287,7 +288,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
 
         finish = SystemTimer::GetMs();
 
-        seconds = (finish - start) / 1000.f;
+        seconds = (finish - start) / 1000.0;
 
         Logger::Info("1024 part of %f Gb download from in house server for: %f", sizeInGb, seconds);
 
@@ -308,7 +309,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         {
             Logger::Info("just before start test errno: %d %s", errno, strerror(errno));
 
-            std::array<char, 4> buf;
+            std::array<char, 5> buf{ 'c', 'l', 'e', 'a', 'r' };
             MemoryBufferWriter writer(buf.data(), buf.size());
 
             DLCDownloader* downloader = DLCDownloader::Create();
@@ -338,11 +339,14 @@ DAVA_TESTCLASS (DLCDownloaderTest)
             {
                 Logger::Info("why is it so? errno: %d %s", status.error.fileErrno, strerror(status.error.fileErrno));
             }
-            TEST_VERIFY(status.sizeDownloaded == 4);
+            TEST_VERIFY(status.sizeDownloaded == 0);
             TEST_VERIFY(status.state == DLCDownloader::TaskState::Finished);
             TEST_VERIFY(status.sizeTotal == 4);
 
-            std::array<char, 4> shouldBe{ 's', 'e', 'r', 'v' }; // first part
+            // We want downloader do not touch output buffer as soon as
+            // error happened. So our buffer should be same.
+
+            std::array<char, 5> shouldBe{ 'c', 'l', 'e', 'a', 'r' }; // first part
             TEST_VERIFY(shouldBe == buf);
 
             downloader->RemoveTask(downloadLast4Bytes);
