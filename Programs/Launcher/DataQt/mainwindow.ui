@@ -37,7 +37,7 @@
     <property name="bottomMargin">
      <number>6</number>
     </property>
-    <item row="0" column="1" rowspan="3">
+    <item row="1" column="1">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
        <number>0</number>
@@ -61,6 +61,13 @@
           <property name="focusPolicy">
            <enum>Qt::NoFocus</enum>
           </property>
+          <property name="html">
+           <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'.SF NS Text'; font-size:13pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot;-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-family:'MS Shell Dlg 2'; font-size:8.25pt;&quot;&gt;&lt;br /&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          </property>
           <property name="acceptRichText">
            <bool>false</bool>
           </property>
@@ -72,7 +79,7 @@
        </layout>
       </widget>
       <widget class="QWidget" name="page_2">
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
         <property name="leftMargin">
          <number>0</number>
         </property>
@@ -87,6 +94,12 @@
         </property>
         <item>
          <widget class="QTableWidget" name="tableWidget">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="focusPolicy">
            <enum>Qt::NoFocus</enum>
           </property>
@@ -143,11 +156,21 @@ QLabel {padding-left: 4px;padding-right: 4px;}</string>
           </column>
          </widget>
         </item>
+        <item>
+         <widget class="QTextEdit" name="textEdit_launcherStatus">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+         </widget>
+        </item>
        </layout>
       </widget>
      </widget>
     </item>
-    <item row="1" column="0" rowspan="2">
+    <item row="1" column="0">
      <widget class="QListView" name="listView">
       <property name="focusPolicy">
        <enum>Qt::NoFocus</enum>
@@ -179,6 +202,113 @@ QLabel {padding-left: 4px;padding-right: 4px;}</string>
       </property>
      </widget>
     </item>
+    <item row="0" column="1">
+     <widget class="QStackedWidget" name="stackedWidget_status">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="currentIndex">
+       <number>1</number>
+      </property>
+      <widget class="QWidget" name="page_progress">
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QProgressBar" name="progressBar">
+          <property name="value">
+           <number>0</number>
+          </property>
+          <property name="alignment">
+           <set>Qt::AlignCenter</set>
+          </property>
+          <property name="invertedAppearance">
+           <bool>false</bool>
+          </property>
+          <property name="textDirection">
+           <enum>QProgressBar::TopToBottom</enum>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="pushButton_cancel">
+          <property name="text">
+           <string>Cancel</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+      <widget class="QWidget" name="page_status">
+       <layout class="QHBoxLayout" name="horizontalLayout_3">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QLabel" name="label_BAManagerStatusText">
+          <property name="text">
+           <string>BA-manager available</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_BAManagerStatusIcon">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string/>
+          </property>
+          <property name="pixmap">
+           <pixmap resource="icons.qrc">:/Icons/red.png</pixmap>
+          </property>
+          <property name="scaledContents">
+           <bool>false</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
+        </item>
+       </layout>
+      </widget>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -187,7 +317,7 @@ QLabel {padding-left: 4px;padding-right: 4px;}</string>
      <x>0</x>
      <y>0</y>
      <width>1106</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuConfiguration">
@@ -195,8 +325,6 @@ QLabel {padding-left: 4px;padding-right: 4px;}</string>
      <string>Configuration</string>
     </property>
     <addaction name="action_updateConfiguration"/>
-    <addaction name="action_downloadAll"/>
-    <addaction name="action_removeAll"/>
    </widget>
    <widget class="QMenu" name="menuLauncher">
     <property name="title">
@@ -218,19 +346,6 @@ QLabel {padding-left: 4px;padding-right: 4px;}</string>
     <bool>false</bool>
    </attribute>
    <addaction name="action_updateConfiguration"/>
-   <addaction name="action_downloadAll"/>
-   <addaction name="action_removeAll"/>
-  </widget>
-  <widget class="QToolBar" name="toolBar_preferences">
-   <property name="windowTitle">
-    <string>toolBar_2</string>
-   </property>
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
    <addaction name="actionPreferences"/>
   </widget>
   <action name="action_updateConfiguration">
@@ -246,36 +361,6 @@ QLabel {padding-left: 4px;padding-right: 4px;}</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
-   </property>
-  </action>
-  <action name="action_downloadAll">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/download.png</normaloff>:/Icons/download.png</iconset>
-   </property>
-   <property name="text">
-    <string>Download all applications</string>
-   </property>
-   <property name="toolTip">
-    <string>Download all applications</string>
-   </property>
-  </action>
-  <action name="action_removeAll">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="icons.qrc">
-     <normaloff>:/Icons/delete.png</normaloff>:/Icons/delete.png</iconset>
-   </property>
-   <property name="text">
-    <string>Remove all applications</string>
-   </property>
-   <property name="toolTip">
-    <string>Remove all applications</string>
    </property>
   </action>
   <action name="actionPreferences">

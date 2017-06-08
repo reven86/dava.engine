@@ -15,6 +15,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(DocumentData)
     .Field(canRedoPropertyName.c_str(), &DocumentData::CanRedo, nullptr)
     .Field(undoTextPropertyName.c_str(), &DocumentData::GetUndoText, nullptr)
     .Field(redoTextPropertyName.c_str(), &DocumentData::GetRedoText, nullptr)
+    .Field(currentNodePropertyName.c_str(), &DocumentData::GetCurrentNode, nullptr)
     .Field(selectionPropertyName.c_str(), &DocumentData::GetSelectedNodes, &DocumentData::SetSelectedNodes)
     .Field(displayedRootControlsPropertyName.c_str(), &DocumentData::GetDisplayedRootControls, &DocumentData::SetDisplayedRootControls)
     .End();
@@ -69,31 +70,11 @@ const SortedControlNodeSet& DocumentData::GetDisplayedRootControls() const
 
 void DocumentData::SetSelectedNodes(const SelectedNodes& nodes)
 {
+    RefreshCurrentNode(nodes);
+
     selection.selectedNodes = nodes;
 
-    SortedControlNodeSet newDisplayedRootControls(CompareByLCA);
-    for (PackageBaseNode* selectedNode : selection.selectedNodes)
-    {
-        if (dynamic_cast<ControlNode*>(selectedNode) == nullptr)
-        {
-            continue;
-        }
-        PackageBaseNode* root = selectedNode;
-        while (nullptr != root->GetParent() && nullptr != root->GetParent()->GetControl())
-        {
-            root = root->GetParent();
-        }
-        if (nullptr != root)
-        {
-            ControlNode* rootControl = dynamic_cast<ControlNode*>(root);
-            DVASSERT(rootControl != nullptr);
-            newDisplayedRootControls.insert(rootControl);
-        }
-    }
-    if (newDisplayedRootControls.empty() == false)
-    {
-        displayedRootControls = newDisplayedRootControls;
-    }
+    RefreshDisplayedRootControls();
 }
 
 void DocumentData::SetDisplayedRootControls(const SortedControlNodeSet& controls)
@@ -149,6 +130,11 @@ bool DocumentData::IsDocumentExists() const
     return documentExists;
 }
 
+PackageBaseNode* DocumentData::GetCurrentNode() const
+{
+    return currentNode;
+}
+
 QString DocumentData::GetUndoText() const
 {
     const DAVA::Command* command = commandStack->GetUndoCommand();
@@ -167,11 +153,106 @@ void DocumentData::RefreshAllControlProperties()
     package->GetPrototypes()->RefreshControlProperties();
 }
 
+void DocumentData::RefreshDisplayedRootControls()
+{
+    SortedControlNodeSet newDisplayedRootControls(CompareByLCA);
+    for (PackageBaseNode* selectedNode : selection.selectedNodes)
+    {
+        if (dynamic_cast<ControlNode*>(selectedNode) == nullptr)
+        {
+            continue;
+        }
+        PackageBaseNode* root = selectedNode;
+        while (nullptr != root->GetParent() && nullptr != root->GetParent()->GetControl())
+        {
+            root = root->GetParent();
+        }
+        if (nullptr != root)
+        {
+            ControlNode* rootControl = dynamic_cast<ControlNode*>(root);
+            DVASSERT(rootControl != nullptr);
+            newDisplayedRootControls.insert(rootControl);
+        }
+    }
+    if (newDisplayedRootControls.empty() == false)
+    {
+        displayedRootControls = newDisplayedRootControls;
+    }
+}
+
+void DocumentData::RefreshCurrentNode(const SelectedNodes& arg)
+{
+    if (arg.empty())
+    {
+        currentNodesHistory.clear();
+        currentNode = nullptr;
+        return;
+    }
+
+    const SelectedNodes& currentSelection = selection.selectedNodes;
+
+    SortedPackageBaseNodeSet newSelection(CompareByLCA);
+    std::set_difference(arg.begin(),
+                        arg.end(),
+                        currentSelection.begin(),
+                        currentSelection.end(),
+                        std::inserter(newSelection, newSelection.end()));
+
+    SelectedNodes removedSelection;
+    std::set_difference(currentSelection.begin(),
+                        currentSelection.end(),
+                        arg.begin(),
+                        arg.end(),
+                        std::inserter(removedSelection, removedSelection.end()));
+
+    for (PackageBaseNode* node : removedSelection)
+    {
+        currentNodesHistory.remove(node);
+    }
+
+    if (newSelection.empty())
+    {
+        currentNode = currentNodesHistory.back();
+    }
+    else
+    {
+        //take any node from new selection. If this node is higher than cached selection top node, display properties for most top node from new selection
+        //otherwise if this node is lower than cached selection bottom node, display properties for most bottom node from new selection
+        PackageBaseNode* newSelectedNode = *newSelection.begin();
+        DVASSERT(newSelectedNode != nullptr);
+
+        bool selectionAddedToTop = true;
+        if (currentSelection.empty() == false)
+        {
+            PackageBaseNode* currentTopNode = *currentSelection.begin();
+            selectionAddedToTop = CompareByLCA(newSelectedNode, currentTopNode);
+        }
+
+        if (selectionAddedToTop)
+        {
+            for (auto reverseIter = newSelection.rbegin(); reverseIter != newSelection.rend(); ++reverseIter)
+            {
+                currentNodesHistory.push_back(*reverseIter);
+            }
+            currentNode = newSelectedNode;
+        }
+        else
+        {
+            for (PackageBaseNode* node : newSelection)
+            {
+                currentNodesHistory.push_back(node);
+            }
+            currentNode = *newSelection.rbegin();
+        }
+    }
+}
+
 DAVA::FastName DocumentData::packagePropertyName{ "package" };
 DAVA::FastName DocumentData::canSavePropertyName{ "can save" };
 DAVA::FastName DocumentData::canUndoPropertyName{ "can undo" };
 DAVA::FastName DocumentData::canRedoPropertyName{ "can redo" };
 DAVA::FastName DocumentData::undoTextPropertyName{ "undo text" };
 DAVA::FastName DocumentData::redoTextPropertyName{ "redo text" };
+DAVA::FastName DocumentData::currentNodePropertyName{ "current node" };
 DAVA::FastName DocumentData::selectionPropertyName{ "selection" };
 DAVA::FastName DocumentData::displayedRootControlsPropertyName{ "displayed root controls" };

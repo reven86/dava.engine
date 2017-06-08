@@ -389,6 +389,8 @@ public:
 
     void UpdateFamily();
 
+    EntityFamily* GetFamily() const;
+
 protected:
     void RemoveAllComponents();
     void LoadComponentsV6(KeyedArchive* compsArch, SerializationContext* serializationContext);
@@ -656,6 +658,11 @@ inline void Entity::ResetID()
     {
         child->ResetID();
     }
+}
+
+inline EntityFamily* Entity::GetFamily() const
+{
+    return family;
 }
 };
 

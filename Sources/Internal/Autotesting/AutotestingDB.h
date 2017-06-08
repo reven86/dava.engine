@@ -63,9 +63,10 @@ public:
     FilePath logsFolder;
 
 protected:
-    MongodbClient* dbClient;
+    MongodbClient* dbClient = nullptr;
     FilePath logFilePath;
-    AutotestingSystem* autoSys;
+    AutotestingSystem* autoSys = nullptr;
+    std::unique_ptr<Logger> autotestingLogger;
 };
 }
 
