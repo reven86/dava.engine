@@ -78,8 +78,7 @@ void SerializationContext::AddRequestedPolygonGroupFormat(PolygonGroup* group, i
 bool SerializationContext::LoadPolygonGroupData(File* file)
 {
     bool resultLoaded = true;
-    bool cutUnusedStreams = false; //CRAP: Temporary disable cutUnusedStreams
-    //bool cutUnusedStreams = QualitySettingsSystem::Instance()->GetAllowCutUnusedVertexStreams();
+    bool cutUnusedStreams = QualitySettingsSystem::Instance()->GetAllowCutUnusedVertexStreams();
     for (Map<PolygonGroup *, PolygonGroupLoadInfo>::iterator it = loadedPolygonGroups.begin(), e = loadedPolygonGroups.end(); it != e; ++it)
     {
         if (it->second.onScene || !cutUnusedStreams)
