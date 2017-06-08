@@ -28,6 +28,7 @@ protected:
 
 private:
     void OnQuit(DAVA::BaseObject* obj, void* data, void* callerData);
+    void OnTerminate(DAVA::BaseObject* obj, void* data, void* callerData);
     void OnCloseWindow(DAVA::BaseObject* obj, void* data, void* callerData);
 
     void OnResize(DAVA::BaseObject* obj, void* data, void* callerData);
@@ -48,6 +49,7 @@ private:
     DAVA::Engine& engine;
 
     DAVA::UIButton* buttonQuit = nullptr;
+    DAVA::UIButton* buttonTerminate = nullptr;
     DAVA::UIButton* buttonCloseWindow = nullptr;
 
     DAVA::UIButton* buttonResize640x480 = nullptr;
