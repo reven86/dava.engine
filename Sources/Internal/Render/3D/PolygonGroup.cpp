@@ -391,6 +391,13 @@ void PolygonGroup::LoadPolygonData(KeyedArchive* keyedArchive, SerializationCont
         const uint8* archiveData = keyedArchive->GetByteArray("vertices");
 
         int32 resFormat = cutUnusedStreams ? requiredFlags : (vertexFormat | requiredFlags);
+
+        if ((vertexFormat & EVF_PIVOT_DEPRECATED) && (requiredFlags & EVF_PIVOT4))
+        {
+            resFormat |= EVF_PIVOT_DEPRECATED;
+            resFormat &= ~EVF_PIVOT4;
+        }
+
         DVASSERT(resFormat);
         if (vertexFormat != resFormat) //not all streams in data are required or present - smart copy
         {
@@ -408,6 +415,13 @@ void PolygonGroup::LoadPolygonData(KeyedArchive* keyedArchive, SerializationCont
                     CopyData(&src, &dst, vertexFormat, resFormat, mask);
                 }
             }
+
+            if (resFormat & EVF_PIVOT_DEPRECATED)
+            {
+                resFormat &= ~EVF_PIVOT_DEPRECATED;
+                resFormat |= EVF_PIVOT4;
+            }
+
             vertexFormat = resFormat;
             vertexStride = newVertexStride;
             textureCoordCount = GetTexCoordCount(vertexFormat);
