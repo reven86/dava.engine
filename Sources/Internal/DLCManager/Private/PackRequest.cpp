@@ -261,10 +261,11 @@ void PackRequest::DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest
     fileRequest.status = LoadingPackFile;
 }
 
-void PackRequest::DisableRequestingAndFireSignalNoSpaceLeft(FileRequest& fileRequest) const
+void PackRequest::DisableRequestingAndFireSignalIOError(FileRequest& fileRequest) const
 {
     int32 errnoValue = errno; // save in local variable if other error happen
-    packManagerImpl->GetLog() << "No space on device!!! errno(" << errnoValue << ") Can't create or write file: "
+    packManagerImpl->GetLog() << "device IO Error:(" << errnoValue << ")"
+                              << std::strerror(errnoValue) << " file: "
                               << fileRequest.localFile.GetAbsolutePathname()
                               << " disable DLCManager requesting" << std::endl;
     packManagerImpl->SetRequestingEnabled(false);
@@ -298,6 +299,11 @@ bool PackRequest::CheckLocalFileState(FileSystem* fs, FileRequest& fileRequest)
 
 bool PackRequest::CheckLoadingStatusOfFileRequest(FileRequest& fileRequest, DLCDownloader* dm, const String& dstPath)
 {
+    if (fileRequest.task == nullptr)
+    {
+        return false;
+    }
+
     DLCDownloader::TaskStatus status = dm->GetTaskStatus(fileRequest.task);
     {
         switch (status.state)
@@ -335,7 +341,7 @@ bool PackRequest::CheckLoadingStatusOfFileRequest(FileRequest& fileRequest, DLCD
             if (status.error.fileErrno != 0)
             {
                 out << " I/O error: " << status.error.errStr << std::endl;
-                DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
+                DisableRequestingAndFireSignalIOError(fileRequest);
                 return false;
             }
 
@@ -360,13 +366,13 @@ bool PackRequest::LoadingPackFileState(FileSystem* fs, FileRequest& fileRequest)
             FileSystem::eCreateDirectoryResult dirCreate = fs->CreateDirectory(dirPath, true);
             if (dirCreate == FileSystem::DIRECTORY_CANT_CREATE)
             {
-                DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
+                DisableRequestingAndFireSignalIOError(fileRequest);
                 return false;
             }
             ScopedPtr<File> f(File::Create(fileRequest.localFile, File::CREATE | File::WRITE));
             if (!f)
             {
-                DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
+                DisableRequestingAndFireSignalIOError(fileRequest);
                 return false;
             }
             f->Truncate(0);
@@ -403,11 +409,18 @@ bool PackRequest::CheckHaskState(FileRequest& fileRequest)
 
         {
             ScopedPtr<File> f(File::Create(fileRequest.localFile, File::WRITE | File::APPEND));
+            if (!f)
+            {
+                // not enough space
+                DisableRequestingAndFireSignalIOError(fileRequest);
+                return false;
+            }
+
             uint32 written = f->Write(&footer, sizeof(footer));
             if (written != sizeof(footer))
             {
                 // not enough space
-                DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
+                DisableRequestingAndFireSignalIOError(fileRequest);
                 return false;
             }
         }

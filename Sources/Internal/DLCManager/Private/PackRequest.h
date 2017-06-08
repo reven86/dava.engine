@@ -87,7 +87,7 @@ private:
                                FileRequest& fileRequest);
 
     static void DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest);
-    void DisableRequestingAndFireSignalNoSpaceLeft(FileRequest& fileRequest) const;
+    void DisableRequestingAndFireSignalIOError(FileRequest& fileRequest) const;
     bool CheckLocalFileState(FileSystem* fs, FileRequest& fileRequest);
     bool CheckLoadingStatusOfFileRequest(FileRequest& fileRequest, DLCDownloader* dm, const String& dstPath);
     bool LoadingPackFileState(FileSystem* fs, FileRequest& fileRequest);
