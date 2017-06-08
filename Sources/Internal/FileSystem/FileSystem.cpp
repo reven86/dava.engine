@@ -692,18 +692,15 @@ bool FileSystem::IsFileLocked(const FilePath& filePath) const
 #if defined(__DAVAENGINE_WINDOWS__)
 
     HANDLE hFile = CreateFileWin(path);
-    if (hFile == INVALID_HANDLE_VALUE || GetLastError() == ERROR_SHARING_VIOLATION)
-    {
-        if (hFile != INVALID_HANDLE_VALUE)
-        {
-            CloseHandle(hFile);
-        }
+    DWORD createFileError = GetLastError();
 
-        return true;
+    if (hFile == INVALID_HANDLE_VALUE)
+    {
+        return false;
     }
 
     CloseHandle(hFile);
-    return false;
+    return (createFileError == ERROR_SHARING_VIOLATION);
 
 #elif defined(__DAVAENGINE_MACOS__)
 
