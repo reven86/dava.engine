@@ -425,7 +425,7 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
         {
             const char* componentName = descr.group->componentType->GetName();
             const char* controlName = control->GetName().c_str();
-            Logger::Warning("Style sheet can not find component \'%s\' in control \'%s\'", componentName, controlName);
+            Logger::Error("Style sheet can not find component \'%s\' in control \'%s\'", componentName, controlName);
         }
     }
 }

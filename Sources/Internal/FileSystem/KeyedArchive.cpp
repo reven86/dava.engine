@@ -511,12 +511,13 @@ int32 KeyedArchive::GetByteArraySize(const String& key, int32 defaultValue) cons
 KeyedArchive* KeyedArchive::GetArchiveFromByteArray(const String& key) const
 {
     //DVWARNING(false, "Method is depriceted! Use GetArchive()");
-    KeyedArchive* archive = new KeyedArchive;
     int32 size = GetByteArraySize(key);
     if (size == 0)
     {
         return nullptr;
     }
+
+    KeyedArchive* archive = new KeyedArchive;
     ScopedPtr<UnmanagedMemoryFile> file(new UnmanagedMemoryFile(GetByteArray(key), size));
     if (!archive->Load(file))
     {

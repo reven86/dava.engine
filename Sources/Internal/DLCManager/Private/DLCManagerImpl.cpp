@@ -12,6 +12,7 @@
 #include "Time/SystemTimer.h"
 #include "Engine/Engine.h"
 #include "Debug/Backtrace.h"
+#include "Platform/DeviceInfo.h"
 
 namespace DAVA
 {
@@ -84,8 +85,6 @@ DLCManagerImpl::DLCManagerImpl(Engine* engine_)
     DVASSERT(Thread::IsMainThread());
     engine.update.Connect(this, &DLCManagerImpl::Update);
     engine.backgroundUpdate.Connect(this, &DLCManagerImpl::Update);
-
-    downloader.reset(DLCDownloader::Create());
 }
 #endif
 
@@ -127,7 +126,7 @@ void DLCManagerImpl::ClearResouces()
     mapFileData.clear();
     startFileNameIndexesInUncompressedNames.clear();
 
-    if (downloadTaskId != 0)
+    if (downloadTaskId != nullptr)
     {
         if (downloader != nullptr)
         {
@@ -135,6 +134,9 @@ void DLCManagerImpl::ClearResouces()
             downloadTaskId = nullptr;
         }
     }
+
+    downloader.reset(nullptr);
+
     fullSizeServerData = 0;
 
     timeWaitingNextInitializationAttempt = 0;
@@ -188,7 +190,11 @@ void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
     downloaderHints.numOfMaxEasyHandles = static_cast<int>(hints.downloaderMaxHandles);
     downloaderHints.chunkMemBuffSize = static_cast<int>(hints.downloaderChankBufSize);
 
-    downloader->SetHints(downloaderHints);
+    if (!downloader)
+    {
+        downloader.reset(DLCDownloader::Create());
+        downloader->SetHints(downloaderHints);
+    }
 
     // TODO check if signal asyncConnectStateChanged has any subscriber
 
@@ -486,6 +492,7 @@ void DLCManagerImpl::AskFooter()
     if (nullptr == downloadTaskId)
     {
         downloadTaskId = downloader->StartGetContentSize(urlToSuperPack);
+        DVASSERT(nullptr != downloadTaskId);
     }
     else
     {
@@ -502,7 +509,10 @@ void DLCManagerImpl::AskFooter()
                 fullSizeServerData = status.sizeTotal;
                 if (fullSizeServerData == 0)
                 {
-                    DAVA_THROW(DAVA::Exception, "can't get size of file on server side");
+                    StringStream ss;
+                    ss << "can't get size of file on server side (status: " << status << ")"
+                       << " url: " << urlToSuperPack;
+                    DAVA_THROW(DAVA::Exception, ss.str());
                 }
 
                 if (fullSizeServerData < sizeof(PackFormat::PackFile))
@@ -555,7 +565,8 @@ void DLCManagerImpl::GetFooter()
         {
             initError = InitError::LoadingRequestFailed;
             initErrorMsg = "failed get footer from server, download error: ";
-            log << initErrorMsg << std::endl;
+            const char* gpuFamily = GlobalEnumMap<eGPUFamily>::Instance()->ToString(static_cast<eGPUFamily>(DeviceInfo::GetGPUFamily()));
+            log << initErrorMsg << " current_device_gpu: " << gpuFamily << std::endl;
         }
     }
 }
@@ -1211,7 +1222,7 @@ void DLCManagerImpl::RecursiveScan(const FilePath& baseDir, const FilePath& dir,
         }
         else
         {
-            if (path.GetExtension() == ".dvpl")
+            if (path.GetExtension() == extDvpl)
             {
                 LocalFileInfo info;
                 info.relativeName = path.GetRelativePathname(baseDir);
@@ -1226,7 +1237,7 @@ void DLCManagerImpl::RecursiveScan(const FilePath& baseDir, const FilePath& dir,
                 {
                     bool needDeleteIncompleteFile = false;
                     int32 footerSize = sizeof(PackFormat::LitePack::Footer);
-                    if (0 == fseek(f, -footerSize, SEEK_END)) // TODO check SEEK_END may not work on all platforms
+                    if (0 == fseek(f, -footerSize, SEEK_END))
                     {
                         PackFormat::LitePack::Footer footer;
                         if (footerSize == fread(&footer, 1, footerSize, f))
@@ -1249,7 +1260,10 @@ void DLCManagerImpl::RecursiveScan(const FilePath& baseDir, const FilePath& dir,
                     if (needDeleteIncompleteFile)
                     {
                         int32 result = FileAPI::RemoveFile(fileName);
-                        DVASSERT(0 == result);
+                        if (0 != result)
+                        {
+                            Logger::Error("can't delete incomplete file: %s", fileName.c_str());
+                        }
                     }
                 }
                 files.push_back(info);
@@ -1306,6 +1320,8 @@ void DLCManagerImpl::ThreadScanFunc()
         return;
     }
 
+    FileSystem* fs = GetEngineContext()->fileSystem;
+
     for (const LocalFileInfo& info : localFiles)
     {
         relativeNameWithoutDvpl = info.relativeName.substr(0, info.relativeName.size() - 5);
@@ -1315,7 +1331,7 @@ void DLCManagerImpl::ThreadScanFunc()
             if (entry->compressedCrc32 != info.crc32Hash || entry->compressedSize != info.compressedSize)
             {
                 Logger::Info("hash not match for file: %s delete it", info.relativeName.c_str());
-                FileSystem::Instance()->DeleteFile(dirToDownloadedPacks + info.relativeName);
+                fs->DeleteFile(dirToDownloadedPacks + info.relativeName);
             }
             else
             {
@@ -1326,7 +1342,7 @@ void DLCManagerImpl::ThreadScanFunc()
         else
         {
             // no such file on server, delete it
-            FileSystem::Instance()->DeleteFile(dirToDownloadedPacks + info.relativeName);
+            fs->DeleteFile(dirToDownloadedPacks + info.relativeName);
         }
     }
 

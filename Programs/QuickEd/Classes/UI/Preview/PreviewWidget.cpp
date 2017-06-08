@@ -497,28 +497,31 @@ void PreviewWidget::OnMouseReleased(QMouseEvent* event)
 {
     if (event->button() == Qt::RightButton)
     {
+        DVASSERT(nodeToChangeTextOnMouseRelease == nullptr);
         ShowMenu(event);
     }
-    if (nodeToChangeTextOnMouseRelease != nullptr)
+
+    if (nodeToChangeTextOnMouseRelease)
     {
-        requestChangeTextInNode.Emit(nodeToChangeTextOnMouseRelease);
+        QPoint point = event->pos();
+        Vector2 davaPoint(point.x(), point.y());
+        ControlNode* node = systemsManager->GetControlNodeAtPoint(davaPoint);
+        if (node == nodeToChangeTextOnMouseRelease && CanChangeTextInControl(node))
+        {
+            requestChangeTextInNode.Emit(node);
+        }
         nodeToChangeTextOnMouseRelease = nullptr;
     }
 }
 
 void PreviewWidget::OnMouseDBClick(QMouseEvent* event)
 {
-    QPoint point = event->pos();
-
-    Vector2 davaPoint(point.x(), point.y());
-    ControlNode* node = systemsManager->GetControlNodeAtPoint(davaPoint);
-    if (!CanChangeTextInControl(node))
+    if (event->button() == Qt::LeftButton)
     {
-        return;
+        QPoint point = event->pos();
+        Vector2 davaPoint(point.x(), point.y());
+        nodeToChangeTextOnMouseRelease = systemsManager->GetControlNodeAtPoint(davaPoint);
     }
-
-    // call "change text" after release event will pass
-    nodeToChangeTextOnMouseRelease = node;
 }
 
 void PreviewWidget::OnMouseMove(QMouseEvent* event)

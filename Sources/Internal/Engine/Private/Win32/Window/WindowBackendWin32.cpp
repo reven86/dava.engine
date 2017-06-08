@@ -1046,32 +1046,35 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
 
         lresult = OnMouseWheelEvent(deltaX, deltaY, pt.x, pt.y);
     }
-    else if (message == WM_MOUSEMOVE)
-    {
-        int32 x = GET_X_LPARAM(lparam);
-        int32 y = GET_Y_LPARAM(lparam);
-        lresult = OnMouseMoveEvent(x, y);
-    }
-    else if (message == WM_MOUSEWHEEL || message == WM_MOUSEHWHEEL)
-    {
-        int32 deltaX = 0;
-        int32 deltaY = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
-        if (message == WM_MOUSEHWHEEL)
-        {
-            std::swap(deltaX, deltaY);
-        }
-
-        POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
-        ::ScreenToClient(hwnd, &pt);
-
-        lresult = OnMouseWheelEvent(deltaX, deltaY, pt.x, pt.y);
-    }
     else if (WM_MOUSEFIRST <= message && message <= WM_MOUSELAST)
     {
-        uint16 xbutton = GET_XBUTTON_WPARAM(wparam);
-        int32 x = GET_X_LPARAM(lparam);
-        int32 y = GET_Y_LPARAM(lparam);
-        lresult = OnMouseClickEvent(message, xbutton, x, y);
+        if (message == WM_MOUSEMOVE)
+        {
+            int32 x = GET_X_LPARAM(lparam);
+            int32 y = GET_Y_LPARAM(lparam);
+            lresult = OnMouseMoveEvent(x, y);
+        }
+        else if (message == WM_MOUSEWHEEL || message == WM_MOUSEHWHEEL)
+        {
+            int32 deltaX = 0;
+            int32 deltaY = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
+            if (message == WM_MOUSEHWHEEL)
+            {
+                std::swap(deltaX, deltaY);
+            }
+
+            POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
+            ::ScreenToClient(hwnd, &pt);
+
+            lresult = OnMouseWheelEvent(deltaX, deltaY, pt.x, pt.y);
+        }
+        else
+        {
+            uint16 xbutton = GET_XBUTTON_WPARAM(wparam);
+            int32 x = GET_X_LPARAM(lparam);
+            int32 y = GET_Y_LPARAM(lparam);
+            lresult = OnMouseClickEvent(message, xbutton, x, y);
+        }
     }
     else if (message == WM_CAPTURECHANGED)
     {
