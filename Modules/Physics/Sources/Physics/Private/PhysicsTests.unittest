@@ -16,4 +16,4 @@ DAVA_TESTCLASS(PhysicsTest)
         TEST_VERIFY(physicsModule->IsInitialized());
     }
 };
-#endif()
+#endif

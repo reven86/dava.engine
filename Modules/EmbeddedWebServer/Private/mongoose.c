@@ -33,7 +33,9 @@
 // for all dava-based projects and modules. This is avoiding integration problems of physx.
 // PhysX is require LIMIT_MACROS and use this macroses in header file, so we have to propagate
 // __STDC_LIMIT_MACROS into all our projects and modules
-//#define __STDC_LIMIT_MACROS   // C++ wants that for INT64_MAX
+#if !defined(__STDC_LIMIT_MACROS)
+#define __STDC_LIMIT_MACROS   // C++ wants that for INT64_MAX
+#endif
 #endif
 
 #if defined (_MSC_VER)
