@@ -324,8 +324,6 @@ bool FileSystem::DeleteDirectory(const FilePath& path, bool isRecursive)
                 return false;
         }
     }
-
-    fileList.reset(nullptr);
     
 #ifdef __DAVAENGINE_WINDOWS__
     WideString sysPath = UTF8Utils::EncodeToWideString(path.GetAbsolutePathname());
