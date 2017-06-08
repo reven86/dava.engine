@@ -255,6 +255,19 @@ public:
     void QuitAsync(int exitCode);
 
     /**
+        Immediately terminate application with given exit code.
+
+        Application is immediately terminated bypassing normal exiting sequence:
+            - memory and resources are not freed,
+            - destructors of global objects are not called,
+            - destructors of automatic objects that exist at the time of the call are not called,
+            - signals such as `gameLoopStopped`, `cleanup` and others are not emitted.
+
+        \note Termination is an unusual way to exit application.
+    */
+    void Terminate(int exitCode = EXIT_FAILURE);
+
+    /**
         Set handler which is invoked when user is trying to close window or application.
         
         Handler can prevent window/application closing by returning false. This ability is
