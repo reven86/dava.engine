@@ -6,6 +6,8 @@
 #include "../Common/rhi_Private.h"
 #include "../Common/RenderLoop.h"
 
+#include <cstring>
+
 namespace rhi
 {
 Dispatch DispatchNullRenderer = {};
@@ -51,7 +53,7 @@ void null_InitContext()
 {
     static const char* NULL_RENDERER_DEVICE = "NullRenderer Device";
 
-    Memcpy(MutableDeviceCaps::Get().deviceDescription, NULL_RENDERER_DEVICE, strlen(NULL_RENDERER_DEVICE));
+    std::strncpy(MutableDeviceCaps::Get().deviceDescription, NULL_RENDERER_DEVICE, 127);
 }
 
 bool null_ValidateSurface()
