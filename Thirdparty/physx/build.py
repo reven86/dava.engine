@@ -36,6 +36,13 @@ def _create_folder_if_not_exists(path):
         os.makedirs(path)
 
 
+def _copy_libs_list(src, dst, files_list):
+    _create_folder_if_not_exists(dst)
+    for file_name in os.listdir(src):
+        if file_name in files_list:
+            shutil.copyfile(os.path.join(src, file_name), os.path.join(dst, file_name))
+
+
 def _copy_libs(src, dst, files_ext, recursive = False):
     _create_folder_if_not_exists(dst)
     for file_name in os.listdir(src):
@@ -162,6 +169,7 @@ def _build_android(working_directory_path, root_project_path):
     #build_utils.cmake_generate_build_ndk(build_android_x86_folder, source_dir, toolchain_filepath,
     #                                     android_ndk_folder_path, 'x86',
     #                                     ['-DFRAMEWORK_ROOT_PATH=' + root_project_path, '-Wno-dev'])
+    _copy_headers(source_folder_path, root_project_path)
 
 def _build_win10(working_directory_path, root_project_path):
     source_folder_path = _download_and_extract(working_directory_path)
@@ -174,23 +182,71 @@ def _build_win10(working_directory_path, root_project_path):
     x86_binary_dst_path = os.path.join(binary_dst_path, 'Win32')
     x64_binary_dst_path = os.path.join(binary_dst_path, 'x64')
 
+    debug_libs_list_x86 = ['LowLevelAABBDEBUG.lib',
+                     'LowLevelClothDEBUG.lib',
+                     'LowLevelDEBUG.lib',
+                     'LowLevelDynamicsDEBUG.lib',
+                     'LowLevelParticlesDEBUG.lib',
+                     'nvToolsExt32_1.dll',
+                     'nvToolsExt64_1.dll',
+                     'PhysX3CharacterKinematicDEBUG_x86.dll',
+                     'PhysX3CharacterKinematicDEBUG_x86.lib',
+                     'PhysX3CommonDEBUG_x86.dll',
+                     'PhysX3CommonDEBUG_x86.lib',
+                     'PhysX3CookingDEBUG_x86.dll',
+                     'PhysX3CookingDEBUG_x86.lib',
+                     'PhysX3DEBUG_x86.dll',
+                     'PhysX3DEBUG_x86.lib',
+                     'PhysX3ExtensionsDEBUG.lib',
+                     'PhysX3VehicleDEBUG.lib',
+                     'PsFastXmlDEBUG_x86.lib',
+                     'PxFoundationDEBUG_x86.dll',
+                     'PxFoundationDEBUG_x86.lib',
+                     'PxPvdSDKDEBUG_x86.dll',
+                     'PxPvdSDKDEBUG_x86.lib',
+                     'PxTaskDEBUG_x86.lib',
+                     'SceneQueryDEBUG.lib',
+                     'SimulationControllerDEBUG.lib']
+
+    release_libs_list_x86 = map(lambda libName: libName.replace('DEBUG', ''), debug_libs_list_x86)
+    debug_libs_list_x64 = map(lambda libName: libName.replace('x86', 'x64'), debug_libs_list_x86)
+    release_libs_list_x64 = map(lambda libName: libName.replace('x86', 'x64'), release_libs_list_x86)
+
     build_utils.build_vs(project_x86_path, 'debug')
     #build_utils.build_vs(project_x86_path, 'profile')
     #build_utils.build_vs(project_x86_path, 'checked')
     build_utils.build_vs(project_x86_path, 'release')
-    _copy_libs(os.path.join(source_folder_path, 'PhysX_3.4', 'Bin', 'vc14win32'), x86_binary_dst_path,  '.dll')
-    _copy_libs(os.path.join(source_folder_path, 'PhysX_3.4', 'Lib', 'vc14win32'), x86_binary_dst_path,  '.lib')
-    _copy_libs(os.path.join(source_folder_path, 'PxShared', 'bin', 'vc14win32'), x86_binary_dst_path,  '.dll')
-    _copy_libs(os.path.join(source_folder_path, 'PxShared', 'lib', 'vc14win32'), x86_binary_dst_path,  '.lib')
+
+    debug_win32_dst_path = os.path.join(binary_dst_path, 'Win32', 'Debug')
+    release_win32_dst_path = os.path.join(binary_dst_path, 'Win32', 'Release')
+
+    debug_win64_dst_path = os.path.join(binary_dst_path, 'x64', 'Debug')
+    release_win64_dst_path = os.path.join(binary_dst_path, 'x64', 'Release')
+
+    _copy_libs_list(os.path.join(source_folder_path, 'PhysX_3.4', 'Bin', 'vc14win32'), debug_win32_dst_path, debug_libs_list_x86)
+    _copy_libs_list(os.path.join(source_folder_path, 'PhysX_3.4', 'Lib', 'vc14win32'), debug_win32_dst_path, debug_libs_list_x86)
+    _copy_libs_list(os.path.join(source_folder_path, 'PxShared', 'bin', 'vc14win32'), debug_win32_dst_path, debug_libs_list_x86)
+    _copy_libs_list(os.path.join(source_folder_path, 'PxShared', 'lib', 'vc14win32'), debug_win32_dst_path, debug_libs_list_x86)
+
+    _copy_libs_list(os.path.join(source_folder_path, 'PhysX_3.4', 'Bin', 'vc14win32'), release_win32_dst_path, release_libs_list_x86)
+    _copy_libs_list(os.path.join(source_folder_path, 'PhysX_3.4', 'Lib', 'vc14win32'), release_win32_dst_path, release_libs_list_x86)
+    _copy_libs_list(os.path.join(source_folder_path, 'PxShared', 'bin', 'vc14win32'), release_win32_dst_path, release_libs_list_x86)
+    _copy_libs_list(os.path.join(source_folder_path, 'PxShared', 'lib', 'vc14win32'), release_win32_dst_path, release_libs_list_x86)
 
     build_utils.build_vs(project_x64_path, 'debug', 'x64')
     #build_utils.build_vs(project_x64_path, 'profile', 'x64')
     #build_utils.build_vs(project_x64_path, 'checked', 'x64')
     build_utils.build_vs(project_x64_path, 'release', 'x64')
-    _copy_libs(os.path.join(source_folder_path, 'PhysX_3.4', 'Bin', 'vc14win64'), x64_binary_dst_path,  '.dll')
-    _copy_libs(os.path.join(source_folder_path, 'PhysX_3.4', 'Lib', 'vc14win64'), x64_binary_dst_path,  '.lib')
-    _copy_libs(os.path.join(source_folder_path, 'PxShared', 'bin', 'vc14win64'), x64_binary_dst_path,  '.dll')
-    _copy_libs(os.path.join(source_folder_path, 'PxShared', 'lib', 'vc14win64'), x64_binary_dst_path,  '.lib')
+    _copy_libs_list(os.path.join(source_folder_path, 'PhysX_3.4', 'Bin', 'vc14win64'), debug_win64_dst_path, debug_libs_list_x64)
+    _copy_libs_list(os.path.join(source_folder_path, 'PhysX_3.4', 'Lib', 'vc14win64'), debug_win64_dst_path, debug_libs_list_x64)
+    _copy_libs_list(os.path.join(source_folder_path, 'PxShared', 'bin', 'vc14win64'), debug_win64_dst_path, debug_libs_list_x64)
+    _copy_libs_list(os.path.join(source_folder_path, 'PxShared', 'lib', 'vc14win64'), debug_win64_dst_path, debug_libs_list_x64)
+
+    _copy_libs_list(os.path.join(source_folder_path, 'PhysX_3.4', 'Bin', 'vc14win64'), release_win64_dst_path, release_libs_list_x64)
+    _copy_libs_list(os.path.join(source_folder_path, 'PhysX_3.4', 'Lib', 'vc14win64'), release_win64_dst_path, release_libs_list_x64)
+    _copy_libs_list(os.path.join(source_folder_path, 'PxShared', 'bin', 'vc14win64'), release_win64_dst_path, release_libs_list_x64)
+    _copy_libs_list(os.path.join(source_folder_path, 'PxShared', 'lib', 'vc14win64'), release_win64_dst_path, release_libs_list_x64)
+    _copy_headers(source_folder_path, root_project_path)
 
 def _copy_headers(source_folder_path, root_project_path):
     copy_to_folder = os.path.join(root_project_path, 'Modules', 'Physics', 'Libs', 'Include', 'physx')

@@ -432,6 +432,10 @@ macro( setup_main_module )
         endif()
 
 #####
+        if (${MODULE_TYPE} STREQUAL "STATIC" OR ${MODULE_TYPE} STREQUAL "DYNAMIC" )
+            append_property(EXTERNAL_TEST_FOLDERS ${CMAKE_CURRENT_LIST_DIR})
+        endif()
+        
         if( ${MODULE_TYPE} STREQUAL "STATIC" )
 
             if( CPP_FILES_EXECUTE )
