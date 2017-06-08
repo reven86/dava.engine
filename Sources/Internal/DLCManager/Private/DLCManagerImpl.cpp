@@ -182,6 +182,10 @@ void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
             Logger::Error("can't create dlc_manager.log error: %s", err);
             DAVA_THROW(DAVA::Exception, err);
         }
+        const EnumMap* enumMap = GlobalEnumMap<eGPUFamily>::Instance();
+        eGPUFamily e = DeviceInfo::GetGPUFamily();
+        const char* gpuFamily = enumMap->ToString(e);
+        log << "current_device_gpu: " << gpuFamily << std::endl;
     }
 
     log << __FUNCTION__ << std::endl;

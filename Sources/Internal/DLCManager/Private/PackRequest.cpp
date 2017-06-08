@@ -3,9 +3,7 @@
 #include "FileSystem/Private/PackMetaData.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
-#include "Utils/Utils.h"
 #include "Logger/Logger.h"
-#include "DLC/DLC.h"
 
 #include <numeric>
 
@@ -132,8 +130,8 @@ bool PackRequest::IsDownloaded() const
 
     if (requests.size() != fileIndexes.size())
     {
-        return false;
         // not initialized yet
+        return false;
     }
 
     if (!packManagerImpl->IsInitialized())
