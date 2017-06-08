@@ -1,4 +1,5 @@
 #include "UI/Preview/Guides/GuidesController.h"
+#include "UI/Preview/Guides/GuideLabel.h"
 
 #include "Modules/DocumentsModule/DocumentData.h"
 #include "Modules/PreferencesModule/PreferencesData.h"
@@ -15,37 +16,38 @@ GuidesController::GuidesController(DAVA::TArc::ContextAccessor* accessor_, QWidg
     : accessor(accessor_)
     , fieldBinder(new DAVA::TArc::FieldBinder(accessor))
     , container(container_)
-    , visualUpdater(DAVA::MakeFunction(this, &GuidesController::SyncGuidesWithValues), nullptr)
 {
     documentDataWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<DocumentData>());
     preferencesDataWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<PreferencesData>());
 
     BindFields();
+
+    preferences.guidesColorChanged.Connect(this, &GuidesController::OnGuidesColorChanged);
+    preferences.previewGuideColorChanged.Connect(this, &GuidesController::OnPreviewGuideColorChanged);
 }
 
 void GuidesController::CreatePreviewGuide()
 {
-    DVASSERT(previewGuide == nullptr);
-    previewGuide = new QWidget(container);
-    previewGuide->setAttribute(Qt::WA_TransparentForMouseEvents);
-    SetGuideColor(previewGuide, preferences.previewGuideColor);
-    previewGuide->hide();
+    DVASSERT(previewGuide.line == nullptr && previewGuide.text == nullptr);
+    previewGuide = CreateGuide(preferences.GetPreviewGuideColor());
+    previewGuide.Hide();
 }
 
 void GuidesController::OnContainerGeometryChanged(const QPoint& bottomLeft, const QPoint& topRight, DAVA::float32 rulerRelativePos_)
 {
     ProcessGeometryChanged(bottomLeft, topRight);
     rulerRelativePos = rulerRelativePos_;
-    visualUpdater.Update();
+    SyncGuidesWithValues();
 }
 
-void GuidesController::OnCanvasParametersChanged(DAVA::float32 min_, DAVA::float32 max_, DAVA::float32 scale_)
+void GuidesController::OnCanvasParametersChanged(DAVA::uint32 pixelsToMin_, DAVA::float32 min_, DAVA::float32 max_, DAVA::float32 scale_)
 {
+    pixelsToMin = pixelsToMin_;
     minValue = min_;
     maxValue = max_;
     scale = scale_;
 
-    visualUpdater.Update();
+    SyncGuidesWithValues();
 }
 
 void GuidesController::OnMousePress(DAVA::float32 position)
@@ -64,7 +66,15 @@ void GuidesController::OnMousePress(DAVA::float32 position)
 
     if (displayState == DISPLAY_PREVIEW)
     {
-        CreateGuide(position);
+        PackageNode::AxisGuides values = GetValues();
+
+        values.push_back(PositionToValue(position));
+        values.sort();
+
+        SetValues(values);
+
+        SyncGuidesWithValues();
+
         SetDisplayState(DISPLAY_DRAG);
     }
 
@@ -104,7 +114,16 @@ void GuidesController::OnMouseRelease(DAVA::float32 position)
         return;
     }
 
+    //copy  pointer to dragged item to remove it if we drag outside of screen
+    DAVA::float32* valuePtrCopy = valuePtr;
     DisableDrag();
+
+    if (displayState == DISPLAY_REMOVE)
+    {
+        DVASSERT(valuePtrCopy != nullptr);
+        RemoveGuide(*valuePtrCopy);
+        SetDisplayState(NO_DISPLAY);
+    }
 }
 
 void GuidesController::OnMouseLeave()
@@ -118,6 +137,9 @@ void GuidesController::OnMouseLeave()
 
 QList<QAction*> GuidesController::GetActions(DAVA::float32 position, QObject* parent)
 {
+    //we can call context menu when we draging guide
+    DisableDrag();
+
     QList<QAction*> actions;
 
     QAction* guidesEnabledAction = new QAction("Show Alignment Guides", parent);
@@ -162,9 +184,10 @@ void GuidesController::SetDisplayState(eDisplayState state)
     switch (displayState)
     {
     case DISPLAY_PREVIEW:
-        previewGuide->hide();
+        previewGuide.Hide();
         break;
     case DISPLAY_DRAG:
+    case DISPLAY_REMOVE:
         container->unsetCursor();
         break;
     default:
@@ -176,11 +199,13 @@ void GuidesController::SetDisplayState(eDisplayState state)
     switch (displayState)
     {
     case DISPLAY_PREVIEW:
-        SetGuideColor(previewGuide, preferences.previewGuideColor);
-        previewGuide->show();
+        previewGuide.Show();
         break;
     case DISPLAY_DRAG:
         container->setCursor(GetOrientation() == DAVA::Vector2::AXIS_X ? Qt::SplitHCursor : Qt::SplitVCursor);
+        break;
+    case DISPLAY_REMOVE:
+        container->setCursor(QCursor(QPixmap(":/Cursors/trashCursor.png")));
     default:
         break;
     }
@@ -248,7 +273,7 @@ void GuidesController::BindFields()
 
 void GuidesController::OnValuesChanged(const DAVA::Any&)
 {
-    visualUpdater.Update();
+    SyncGuidesWithValues();
 }
 
 void GuidesController::OnRootControlsChanged(const DAVA::Any& rootControls)
@@ -270,7 +295,7 @@ void GuidesController::SyncGuidesWithValues()
     {
         while (guides.empty() == false)
         {
-            delete guides.takeLast();
+            RemoveLastGuide();
         }
         return;
     }
@@ -290,31 +315,29 @@ void GuidesController::SyncGuidesWithValues()
     int size = std::distance(iter, endIter);
     while (guides.size() > size)
     {
-        delete guides.takeLast();
+        RemoveLastGuide();
     }
     while (guides.size() < size)
     {
-        QWidget* guide = new QWidget(container);
-        guide->setAttribute(Qt::WA_TransparentForMouseEvents);
-
-        guide->show();
-
+        Guide guide = CreateGuide(preferences.GetGuidesColor());
+        guide.Show();
         guides.append(guide);
     }
 
     int index = 0;
     for (; iter != endIter; ++iter, ++index)
     {
-        QWidget* guide = guides.at(index);
+        Guide& guide = guides[index];
         ResizeGuide(guide);
-        MoveGuide(*iter, guide);
-        SetGuideColor(guide, preferences.guideColor);
+        DAVA::float32 value = *iter;
+        static_cast<GuideLabel*>(guide.text)->SetValue(value);
+        MoveGuide(value, guide);
     }
 }
 
 DAVA::float32* GuidesController::GetNearestValuePtr(DAVA::float32 position)
 {
-    const DAVA::float32 range = preferences.detectGuideDistance / scale;
+    const DAVA::float32 range = 1;
 
     cachedValues = GetValues();
 
@@ -373,25 +396,32 @@ void GuidesController::SetupPreviewGuide(DAVA::float32 position)
 {
     DAVA::float32 value = PositionToValue(position);
     ResizeGuide(previewGuide);
+    static_cast<GuideLabel*>(previewGuide.text)->SetValue(value);
     MoveGuide(value, previewGuide);
 }
 
-void GuidesController::CreateGuide(DAVA::float32 position)
+Guide GuidesController::CreateGuide(const DAVA::Color& color) const
 {
-    PackageNode::AxisGuides values = GetValues();
+    Guide guide;
+    guide.line = new QWidget(container);
+    guide.text = new GuideLabel(GetOrientation(), container);
 
-    values.push_back(PositionToValue(position));
-    values.sort();
-
-    SetValues(values);
-
-    SyncGuidesWithValues();
+    guide.line->setAttribute(Qt::WA_TransparentForMouseEvents);
+    guide.text->setAttribute(Qt::WA_TransparentForMouseEvents);
+    SetGuideColor(guide.line, color);
+    return guide;
 }
 
 void GuidesController::DragGuide(DAVA::float32 position)
 {
     DVASSERT(IsEnabled());
     DVASSERT(valuePtr != nullptr);
+
+    DAVA::float32 value = PositionToValue(position);
+    if (value < minValue || value > maxValue)
+    {
+        SetDisplayState(DISPLAY_REMOVE);
+    }
 
     *valuePtr = PositionToValue(position);
     cachedValues.sort();
@@ -403,7 +433,7 @@ void GuidesController::DragGuide(DAVA::float32 position)
 void GuidesController::RemoveGuide(DAVA::float32 value)
 {
     cachedValues = GetValues();
-    cachedValues.erase(std::remove(cachedValues.begin(), cachedValues.end(), value));
+    cachedValues.remove(value);
     SetValues(cachedValues);
 }
 
@@ -427,7 +457,20 @@ void GuidesController::SetGuidesEnabled(bool enabled)
     }
 }
 
-void GuidesController::SetGuideColor(QWidget* guide, const DAVA::Color& color)
+void GuidesController::OnGuidesColorChanged(const DAVA::Color& color)
+{
+    for (Guide& guide : guides)
+    {
+        SetGuideColor(guide.line, color);
+    }
+}
+
+void GuidesController::OnPreviewGuideColorChanged(const DAVA::Color& color)
+{
+    SetGuideColor(previewGuide.line, color);
+}
+
+void GuidesController::SetGuideColor(QWidget* guide, const DAVA::Color& color) const
 {
     QString colorString = QString("rgba(%1, %2, %3, %4)")
                           .arg(color.r * 255.0f)
@@ -438,14 +481,22 @@ void GuidesController::SetGuideColor(QWidget* guide, const DAVA::Color& color)
     guide->setStyleSheet(QString("QWidget { background-color: %1; }").arg(colorString));
 }
 
+void GuidesController::RemoveLastGuide()
+{
+    Guide& guide = guides.last();
+    delete guide.line;
+    delete guide.text;
+    guides.removeLast();
+}
+
 DAVA::float32 GuidesController::PositionToValue(DAVA::float32 position) const
 {
-    return std::floor(minValue + position / scale);
+    return std::round(minValue + (position + pixelsToMin) / scale);
 }
 
 DAVA::float32 GuidesController::ValueToPosition(DAVA::float32 value) const
 {
-    return rulerRelativePos + (value - minValue) * scale;
+    return rulerRelativePos + (value - minValue) * scale - pixelsToMin;
 }
 
 HGuidesController::HGuidesController(DAVA::TArc::ContextAccessor* accessor, QWidget* container)
@@ -462,14 +513,17 @@ void HGuidesController::ProcessGeometryChanged(const QPoint& bottomLeft, const Q
     size = bottom - top;
 }
 
-void HGuidesController::ResizeGuide(QWidget* guide) const
+void HGuidesController::ResizeGuide(Guide& guide) const
 {
-    guide->resize(1, size);
+    guide.line->resize(1, size);
+    guide.text->resize(30, 15);
 }
 
-void HGuidesController::MoveGuide(DAVA::float32 value, QWidget* guide) const
+void HGuidesController::MoveGuide(DAVA::float32 value, Guide& guide) const
 {
-    guide->move(ValueToPosition(value), guideStartPosition);
+    DAVA::float32 xPosition = ValueToPosition(value);
+    guide.line->move(xPosition, guideStartPosition);
+    guide.text->move(xPosition + 5, guideStartPosition);
 }
 
 DAVA::Vector2::eAxis HGuidesController::GetOrientation() const
@@ -491,14 +545,17 @@ void VGuidesController::ProcessGeometryChanged(const QPoint& bottomLeft, const Q
     size = right - left;
 }
 
-void VGuidesController::ResizeGuide(QWidget* guide) const
+void VGuidesController::ResizeGuide(Guide& guide) const
 {
-    guide->resize(size, 1);
+    guide.line->resize(size, 1);
+    guide.text->resize(15, 30);
 }
 
-void VGuidesController::MoveGuide(DAVA::float32 value, QWidget* guide) const
+void VGuidesController::MoveGuide(DAVA::float32 value, Guide& guide) const
 {
-    guide->move(guideStartPosition, ValueToPosition(value));
+    DAVA::float32 yPosition = ValueToPosition(value);
+    guide.line->move(guideStartPosition, yPosition);
+    guide.text->move(guideStartPosition, yPosition - guide.text->height() - 5);
 }
 
 DAVA::Vector2::eAxis VGuidesController::GetOrientation() const
@@ -514,6 +571,28 @@ GuidesControllerPreferences::GuidesControllerPreferences()
 GuidesControllerPreferences::~GuidesControllerPreferences()
 {
     PreferencesStorage::Instance()->UnregisterPreferences(this);
+}
+
+const DAVA::Color& GuidesControllerPreferences::GetGuidesColor() const
+{
+    return guidesColor;
+}
+
+void GuidesControllerPreferences::SetGuidesColor(const DAVA::Color& color)
+{
+    guidesColor = color;
+    guidesColorChanged.Emit(color);
+}
+
+const DAVA::Color& GuidesControllerPreferences::GetPreviewGuideColor() const
+{
+    return previewGuideColor;
+}
+
+void GuidesControllerPreferences::SetPreviewGuideColor(const DAVA::Color& color)
+{
+    previewGuideColor = color;
+    previewGuideColorChanged.Emit(color);
 }
 
 REGISTER_PREFERENCES_ON_START(GuidesControllerPreferences,

@@ -94,7 +94,7 @@ void RulerWidget::paintEvent(QPaintEvent* paintEvent)
 
 QSize RulerWidget::minimumSizeHint() const
 {
-    static const int minimumSize = 16;
+    static const int minimumSize = 20;
     return QSize(minimumSize, minimumSize);
 }
 
@@ -103,27 +103,33 @@ void RulerWidget::DrawScale(QPainter& painter, int tickStep, int tickStartPos, i
 {
     DVASSERT(tickStep > 0);
 
+    painter.setRenderHint(QPainter::TextAntialiasing, true);
+
     //value to start from
     int numberOffset = std::ceilf((float)(settings.startPos) / (float)(tickStep)) * (float)tickStep;
 
     //visual position to start
     int tickOffset = numberOffset - settings.startPos;
 
+    const QFont& font = painter.font();
+    int fontSize = font.pixelSize();
+
+    QFontMetrics fm(font, this);
+    int digitHeight = fm.boundingRect('5').height();
+
     int fontPos = 0;
     int endPos = 0;
     if (orientation == Qt::Horizontal)
     {
         endPos = rect().width();
-        fontPos = rect().height() / 2;
+        fontPos = fm.boundingRect('5').height();
     }
     else
     {
         endPos = rect().height();
-        fontPos = 1;
+        fontPos = digitHeight;
     }
 
-    const QFont& font = painter.font();
-    int fontSize = font.pixelSize();
     char nextDigit[2] = { 0x00, 0x00 };
 
     QVector<QLine> linesVector;
@@ -134,12 +140,13 @@ void RulerWidget::DrawScale(QPainter& painter, int tickStep, int tickStartPos, i
     {
         int curPos = i + tickOffset;
         int curPosValue = (int)(i + numberOffset) / settings.zoomLevel;
+
         if (orientation == Qt::Horizontal)
         {
             linesVector.append(QLine(curPos, tickStartPos, curPos, tickEndPos));
             if (drawValues)
             {
-                painter.drawText(curPos + 2, fontPos, QString::number(curPosValue));
+                painter.drawText(curPos + 5, fontPos, QString::number(curPosValue));
             }
         }
         else
@@ -147,18 +154,12 @@ void RulerWidget::DrawScale(QPainter& painter, int tickStep, int tickStartPos, i
             linesVector.append(QLine(tickStartPos, curPos, tickEndPos, curPos));
             if (drawValues)
             {
-                // In this case draw value digit-by-digit vertically UNDER the tick.
-                std::stringstream digits;
-                digits << curPosValue;
-
                 int digitPos = curPos + fontSize - 1;
-                int digitsSize = static_cast<int>(digits.str().size());
-                for (int j = 0; j < digitsSize; j++)
-                {
-                    nextDigit[0] = digits.str().at(j); // next char is always 0x00
-                    painter.drawText(fontPos, digitPos, QString::fromLatin1(nextDigit));
-                    digitPos += fontSize;
-                }
+                painter.save();
+                painter.translate(tickStartPos, curPos);
+                painter.rotate(-90);
+                painter.drawText(5, fontPos, QString::number(curPosValue));
+                painter.restore();
             }
         }
     }

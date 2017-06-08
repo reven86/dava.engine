@@ -101,6 +101,8 @@ public:
     Guides GetGuides(const DAVA::String& name) const;
     void SetGuides(const DAVA::String& name, const Guides& guides);
 
+    const DAVA::Map<DAVA::String, Guides>& GetGuides() const;
+
 private:
     struct DepthPackageNode
     {
@@ -145,3 +147,6 @@ private:
 
     DAVA::ResultList results;
 };
+
+//helper function for guides
+bool FindRootWithSameName(ControlNode* control, PackageNode* package);

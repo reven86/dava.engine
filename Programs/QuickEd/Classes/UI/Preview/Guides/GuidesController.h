@@ -1,12 +1,11 @@
 #pragma once
 
 #include "UI/Preview/Guides/IRulerListener.h"
+#include "UI/Preview/Guides/Guide.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 
 #include <TArc/DataProcessing/DataWrapper.h>
-
-#include <QtTools/Updaters/LazyUpdater.h>
 
 #include <Base/Any.h>
 #include <Base/Introspection.h>
@@ -36,15 +35,23 @@ public:
     GuidesControllerPreferences();
     ~GuidesControllerPreferences();
 
-    //preferences
-    DAVA::float32 detectGuideDistance;
-    DAVA::Color guideColor;
+    const DAVA::Color& GetGuidesColor() const;
+    void SetGuidesColor(const DAVA::Color& color);
+
+    const DAVA::Color& GetPreviewGuideColor() const;
+    void SetPreviewGuideColor(const DAVA::Color& color);
+
+    DAVA::Signal<const DAVA::Color&> previewGuideColorChanged;
+    DAVA::Signal<const DAVA::Color&> guidesColorChanged;
+
+private:
+    DAVA::Color guidesColor;
     DAVA::Color previewGuideColor;
 
+public:
     INTROSPECTION(GuidesControllerPreferences,
-                  MEMBER(detectGuideDistance, "Rulers/distance from guide to drag", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
-                  MEMBER(guideColor, "Rulers/guide color", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
-                  MEMBER(previewGuideColor, "Rulers/preview guide color", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  PROPERTY("guideColor", "Rulers/guide color", GetGuidesColor, SetGuidesColor, DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  PROPERTY("previewGuideColor", "Rulers/preview guide color", GetPreviewGuideColor, SetPreviewGuideColor, DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   )
 };
 
@@ -58,7 +65,7 @@ public:
 
     void CreatePreviewGuide();
     void OnContainerGeometryChanged(const QPoint& bottomLeft, const QPoint& topRight, DAVA::float32 rulerRelativePos);
-    void OnCanvasParametersChanged(DAVA::float32 min, DAVA::float32 max, DAVA::float32 scale);
+    void OnCanvasParametersChanged(DAVA::uint32 pixelsToMin, DAVA::float32 min, DAVA::float32 max, DAVA::float32 scale);
     void BindFields();
 
 private:
@@ -73,11 +80,13 @@ private:
     //NO_DISPLAY: normal cursor and no preview guide
     //DISPLAY_PREVIEW: normal cursor and preview guide is visible
     //DISPLAY_DRAG: drag cursor and no preview guide
+    //DISPLAY_REMOVE: cursor changed to RemoveCursor and no preview guide
     enum eDisplayState
     {
         NO_DISPLAY,
         DISPLAY_PREVIEW,
-        DISPLAY_DRAG
+        DISPLAY_DRAG,
+        DISPLAY_REMOVE
     };
     eDisplayState displayState = NO_DISPLAY;
     void SetDisplayState(eDisplayState state);
@@ -109,7 +118,6 @@ private:
     void SetValues(const PackageNode::AxisGuides& values);
 
     void SetupPreviewGuide(DAVA::float32 position);
-    void CreateGuide(DAVA::float32 position);
     void DragGuide(DAVA::float32 position);
 
     void RemoveGuide(DAVA::float32 value);
@@ -118,12 +126,17 @@ private:
     bool IsGuidesEnabled() const;
     void SetGuidesEnabled(bool enabled);
 
-    void SetGuideColor(QWidget* guide, const DAVA::Color& color);
+    void OnGuidesColorChanged(const DAVA::Color& color);
+    void OnPreviewGuideColorChanged(const DAVA::Color& color);
+
+    Guide CreateGuide(const DAVA::Color& color) const;
+    void SetGuideColor(QWidget* guide, const DAVA::Color& color) const;
+    void RemoveLastGuide();
 
     //behavior
     virtual void ProcessGeometryChanged(const QPoint& bottomLeft, const QPoint& topRight) = 0;
-    virtual void ResizeGuide(QWidget* guide) const = 0;
-    virtual void MoveGuide(DAVA::float32 position, QWidget* guide) const = 0;
+    virtual void ResizeGuide(Guide& guide) const = 0;
+    virtual void MoveGuide(DAVA::float32 position, Guide& guide) const = 0;
     virtual DAVA::Vector2::eAxis GetOrientation() const = 0;
 
 protected:
@@ -140,10 +153,11 @@ private:
     DAVA::TArc::DataWrapper documentDataWrapper;
     DAVA::TArc::DataWrapper preferencesDataWrapper;
 
-    QWidgetList guides;
-
     //use it only for drag-n-drop
     PackageNode::AxisGuides cachedValues;
+
+    //this variable used to convert value to position in big scale values
+    DAVA::uint32 pixelsToMin = 0;
 
     //guide value on ruler
     DAVA::float32 minValue = 0.0f;
@@ -161,10 +175,10 @@ private:
     DAVA::float32* valuePtr = nullptr;
 
     //semi-transparent preview guide
-    QWidget* previewGuide = nullptr;
+    Guide previewGuide;
+    QList<Guide> guides;
 
     GuidesControllerPreferences preferences;
-    LazyUpdater visualUpdater;
 };
 
 class HGuidesController : public GuidesController
@@ -175,8 +189,8 @@ public:
 private:
     void ProcessGeometryChanged(const QPoint& bottomLeft, const QPoint& topRight) override;
 
-    void ResizeGuide(QWidget* guide) const override;
-    void MoveGuide(DAVA::float32 position, QWidget* guide) const override;
+    void ResizeGuide(Guide& guide) const override;
+    void MoveGuide(DAVA::float32 position, Guide& guide) const override;
 
     DAVA::Vector2::eAxis GetOrientation() const override;
 };
@@ -189,8 +203,8 @@ public:
 private:
     void ProcessGeometryChanged(const QPoint& bottomLeft, const QPoint& topRight) override;
 
-    void ResizeGuide(QWidget* guide) const override;
-    void MoveGuide(DAVA::float32 position, QWidget* guide) const override;
+    void ResizeGuide(Guide& guide) const override;
+    void MoveGuide(DAVA::float32 position, Guide& guide) const override;
 
     DAVA::Vector2::eAxis GetOrientation() const override;
 };

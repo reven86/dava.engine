@@ -52,7 +52,7 @@
 
 using namespace DAVA;
 
-namespace
+namespace CommandExecutorDetails
 {
 template <typename T>
 String FormatNodeNames(const DAVA::Vector<T*>& nodes)
@@ -313,7 +313,7 @@ Vector<ControlNode*> CommandExecutor::InsertInstances(const DAVA::Vector<Control
     if (!nodesToInsert.empty())
     {
         DocumentData* data = GetDocumentData();
-        data->BeginBatch(Format("Instance Controls %s", FormatNodeNames(nodesToInsert).c_str()), static_cast<uint32>(nodesToInsert.size()));
+        data->BeginBatch(Format("Instance Controls %s", CommandExecutorDetails::FormatNodeNames(nodesToInsert).c_str()), static_cast<uint32>(nodesToInsert.size()));
 
         int index = destIndex;
         for (ControlNode* node : nodesToInsert)
@@ -345,7 +345,7 @@ Vector<ControlNode*> CommandExecutor::CopyControls(const DAVA::Vector<ControlNod
     if (!nodesToCopy.empty())
     {
         DocumentData* data = GetDocumentData();
-        data->BeginBatch(Format("Copy Controls %s", FormatNodeNames(nodes).c_str()), static_cast<uint32>(nodesToCopy.size()));
+        data->BeginBatch(Format("Copy Controls %s", CommandExecutorDetails::FormatNodeNames(nodes).c_str()), static_cast<uint32>(nodesToCopy.size()));
 
         int32 index = destIndex;
         for (const RefPtr<ControlNode>& copy : nodesToCopy)
@@ -375,7 +375,7 @@ Vector<ControlNode*> CommandExecutor::MoveControls(const DAVA::Vector<ControlNod
     if (!nodesToMove.empty())
     {
         DocumentData* data = GetDocumentData();
-        data->BeginBatch(Format("Move Controls %s", FormatNodeNames(nodes).c_str()), static_cast<uint32>(nodesToMove.size()));
+        data->BeginBatch(Format("Move Controls %s", CommandExecutorDetails::FormatNodeNames(nodes).c_str()), static_cast<uint32>(nodesToMove.size()));
         int index = destIndex;
         for (ControlNode* node : nodesToMove)
         {
@@ -433,7 +433,7 @@ void CommandExecutor::CopyStyles(const DAVA::Vector<StyleSheetNode*>& nodes, Sty
     if (!nodesToCopy.empty())
     {
         DocumentData* data = GetDocumentData();
-        data->BeginBatch(Format("Copy Styles %s", FormatNodeNames(nodes).c_str()), static_cast<uint32>(nodesToCopy.size()));
+        data->BeginBatch(Format("Copy Styles %s", CommandExecutorDetails::FormatNodeNames(nodes).c_str()), static_cast<uint32>(nodesToCopy.size()));
 
         int index = destIndex;
         for (StyleSheetNode* node : nodesToCopy)
@@ -460,7 +460,7 @@ void CommandExecutor::MoveStyles(const DAVA::Vector<StyleSheetNode*>& nodes, Sty
     if (!nodesToMove.empty())
     {
         DocumentData* data = GetDocumentData();
-        data->BeginBatch(Format("Move Styles %s", FormatNodeNames(nodes).c_str()), static_cast<uint32>(nodesToMove.size()));
+        data->BeginBatch(Format("Move Styles %s", CommandExecutorDetails::FormatNodeNames(nodes).c_str()), static_cast<uint32>(nodesToMove.size()));
         int index = destIndex;
         for (StyleSheetNode* node : nodesToMove)
         {
@@ -525,13 +525,16 @@ void CommandExecutor::Remove(const Vector<ControlNode*>& controls, const Vector<
     if (!nodesToRemove.empty())
     {
         DocumentData* data = GetDocumentData();
-        data->BeginBatch(Format("Remove %s", FormatNodeNames(nodesToRemove).c_str()), static_cast<uint32>(stylesToRemove.size()));
+        data->BeginBatch(Format("Remove %s", CommandExecutorDetails::FormatNodeNames(nodesToRemove).c_str()), static_cast<uint32>(stylesToRemove.size()));
         for (ControlNode* control : controlsToRemove)
         {
             if (dynamic_cast<PackageControlsNode*>(control->GetParent()) != nullptr)
             {
-                data->ExecCommand<SetGuidesCommand>(control->GetName(), Vector2::AXIS_X, PackageNode::AxisGuides());
-                data->ExecCommand<SetGuidesCommand>(control->GetName(), Vector2::AXIS_Y, PackageNode::AxisGuides());
+                if (FindRootWithSameName(control, data->GetPackageNode()) == false)
+                {
+                    data->ExecCommand<SetGuidesCommand>(control->GetName(), Vector2::AXIS_X, PackageNode::AxisGuides());
+                    data->ExecCommand<SetGuidesCommand>(control->GetName(), Vector2::AXIS_Y, PackageNode::AxisGuides());
+                }
             }
             RemoveControlImpl(control);
         }

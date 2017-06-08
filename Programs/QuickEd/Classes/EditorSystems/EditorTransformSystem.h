@@ -13,10 +13,6 @@ namespace DAVA
 class UIGeometricData;
 class UIControl;
 class Command;
-namespace TArc
-{
-class FieldBinder;
-}
 }
 
 class EditorTransformSystem : public DAVA::InspBase, public BaseEditorSystem
@@ -40,15 +36,14 @@ private:
 
     struct MoveInfo;
 
-    void InitFieldBinder();
-
     EditorSystemsManager::eDragState RequireNewState(DAVA::UIEvent* currentInput) override;
     bool CanProcessInput(DAVA::UIEvent* currentInput) const override;
     void ProcessInput(DAVA::UIEvent* currentInput) override;
     void OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState) override;
 
-    void OnSelectionChanged(const DAVA::Any& selection);
     void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
+
+    void PrepareDrag();
 
     void ProcessKey(DAVA::Key key);
     void ProcessDrag(const DAVA::Vector2& point);
@@ -112,8 +107,6 @@ private:
     DAVA::float32 angleSegment;
     bool shiftInverted;
     bool canMagnet;
-
-    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 
 public:
     INTROSPECTION(EditorTransformSystem,

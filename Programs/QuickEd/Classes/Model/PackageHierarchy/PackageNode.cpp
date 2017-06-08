@@ -474,6 +474,11 @@ PackageNode::Guides PackageNode::GetGuides(const DAVA::String& name) const
     return Guides();
 }
 
+const DAVA::Map<DAVA::String, PackageNode::Guides>& PackageNode::GetGuides() const
+{
+    return allGuides;
+}
+
 void PackageNode::SetGuides(const DAVA::String& name, const PackageNode::Guides& guides)
 {
     allGuides[name] = guides;
@@ -543,8 +548,12 @@ void PackageNode::OnControlPropertyWillBeChanged(ControlNode* node, AbstractProp
     if (dynamic_cast<PackageControlsNode*>(node->GetParent()) != nullptr && property->GetName() == "Name")
     {
         String name = oldValue.Cast<String>(String());
-        PackageNode::Guides guides = GetGuides(name);
-        SetGuides(name, PackageNode::Guides());
+        Guides guides = GetGuides(name);
+
+        if (FindRootWithSameName(node, this) == false)
+        {
+            SetGuides(name, Guides());
+        }
 
         String newName = newValue.Cast<String>(String());
         //we don't support root controls without name
@@ -554,4 +563,24 @@ void PackageNode::OnControlPropertyWillBeChanged(ControlNode* node, AbstractProp
             SetGuides(newName, guides);
         }
     }
+}
+
+bool FindRootWithSameName(ControlNode* control, PackageNode* package)
+{
+    DVASSERT(dynamic_cast<PackageControlsNode*>(control->GetParent()) != nullptr);
+    String name = control->GetName();
+    Vector<PackageControlsNode*> rootControlsHolders = { package->GetPrototypes(), package->GetPackageControlsNode() };
+
+    for (PackageControlsNode* rootControlsHolder : rootControlsHolders)
+    {
+        for (int i = 0, count = rootControlsHolder->GetCount(); i < count; i++)
+        {
+            ControlNode* rootChild = rootControlsHolder->Get(i);
+            if (control != rootChild && control->GetName() == rootChild->GetName())
+            {
+                return true;
+            }
+        }
+    }
+    return false;
 }

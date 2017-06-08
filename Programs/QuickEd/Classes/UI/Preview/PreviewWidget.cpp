@@ -229,14 +229,18 @@ void PreviewWidget::SetActualScale()
 
 void PreviewWidget::ApplyPosChanges()
 {
-    DAVA::float32 scale = editorCanvas->GetScale();
+    using namespace DAVA;
+
+    float32 scale = editorCanvas->GetScale();
     QPoint viewPos = (canvasPos + rootControlPos * scale) * -1;
     rulerController->SetViewPos(viewPos);
 
-    QPoint viewStartValue = viewPos / scale;
+    QPoint viewStartValue(std::floor(viewPos.x() / scale), std::floor(viewPos.y()) / scale);
+    uint32 accuracyX = viewPos.x() % static_cast<uint32>(scale);
+    uint32 accuracyY = viewPos.y() % static_cast<uint32>(scale);
 
-    hGuidesController->OnCanvasParametersChanged(viewStartValue.x(), viewStartValue.x() + renderWidget->width() / scale, scale);
-    vGuidesController->OnCanvasParametersChanged(viewStartValue.y(), viewStartValue.y() + renderWidget->height() / scale, scale);
+    hGuidesController->OnCanvasParametersChanged(accuracyX, viewStartValue.x(), viewStartValue.x() + renderWidget->width() / scale, scale);
+    vGuidesController->OnCanvasParametersChanged(accuracyY, viewStartValue.y(), viewStartValue.y() + renderWidget->height() / scale, scale);
 }
 
 void PreviewWidget::UpdateScrollArea(const DAVA::Vector2& /*size*/)
@@ -422,6 +426,7 @@ void PreviewWidget::InitUI()
     gridLayout->addWidget(horizontalScrollBar, 4, 2, 1, 1);
 
     gridLayout->setMargin(0.0f);
+    gridLayout->setSpacing(1.0f);
 
     hGuidesController->CreatePreviewGuide();
     vGuidesController->CreatePreviewGuide();

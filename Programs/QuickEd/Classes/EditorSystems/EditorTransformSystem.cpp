@@ -17,7 +17,6 @@
 #include "QECommands/ChangePivotCommand.h"
 
 #include <TArc/Core/ContextAccessor.h>
-#include <TArc/Core/FieldBinder.h>
 
 #include <UI/UIEvent.h>
 #include <UI/UIControl.h>
@@ -195,28 +194,12 @@ EditorTransformSystem::EditorTransformSystem(EditorSystemsManager* parent, TArc:
     : BaseEditorSystem(parent, accessor)
 {
     systemsManager->activeAreaChanged.Connect(this, &EditorTransformSystem::OnActiveAreaChanged);
-
-    InitFieldBinder();
     PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
 EditorTransformSystem::~EditorTransformSystem()
 {
     PreferencesStorage::Instance()->UnregisterPreferences(this);
-}
-
-void EditorTransformSystem::InitFieldBinder()
-{
-    using namespace DAVA;
-    using namespace TArc;
-
-    fieldBinder.reset(new FieldBinder(accessor));
-    {
-        FieldDescriptor fieldDescr;
-        fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
-        fieldDescr.fieldName = FastName(DocumentData::selectionPropertyName);
-        fieldBinder->BindField(fieldDescr, MakeFunction(this, &EditorTransformSystem::OnSelectionChanged));
-    }
 }
 
 void EditorTransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
@@ -322,27 +305,8 @@ void EditorTransformSystem::OnDragStateChanged(EditorSystemsManager::eDragState 
     {
         extraDelta.SetZero();
         extraDeltaToMoveControls.clear();
+        PrepareDrag();
     }
-}
-
-void EditorTransformSystem::OnSelectionChanged(const Any& selection)
-{
-    selectedControlNodes.clear();
-    for (PackageBaseNode* node : selection.Cast<SelectedNodes>(SelectedNodes()))
-    {
-        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
-        if (controlNode != nullptr)
-        {
-            selectedControlNodes.insert(controlNode);
-        }
-    }
-    nodesToMoveInfos.clear();
-    for (ControlNode* selectedControl : selectedControlNodes)
-    {
-        nodesToMoveInfos.emplace_back(new MoveInfo(selectedControl, nullptr, nullptr));
-    }
-    CorrectNodesToMove();
-    UpdateNeighboursToMove();
 }
 
 void EditorTransformSystem::ProcessKey(Key key)
@@ -377,6 +341,33 @@ void EditorTransformSystem::ProcessKey(Key key)
             MoveAllSelectedControlsByKeyboard(deltaPos);
         }
     }
+}
+
+void EditorTransformSystem::PrepareDrag()
+{
+    using namespace DAVA::TArc;
+
+    DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    DocumentData* data = activeContext->GetData<DocumentData>();
+    SelectedNodes selection = data->GetSelectedNodes();
+
+    selectedControlNodes.clear();
+    for (PackageBaseNode* node : selection)
+    {
+        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
+        if (controlNode != nullptr)
+        {
+            selectedControlNodes.insert(controlNode);
+        }
+    }
+    nodesToMoveInfos.clear();
+    for (ControlNode* selectedControl : selectedControlNodes)
+    {
+        nodesToMoveInfos.emplace_back(new MoveInfo(selectedControl, nullptr, nullptr));
+    }
+    CorrectNodesToMove();
+    UpdateNeighboursToMove();
 }
 
 void EditorTransformSystem::ProcessDrag(const Vector2& pos)
