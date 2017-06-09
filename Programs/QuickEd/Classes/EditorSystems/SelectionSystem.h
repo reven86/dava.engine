@@ -36,7 +36,7 @@ public:
     void SelectNode(ControlNode* node);
 
     ControlNode* GetNearestNodeUnderPoint(const DAVA::Vector2& point) const;
-    ControlNode* GetCommonNodeUnderPoint(const DAVA::Vector2& point) const;
+    ControlNode* GetCommonNodeUnderPoint(const DAVA::Vector2& point, bool canGoDeeper) const;
 
 private:
     void InitFieldBinder();
