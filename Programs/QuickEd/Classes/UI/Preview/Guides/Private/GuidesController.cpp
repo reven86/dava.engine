@@ -303,18 +303,6 @@ void GuidesController::SyncGuidesWithValues()
         return;
     }
 
-    //this function can be called recursively because we creating container child here
-    static bool syncGuard = false;
-    if (syncGuard)
-    {
-        return;
-    }
-    SCOPE_EXIT
-    {
-        syncGuard = false;
-    };
-    syncGuard = true;
-
     PackageNode::AxisGuides values = GetValues();
     auto iter = std::lower_bound(values.begin(), values.end(), minValue);
     auto endIter = std::upper_bound(values.begin(), values.end(), maxValue);
@@ -328,7 +316,6 @@ void GuidesController::SyncGuidesWithValues()
     while (guides.size() < size)
     {
         Guide guide = CreateGuide(preferences.GetGuidesColor());
-        guide.Show();
         guides.append(guide);
     }
 
@@ -340,6 +327,11 @@ void GuidesController::SyncGuidesWithValues()
         DAVA::float32 value = *iter;
         static_cast<GuideLabel*>(guide.text)->SetValue(value);
         MoveGuide(value, guide);
+    }
+
+    for (Guide& guide : guides)
+    {
+        guide.Show();
     }
 }
 
