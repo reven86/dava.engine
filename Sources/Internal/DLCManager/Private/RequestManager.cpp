@@ -36,6 +36,7 @@ void RequestManager::Update()
 
         if (request->IsDownloaded())
         {
+            callSignal = true; // we need to inform on empty pack too
             Pop();
             if (!Empty())
             {

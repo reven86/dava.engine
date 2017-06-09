@@ -33,6 +33,7 @@ public:
     uint64 GetSize() const override;
     /** recalculate current downloaded size without dependencies */
     uint64 GetDownloadedSize() const override;
+
     /** return true when all files loaded and ready */
     bool IsDownloaded() const override;
 
@@ -86,7 +87,7 @@ private:
                                FileRequest& fileRequest);
 
     static void DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest);
-    void DisableRequestingAndFireSignalNoSpaceLeft(FileRequest& fileRequest) const;
+    void DisableRequestingAndFireSignalIOError(FileRequest& fileRequest, int32 errVal) const;
     bool CheckLocalFileState(FileSystem* fs, FileRequest& fileRequest);
     bool CheckLoadingStatusOfFileRequest(FileRequest& fileRequest, DLCDownloader* dm, const String& dstPath);
     bool LoadingPackFileState(FileSystem* fs, FileRequest& fileRequest);

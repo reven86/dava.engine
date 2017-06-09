@@ -182,6 +182,10 @@ void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
             Logger::Error("can't create dlc_manager.log error: %s", err);
             DAVA_THROW(DAVA::Exception, err);
         }
+        const EnumMap* enumMap = GlobalEnumMap<eGPUFamily>::Instance();
+        eGPUFamily e = DeviceInfo::GetGPUFamily();
+        const char* gpuFamily = enumMap->ToString(e);
+        log << "current_device_gpu: " << gpuFamily << std::endl;
     }
 
     log << __FUNCTION__ << std::endl;
@@ -255,7 +259,7 @@ void DLCManagerImpl::Deinitialize()
 bool DLCManagerImpl::IsInitialized() const
 {
     DVASSERT(Thread::IsMainThread());
-    return nullptr != requestManager && delayedRequests.empty();
+    return nullptr != requestManager && delayedRequests.empty() && scanThread == nullptr;
 }
 
 DLCManagerImpl::InitState DLCManagerImpl::GetInitState() const
@@ -532,7 +536,7 @@ void DLCManagerImpl::AskFooter()
             {
                 initError = InitError::LoadingRequestFailed;
                 initErrorMsg = "failed get superpack size on server, download error: ";
-                log << initErrorMsg << std::endl;
+                log << initErrorMsg << " " << status << std::endl;
             }
         }
     }
@@ -565,8 +569,7 @@ void DLCManagerImpl::GetFooter()
         {
             initError = InitError::LoadingRequestFailed;
             initErrorMsg = "failed get footer from server, download error: ";
-            const char* gpuFamily = GlobalEnumMap<eGPUFamily>::Instance()->ToString(static_cast<eGPUFamily>(DeviceInfo::GetGPUFamily()));
-            log << initErrorMsg << " current_device_gpu: " << gpuFamily << std::endl;
+            log << initErrorMsg << " " << status << std::endl;
         }
     }
 }
@@ -894,7 +897,7 @@ void DLCManagerImpl::StartDelayedRequests()
         requestManager->Remove(request);
     }
 
-    for (auto request : tmpRequests)
+    for (PackRequest* request : tmpRequests)
     {
         const String& requestedPackName = request->GetRequestedPackName();
         PackRequest* r = FindRequest(requestedPackName);
@@ -922,6 +925,13 @@ void DLCManagerImpl::StartDelayedRequests()
     size_t numDownloaded = std::count(begin(scanFileReady), end(scanFileReady), true);
 
     initializeFinished.Emit(numDownloaded, meta->GetFileCount());
+
+    for (PackRequest* request : tmpRequests)
+    {
+        // we have to inform user because after scanning is finished
+        // some request may be already downloaded (all files found)
+        requestUpdated.Emit(*request);
+    }
 }
 
 void DLCManagerImpl::DeleteLocalMetaFiles()

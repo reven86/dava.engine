@@ -129,7 +129,7 @@ public:
 
     void SetEmulationMode(bool emulationMode);
 
-    ControlNode* GetControlNodeAtPoint(const DAVA::Vector2& point) const;
+    ControlNode* GetControlNodeAtPoint(const DAVA::Vector2& point, bool canGoDeeper = false) const;
     DAVA::uint32 GetIndexOfNearestRootControl(const DAVA::Vector2& point) const;
 
     void SelectAll();
