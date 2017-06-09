@@ -74,7 +74,7 @@ void SelectionSystem::ProcessInput(UIEvent* currentInput)
         return;
     }
 
-    ControlNode* selectedNode = systemsManager->GetControlNodeAtPoint(currentInput->point);
+    ControlNode* selectedNode = systemsManager->GetControlNodeAtPoint(currentInput->point, currentInput->tapCount > 1);
     if (nullptr != selectedNode)
     {
         SelectNode(selectedNode);
@@ -316,7 +316,7 @@ bool SelectionSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
     && currentInput->mouseButton == DAVA::eMouseButtons::LEFT;
 }
 
-ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const DAVA::Vector2& point) const
+ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const DAVA::Vector2& point, bool canGoDeeper) const
 {
     Vector<ControlNode*> nodesUnderPoint;
     GetNodesForSelection(nodesUnderPoint, point);
@@ -358,7 +358,7 @@ ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const DAVA::Vector2& point
 
             //search child of selected to move down by hierarchy
             // or search neighbor to move left-right
-            if (selected.find(nodeParent) != selected.end())
+            if (canGoDeeper && selected.find(nodeParent) != selected.end())
             {
                 return node;
             }
@@ -400,8 +400,7 @@ ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const DAVA::Vector2& point
             }
         }
     }
-    //did not found nothing, get nearest
-    return GetNearestNodeUnderPoint(point);
+    return nullptr;
 }
 
 ControlNode* SelectionSystem::GetNearestNodeUnderPoint(const DAVA::Vector2& point) const
