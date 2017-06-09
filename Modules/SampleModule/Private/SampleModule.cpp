@@ -1,4 +1,5 @@
 #include "SampleModule.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -16,5 +17,9 @@ void SampleModule::Init()
 void SampleModule::Shutdown()
 {
     statusList.emplace_back(eStatus::ES_SHUTDOWN);
+}
+
+DAVA_VIRTUAL_REFLECTION_IMPL(SampleModule)
+{
 }
 }

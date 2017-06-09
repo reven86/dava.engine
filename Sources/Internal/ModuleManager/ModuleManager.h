@@ -16,6 +16,8 @@ public:
     template <typename T>
     T* GetModule() const;
 
+    IModule* GetModule(const String& permanentName);
+
     void InitModules();
     void ShutdownModules();
 

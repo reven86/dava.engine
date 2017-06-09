@@ -26,18 +26,15 @@ set(WIN32_STATIC_DEBUG_LIBS "${LibsPath}/Win32/x86/LowLevelDEBUG.lib"
                             "${LibsPath}/Win32/x86/PhysX3VehicleDEBUG.lib"
                             "${LibsPath}/Win32/x86/PsFastXmlDEBUG_x86.lib"
                             "${LibsPath}/Win32/x86/PxFoundationDEBUG_x86.lib"
-                            "${LibsPath}/Win32/x86/PxPvdSDKDEBUG_x86.lib"
                             "${LibsPath}/Win32/x86/PxTaskDEBUG_x86.lib"
                             "${LibsPath}/Win32/x86/SceneQueryDEBUG.lib"
                             "${LibsPath}/Win32/x86/SimulationControllerDEBUG.lib")
 
-set(WIN32_DYNAMIC_DEBUG_LIBS "${LibsPath}/Win32/x86/nvToolsExt32_1.dll"
-                             "${LibsPath}/Win32/x86/PhysX3DEBUG_x86.dll"
+set(WIN32_DYNAMIC_DEBUG_LIBS "${LibsPath}/Win32/x86/PhysX3DEBUG_x86.dll"
                              "${LibsPath}/Win32/x86/PhysX3CharacterKinematicDEBUG_x86.dll"
                              "${LibsPath}/Win32/x86/PhysX3CommonDEBUG_x86.dll"
                              "${LibsPath}/Win32/x86/PhysX3CookingDEBUG_x86.dll"
-                             "${LibsPath}/Win32/x86/PxFoundationDEBUG_x86.dll"
-                             "${LibsPath}/Win32/x86/PxPvdSDKDEBUG_x86.dll")
+                             "${LibsPath}/Win32/x86/PxFoundationDEBUG_x86.dll")
 
 set(WIN32_STATIC_CHECKED_LIBS "${LibsPath}/Win32/x86/LowLevelCHECKED.lib"
                               "${LibsPath}/Win32/x86/LowLevelAABBCHECKED.lib"
@@ -52,18 +49,15 @@ set(WIN32_STATIC_CHECKED_LIBS "${LibsPath}/Win32/x86/LowLevelCHECKED.lib"
                               "${LibsPath}/Win32/x86/PhysX3VehicleCHECKED.lib"
                               "${LibsPath}/Win32/x86/PsFastXmlCHECKED_x86.lib"
                               "${LibsPath}/Win32/x86/PxFoundationCHECKED_x86.lib"
-                              "${LibsPath}/Win32/x86/PxPvdSDKCHECKED_x86.lib"
                               "${LibsPath}/Win32/x86/PxTaskCHECKED_x86.lib"
                               "${LibsPath}/Win32/x86/SceneQueryCHECKED.lib"
                               "${LibsPath}/Win32/x86/SimulationControllerCHECKED.lib")
 
-set(WIN32_DYNAMIC_CHECKED_LIBS "${LibsPath}/Win32/x86/nvToolsExt32_1.dll"
-                               "${LibsPath}/Win32/x86/PhysX3CHECKED_x86.dll"
+set(WIN32_DYNAMIC_CHECKED_LIBS "${LibsPath}/Win32/x86/PhysX3CHECKED_x86.dll"
                                "${LibsPath}/Win32/x86/PhysX3CharacterKinematicCHECKED_x86.dll"
                                "${LibsPath}/Win32/x86/PhysX3CommonCHECKED_x86.dll"
                                "${LibsPath}/Win32/x86/PhysX3CookingCHECKED_x86.dll"
-                               "${LibsPath}/Win32/x86/PxFoundationCHECKED_x86.dll"
-                               "${LibsPath}/Win32/x86/PxPvdSDKCHECKED_x86.dll")
+                               "${LibsPath}/Win32/x86/PxFoundationCHECKED_x86.dll")
 
 set(WIN32_STATIC_PROFILE_LIBS "${LibsPath}/Win32/x86/LowLevelPROFILE.lib"
                               "${LibsPath}/Win32/x86/LowLevelAABBPROFILE.lib"
@@ -78,7 +72,6 @@ set(WIN32_STATIC_PROFILE_LIBS "${LibsPath}/Win32/x86/LowLevelPROFILE.lib"
                               "${LibsPath}/Win32/x86/PhysX3VehiclePROFILE.lib"
                               "${LibsPath}/Win32/x86/PsFastXmlPROFILE_x86.lib"
                               "${LibsPath}/Win32/x86/PxFoundationPROFILE_x86.lib"
-                              "${LibsPath}/Win32/x86/PxPvdSDKPROFILE_x86.lib"
                               "${LibsPath}/Win32/x86/PxTaskPROFILE_x86.lib"
                               "${LibsPath}/Win32/x86/SceneQueryPROFILE.lib"
                               "${LibsPath}/Win32/x86/SimulationControllerPROFILE.lib")
@@ -88,8 +81,7 @@ set(WIN32_DYNAMIC_PROFILE_LIBS "${LibsPath}/Win32/x86/nvToolsExt32_1.dll"
                                "${LibsPath}/Win32/x86/PhysX3CharacterKinematicPROFILE_x86.dll"
                                "${LibsPath}/Win32/x86/PhysX3CommonPROFILE_x86.dll"
                                "${LibsPath}/Win32/x86/PhysX3CookingPROFILE_x86.dll"
-                               "${LibsPath}/Win32/x86/PxFoundationPROFILE_x86.dll"
-                               "${LibsPath}/Win32/x86/PxPvdSDKPROFILE_x86.dll")
+                               "${LibsPath}/Win32/x86/PxFoundationPROFILE_x86.dll")
 
 set(WIN32_STATIC_RELEASE_LIBS "${LibsPath}/Win32/x86/LowLevel.lib"
                               "${LibsPath}/Win32/x86/LowLevelAABB.lib"
@@ -127,7 +119,6 @@ set(WIN64_STATIC_DEBUG_LIBS "${LibsPath}/Win32/x64/LowLevelDEBUG.lib"
                             "${LibsPath}/Win32/x64/PhysX3VehicleDEBUG.lib"
                             "${LibsPath}/Win32/x64/PsFastXmlDEBUG_x64.lib"
                             "${LibsPath}/Win32/x64/PxFoundationDEBUG_x64.lib"
-                            "${LibsPath}/Win32/x64/PxPvdSDKDEBUG_x64.lib"
                             "${LibsPath}/Win32/x64/PxTaskDEBUG_x64.lib"
                             "${LibsPath}/Win32/x64/SceneQueryDEBUG.lib"
                             "${LibsPath}/Win32/x64/SimulationControllerDEBUG.lib")
@@ -137,8 +128,7 @@ set(WIN64_DYNAMIC_DEBUG_LIBS "${LibsPath}/Win32/x64/nvToolsExt64_1.dll"
                              "${LibsPath}/Win32/x64/PhysX3CharacterKinematicDEBUG_x64.dll"
                              "${LibsPath}/Win32/x64/PhysX3CommonDEBUG_x64.dll"
                              "${LibsPath}/Win32/x64/PhysX3CookingDEBUG_x64.dll"
-                             "${LibsPath}/Win32/x64/PxFoundationDEBUG_x64.dll"
-                             "${LibsPath}/Win32/x64/PxPvdSDKDEBUG_x64.dll")
+                             "${LibsPath}/Win32/x64/PxFoundationDEBUG_x64.dll")
 
 set(WIN64_STATIC_CHECKED_LIBS "${LibsPath}/Win32/x64/LowLevelCHECKED.lib"
                               "${LibsPath}/Win32/x64/LowLevelAABBCHECKED.lib"
@@ -153,7 +143,6 @@ set(WIN64_STATIC_CHECKED_LIBS "${LibsPath}/Win32/x64/LowLevelCHECKED.lib"
                               "${LibsPath}/Win32/x64/PhysX3VehicleCHECKED.lib"
                               "${LibsPath}/Win32/x64/PsFastXmlCHECKED_x64.lib"
                               "${LibsPath}/Win32/x64/PxFoundationCHECKED_x64.lib"
-                              "${LibsPath}/Win32/x64/PxPvdSDKCHECKED_x64.lib"
                               "${LibsPath}/Win32/x64/PxTaskCHECKED_x64.lib"
                               "${LibsPath}/Win32/x64/SceneQueryCHECKED.lib"
                               "${LibsPath}/Win32/x64/SimulationControllerCHECKED.lib")
@@ -163,8 +152,7 @@ set(WIN64_DYNAMIC_CHECKED_LIBS "${LibsPath}/Win32/x64/nvToolsExt64_1.dll"
                                "${LibsPath}/Win32/x64/PhysX3CharacterKinematicCHECKED_x64.dll"
                                "${LibsPath}/Win32/x64/PhysX3CommonCHECKED_x64.dll"
                                "${LibsPath}/Win32/x64/PhysX3CookingCHECKED_x64.dll"
-                               "${LibsPath}/Win32/x64/PxFoundationCHECKED_x64.dll"
-                               "${LibsPath}/Win32/x64/PxPvdSDKCHECKED_x64.dll")
+                               "${LibsPath}/Win32/x64/PxFoundationCHECKED_x64.dll")
 
 set(WIN64_STATIC_PROFILE_LIBS "${LibsPath}/Win32/x64/LowLevelPROFILE.lib"
                               "${LibsPath}/Win32/x64/LowLevelAABBPROFILE.lib"
@@ -179,7 +167,6 @@ set(WIN64_STATIC_PROFILE_LIBS "${LibsPath}/Win32/x64/LowLevelPROFILE.lib"
                               "${LibsPath}/Win32/x64/PhysX3VehiclePROFILE.lib"
                               "${LibsPath}/Win32/x64/PsFastXmlPROFILE_x64.lib"
                               "${LibsPath}/Win32/x64/PxFoundationPROFILE_x64.lib"
-                              "${LibsPath}/Win32/x64/PxPvdSDKPROFILE_x64.lib"
                               "${LibsPath}/Win32/x64/PxTaskPROFILE_x64.lib"
                               "${LibsPath}/Win32/x64/SceneQueryPROFILE.lib"
                               "${LibsPath}/Win32/x64/SimulationControllerPROFILE.lib")
@@ -189,8 +176,7 @@ set(WIN64_DYNAMIC_PROFILE_LIBS "${LibsPath}/Win32/x64/nvToolsExt64_1.dll"
                                "${LibsPath}/Win32/x64/PhysX3CharacterKinematicPROFILE_x64.dll"
                                "${LibsPath}/Win32/x64/PhysX3CommonPROFILE_x64.dll"
                                "${LibsPath}/Win32/x64/PhysX3CookingPROFILE_x64.dll"
-                               "${LibsPath}/Win32/x64/PxFoundationPROFILE_x64.dll"
-                               "${LibsPath}/Win32/x64/PxPvdSDKPROFILE_x64.dll")
+                               "${LibsPath}/Win32/x64/PxFoundationPROFILE_x64.dll")
 
 set(WIN64_STATIC_RELEASE_LIBS "${LibsPath}/Win32/x64/LowLevel.lib"
                               "${LibsPath}/Win32/x64/LowLevelAABB.lib"
@@ -228,7 +214,6 @@ set(WIN_UAP_STATIC_DEBUG_LIBS "${LibsPath}/Win10/$(Platform)/Debug/LowLevelDEBUG
                               "${LibsPath}/Win10/$(Platform)/Debug/PhysX3VehicleDEBUG.lib"
                               "${LibsPath}/Win10/$(Platform)/Debug/PsFastXmlDEBUG_$(PlatformShortName).lib"
                               "${LibsPath}/Win10/$(Platform)/Debug/PxFoundationDEBUG_$(PlatformShortName).lib"
-                              "${LibsPath}/Win10/$(Platform)/Debug/PxPvdSDKDEBUG_$(PlatformShortName).lib"
                               "${LibsPath}/Win10/$(Platform)/Debug/PxTaskDEBUG_$(PlatformShortName).lib"
                               "${LibsPath}/Win10/$(Platform)/Debug/SceneQueryDEBUG.lib"
                               "${LibsPath}/Win10/$(Platform)/Debug/SimulationControllerDEBUG.lib")
@@ -239,14 +224,12 @@ set(WIN_UAP_DYNAMIC_DEBUG_LIBS "${LibsPath}/Win10/Win32/Debug/nvToolsExt32_1.dll
                                "${LibsPath}/Win10/Win32/Debug/PhysX3CommonDEBUG_x86.dll"
                                "${LibsPath}/Win10/Win32/Debug/PhysX3CookingDEBUG_x86.dll"
                                "${LibsPath}/Win10/Win32/Debug/PxFoundationDEBUG_x86.dll"
-                               "${LibsPath}/Win10/Win32/Debug/PxPvdSDKDEBUG_x86.dll"
                                "${LibsPath}/Win10/x64/Debug/nvToolsExt64_1.dll"
                                "${LibsPath}/Win10/x64/Debug/PhysX3DEBUG_x64.dll"
                                "${LibsPath}/Win10/x64/Debug/PhysX3CharacterKinematicDEBUG_x64.dll"
                                "${LibsPath}/Win10/x64/Debug/PhysX3CommonDEBUG_x64.dll"
                                "${LibsPath}/Win10/x64/Debug/PhysX3CookingDEBUG_x64.dll"
-                               "${LibsPath}/Win10/x64/Debug/PxFoundationDEBUG_x64.dll"
-                               "${LibsPath}/Win10/x64/Debug/PxPvdSDKDEBUG_x64.dll")
+                               "${LibsPath}/Win10/x64/Debug/PxFoundationDEBUG_x64.dll")
 
 set(WIN_UAP_STATIC_RELEASE_LIBS "${LibsPath}/Win10/$(Platform)/Release/LowLevel.lib"
                                 "${LibsPath}/Win10/$(Platform)/Release/LowLevelAABB.lib"
@@ -289,7 +272,6 @@ set(MACOS_STATIC_DEBUG_LIBS "${LibsPath}/MacOS/libLowLevelDEBUG.a"
                             "${LibsPath}/MacOS/libPhysX3VehicleDEBUG.a"
                             "${LibsPath}/MacOS/libPsFastXmlDEBUG.a"
                             "${LibsPath}/MacOS/libPxFoundationDEBUG.a"
-                            "${LibsPath}/MacOS/libPxPvdSDKDEBUG.a"
                             "${LibsPath}/MacOS/libPxTaskDEBUG.a"
                             "${LibsPath}/MacOS/libSceneQueryDEBUG.a"
                             "${LibsPath}/MacOS/libSimulationControllerDEBUG.a")
@@ -307,7 +289,6 @@ set(MACOS_STATIC_CHECKED_LIBS "${LibsPath}/MacOS/libLowLevelCHECKED.a"
                               "${LibsPath}/MacOS/libPhysX3VehicleCHECKED.a"
                               "${LibsPath}/MacOS/libPsFastXmlCHECKED.a"
                               "${LibsPath}/MacOS/libPxFoundationCHECKED.a"
-                              "${LibsPath}/MacOS/libPxPvdSDKCHECKED.a"
                               "${LibsPath}/MacOS/libPxTaskCHECKED.a"
                               "${LibsPath}/MacOS/libSceneQueryCHECKED.a"
                               "${LibsPath}/MacOS/libSimulationControllerCHECKED.a")
@@ -325,7 +306,6 @@ set(MACOS_STATIC_PROFILE_LIBS "${LibsPath}/MacOS/libLowLevelPROFILE.a"
                               "${LibsPath}/MacOS/libPhysX3VehiclePROFILE.a"
                               "${LibsPath}/MacOS/libPsFastXmlPROFILE.a"
                               "${LibsPath}/MacOS/libPxFoundationPROFILE.a"
-                              "${LibsPath}/MacOS/libPxPvdSDKPROFILE.a"
                               "${LibsPath}/MacOS/libPxTaskPROFILE.a"
                               "${LibsPath}/MacOS/libSceneQueryPROFILE.a"
                               "${LibsPath}/MacOS/libSimulationControllerPROFILE.a")
@@ -343,7 +323,6 @@ set(MACOS_STATIC_RELEASE_LIBS "${LibsPath}/MacOS/libLowLevel.a"
                               "${LibsPath}/MacOS/libPhysX3Vehicle.a"
                               "${LibsPath}/MacOS/libPsFastXml.a"
                               "${LibsPath}/MacOS/libPxFoundation.a"
-                              "${LibsPath}/MacOS/libPxPvdSDK.a"
                               "${LibsPath}/MacOS/libPxTask.a"
                               "${LibsPath}/MacOS/libSceneQuery.a"
                               "${LibsPath}/MacOS/libSimulationController.a")
@@ -361,7 +340,6 @@ set(IOS_STATIC_DEBUG_LIBS "${LibsPath}/iOS/libLowLevelDEBUG.a"
                           "${LibsPath}/iOS/libPhysX3VehicleDEBUG.a"
                           "${LibsPath}/iOS/libPsFastXmlDEBUG.a"
                           "${LibsPath}/iOS/libPxFoundationDEBUG.a"
-                          "${LibsPath}/iOS/libPxPvdSDKDEBUG.a"
                           "${LibsPath}/iOS/libPxTaskDEBUG.a"
                           "${LibsPath}/iOS/libSceneQueryDEBUG.a"
                           "${LibsPath}/iOS/libSimulationControllerDEBUG.a")
@@ -379,7 +357,6 @@ set(IOS_STATIC_CHECKED_LIBS "${LibsPath}/iOS/libLowLevelCHECKED.a"
                             "${LibsPath}/iOS/libPhysX3VehicleCHECKED.a"
                             "${LibsPath}/iOS/libPsFastXmlCHECKED.a"
                             "${LibsPath}/iOS/libPxFoundationCHECKED.a"
-                            "${LibsPath}/iOS/libPxPvdSDKCHECKED.a"
                             "${LibsPath}/iOS/libPxTaskCHECKED.a"
                             "${LibsPath}/iOS/libSceneQueryCHECKED.a"
                             "${LibsPath}/iOS/libSimulationControllerCHECKED.a")
@@ -397,7 +374,6 @@ set(IOS_STATIC_PROFILE_LIBS "${LibsPath}/iOS/libLowLevelPROFILE.a"
                             "${LibsPath}/iOS/libPhysX3VehiclePROFILE.a"
                             "${LibsPath}/iOS/libPsFastXmlPROFILE.a"
                             "${LibsPath}/iOS/libPxFoundationPROFILE.a"
-                            "${LibsPath}/iOS/libPxPvdSDKPROFILE.a"
                             "${LibsPath}/iOS/libPxTaskPROFILE.a"
                             "${LibsPath}/iOS/libSceneQueryPROFILE.a"
                             "${LibsPath}/iOS/libSimulationControllerPROFILE.a")
@@ -415,7 +391,6 @@ set(IOS_STATIC_RELEASE_LIBS "${LibsPath}/iOS/libLowLevel.a"
                             "${LibsPath}/iOS/libPhysX3Vehicle.a"
                             "${LibsPath}/iOS/libPsFastXml.a"
                             "${LibsPath}/iOS/libPxFoundation.a"
-                            "${LibsPath}/iOS/libPxPvdSDK.a"
                             "${LibsPath}/iOS/libPxTask.a"
                             "${LibsPath}/iOS/libSceneQuery.a"
                             "${LibsPath}/iOS/libSimulationController.a")
@@ -436,7 +411,6 @@ set(ANDROID_STATIC_LIBS
                             "${LibsPath}/Android/armeabi-v7a/libPhysX3CharacterKinematic.a"
                             "${LibsPath}/Android/armeabi-v7a/libPhysX3Cooking.a"
                             "${LibsPath}/Android/armeabi-v7a/libPhysX3Vehicle.a"
-                            "${LibsPath}/Android/armeabi-v7a/libPxPvdSDK.a"
                             "${LibsPath}/Android/armeabi-v7a/libPxTask.a"
                             "${LibsPath}/Android/armeabi-v7a/libPhysX3.a"
                             "-Wl,--end-group")

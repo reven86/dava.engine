@@ -1,9 +1,13 @@
 #include "Physics/PhysicsModule.h"
 
+#include <Engine/Engine.h>
+#include <Engine/EngineContext.h>
 #include <Logger/Logger.h>
 #include <MemoryManager/MemoryManager.h>
+#include <Reflection/ReflectedTypeDB.h>
 
 #include <physx/PxPhysicsAPI.h>
+#include <PxShared/pvd/PxPvd.h>
 
 namespace DAVA
 {
@@ -47,6 +51,7 @@ private:
 Physics::Physics(Engine* engine)
     : IModule(engine)
 {
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Physics);
 }
 
 void Physics::Init()
@@ -59,7 +64,13 @@ void Physics::Init()
     foundation = PxCreateFoundation(PX_FOUNDATION_VERSION, *allocator, *errorCallback);
     DVASSERT(foundation);
 
-    physics = PxCreateBasePhysics(PX_PHYSICS_VERSION, *foundation, PxTolerancesScale(), true, nullptr); // TODO add profiler zone from PhysicsDebugging
+    IModule* physicsDebugModule = GetEngineContext()->moduleManager->GetModule("PhysicsDebugModule");
+    if (physicsDebugModule)
+    {
+        pvd = physx::PxCreatePvd(*foundation);
+    }
+
+    physics = PxCreateBasePhysics(PX_PHYSICS_VERSION, *foundation, PxTolerancesScale(), true, pvd);
     DVASSERT(physics);
     PxRegisterHeightFields(*physics);
 }
@@ -67,6 +78,10 @@ void Physics::Init()
 void Physics::Shutdown()
 {
     physics->release();
+    if (pvd != nullptr)
+    {
+        pvd->release();
+    }
     foundation->release();
     SafeDelete(allocator);
     SafeDelete(errorCallback);
@@ -75,5 +90,9 @@ void Physics::Shutdown()
 bool Physics::IsInitialized() const
 {
     return foundation != nullptr && physics != nullptr;
+}
+
+DAVA_VIRTUAL_REFLECTION_IMPL(Physics)
+{
 }
 }

@@ -14,7 +14,9 @@ set( NAME_MODULE ${DAVA_LIBRARY} )
 set( MODULE_TYPE STATIC )#INLINE STATIC DYNAMIC 
 
 set( EXTERNAL_MODULES_WIN           ${DAVA_EXTERNAL_DIR}/cef )
-set( EXTERNAL_MODULES               ${DAVA_MODULES_DIR}/SampleModule ${DAVA_MODULES_DIR}/Physics )
+set( EXTERNAL_MODULES               ${DAVA_MODULES_DIR}/SampleModule
+                                    ${DAVA_MODULES_DIR}/Physics
+                                    ${DAVA_MODULES_DIR}/PhysicsDebug )
 
 set( INCLUDES_PRIVATE               ${DAVA_ENGINE_DIR} 
                                     ${DAVA_THIRD_PARTY_INCLUDES_PATH}  )

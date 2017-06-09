@@ -10,6 +10,7 @@ namespace physx
 {
 class PxFoundation;
 class PxPhysics;
+class PxPvd;
 }
 
 namespace DAVA
@@ -25,6 +26,7 @@ public:
     bool IsInitialized() const;
 
 private:
+    physx::PxPvd* pvd = nullptr;
     physx::PxFoundation* foundation = nullptr;
     physx::PxPhysics* physics = nullptr;
 
@@ -33,5 +35,7 @@ private:
 
     class PhysicsErrotCallback;
     PhysicsErrotCallback* errorCallback = nullptr;
+
+    DAVA_VIRTUAL_REFLECTION(Physics, IModule);
 };
 };
