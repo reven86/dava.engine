@@ -40,48 +40,60 @@ public:
         DAVA::String relativePathname;
     };
 
+    using ExportedObjectCollection = DAVA::Vector<ExportedObject>;
+
     struct Params
     {
-        DAVA::FilePath dataFolder;
+        struct Output
+        {
+            Output(const DAVA::FilePath& path, const DAVA::Vector<DAVA::eGPUFamily>& gpus, DAVA::TextureConverter::eConvertQuality quality_, bool useHD)
+                : exportForGPUs(gpus)
+                , dataFolder(path)
+                , quality(quality_)
+                , useHDTextures(useHD)
+            {
+            }
+            DAVA::Vector<DAVA::eGPUFamily> exportForGPUs;
+            DAVA::FilePath dataFolder;
+            DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::eConvertQuality::ECQ_DEFAULT;
+            bool useHDTextures = false;
+        };
+
+        DAVA::Vector<Output> outputs;
         DAVA::FilePath dataSourceFolder;
 
-        DAVA::Vector<DAVA::eGPUFamily> exportForGPUs;
-        DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::eConvertQuality::ECQ_DEFAULT;
-
         bool optimizeOnExport = false;
-        bool useHDTextures = false;
-        bool forceCompressTextures = false;
     };
 
     SceneExporter() = default;
     ~SceneExporter();
 
-    using ExportedObjectCollection = DAVA::Vector<ExportedObject>;
-
     void SetExportingParams(const SceneExporter::Params& exportingParams);
-
-    bool ExportScene(DAVA::Scene* scene, const DAVA::FilePath& scenePathname, ExportedObjectCollection& exportedObjects);
-    bool ExportObjects(const ExportedObjectCollection& exportedObjects);
-
     void SetCacheClient(DAVA::AssetCacheClient* cacheClient, DAVA::String machineName, DAVA::String runDate, DAVA::String comment);
 
+    bool ExportScene(DAVA::Scene* scene, const DAVA::FilePath& scenePathname, const DAVA::FilePath& outScenePathname, DAVA::Vector<ExportedObjectCollection>& exportedObjects);
+    bool ExportObjects(const ExportedObjectCollection& exportedObjects);
+
 private:
-    bool ExportSceneFile(const DAVA::FilePath& scenePathname, const DAVA::String& sceneLink); //with cache
-    bool ExportTextureFile(const DAVA::FilePath& descriptorPathname, const DAVA::String& descriptorLink);
-    bool ExportHeightmapFile(const DAVA::FilePath& heightmapPathname, const DAVA::String& heightmapLink);
-    bool ExportEmitterConfigFile(const DAVA::FilePath& configPathname, const DAVA::String& configLink);
+    bool PrepareData(const ExportedObjectCollection& exportedObjects);
+    bool ExportSceneObject(const ExportedObject& object);
+    bool ExportTextureObject(const ExportedObject& object);
+    bool CopyObject(const ExportedObject& object);
 
-    bool ExportSceneFileInternal(const DAVA::FilePath& scenePathname, ExportedObjectCollection& exportedObjects); //without cache
+    bool ExportSceneFileInternal(const DAVA::FilePath& scenePathname, const DAVA::FilePath& outScenePathname, DAVA::Vector<ExportedObjectCollection>& exportedObjects); //without cache
+    bool ExportDescriptor(DAVA::TextureDescriptor& descriptor, const Params::Output& output);
+    bool SplitCompressedFile(const DAVA::TextureDescriptor& descriptor, DAVA::eGPUFamily gpu, const Params::Output& output) const;
 
-    bool ExportTextures(DAVA::TextureDescriptor& descriptor);
-
-    bool CopyFile(const DAVA::FilePath& filePath) const;
-    bool CopyFile(const DAVA::FilePath& filePath, const DAVA::String& fileLink) const;
-
-    bool SplitCompressedFile(const DAVA::TextureDescriptor& descriptor, DAVA::eGPUFamily gpu) const;
+    void CreateFoldersStructure(const ExportedObjectCollection& exportedObjects);
+    bool CopyFile(const DAVA::FilePath& fromPath, const DAVA::FilePath& toPath) const;
+    bool CopyFileToOutput(const DAVA::FilePath& fromPath, const Params::Output& output) const;
 
     DAVA::AssetCacheClient* cacheClient = nullptr;
     DAVA::AssetCache::CachedItemValue::Description cacheItemDescription;
 
     SceneExporter::Params exportingParams;
+    DAVA::Vector<ExportedObjectCollection> objectsToExport;
 };
+
+bool operator==(const SceneExporter::ExportedObject& left, const SceneExporter::ExportedObject& right);
+bool operator<(const SceneExporter::ExportedObject& left, const SceneExporter::ExportedObject& right);
