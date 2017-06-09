@@ -230,7 +230,6 @@ void EditorTransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
         angleProperty = nullptr;
         pivotProperty = nullptr;
     }
-    UpdateNeighboursToMove();
 }
 
 EditorSystemsManager::eDragState EditorTransformSystem::RequireNewState(UIEvent* currentInput)
