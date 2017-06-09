@@ -65,7 +65,7 @@ public:
 
     void CreatePreviewGuide();
     void OnContainerGeometryChanged(const QPoint& bottomLeft, const QPoint& topRight, DAVA::float32 rulerRelativePos);
-    void OnCanvasParametersChanged(DAVA::uint32 pixelsToMin, DAVA::float32 min, DAVA::float32 max, DAVA::float32 scale);
+    void OnCanvasParametersChanged(DAVA::float32 scaledMinValue, DAVA::float32 min, DAVA::float32 max, DAVA::float32 scale);
     void BindFields();
 
 private:
@@ -156,8 +156,9 @@ private:
     //use it only for drag-n-drop
     PackageNode::AxisGuides cachedValues;
 
-    //this variable used to convert value to position in big scale values
-    DAVA::uint32 pixelsToMin = 0;
+    //this variable used to convert between position in value
+    //in big scale values is very differ from minValue, because minValue can be 100 but scaledMinValue might be 108
+    DAVA::float32 scaledMinValue = 0;
 
     //guide value on ruler
     DAVA::float32 minValue = 0.0f;

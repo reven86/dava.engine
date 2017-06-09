@@ -236,11 +236,9 @@ void PreviewWidget::ApplyPosChanges()
     rulerController->SetViewPos(viewPos);
 
     QPoint viewStartValue(std::floor(viewPos.x() / scale), std::floor(viewPos.y()) / scale);
-    uint32 accuracyX = scale > 1.0f ? (viewPos.x() % static_cast<uint32>(scale)) : 0;
-    uint32 accuracyY = scale > 1.0f ? (viewPos.y() % static_cast<uint32>(scale)) : 0;
 
-    hGuidesController->OnCanvasParametersChanged(accuracyX, viewStartValue.x(), viewStartValue.x() + renderWidget->width() / scale, scale);
-    vGuidesController->OnCanvasParametersChanged(accuracyY, viewStartValue.y(), viewStartValue.y() + renderWidget->height() / scale, scale);
+    hGuidesController->OnCanvasParametersChanged(viewPos.x(), viewStartValue.x(), viewStartValue.x() + renderWidget->width() / scale, scale);
+    vGuidesController->OnCanvasParametersChanged(viewPos.y(), viewStartValue.y(), viewStartValue.y() + renderWidget->height() / scale, scale);
 }
 
 void PreviewWidget::UpdateScrollArea(const DAVA::Vector2& /*size*/)

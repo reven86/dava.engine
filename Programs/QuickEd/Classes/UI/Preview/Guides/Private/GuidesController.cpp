@@ -40,9 +40,9 @@ void GuidesController::OnContainerGeometryChanged(const QPoint& bottomLeft, cons
     SyncGuidesWithValues();
 }
 
-void GuidesController::OnCanvasParametersChanged(DAVA::uint32 pixelsToMin_, DAVA::float32 min_, DAVA::float32 max_, DAVA::float32 scale_)
+void GuidesController::OnCanvasParametersChanged(DAVA::float32 scaledMinValue_, DAVA::float32 min_, DAVA::float32 max_, DAVA::float32 scale_)
 {
-    pixelsToMin = pixelsToMin_;
+    scaledMinValue = scaledMinValue_;
     minValue = min_;
     maxValue = max_;
     scale = scale_;
@@ -492,12 +492,12 @@ void GuidesController::RemoveLastGuide()
 
 DAVA::float32 GuidesController::PositionToValue(DAVA::float32 position) const
 {
-    return std::round(minValue + (position + pixelsToMin) / scale);
+    return std::round((scaledMinValue + position) / scale);
 }
 
 DAVA::float32 GuidesController::ValueToPosition(DAVA::float32 value) const
 {
-    return rulerRelativePos + (value - minValue) * scale - pixelsToMin;
+    return rulerRelativePos + (value)*scale - scaledMinValue;
 }
 
 HGuidesController::HGuidesController(DAVA::TArc::ContextAccessor* accessor, QWidget* container)
