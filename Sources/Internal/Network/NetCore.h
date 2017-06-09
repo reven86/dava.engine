@@ -184,6 +184,8 @@ public:
 private:
     void ProcessPendingEvents();
 
+    TrackId StartController(std::unique_ptr<IController> controller);
+
     void NetThreadHandler();
     void DoStart(IController* ctrl);
     void DoRestart();

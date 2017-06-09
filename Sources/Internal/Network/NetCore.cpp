@@ -104,6 +104,21 @@ void NetCore::ProcessPendingEvents()
     }
 }
 
+NetCore::TrackId NetCore::StartController(std::unique_ptr<IController> ctrl)
+{
+    IController* c = ctrl.get();
+    TrackId id = ObjectToTrackId(c);
+    {
+        LockGuard<Mutex> lock(controllersMutex);
+        ControllerContext& context = controllers[id];
+
+        context.status = ControllerContext::STARTING;
+        context.ctrl = std::move(ctrl);
+    }
+    loop->Post(Bind(&NetCore::DoStart, this, c));
+    return id;
+}
+
 Dispatcher<Function<void()>>* NetCore::GetNetEventsDispatcher()
 {
     return netEventsDispatcher.get();
@@ -113,19 +128,12 @@ NetCore::TrackId NetCore::CreateController(const NetConfig& config, void* contex
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(state == State::ACTIVE && true == config.Validate());
-    std::unique_ptr<NetController> ctrl(new NetController(loop, registrar, context, readTimeout));
-    TrackId id = ObjectToTrackId(ctrl.get());
+
+    std::unique_ptr<NetController> ctrl = std::make_unique<NetController>(loop, registrar, context, readTimeout);
+
     if (true == ctrl->ApplyConfig(config))
     {
-        IController* c = ctrl.get();
-        {
-            LockGuard<Mutex> lock(controllersMutex);
-            ControllerContext& context = controllers[id];
-            context.status = ControllerContext::STARTING;
-            context.ctrl = std::move(ctrl);
-        }
-        loop->Post(Bind(&NetCore::DoStart, this, c));
-        return id;
+        return StartController(std::move(ctrl));
     }
     else
     {
@@ -140,9 +148,8 @@ NetCore::TrackId NetCore::CreateAnnouncer(const Endpoint& endpoint, uint32 sendP
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(state == State::ACTIVE);
-    Announcer* ctrl = new Announcer(loop, endpoint, sendPeriod, needDataCallback, tcpEndpoint);
-    loop->Post(Bind(&NetCore::DoStart, this, ctrl));
-    return ObjectToTrackId(ctrl);
+    std::unique_ptr<Announcer> ctrl = std::make_unique<Announcer>(loop, endpoint, sendPeriod, needDataCallback, tcpEndpoint);
+    return StartController(std::move(ctrl));
 #else
     return INVALID_TRACK_ID;
 #endif
@@ -152,9 +159,8 @@ NetCore::TrackId NetCore::CreateDiscoverer(const Endpoint& endpoint, Function<vo
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(state == State::ACTIVE);
-    Discoverer* ctrl = new Discoverer(loop, endpoint, dataReadyCallback);
-    discovererId = ObjectToTrackId(ctrl);
-    loop->Post(Bind(&NetCore::DoStart, this, ctrl));
+    std::unique_ptr<Discoverer> ctrl = std::make_unique<Discoverer>(loop, endpoint, dataReadyCallback);
+    discovererId = StartController(std::move(ctrl));
     return discovererId;
 #else
     return INVALID_TRACK_ID;
@@ -283,6 +289,7 @@ bool NetCore::PostAllToDestroy()
             ++it;
             if (context.status == ControllerContext::RUNNING)
             {
+                context.status = ControllerContext::DESTROYING;
                 loop->Post(Bind(&NetCore::DoDestroy, this, context.ctrl.get()));
             }
             hasControllersToDestroy = true;
@@ -461,6 +468,13 @@ void NetCore::TrackedObjectStopped(IController* obj)
         {
             DVASSERT(it->second.status == ControllerContext::DESTROYING);
             callbackOnStopped = it->second.controllerStoppedCallback;
+
+            TrackId id = it->first;
+            if (id == discovererId)
+            {
+                discovererId = INVALID_TRACK_ID;
+            }
+
             controllers.erase(it);
         }
         else
