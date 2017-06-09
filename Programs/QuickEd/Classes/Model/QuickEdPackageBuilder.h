@@ -5,6 +5,8 @@
 #include "UI/Styles/UIStyleSheetStructs.h"
 #include "Model/ControlProperties/SectionProperty.h"
 
+#include <Base/Result.h>
+
 class PackageNode;
 class ControlNode;
 class StyleSheetNode;
@@ -17,7 +19,7 @@ public:
     QuickEdPackageBuilder();
     virtual ~QuickEdPackageBuilder();
 
-    virtual void BeginPackage(const DAVA::FilePath& packagePath) override;
+    virtual void BeginPackage(const DAVA::FilePath& packagePath, DAVA::int32 version) override;
     virtual void EndPackage() override;
 
     virtual bool ProcessImportedPackage(const DAVA::String& packagePath, DAVA::AbstractUIPackageLoader* loader) override;
@@ -43,6 +45,8 @@ public:
     const DAVA::Vector<PackageNode*>& GetImportedPackages() const;
     const DAVA::Vector<StyleSheetNode*>& GetStyles() const;
     void AddImportedPackage(PackageNode* node);
+
+    const DAVA::ResultList& GetResults() const;
 
 private:
     ControlNode* FindPrototype(const DAVA::String& name) const;
@@ -72,4 +76,6 @@ private:
 
     DAVA::BaseObject* currentObject;
     SectionProperty<IntrospectionProperty>* currentSection;
+
+    DAVA::ResultList results;
 };

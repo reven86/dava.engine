@@ -11,15 +11,6 @@ public:
 
     void SetVisibleInEditor(bool visible);
     bool GetVisibleInEditor() const;
-
-    DAVA::Any GetValue() const override;
-
-protected:
-    void ApplyValue(const DAVA::Any& value) override;
-
-protected:
-    bool visibleInEditor = true;
-    bool visibleInGame = true;
 };
 
 #endif // __QUICKED_VISIBLE_VALUE_PROPERTY__

@@ -14,7 +14,7 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(CustomPropertiesComponent)
 {
-    ReflectionRegistrator<CustomPropertiesComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    ReflectionRegistrator<CustomPropertiesComponent>::Begin()[M::CantBeCreatedManualyComponent(), M::CantBeDeletedManualyComponent()]
     .ConstructorByPointer()
     .Field("properties", &CustomPropertiesComponent::properties)[M::DisplayName("Custom properties")]
     .End();

@@ -174,12 +174,12 @@ void UIFlowLayoutComponent::SetDynamicVerticalSpacing(bool dynamic)
     SetFlag(FLAG_DYNAMIC_VERTICAL_SPACING, dynamic);
 }
 
-float32 UIFlowLayoutComponent::GetPaddingByAxis(int32 axis)
+float32 UIFlowLayoutComponent::GetPaddingByAxis(int32 axis) const
 {
     return padding[axis];
 }
 
-float32 UIFlowLayoutComponent::GetSpacingByAxis(int32 axis)
+float32 UIFlowLayoutComponent::GetSpacingByAxis(int32 axis) const
 {
     return spacing[axis];
 }

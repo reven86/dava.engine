@@ -165,9 +165,6 @@ public:
     ConstBuf
     {
     public:
-        struct Desc
-        {
-        };
         enum ProgType
         {
             PROG_VERTEX,
@@ -269,10 +266,10 @@ public:
 };
 
 typedef ResourcePool<PipelineStateMetal_t, RESOURCE_PIPELINE_STATE, PipelineState::Descriptor, false> PipelineStateMetalPool;
-typedef ResourcePool<PipelineStateMetal_t::ConstBuf, RESOURCE_CONST_BUFFER, PipelineStateMetal_t::ConstBuf::Desc, false> ConstBufMetalPool;
+typedef ResourcePool<PipelineStateMetal_t::ConstBuf, RESOURCE_CONST_BUFFER, ConstBuffer::Descriptor, false> ConstBufMetalPool;
 
 RHI_IMPL_POOL(PipelineStateMetal_t, RESOURCE_PIPELINE_STATE, PipelineState::Descriptor, false);
-RHI_IMPL_POOL_SIZE(PipelineStateMetal_t::ConstBuf, RESOURCE_CONST_BUFFER, PipelineStateMetal_t::ConstBuf::Desc, false, 12 * 1024);
+RHI_IMPL_POOL_SIZE(PipelineStateMetal_t::ConstBuf, RESOURCE_CONST_BUFFER, ConstBuffer::Descriptor, false, 12 * 1024);
 
 static RingBufferMetal DefaultConstRingBuffer;
 static RingBufferMetal VertexConstRingBuffer;
@@ -872,7 +869,6 @@ void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_ConstBuffer_SetConst = &metal_ConstBuffer_SetConst;
     dispatch->impl_ConstBuffer_SetConst1fv = &metal_ConstBuffer_SetConst1fv;
-    dispatch->impl_ConstBuffer_ConstCount = nullptr; //&metal_ConstBuffer_ConstCount;
     dispatch->impl_ConstBuffer_Delete = &metal_ConstBuffer_Delete;
 }
 

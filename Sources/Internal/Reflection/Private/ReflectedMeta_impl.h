@@ -26,23 +26,22 @@ inline ReflectedMeta::ReflectedMeta(Meta<T, IndexT>&& meta)
 }
 
 template <typename T>
-bool ReflectedMeta::HasMeta() const
-{
-    return metas.count(Type::Instance<T>()) > 0;
-}
-
-template <typename T>
 const T* ReflectedMeta::GetMeta() const
 {
-    const T* meta = nullptr;
+    return static_cast<const T*>(GetMeta(Type::Instance<T>()));
+}
 
-    auto it = metas.find(Type::Instance<T>());
+inline const void* ReflectedMeta::GetMeta(const Type* metaType) const
+{
+    const void* meta = nullptr;
+
+    auto it = metas.find(metaType);
     if (it != metas.end())
     {
         // Here we know, that requested type T == Meta<IndexT>, in other situation we will fail on search
-        // As we store value in metas as Any(Meta<T, IndexT>) and we know that Meta derived from T and T derived from IndexT or same as T
-        // we can get raw pointer from Any and cast it to const T*
-        meta = static_cast<const T*>(it->second.GetData());
+        // As we store value in metas as Any(Meta<T, IndexT>) and we know that Meta derived from T and T derived
+        // from IndexT or same as T we can get raw pointer from Any
+        meta = it->second.GetData();
     }
 
     return meta;

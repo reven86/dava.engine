@@ -29,8 +29,8 @@
 #include "Commands2/RebuildTangentSpaceCommand.h"
 #include "Commands2/ParticleEditorCommands.h"
 #include "Commands2/SoundComponentEditCommands.h"
-#include "Commands2/ConvertPathCommands.h"
 #include "Commands2/ConvertToBillboardCommand.h"
+#include "Commands2/WayEditCommands.h"
 
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Project/ProjectManagerData.h"
@@ -809,17 +809,16 @@ void PropertyEditor::CommandExecuted(SceneEditor2* scene, const RECommandNotific
         {
             return IsCurNodesContainsEntityFromCommand<DeleteRenderBatchCommand>(cmd, curNodes);
         }
+        else if (cmdID == CMDID_ADD_WAYPOINT ||
+                 cmdID == CMDID_REMOVE_WAYPOINT ||
+                 cmdID == CMDID_ADD_EDGE ||
+                 cmdID == CMDID_REMOVE_EDGE)
+        {
+            return true;
+        }
         else if (cmdID == CMDID_CLONE_LAST_BATCH)
         {
             return true; //there is no "GetEntity" for this command
-        }
-        else if (cmdID == CMDID_EXPAND_PATH)
-        {
-            return IsCurNodesContainsEntityFromCommand<ExpandPathCommand>(cmd, curNodes);
-        }
-        else if (cmdID == CMDID_COLLAPSE_PATH)
-        {
-            return IsCurNodesContainsEntityFromCommand<CollapsePathCommand>(cmd, curNodes);
         }
         else if (cmdID == CMDID_CONVERT_TO_BILLBOARD)
         {
@@ -1495,7 +1494,7 @@ void PropertyEditor::OnAddPathComponent()
     {
         if ((entity->GetComponentCount(DAVA::Component::PATH_COMPONENT) == 0) && (entity->GetComponentCount(DAVA::Component::WAYPOINT_COMPONENT) == 0))
         {
-            DAVA::PathComponent* pathComponent = curScene->pathSystem->CreatePathComponent();
+            DAVA::PathComponent* pathComponent = new DAVA::PathComponent();
             curScene->Exec(std::unique_ptr<DAVA::Command>(new AddComponentCommand(entity, pathComponent)));
         }
     }

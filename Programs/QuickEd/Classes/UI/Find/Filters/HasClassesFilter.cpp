@@ -11,23 +11,25 @@ using namespace DAVA;
 HasClassesFilter::HasClassesFilter(const Vector<String>& requiredClasses_)
     : requiredClasses(requiredClasses_)
 {
+    FastName classes("classes");
+
     std::sort(requiredClasses.begin(), requiredClasses.end());
 
     for (const auto& field : ReflectedTypeDB::Get<UIControl>()->GetStructure()->fields)
     {
-        if (field->name == "classes")
+        if (field->name == classes)
         {
             refMember = field.get();
         }
     }
 }
 
-bool HasClassesFilter::CanAcceptPackage(const PackageInformation* package) const
+FindFilter::ePackageStatus HasClassesFilter::AcceptPackage(const PackageInformation* package) const
 {
-    return true;
+    return PACKAGE_CAN_ACCEPT_CONTROLS;
 }
 
-bool HasClassesFilter::CanAcceptControl(const ControlInformation* control) const
+bool HasClassesFilter::AcceptControl(const ControlInformation* control) const
 {
     const Any& classesStr = control->GetControlPropertyValue(*refMember);
     if (classesStr.CanCast<String>())

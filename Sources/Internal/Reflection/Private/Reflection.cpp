@@ -4,7 +4,8 @@
 
 #include "Reflection/Reflection.h"
 #include "Reflection/ReflectedTypeDB.h"
-#include "Reflection/Private/Wrappers/ValueWrapperDirect.h"
+#include "Reflection/Private/Wrappers/ValueWrapperAny.h"
+#include "Reflection/Private/Wrappers/ValueWrapperObject.h"
 #include "Reflection/Private/Wrappers/StructureWrapperDefault.h"
 
 namespace DAVA
@@ -209,7 +210,6 @@ struct Dumper
             line << std::setw(typeColWidth);
             DumpType(line, field.ref);
 
-            // endl
             out << line.str() << "\n";
 
             // children
@@ -232,7 +232,8 @@ struct Dumper
                 // print hierarchy
                 PrintHierarhy(methodline, level + 1, hierarchyColWidth);
                 methodline << "{} ";
-                methodline << method.key << "(";
+                DumpAny(methodline, method.key);
+                methodline << "(";
 
                 for (size_t i = 0; i < params.argsType.size(); ++i)
                 {
@@ -259,6 +260,7 @@ const Dumper::PrintersTable Dumper::valuePrinters = {
     { Type::Instance<float32>(), [](std::ostringstream& out, const Any& any) { out << any.Get<float32>(); } },
     { Type::Instance<float64>(), [](std::ostringstream& out, const Any& any) { out << any.Get<float64>(); } },
     { Type::Instance<String>(), [](std::ostringstream& out, const Any& any) { out << any.Get<String>().c_str(); } },
+    { Type::Instance<FastName>(), [](std::ostringstream& out, const Any& any) { out << any.Get<FastName>().c_str(); } },
     { Type::Instance<size_t>(), [](std::ostringstream& out, const Any& any) { out << any.Get<size_t>(); } },
     { Type::Instance<void>(), [](std::ostringstream& out, const Any& any) { out << "???"; } }
 };
@@ -285,23 +287,17 @@ Reflection::Reflection(const ReflectedObject& object_, const ValueWrapper* vw, c
             structureWrapper = reflectedType->GetStrucutreWrapper();
         }
 
-        if (nullptr == meta && nullptr != reflectedType->GetStructure())
+        if (nullptr == meta)
         {
-            meta = reflectedType->GetStructure()->meta.get();
+            const ReflectedStructure* rs = reflectedType->GetStructure();
+            if (nullptr != rs)
+            {
+                meta = rs->meta.get();
+            }
         }
     }
 
-    /*
-    if (nullptr != objectMeta)
-    {
-        if (objectMeta->HasMeta<StructureWrapper>())
-        {
-            structureWrapper = objectMeta->GetMeta<StructureWrapper>();
-        }
-    }
-    */
-
-    // in still no structureWrapper use empty one
+    // if still no structureWrapper use empty one
     if (nullptr == structureWrapper)
     {
         static StructureWrapperDefault emptyStructureWrapper;
@@ -369,12 +365,24 @@ void Reflection::Dump(std::ostream& out, size_t maxlevel) const
     ReflectedTypeDBDetail::Dumper::Dump(out, Reflection::Field(Any("this"), Reflection(*this), nullptr), 0, maxlevel);
 }
 
+const void* Reflection::GetMeta(const Type* metaType) const
+{
+    const void* ret = nullptr;
+
+    if (nullptr != meta)
+    {
+        ret = meta->GetMeta(metaType);
+    }
+
+    return ret;
+}
+
 Reflection Reflection::Create(const ReflectedObject& object, const ReflectedMeta* objectMeta)
 {
     if (object.IsValid())
     {
-        static ValueWrapperObject objectValueWrapper;
-        return Reflection(object, &objectValueWrapper, nullptr, objectMeta);
+        static ValueWrapperObject valueWrapperObject;
+        return Reflection(object, &valueWrapperObject, nullptr, objectMeta);
     }
 
     return Reflection();
@@ -382,7 +390,7 @@ Reflection Reflection::Create(const ReflectedObject& object, const ReflectedMeta
 
 Reflection Reflection::Create(const Any& any, const ReflectedMeta* objectMeta)
 {
-    static ValueWrapperDirect vw;
+    static ValueWrapperAny valueWrapperAny;
 
     if (!any.IsEmpty())
     {
@@ -393,18 +401,12 @@ Reflection Reflection::Create(const Any& any, const ReflectedMeta* objectMeta)
             if (nullptr != objectType)
             {
                 ReflectedObject object(any.Get<void*>(), objectType);
-                return Reflection(object, &vw, nullptr, objectMeta);
+                return Reflection::Create(object, objectMeta);
             }
         }
         else
         {
-            const ReflectedType* objectType = ReflectedTypeDB::GetByType(any.GetType());
-
-            if (nullptr != objectType)
-            {
-                ReflectedObject object(const_cast<void*>(any.GetData()), objectType);
-                return Reflection(object, &vw, nullptr, objectMeta);
-            }
+            return Reflection(ReflectedObject(&any), &valueWrapperAny, nullptr, objectMeta);
         }
     }
 
@@ -416,6 +418,11 @@ Reflection Reflection::Create(const Reflection& etalon, const Reflection& metaPr
     return Reflection(etalon.object, etalon.valueWrapper, etalon.structureWrapper, metaProvider.meta);
 }
 
+Reflection Reflection::Create(const Reflection& etalon, const ReflectedMeta* objectMeta)
+{
+    return Reflection(etalon.object, etalon.valueWrapper, etalon.structureWrapper, objectMeta);
+}
+
 Reflection::Field::Field(Any&& key_, Reflection&& ref_, const ReflectedType* inheritFrom_)
     : key(key_)
     , ref(ref_)
@@ -423,10 +430,86 @@ Reflection::Field::Field(Any&& key_, Reflection&& ref_, const ReflectedType* inh
 {
 }
 
-Reflection::Method::Method(String&& key_, AnyFn&& fn_)
+Reflection::Method::Method(Any key_, AnyFn&& fn_)
     : key(key_)
     , fn(fn_)
 {
 }
+
+// For future usage.
+// Function shows imGui dialog with Reflection memory statistics.
+#if 0
+void ProvideReflectionDebugInfo()
+{
+    GetPrimaryWindow()->update.Connect([](Window*, float32) {
+        if (ImGui::IsInitialized())
+        {
+            static int updateFrame = 0;
+            static TypeDetail::TypeDB::Stats typeStats;
+            static ReflectedTypeDB::Stats reflectionStats;
+
+            if (updateFrame > 0)
+            {
+                updateFrame--;
+            }
+            else
+            {
+                updateFrame = 120; // once per 120 frames
+                typeStats = TypeDetail::TypeDB::GetStats();
+                reflectionStats = ReflectedTypeDB::GetStats();
+            }
+
+            auto addRow = [](const char* name, const char* format, size_t value)
+            {
+                ImGui::Text(name);
+                ImGui::NextColumn();
+                ImGui::Text(Format(format, value).c_str());
+                ImGui::NextColumn();
+            };
+
+            ImGui::Begin("Reflection stats");
+
+            if (ImGui::CollapsingHeader("Static info"))
+            {
+                ImGui::Columns(2, nullptr, true);
+                addRow("Size of Any", "%u", sizeof(Any));
+                addRow("Size of Reflection", "%u", sizeof(Reflection));
+                addRow("Size of ReflectedObject", "%u", sizeof(ReflectedObject));
+                ImGui::Columns();
+            }
+
+            if (ImGui::CollapsingHeader("Dynamic info"))
+            {
+                ImGui::Columns(2, nullptr, true);
+                addRow("typesCount", "%u", typeStats.typesCount);
+                addRow("typesMemory", "%u bytes", typeStats.typesMemory);
+                addRow("typeInheritanceCount", "%u", typeStats.typeInheritanceCount);
+                addRow("typeInheritanceInfoCount", "%u", typeStats.typeInheritanceInfoCount);
+                addRow("typeInheritanceMemory", "%u bytes", typeStats.typeInheritanceMemory);
+                addRow("typeDBMemory", "%u bytes", typeStats.typeDBMemory);
+                addRow("reflectedTypeCount", "%u", reflectionStats.reflectedTypeCount);
+                addRow("reflectedTypeMemory", "%u", reflectionStats.reflectedTypeMemory);
+                addRow("reflectedTypeDBMemory", "%u bytes", reflectionStats.reflectedTypeDBMemory);
+                addRow("reflectedStructCount", "%u", reflectionStats.reflectedStructCount);
+                addRow("reflectedStructWrapperCount", "%u", reflectionStats.reflectedStructWrapperCount);
+                addRow("reflectedStructWrapperClassCount", "%u", reflectionStats.reflectedStructWrapperClassCount);
+                addRow("reflectedStructWrapperClassMemory", "%u bytes", reflectionStats.reflectedStructWrapperClassMemory);
+                addRow("reflectedStructFieldsCount", "%u", reflectionStats.reflectedStructFieldsCount);
+                addRow("reflectedStructMethodsCount", "%u", reflectionStats.reflectedStructMethodsCount);
+                addRow("reflectedStructEnumsCount", "%u", reflectionStats.reflectedStructEnumsCount);
+                addRow("reflectedStructCtorsCount", "%u", reflectionStats.reflectedStructCtorsCount);
+                addRow("reflectedStructDtorsCount", "%u", reflectionStats.reflectedStructDtorsCount);
+                addRow("reflectedStructMetasCount", "%u", reflectionStats.reflectedStructMetasCount);
+                addRow("reflectedStructMetaMCount", "%u", reflectionStats.reflectedStructMetaMCount);
+                addRow("reflectedStructMemory", "%u bytes", reflectionStats.reflectedStructMemory);
+                addRow("total", "%u bytes", typeStats.totalMemory + reflectionStats.totalMemory);
+                ImGui::Columns();
+            }
+
+            ImGui::End();
+        }
+    });
+}
+#endif
 
 } // namespace DAVA

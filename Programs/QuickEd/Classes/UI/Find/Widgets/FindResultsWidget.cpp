@@ -73,6 +73,11 @@ void FindResultsWidget::OnItemFound(FindItem item)
     model.appendRow(pathItem);
 
     totalFilesWithResults++;
+    if (item.GetControlPaths().empty())
+    {
+        totalResults++;
+    }
+
     for (const String& pathToControl : item.GetControlPaths())
     {
         totalResults++;

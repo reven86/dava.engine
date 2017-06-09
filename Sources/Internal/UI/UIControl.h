@@ -70,6 +70,7 @@ class UIControl : public AnimatedObject
 
     // Need for isIteratorCorrupted. See UILayoutSystem::UpdateControl.
     friend class UILayoutSystem;
+    friend class UIRenderSystem;
 
 public:
     /**
@@ -104,13 +105,6 @@ public:
         EVENT_FOCUS_LOST = 7, //!<Trigger when control losts focus
         EVENT_TOUCH_UP_OUTSIDE = 8, //!<Trigger when mouse pressure or touch processed by the control is released outside of the control.
         EVENTS_COUNT
-    };
-
-    enum eDebugDrawPivotMode
-    {
-        DRAW_NEVER = 1, //!<Never draw the Pivot Point.
-        DRAW_ONLY_IF_NONZERO, //!<Draw the Pivot Point only if it is defined (nonzero).
-        DRAW_ALWAYS //!<Always draw the Pivot Point mark.
     };
 
 public:
@@ -405,21 +399,6 @@ public:
      \param[in] hierarchic use true if you want to all control children change selection state.
      */
     virtual void SetSelected(bool isSelected, bool hierarchic = true);
-
-    /**
-     \brief Returns control clip contents state.
-        Clip contents is disabled by default.
-     \returns true if control rect clips draw and input areas of his children.
-     */
-    inline bool GetClipContents() const;
-    /**
-     \brief Sets clip contents state.
-        If clip contents is enabled all incoming inputs for the control children processed only
-        inside the control rect of parent. All children draw clips too.
-        Clip contents is disabled by default.
-     \param[in] isNeedToClipContents true if control should clips all children draw and input by his rect.
-     */
-    virtual void SetClipContents(bool isNeedToClipContents);
 
     /**
      \brief Returns control hover state.
@@ -776,32 +755,8 @@ protected:
     void RemoveControlAnimationCallback(BaseObject* caller, void* param, void* callerData);
 
 public:
-    /**
-     \brief enabling or disabling dbug draw for the control.
-     \param[in] _debugDrawEnabled New debug draw value.
-     \param[in] hierarchic Is value need to be changed in all coltrol children.
-     */
-    void SetDebugDraw(bool _debugDrawEnabled, bool hierarchic = false);
-    void SetDebugDrawColor(const Color& color);
-    const Color& GetDebugDrawColor() const;
-
-    /**
-     \brief Set the draw pivot point mode for the control.
-     \param[in] mode draw pivot point mode
-     \param[in] hierarchic Is value need to be changed in all coltrol children.
-     */
-    void SetDrawPivotPointMode(eDebugDrawPivotMode mode, bool hierarchic = false);
-
-public:
-    /**
-     \brief Calls on every frame to process controls drawing.
-        Firstly this method calls Draw() for the curent control. When SystemDraw() called for the every control child.
-        And at the end DrawAfterChilds() called for current control.
-        Internal method used by ControlSystem.
-        Can be overriden to adjust draw hierarchy.
-     \param[in] geometricData Parent geometric data.
-     */
-    virtual void SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground); // Internal method used by ControlSystem
+    bool IsHiddenForDebug() const;
+    void SetHiddenForDebug(bool hidden);
 
     /**
      \brief set parent draw color into control
@@ -984,9 +939,8 @@ private:
     List<UIControl*> children;
 
     DAVA_DEPRECATED(bool isUpdated = false);
-    DAVA_DEPRECATED(void SystemUpdate(float32 timeElapsed));
     // Need for old implementation of SystemUpdate.
-    friend class UIScreenshoter;
+    friend class UIUpdateSystem;
 
 public:
     //TODO: store geometric data in UIGeometricData
@@ -1003,11 +957,9 @@ protected:
     bool exclusiveInput : 1;
     bool isInputProcessed : 1;
     bool visible : 1;
-    bool clipContents : 1;
-    bool debugDrawEnabled : 1;
+    bool hiddenForDebug : 1;
     bool multiInput : 1;
 
-    // Enable align options
     bool isIteratorCorrupted : 1;
 
     bool styleSheetDirty : 1;
@@ -1026,10 +978,6 @@ protected:
 
     EventDispatcher* eventDispatcher;
 
-    Color debugDrawColor;
-
-    eDebugDrawPivotMode drawPivotPointMode;
-
     void SetParent(UIControl* newParent);
 
     virtual ~UIControl();
@@ -1038,9 +986,6 @@ protected:
     void RegisterInputProcessors(int32 processorsCount);
     void UnregisterInputProcessor();
     void UnregisterInputProcessors(int32 processorsCount);
-
-    void DrawDebugRect(const UIGeometricData& geometricData, bool useAlpha = false);
-    void DrawPivotPoint(const Rect& drawRect);
 
 private:
     int32 tag = 0;
@@ -1070,6 +1015,11 @@ public:
     inline T* GetOrCreateComponent(uint32 index = 0)
     {
         return DynamicTypeCheck<T*>(GetOrCreateComponent(T::C_TYPE, index));
+    }
+    template <class T>
+    inline void RemoveComponent(uint32 index = 0)
+    {
+        RemoveComponent(T::C_TYPE, index);
     }
     template <class T>
     inline uint32 GetComponentCount() const
@@ -1154,8 +1104,6 @@ public:
     inline void SetExclusiveInputNotHierarchic(bool enabled);
     inline bool GetNoInput() const;
     inline void SetNoInput(bool noInput);
-    inline bool GetDebugDraw() const;
-    inline void SetDebugDrawNotHierarchic(bool val);
 };
 
 inline Vector2 UIControl::GetPivotPoint() const
@@ -1223,11 +1171,6 @@ inline bool UIControl::GetInputEnabled() const
     return inputEnabled;
 }
 
-inline bool UIControl::GetClipContents() const
-{
-    return clipContents;
-}
-
 inline bool UIControl::GetExclusiveInput() const
 {
     return exclusiveInput;
@@ -1280,16 +1223,6 @@ inline bool UIControl::GetNoInput() const
 inline void UIControl::SetNoInput(bool noInput)
 {
     SetInputEnabled(!noInput, false);
-}
-
-inline bool UIControl::GetDebugDraw() const
-{
-    return debugDrawEnabled;
-}
-
-inline void UIControl::SetDebugDrawNotHierarchic(bool val)
-{
-    SetDebugDraw(val, false);
 }
 
 inline float32 UIControl::GetWheelSensitivity() const

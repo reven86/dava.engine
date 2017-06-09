@@ -26,6 +26,11 @@ void LibraryWidget::SetAccessor(DAVA::TArc::ContextAccessor* accessor_)
     BindFields();
 }
 
+void LibraryWidget::SetUI(DAVA::TArc::UI* ui)
+{
+    libraryModel->SetUI(ui);
+}
+
 void LibraryWidget::OnPackageChanged(const DAVA::Any& packageValue)
 {
     PackageNode* package = nullptr;

@@ -1,12 +1,11 @@
-#ifndef __RESOURCEEDITORQT__SETTINGS_MANAGER__
-#define __RESOURCEEDITORQT__SETTINGS_MANAGER__
-
-#include "Base/Singleton.h"
-#include "Base/IntrospectionBase.h"
-#include "Base/FastNameMap.h"
-#include "FileSystem/VariantType.h"
+#pragma once
 
 #include "Settings/Settings.h"
+
+#include <Base/Singleton.h>
+#include <Base/IntrospectionBase.h>
+#include <Base/FastNameMap.h>
+#include <FileSystem/VariantType.h>
 
 #include <QObject>
 
@@ -14,6 +13,13 @@ struct SettingsNode
 {
     DAVA::VariantType value;
     DAVA::InspDesc desc;
+};
+
+enum class RenderingBackend : int
+{
+    DX11 = 0,
+    DX9,
+    OpenGL
 };
 
 class SettingsManager : public DAVA::Singleton<SettingsManager>
@@ -54,5 +60,3 @@ protected:
     void CreateValue(const DAVA::FastName& path, const DAVA::VariantType& defaultValue, const DAVA::InspDesc& description = DAVA::InspDesc(""));
     DAVA_DEPRECATED(bool CustomTextureViewGPULoad(const DAVA::String& paramName, const DAVA::VariantType& src_value, DAVA::VariantType& dstValue));
 };
-
-#endif /* defined(__RESOURCEEDITORQT__SETTINGS_MANAGER__) */

@@ -27,12 +27,7 @@ public:
         FieldCount
     };
 
-    struct Params
-    {
-        UI* ui = nullptr;
-        WindowKey wndKey = FastName("");
-        ControlDescriptorBuilder<Fields> fields;
-    };
+    DECLARE_CONTROL_PARAMS(Fields);
 
     FilePathEdit(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent = nullptr);
     FilePathEdit(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
@@ -53,8 +48,6 @@ private:
     void ProcessValidationResult(M::ValidationResult& validationResult, FilePath& path);
 
 private:
-    UI* ui = nullptr;
-    WindowKey wndKey;
     QtConnections connections;
     QLineEdit* edit = nullptr;
     QToolButton* button = nullptr;

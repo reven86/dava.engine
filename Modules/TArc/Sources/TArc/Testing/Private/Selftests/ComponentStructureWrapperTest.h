@@ -7,7 +7,6 @@
 #include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/ComponentStructureWrapper.h"
 #include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
-#include "TArc/Controls/PropertyPanel/StaticEditorDrawer.h"
 
 #include <Reflection/ReflectedMeta.h>
 #include <Reflection/ReflectionRegistrator.h>
@@ -48,7 +47,7 @@ public:
 
     void Add(const std::shared_ptr<DAVA::TArc::PropertyNode>& node)
     {
-        AddPropertyNode(node);
+        AddPropertyNode(node, DAVA::FastName());
     }
 
 protected:
@@ -63,10 +62,10 @@ protected:
         return true;
     }
 
-    DAVA::TArc::ControlProxy* CreateEditorWidget(QWidget* parent, const DAVA::Reflection& model, DAVA::TArc::DataWrappersProcessor* wrappersProcessor) const override
+    DAVA::TArc::ControlProxy* CreateEditorWidget(QWidget* parent, const DAVA::Reflection& model, DAVA::TArc::DataWrappersProcessor* wrappersProcessor) override
     {
-        DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::EmptyWidget::Fields> descr;
-        return new DAVA::TArc::EmptyWidget(descr, wrappersProcessor, model, parent);
+        DAVA::TArc::EmptyWidget::Params params(GetAccessor(), GetUI(), GetWindowKey());
+        return new DAVA::TArc::EmptyWidget(params, wrappersProcessor, model, parent);
     }
 
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(DummyComponentValue, DAVA::TArc::BaseComponentValue)
@@ -92,8 +91,8 @@ DAVA_TARC_TESTCLASS(ComponentStructureWrapperTest)
     void CheckValueField(const DAVA::Reflection& field)
     {
         using namespace ComponentStructureWrapperTestDetail;
-        TEST_VERIFY(field.HasMeta<DAVA::M::Range>());
-        TEST_VERIFY(field.HasMeta<DAVA::M::Enum>());
+        TEST_VERIFY(nullptr != field.GetMeta<DAVA::M::Range>());
+        TEST_VERIFY(nullptr != field.GetMeta<DAVA::M::Enum>());
 
         const DAVA::M::Range* rangeMeta = field.GetMeta<DAVA::M::Range>();
         TEST_VERIFY(rangeMeta->minValue.Cast<int>() == 1);
@@ -103,13 +102,13 @@ DAVA_TARC_TESTCLASS(ComponentStructureWrapperTest)
         const DAVA::M::Enum* enumMeta = field.GetMeta<DAVA::M::Enum>();
         TEST_VERIFY(enumMeta->GetEnumMap() == GlobalEnumMap<DummyEnum>::Instance());
 
-        TEST_VERIFY(field.HasMeta<DAVA::M::ProxyMetaRequire>() == false);
+        TEST_VERIFY(nullptr == field.GetMeta<DAVA::M::ProxyMetaRequire>());
     }
 
     void CheckNoMetaField(const DAVA::Reflection& field)
     {
-        TEST_VERIFY(field.HasMeta<DAVA::M::Range>() == false);
-        TEST_VERIFY(field.HasMeta<DAVA::M::Enum>() == false);
+        TEST_VERIFY(nullptr == field.GetMeta<DAVA::M::Range>());
+        TEST_VERIFY(nullptr == field.GetMeta<DAVA::M::Enum>());
     }
 
     DAVA_TEST (ProxyMetaTest)

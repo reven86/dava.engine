@@ -32,7 +32,8 @@ class WayEditSystem : public DAVA::SceneSystem,
     friend class SceneEditor2;
 
 public:
-    WayEditSystem(DAVA::Scene* scene, SceneCollisionSystem* collisionSystem);
+    WayEditSystem(DAVA::Scene* scene);
+    ~WayEditSystem() = default;
 
     void EnableWayEdit(bool enable);
     bool IsWayEditEnabled() const;
@@ -43,43 +44,37 @@ public:
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
 
-    void WillClone(DAVA::Entity* originalEntity) override;
-    void DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEntity) override;
+    bool HasCustomClonedAddading(DAVA::Entity* entityToClone) const override;
+    void PerformAdding(DAVA::Entity* sourceEntity, DAVA::Entity* clonedEntity) override;
 
-    void WillRemove(DAVA::Entity* removedEntity) override;
-    void DidRemoved(DAVA::Entity* removedEntity) override;
+    bool HasCustomRemovingForEntity(DAVA::Entity* entityToRemove) const override;
+    void PerformRemoving(DAVA::Entity* entityToRemove) override;
 
 protected:
     void Draw() override;
     void ProcessCommand(const RECommandNotificationObject& commandNotification) override;
 
-    DAVA::Entity* CreateWayPoint(DAVA::Entity* parent, DAVA::Vector3 pos);
-
-    void RemoveEdge(DAVA::Entity* entity, DAVA::EdgeComponent* edgeComponent);
-
-    void DefineAddOrRemoveEdges(const SelectableGroup& srcPoints, DAVA::Entity* dstPoint, SelectableGroup& toAddEdge, SelectableGroup& toRemoveEdge);
-    void AddEdges(const SelectableGroup& group, DAVA::Entity* nextEntity);
-    void RemoveEdges(const SelectableGroup& group, DAVA::Entity* nextEntity);
-    bool IsAccessible(DAVA::Entity* startPoint, DAVA::Entity* breachPoint, DAVA::Entity* excludedPoint, DAVA::EdgeComponent* excludingEdge, DAVA::Set<DAVA::Entity*>& passedPoints) const;
+    void DefineAddOrRemoveEdges(const DAVA::Vector<DAVA::PathComponent::Waypoint*>& srcPoints, DAVA::PathComponent::Waypoint* dstPoint,
+                                DAVA::Vector<DAVA::PathComponent::Waypoint*>& toAddEdge, DAVA::Vector<DAVA::PathComponent::Waypoint*>& toRemoveEdge);
+    void AddEdges(DAVA::PathComponent* path, const DAVA::Vector<DAVA::PathComponent::Waypoint*>& srcPoints, DAVA::PathComponent::Waypoint* nextWaypoint);
+    void RemoveEdges(DAVA::PathComponent* path, const DAVA::Vector<DAVA::PathComponent::Waypoint*>& srcPoints, DAVA::PathComponent::Waypoint* nextWaypoint);
 
     void ResetSelection();
     void ProcessSelection(const SelectableGroup& selection);
     void UpdateSelectionMask();
-    void FilterPrevSelection(DAVA::Entity* parentEntity, SelectableGroup& selection);
+    void FilterSelection(DAVA::PathComponent* path, const DAVA::Vector<DAVA::PathComponent::Waypoint*>& srcPoints, DAVA::Vector<DAVA::PathComponent::Waypoint*>& validPoints);
 
     bool AllowPerformSelectionHavingCurrent(const SelectableGroup& currentSelection) override;
     bool AllowChangeSelectionReplacingCurrent(const SelectableGroup& currentSelection, const SelectableGroup& newSelection) override;
 
+    SceneEditor2* GetSceneEditor() const;
+
 private:
     SelectableGroup currentSelection;
-    SelectableGroup selectedWaypoints;
-    SelectableGroup prevSelectedWaypoints;
-    SceneEditor2* sceneEditor = nullptr;
-    SceneCollisionSystem* collisionSystem = nullptr;
+    DAVA::Vector<DAVA::PathComponent::Waypoint*> selectedWaypoints;
+    DAVA::Vector<DAVA::PathComponent::Waypoint*> prevSelectedWaypoints;
     DAVA::Vector<DAVA::Entity*> waypointEntities;
-    DAVA::Map<DAVA::Entity*, DAVA::Entity*> mapStartPoints; // mapping [path parent -> path start point]
-    DAVA::Entity* underCursorPathEntity = nullptr;
-    DAVA::Entity* startPointForRemove = nullptr;
+    DAVA::PathComponent::Waypoint* underCursorPathEntity = nullptr;
     bool inCloneState = false;
     bool isEnabled = false;
 };

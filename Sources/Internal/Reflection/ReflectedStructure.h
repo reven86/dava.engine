@@ -1,7 +1,10 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
+#include "Base/String.h"
+#include "Base/Vector.h"
+#include "Base/FastName.h"
 #include "Base/AnyFn.h"
+#include <memory>
 
 namespace DAVA
 {
@@ -17,25 +20,25 @@ class DtorWrapper;
 class ReflectedStructure final
 {
 public:
+    using Key = FastName;
+
     struct Field
     {
-        String name;
+        Key name;
         std::unique_ptr<ValueWrapper> valueWrapper;
         std::unique_ptr<ReflectedMeta> meta;
-
-        const ReflectedType* reflectedType;
     };
 
     struct Method
     {
-        String name;
+        Key name;
         AnyFn fn;
         std::unique_ptr<ReflectedMeta> meta;
     };
 
     struct Enum
     {
-        String name;
+        Key name;
         std::unique_ptr<EnumWrapper> enumWrapper;
     };
 

@@ -14,8 +14,6 @@ class UIControl;
 
 class StyleSheetProperty : public ValueProperty
 {
-    DAVA_VIRTUAL_REFLECTION(StyleSheetProperty, ValueProperty);
-
 public:
     StyleSheetProperty(const DAVA::UIStyleSheetProperty& aProperty);
 
@@ -45,7 +43,7 @@ public:
     const DAVA::UIStyleSheetProperty& GetProperty() const;
 
 private:
-    DAVA::UIStyleSheetProperty property;
+    DAVA::RefPtr<class UIStyleSheetPropertyWrapper> property;
 };
 
 #endif // __QUICKED_STYLE_SHEET_PROPERTY_H__

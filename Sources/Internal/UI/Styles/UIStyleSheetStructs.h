@@ -40,10 +40,9 @@ struct UIStyleSheetPropertyDescriptor
         , name(name_)
         , defaultValue(defaultValue_)
     {
-        String fieldname_ = name_;
         const ReflectedStructure* s = group->refType->GetStructure();
-        auto it = std::find_if(s->fields.begin(), s->fields.end(), [&fieldname_](const std::unique_ptr<ReflectedStructure::Field>& field) {
-            return field->name == fieldname_;
+        auto it = std::find_if(s->fields.begin(), s->fields.end(), [this](const std::unique_ptr<ReflectedStructure::Field>& field) {
+            return field->name == name;
         });
         if (it != s->fields.end())
         {

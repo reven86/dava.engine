@@ -1,8 +1,6 @@
 #include "CommandLine/Private/OptionName.h"
 #include "Render/GPUFamilyDescriptor.h"
 
-const DAVA::String OptionName::deprecated_Export("-export");
-
 const DAVA::String OptionName::Output("-output");
 const DAVA::String OptionName::OutFile("-outfile");
 const DAVA::String OptionName::OutDir("-outdir");
@@ -56,6 +54,7 @@ const DAVA::String OptionName::Height("-height");
 const DAVA::String OptionName::Camera("-camera");
 
 const DAVA::String OptionName::Validate("-validate");
+const DAVA::String OptionName::Count("-count");
 
 const DAVA::String OptionName::MakeNameForGPU(DAVA::eGPUFamily gpuFamily)
 {

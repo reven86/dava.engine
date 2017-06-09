@@ -9,8 +9,9 @@
 
 #include "Classes/Selection/Selection.h"
 
-#include "Render/Image/ImageConvert.h"
-#include "UI/UIEvent.h"
+#include <UI/UIEvent.h>
+#include <Render/Renderer.h>
+#include <Render/Image/ImageConvert.h>
 
 #include <QApplication>
 
@@ -24,6 +25,17 @@ static const DAVA::FastName TILEMASK_EDTIOR_TEXTURE_SOURCE("sourceTexture");
 static const DAVA::FastName TILEMASK_EDTIOR_TEXTURE_TOOL("toolTexture");
 
 static const DAVA::FastName TILEMASK_EDITOR_MATERIAL_PASS("2d");
+
+namespace TilemaskEditorSystemDetail
+{
+const std::array<DAVA::float32, 6 * (3 + 2)> buffer = // 6 vertecies by 5 floats: vec3 position, vec2 tex coord
+{ { -1.f, -1.f, 0.f, 0.f, 0.f,
+    -1.f, 1.f, 0.f, 0.f, 1.f,
+    1.f, 1.f, 0.f, 1.f, 1.f,
+    -1.f, -1.f, 0.f, 0.f, 0.f,
+    1.f, 1.f, 0.f, 1.f, 1.f,
+    1.f, -1.f, 0.f, 1.f, 0.f } };
+}
 
 TilemaskEditorSystem::TilemaskEditorSystem(DAVA::Scene* scene)
     : LandscapeEditorSystem(scene, "~res:/ResourceEditor/LandscapeEditor/Tools/cursor/cursor.png")
@@ -52,16 +64,9 @@ TilemaskEditorSystem::TilemaskEditorSystem(DAVA::Scene* scene)
 
     editorMaterial->PreBuildMaterial(TILEMASK_EDITOR_MATERIAL_PASS);
 
-    std::array<DAVA::float32, 6 * (3 + 2)> buffer = // 6 vertecies by 5 floats: vec3 position, vec2 tex coord
-    { { -1.f, -1.f, 0.f, 0.f, 0.f,
-        -1.f, 1.f, 0.f, 0.f, 1.f,
-        1.f, 1.f, 0.f, 1.f, 1.f,
-        -1.f, -1.f, 0.f, 0.f, 0.f,
-        1.f, 1.f, 0.f, 1.f, 1.f,
-        1.f, -1.f, 0.f, 1.f, 0.f } };
-
-    quadBuffer = rhi::CreateVertexBuffer(static_cast<DAVA::uint32>(buffer.size() * sizeof(DAVA::float32)));
-    rhi::UpdateVertexBuffer(quadBuffer, buffer.data(), 0, static_cast<DAVA::uint32>(buffer.size() * sizeof(DAVA::float32)));
+    quadBuffer = rhi::CreateVertexBuffer(static_cast<DAVA::uint32>(TilemaskEditorSystemDetail::buffer.size() * sizeof(DAVA::float32)));
+    rhi::UpdateVertexBuffer(quadBuffer, TilemaskEditorSystemDetail::buffer.data(), 0, static_cast<DAVA::uint32>(TilemaskEditorSystemDetail::buffer.size() * sizeof(DAVA::float32)));
+    DAVA::Renderer::GetSignals().needRestoreResources.Connect(this, &TilemaskEditorSystem::UpdateVertexBuffer);
 
     quadPacket.vertexStreamCount = 1;
     quadPacket.vertexStream[0] = quadBuffer;
@@ -83,6 +88,7 @@ TilemaskEditorSystem::TilemaskEditorSystem(DAVA::Scene* scene)
 
 TilemaskEditorSystem::~TilemaskEditorSystem()
 {
+    DAVA::Renderer::GetSignals().needRestoreResources.Disconnect(this);
     rhi::DeleteVertexBuffer(quadBuffer);
 
     SafeRelease(editorMaterial);
@@ -485,6 +491,14 @@ void TilemaskEditorSystem::Draw()
     {
         CreateUndoPoint();
         needCreateUndo = false;
+    }
+}
+
+void TilemaskEditorSystem::UpdateVertexBuffer()
+{
+    if (rhi::NeedRestoreVertexBuffer(quadBuffer))
+    {
+        rhi::UpdateVertexBuffer(quadBuffer, TilemaskEditorSystemDetail::buffer.data(), 0, static_cast<DAVA::uint32>(TilemaskEditorSystemDetail::buffer.size() * sizeof(DAVA::float32)));
     }
 }
 

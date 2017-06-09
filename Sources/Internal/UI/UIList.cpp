@@ -7,6 +7,7 @@
 #include "Reflection/ReflectionRegistrator.h"
 #include "UI/Update/UIUpdateComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
+#include "UI/Render/UIClipContentComponent.h"
 
 namespace DAVA
 {
@@ -51,12 +52,12 @@ UIList::UIList(const Rect& rect /* = Rect()*/, eListOrientation requiredOrientat
 {
     InitAfterYaml();
     GetOrCreateComponent<UIUpdateComponent>();
+    GetOrCreateComponent<UIClipContentComponent>();
 }
 
 void UIList::InitAfterYaml()
 {
     SetInputEnabled(true, false);
-    clipContents = true;
     Rect r = GetRect();
     r.x = 0;
     r.y = 0;

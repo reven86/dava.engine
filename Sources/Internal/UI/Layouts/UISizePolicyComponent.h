@@ -7,6 +7,7 @@
 namespace DAVA
 {
 class UIControl;
+class LayoutFormula;
 
 class UISizePolicyComponent : public UIBaseComponent<UIComponent::SIZE_POLICY_COMPONENT>
 {
@@ -22,7 +23,8 @@ public:
         PERCENT_OF_FIRST_CHILD,
         PERCENT_OF_LAST_CHILD,
         PERCENT_OF_CONTENT,
-        PERCENT_OF_PARENT
+        PERCENT_OF_PARENT,
+        FORMULA
     };
 
 public:
@@ -50,6 +52,9 @@ public:
     float32 GetHorizontalMaxValue() const;
     void SetHorizontalMaxValue(float32 value);
 
+    String GetHorizontalFormula() const;
+    void SetHorizontalFormula(const String& formula);
+
     eSizePolicy GetVerticalPolicy() const;
     void SetVerticalPolicy(eSizePolicy policy);
 
@@ -62,10 +67,16 @@ public:
     float32 GetVerticalMaxValue() const;
     void SetVerticalMaxValue(float32 value);
 
+    String GetVerticalFormula() const;
+    void SetVerticalFormula(const String& formula);
+
     eSizePolicy GetPolicyByAxis(int32 axis) const;
     float32 GetValueByAxis(int32 axis) const;
     float32 GetMinValueByAxis(int32 axis) const;
     float32 GetMaxValueByAxis(int32 axis) const;
+
+    LayoutFormula* GetFormula(int32 axis) const;
+    void RemoveFormula(int32 axis);
 
     bool IsDependsOnChildren(int32 axis) const;
 
@@ -79,6 +90,7 @@ private:
         float32 value;
         float32 min;
         float32 max;
+        std::unique_ptr<LayoutFormula> formula;
     };
 
 private:

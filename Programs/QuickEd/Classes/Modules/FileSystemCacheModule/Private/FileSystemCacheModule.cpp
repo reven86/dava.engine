@@ -52,7 +52,7 @@ void FileSystemCacheModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper
     using namespace TArc;
 
     if (fields.empty() == false &&
-        std::find(fields.begin(), fields.end(), String(ProjectData::projectPathPropertyName)) == fields.end())
+        std::find(fields.begin(), fields.end(), ProjectData::projectPathPropertyName) == fields.end())
     {
         return;
     }

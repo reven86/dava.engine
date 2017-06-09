@@ -55,7 +55,7 @@ void Delete(Handle buf);
 
 bool BufferIsReady(Handle buf);
 bool IsReady(Handle buf, uint32 objectIndex);
-int Value(Handle buf, uint32 objectIndex);
+int32 Value(Handle buf, uint32 objectIndex);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -96,20 +96,10 @@ Handle Create(const Descriptor& desc);
 void Delete(Handle ps);
 Handle CreateVertexConstBuffer(Handle ps, uint32 bufIndex);
 Handle CreateFragmentConstBuffer(Handle ps, uint32 bufIndex);
-
-uint32 VertexConstBufferCount(Handle ps);
-uint32 VertexConstCount(Handle ps, uint32 bufIndex);
-bool GetVertexConstInfo(Handle ps, uint32 bufIndex, uint32 maxCount, ProgConstInfo* info);
-
-uint32 FragmentConstBufferCount(Handle ps);
-uint32 FragmentConstCount(Handle ps, uint32 bufIndex);
-bool GetFragmentConstInfo(Handle ps, uint32 bufIndex, uint32 maxCount, ProgConstInfo* info);
-
 } // namespace PipelineState
 
 namespace ConstBuffer
 {
-uint32 ConstCount(Handle cb);
 bool SetConst(Handle cb, uint32 constIndex, uint32 constCount, const float* data);
 bool SetConst(Handle cb, uint32 constIndex, uint32 constSubIndex, const float* data, uint32 dataCount);
 void Delete(Handle cb);

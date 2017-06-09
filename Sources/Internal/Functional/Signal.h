@@ -371,10 +371,11 @@ private:
         TrackedObject* tracked; //< TrackedObject, that is try-casted from `object`
         ConnectionFn fn; //< slot function
 
-        std::bitset<2> flags;
+        std::bitset<3> flags;
 
         enum Flags
         {
+            Emiting,
             Blocked,
             Deleted
         };
@@ -386,7 +387,7 @@ private:
     ConnectionIt connectionsMediumPos;
 
     void AddSlot(Connection&& slot, Group group);
-    void RemoveSlot(Connection& slot);
+    ConnectionIt RemoveSlot(ConnectionIt& it);
 
     void OnTrackedObjectDestroyed(TrackedObject* object) override;
 };

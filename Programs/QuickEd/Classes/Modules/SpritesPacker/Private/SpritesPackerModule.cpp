@@ -19,7 +19,7 @@
 
 #include <QDir>
 
-REGISTER_PREFERENCES_ON_START(SpritesPackerModule,
+REGISTER_PREFERENCES_ON_START(SpritesPackerModuleSettings,
                               PREF_ARG("isUsingAssetCache", false),
                               )
 
@@ -44,15 +44,17 @@ void SpritesPackerModule::PostInit()
     DataContext* globalContext = accessor->GetGlobalContext();
     globalContext->CreateData(std::move(spritesPackerData));
 
+    settings.reset(new SpritesPackerModuleSettings(this));
     //we need to register preferences when whole class is initialized
-    PreferencesStorage::Instance()->RegisterPreferences(this);
+    PreferencesStorage::Instance()->RegisterPreferences(settings.get());
 
     CreateActions();
 }
 
 void SpritesPackerModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
 {
-    PreferencesStorage::Instance()->UnregisterPreferences(this);
+    PreferencesStorage::Instance()->UnregisterPreferences(settings.get());
+    settings.reset();
     GetAccessor()->GetGlobalContext()->DeleteData<SpritesPackerData>();
 }
 
@@ -166,6 +168,21 @@ void SpritesPackerModule::OnReloadSprites()
 
     DialogReloadSprites dialogReloadSprites(spritesPacker, GetUI()->GetWindow(DAVA::TArc::mainWindowKey));
     dialogReloadSprites.exec();
+}
+
+SpritesPackerModuleSettings::SpritesPackerModuleSettings(SpritesPackerModule* module_)
+    : module(module_)
+{
+}
+
+bool SpritesPackerModuleSettings::IsUsingAssetCache() const
+{
+    return module->IsUsingAssetCache();
+}
+
+void SpritesPackerModuleSettings::SetUsingAssetCacheEnabled(bool enabled)
+{
+    module->SetUsingAssetCacheEnabled(enabled);
 }
 
 DECL_GUI_MODULE(SpritesPackerModule);

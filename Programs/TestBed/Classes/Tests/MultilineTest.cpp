@@ -1,5 +1,6 @@
 #include "Tests/MultilineTest.h"
 #include "UI/Focus/UIFocusComponent.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 
 using namespace DAVA;
 
@@ -72,7 +73,7 @@ void MultilineTest::LoadResources()
     textField1 = new UITextField(Rect(5, 10, 400, 60));
     textField1->SetFont(font);
     textField1->SetText(L"hello world");
-    textField1->SetDebugDraw(true);
+    textField1->GetOrCreateComponent<UIDebugRenderComponent>();
     textField1->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
     textField1->SetDelegate(textDelegate1);
     textField1->GetOrCreateComponent<UIFocusComponent>();
@@ -84,7 +85,7 @@ void MultilineTest::LoadResources()
     textField2->SetIsPassword(true);
     textField2->SetFont(font);
     textField2->SetText(L"123456");
-    textField2->SetDebugDraw(true);
+    textField2->GetOrCreateComponent<UIDebugRenderComponent>();
     textField2->SetTextColor(Color(0.0, 0.0, 1.0, 1.0));
     textField2->SetKeyboardType(UITextField::eKeyboardType::KEYBOARD_TYPE_NUMBER_PAD);
     textField2->SetDelegate(textDelegate2);
@@ -95,7 +96,7 @@ void MultilineTest::LoadResources()
     RefPtr<UITextField> textField3(new UITextField(Rect(5, 150, 400, 60)));
     textField3->SetFont(font);
     textField3->SetText(L"field w/o options");
-    textField3->SetDebugDraw(true);
+    textField3->GetOrCreateComponent<UIDebugRenderComponent>();
     textField3->GetOrCreateComponent<UIFocusComponent>();
     AddControl(textField3.Get());
 
@@ -103,7 +104,7 @@ void MultilineTest::LoadResources()
     textFieldMulti->GetOrCreateComponent<UIFocusComponent>();
     textFieldMulti->SetFont(font);
     textFieldMulti->SetText(L"Multiline text field");
-    textFieldMulti->SetDebugDraw(true);
+    textFieldMulti->GetOrCreateComponent<UIDebugRenderComponent>();
     textFieldMulti->SetTextColor(Color(0.0, 0.0, 1.0, 1.0));
     textFieldMulti->SetMultiline(true);
     textFieldMulti->SetTextAlign(ALIGN_HCENTER | ALIGN_TOP);
@@ -121,14 +122,14 @@ void MultilineTest::LoadResources()
     button->SetStateFont(0xFF, font);
     button->SetStateFontColor(0xFF, Color::White);
     button->SetStateText(0xFF, L"Show/Hide");
-    button->SetDebugDraw(true);
+    button->GetOrCreateComponent<UIDebugRenderComponent>();
     button->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &MultilineTest::OnShowHideClick));
     AddControl(button);
     SafeRelease(button);
 
     UITextField* field = new UITextField(Rect(0, Y_OFFSET + CONTROL_HEIGTH + 10, CONTROL_LENGHT, CONTROL_HEIGTH));
     field->SetFont(font);
-    field->SetDebugDraw(true);
+    field->GetOrCreateComponent<UIDebugRenderComponent>();
     field->SetText(L"Test text inside UITextField used for test");
     field->SetDelegate(this);
     AddControl(field);
@@ -137,7 +138,7 @@ void MultilineTest::LoadResources()
     field = new UITextField(Rect(0, Y_OFFSET + 2 * (CONTROL_HEIGTH + 10), CONTROL_LENGHT, CONTROL_HEIGTH));
     field->GetOrCreateComponent<UIFocusComponent>();
     field->SetFont(font);
-    field->SetDebugDraw(true);
+    field->GetOrCreateComponent<UIDebugRenderComponent>();
     field->SetText(L"Test text inside UITextField used for test");
     field->SetDelegate(this);
 
@@ -149,7 +150,7 @@ void MultilineTest::LoadResources()
     topLayerControlBg->SetColor(Color(1.0f, 0.0f, 0.0f, 0.5f));
     topLayerControlBg->SetDrawType(UIControlBackground::DRAW_FILL);
     topLayerControlBg->SetColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
-    topLayerControl->SetDebugDraw(true);
+    topLayerControl->GetOrCreateComponent<UIDebugRenderComponent>();
     AddControl(topLayerControl);
 
     BaseScreen::LoadResources();
@@ -185,7 +186,7 @@ UIButton* MultilineTest::CreateUIButton(Font* font, const Rect& rect, const Stri
     button->SetStateFont(0xFF, font);
     button->SetStateText(0xFF, UTF8Utils::EncodeToWideString(text));
     button->SetStateFontColor(0xFF, Color::White);
-    button->SetDebugDraw(true);
+    button->GetOrCreateComponent<UIDebugRenderComponent>();
     button->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, onClick));
     AddControl(button);
     return button;

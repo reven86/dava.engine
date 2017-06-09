@@ -1,6 +1,6 @@
-#include "PropertiesWidget.h"
 #include "ui_PropertiesWidget.h"
-#include "PropertiesModel.h"
+#include "UI/Properties/PropertiesWidget.h"
+#include "UI/Properties/PropertiesModel.h"
 
 #include "Modules/DocumentsModule/DocumentData.h"
 #include "Modules/LegacySupportModule/Private/Project.h"
@@ -14,7 +14,8 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 
-#include <TArc/Core/FieldBinder.h>
+#include <TArc/WindowSubSystem/UI.h>
+#include <TArc/Core/ContextAccessor.h>
 
 #include <UI/Components/UIComponent.h>
 #include <UI/UIControl.h>
@@ -44,8 +45,13 @@ String GetPathFromIndex(QModelIndex index)
 
 PropertiesWidget::PropertiesWidget(QWidget* parent)
     : QDockWidget(parent)
+    , nodeUpdater(300)
 {
     setupUi(this);
+
+    nodeUpdater.SetUpdater(MakeFunction(this, &PropertiesWidget::UpdateModelInternal));
+    nodeUpdater.SetStopper([this]() { return selectedNode == nullptr; });
+
     propertiesModel = new PropertiesModel(treeView);
     propertiesItemsDelegate = new PropertiesTreeItemDelegate(this);
     treeView->setModel(propertiesModel);
@@ -74,12 +80,24 @@ PropertiesWidget::PropertiesWidget(QWidget* parent)
     UpdateModel(nullptr);
 }
 
-PropertiesWidget::~PropertiesWidget() = default;
+PropertiesWidget::~PropertiesWidget()
+{
+    nodeUpdater.Abort();
+}
 
 void PropertiesWidget::SetAccessor(DAVA::TArc::ContextAccessor* accessor_)
 {
     accessor = accessor_;
+
+    documentDataWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<DocumentData>());
+    documentDataWrapper.SetListener(this);
+
     propertiesModel->SetAccessor(accessor);
+}
+
+void PropertiesWidget::SetUI(DAVA::TArc::UI* ui_)
+{
+    ui = ui_;
 }
 
 void PropertiesWidget::SetProject(const Project* project)
@@ -89,7 +107,7 @@ void PropertiesWidget::SetProject(const Project* project)
 
 void PropertiesWidget::OnAddComponent(QAction* action)
 {
-    QtModelPackageCommandExecutor executor(accessor);
+    QtModelPackageCommandExecutor executor(accessor, ui);
     DVASSERT(accessor->GetActiveContext() != nullptr);
     const RootProperty* rootProperty = DAVA::DynamicTypeCheck<const RootProperty*>(propertiesModel->GetRootProperty());
 
@@ -112,7 +130,7 @@ void PropertiesWidget::OnAddComponent(QAction* action)
 
 void PropertiesWidget::OnRemove()
 {
-    QtModelPackageCommandExecutor executor(accessor);
+    QtModelPackageCommandExecutor executor(accessor, ui);
     DVASSERT(accessor->GetActiveContext() != nullptr);
 
     QModelIndexList indices = treeView->selectionModel()->selectedIndexes();
@@ -155,7 +173,7 @@ void PropertiesWidget::OnRemove()
 
 void PropertiesWidget::OnAddStyleProperty(QAction* action)
 {
-    QtModelPackageCommandExecutor executor(accessor);
+    QtModelPackageCommandExecutor executor(accessor, ui);
     DVASSERT(accessor->GetActiveContext() != nullptr);
 
     uint32 propertyIndex = action->data().toUInt();
@@ -171,7 +189,7 @@ void PropertiesWidget::OnAddStyleProperty(QAction* action)
 
 void PropertiesWidget::OnAddStyleSelector()
 {
-    QtModelPackageCommandExecutor executor(accessor);
+    QtModelPackageCommandExecutor executor(accessor, ui);
     DVASSERT(accessor->GetActiveContext() != nullptr);
     executor.AddStyleSelector(DynamicTypeCheck<StyleSheetNode*>(selectedNode));
 }
@@ -298,12 +316,17 @@ void PropertiesWidget::UpdateModel(PackageBaseNode* node)
     {
         return;
     }
+    selectedNode = node;
+    nodeUpdater.Update();
+}
+
+void PropertiesWidget::UpdateModelInternal()
+{
     if (nullptr != selectedNode)
     {
         auto index = treeView->indexAt(QPoint(0, 0));
         lastTopIndexPath = GetPathFromIndex(index);
     }
-    selectedNode = node;
     propertiesModel->Reset(selectedNode);
     bool isControl = dynamic_cast<ControlNode*>(selectedNode) != nullptr;
     bool isStyle = dynamic_cast<StyleSheetNode*>(selectedNode) != nullptr;
@@ -312,8 +335,7 @@ void PropertiesWidget::UpdateModel(PackageBaseNode* node)
     addStyleSelectorAction->setEnabled(isStyle);
     removeAction->setEnabled(false);
 
-    //delay long time work with view
-    QMetaObject::invokeMethod(this, "OnModelUpdated", Qt::QueuedConnection);
+    OnModelUpdated();
 }
 
 void PropertiesWidget::UpdateActions()
@@ -346,22 +368,47 @@ void PropertiesWidget::ApplyExpanding()
     }
 }
 
-void PropertiesWidget::OnPackageChanged(const DAVA::Any& package)
-{
-    treeView->setEnabled(package.CanGet<PackageNode*>() && (package.Get<PackageNode*>() != nullptr));
-}
-
-void PropertiesWidget::BindFields()
+void PropertiesWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
 {
     using namespace DAVA;
     using namespace DAVA::TArc;
 
-    fieldBinder.reset(new FieldBinder(accessor));
-
+    bool hasData = wrapper.HasData();
+    treeView->setEnabled(hasData);
+    if (hasData == false)
     {
-        FieldDescriptor fieldDescr;
-        fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
-        fieldDescr.fieldName = FastName(DocumentData::packagePropertyName);
-        fieldBinder->BindField(fieldDescr, MakeFunction(this, &PropertiesWidget::OnPackageChanged));
+        UpdateModel(nullptr);
+        return;
+    }
+
+    bool currentNodeWasChanged = fields.empty() || std::find(fields.begin(), fields.end(), DocumentData::currentNodePropertyName) != fields.end();
+    bool packageWasChanged = fields.empty() || std::find(fields.begin(), fields.end(), DocumentData::packagePropertyName) != fields.end();
+
+    if (packageWasChanged)
+    {
+        //clear last cached value because next selected value will be delayed
+        UpdateModel(nullptr);
+    }
+
+    if (currentNodeWasChanged)
+    {
+        Any currentNodeValue = wrapper.GetFieldValue(DocumentData::currentNodePropertyName);
+        if (currentNodeValue.CanGet<PackageBaseNode*>())
+        {
+            PackageBaseNode* currentNode = currentNodeValue.Get<PackageBaseNode*>();
+            if (currentNode != nullptr)
+            {
+                PackageBaseNode* parent = currentNode->GetParent();
+                if (parent != nullptr && parent->GetParent() != nullptr)
+                {
+                    UpdateModel(currentNode);
+                    return;
+                }
+            }
+        }
+        if (packageWasChanged == false)
+        {
+            UpdateModel(nullptr);
+        }
     }
 }

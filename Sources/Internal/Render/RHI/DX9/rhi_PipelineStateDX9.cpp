@@ -225,14 +225,13 @@ public:
         {
         };
 
-        ConstBuf();
         ~ConstBuf();
 
-        void Construct(ProgType type, unsigned reg_i, unsigned reg_count);
+        void Construct(ProgType type, unsigned reg_i, unsigned reg_count, unsigned elem_count);
         void Destroy();
 
-        unsigned ConstCount() const;
-        const void* InstData() const;
+        unsigned ConstElementCount() const;
+        const void* InstData();
         void InvalidateInst();
 
         bool SetConst(unsigned const_i, unsigned count, const float* data);
@@ -241,10 +240,11 @@ public:
 
     private:
         ProgType progType = PROG_VERTEX;
-        float* value;
-        mutable float* inst;
-        unsigned reg;
-        unsigned regCount;
+        float* value = nullptr;
+        float* inst = nullptr;
+        unsigned elementCount = 0;
+        unsigned registerBase = 0;
+        unsigned registerCount = 0;
     };
 
     struct
@@ -280,8 +280,9 @@ public:
         IDirect3DVertexShader9* vs9;
         IDirect3DVertexDeclaration9* vdecl9; // ref-only
         std::vector<vdecl_t> altVdecl9;
-        unsigned cbufReg[MAX_CONST_BUFFER_COUNT];
-        unsigned cbufCount[MAX_CONST_BUFFER_COUNT];
+        unsigned cbufElemCount[MAX_CONST_BUFFER_COUNT];
+        unsigned cbufRegBase[MAX_CONST_BUFFER_COUNT];
+        unsigned cbufRegCount[MAX_CONST_BUFFER_COUNT];
         DAVA::FastName uid;
     };
 
@@ -303,8 +304,9 @@ public:
         unsigned codeSize;
         void* code;
         IDirect3DPixelShader9* ps9;
-        unsigned cbufReg[MAX_CONST_BUFFER_COUNT];
-        unsigned cbufCount[MAX_CONST_BUFFER_COUNT];
+        unsigned cbufElemCount[MAX_CONST_BUFFER_COUNT];
+        unsigned cbufRegBase[MAX_CONST_BUFFER_COUNT];
+        unsigned cbufRegCount[MAX_CONST_BUFFER_COUNT];
         DAVA::FastName uid;
     };
 
@@ -325,16 +327,6 @@ RHI_IMPL_POOL_SIZE(PipelineStateDX9_t::ConstBuf, RESOURCE_CONST_BUFFER, Pipeline
 
 //------------------------------------------------------------------------------
 
-PipelineStateDX9_t::ConstBuf::ConstBuf()
-    : value(nullptr)
-    , inst(nullptr)
-    , reg(DAVA::InvalidIndex)
-    , regCount(0)
-{
-}
-
-//------------------------------------------------------------------------------
-
 PipelineStateDX9_t::ConstBuf::~ConstBuf()
 {
     if (value)
@@ -346,17 +338,20 @@ PipelineStateDX9_t::ConstBuf::~ConstBuf()
 
 //------------------------------------------------------------------------------
 
-void PipelineStateDX9_t::ConstBuf::Construct(ProgType ptype, unsigned reg_i, unsigned reg_count)
+void PipelineStateDX9_t::ConstBuf::Construct(ProgType ptype, unsigned reg_i, unsigned reg_count, unsigned elem_count)
 {
     DVASSERT(!value);
+    DVASSERT(elem_count);
     DVASSERT(reg_i != DAVA::InvalidIndex);
     DVASSERT(reg_count);
 
+    elementCount = elem_count;
+    registerBase = reg_i;
+    registerCount = reg_count;
+
     progType = ptype;
-    value = (float*)(malloc(reg_count * 4 * sizeof(float)));
+    value = (float*)(malloc(elementCount * 4 * sizeof(float)));
     inst = nullptr;
-    reg = reg_i;
-    regCount = reg_count;
 }
 
 //------------------------------------------------------------------------------
@@ -369,28 +364,29 @@ void PipelineStateDX9_t::ConstBuf::Destroy()
 
         value = nullptr;
         inst = nullptr;
-        reg = 0;
-        regCount = 0;
+        elementCount = 0;
+        registerBase = 0;
+        registerCount = 0;
     }
 }
 
 //------------------------------------------------------------------------------
 
 unsigned
-PipelineStateDX9_t::ConstBuf::ConstCount() const
+PipelineStateDX9_t::ConstBuf::ConstElementCount() const
 {
-    return regCount;
+    return elementCount;
 }
 
 //------------------------------------------------------------------------------
 
 const void*
-PipelineStateDX9_t::ConstBuf::InstData() const
+PipelineStateDX9_t::ConstBuf::InstData()
 {
     if (!inst)
     {
-        inst = _DX9_DefConstRingBuf.Alloc(4 * regCount);
-        memcpy(inst, value, regCount * 4 * sizeof(float));
+        inst = _DX9_DefConstRingBuf.Alloc(4 * elementCount);
+        memcpy(inst, value, elementCount * 4 * sizeof(float));
     }
 
     return inst;
@@ -409,7 +405,7 @@ bool PipelineStateDX9_t::ConstBuf::SetConst(unsigned const_i, unsigned const_cou
 {
     bool success = false;
 
-    if (const_i + const_count <= regCount)
+    if (const_i + const_count <= elementCount)
     {
         memcpy(value + const_i * 4, data, const_count * 4 * sizeof(float));
         inst = nullptr;
@@ -425,7 +421,7 @@ bool PipelineStateDX9_t::ConstBuf::SetConst(unsigned const_i, unsigned const_sub
 {
     bool success = false;
 
-    if (const_i <= regCount && const_sub_i < 4)
+    if (const_i <= elementCount && const_sub_i < 4)
     {
         memcpy(value + const_i * 4 + const_sub_i, data, dataCount * sizeof(float));
         inst = nullptr;
@@ -442,9 +438,9 @@ void PipelineStateDX9_t::ConstBuf::SetToRHI(const void* inst_data) const
     HRESULT hr;
 
     if (progType == PROG_VERTEX)
-        hr = _D3D9_Device->SetVertexShaderConstantF(reg, (const float*)inst_data, regCount);
+        hr = _D3D9_Device->SetVertexShaderConstantF(registerBase, (const float*)inst_data, registerCount);
     else
-        hr = _D3D9_Device->SetPixelShaderConstantF(reg, (const float*)inst_data, regCount);
+        hr = _D3D9_Device->SetPixelShaderConstantF(registerBase, (const float*)inst_data, registerCount);
 
     DVASSERT(SUCCEEDED(hr));
 }
@@ -484,8 +480,9 @@ bool PipelineStateDX9_t::VertexProgDX9::Construct(const void* bin, unsigned bin_
                 sprintf(name, "VP_Buffer%u", i);
                 D3DXHANDLE c = const_tab->GetConstantByName(NULL, name);
 
-                cbufReg[i] = DAVA::InvalidIndex;
-                cbufCount[i] = 0;
+                cbufElemCount[i] = 0;
+                cbufRegBase[i] = DAVA::InvalidIndex;
+                cbufRegCount[i] = 0;
 
                 if (c)
                 {
@@ -496,8 +493,9 @@ bool PipelineStateDX9_t::VertexProgDX9::Construct(const void* bin, unsigned bin_
 
                     if (SUCCEEDED(hr))
                     {
-                        cbufReg[i] = desc.RegisterIndex;
-                        cbufCount[i] = desc.Elements;
+                        cbufElemCount[i] = desc.Elements;
+                        cbufRegBase[i] = desc.RegisterIndex;
+                        cbufRegCount[i] = desc.RegisterCount;
                     }
                 }
                 else
@@ -513,18 +511,13 @@ bool PipelineStateDX9_t::VertexProgDX9::Construct(const void* bin, unsigned bin_
             // do some additional sanity checks
             for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
             {
-                if (cbufReg[i] == DAVA::InvalidIndex)
+                if (cbufRegBase[i] == DAVA::InvalidIndex)
                 {
-                    if (i == 0 && cbufReg[i + 1] != DAVA::InvalidIndex)
+                    if (i == 0 && cbufRegBase[i + 1] != DAVA::InvalidIndex)
                     {
                         Logger::Warning("WARNING: vertex-const-buf [%u] is unused (all uniform/variables are unused)", i);
                     }
                 }
-                //                else
-                //                {
-                //                    if( i )
-                //                        DVASSERT(cbufReg[i]>cbufReg[i-1]);
-                //                }
             }
 
             vdecl9 = VDeclDX9::Get(vdecl);
@@ -568,7 +561,7 @@ PipelineStateDX9_t::VertexProgDX9::CreateConstBuffer(unsigned buf_i)
 
         ConstBuf* cb = ConstBufDX9Pool::Get(handle);
 
-        cb->Construct(PROG_VERTEX, cbufReg[buf_i], cbufCount[buf_i]);
+        cb->Construct(PROG_VERTEX, cbufRegBase[buf_i], cbufRegCount[buf_i], cbufElemCount[buf_i]);
     }
 
     return handle;
@@ -729,8 +722,9 @@ bool PipelineStateDX9_t::FragmentProgDX9::Construct(const void* bin, unsigned bi
                 sprintf(name, "FP_Buffer%u", i);
                 D3DXHANDLE c = const_tab->GetConstantByName(NULL, name);
 
-                cbufReg[i] = DAVA::InvalidIndex;
-                cbufCount[i] = 0;
+                cbufElemCount[i] = 0;
+                cbufRegBase[i] = DAVA::InvalidIndex;
+                cbufRegCount[i] = 0;
 
                 if (c)
                 {
@@ -741,8 +735,9 @@ bool PipelineStateDX9_t::FragmentProgDX9::Construct(const void* bin, unsigned bi
 
                     if (SUCCEEDED(hr))
                     {
-                        cbufReg[i] = desc.RegisterIndex;
-                        cbufCount[i] = desc.Elements;
+                        cbufElemCount[i] = desc.Elements;
+                        cbufRegBase[i] = desc.RegisterIndex;
+                        cbufRegCount[i] = desc.RegisterCount;
                     }
                 }
                 else
@@ -758,18 +753,13 @@ bool PipelineStateDX9_t::FragmentProgDX9::Construct(const void* bin, unsigned bi
             // do some additional sanity checks
             for (unsigned i = 0; i != MAX_CONST_BUFFER_COUNT; ++i)
             {
-                if (cbufReg[i] == DAVA::InvalidIndex)
+                if (cbufRegBase[i] == DAVA::InvalidIndex)
                 {
-                    if (i == 0 && cbufReg[i + 1] != DAVA::InvalidIndex)
+                    if (i == 0 && cbufRegBase[i + 1] != DAVA::InvalidIndex)
                     {
                         Logger::Warning("WARNING: fragment-const-buf [%u] is unused (all uniform/variables are unused)", i);
                     }
                 }
-                //                else
-                //                {
-                //                    if( i )
-                //                        DVASSERT(cbufReg[i]>cbufReg[i-1]);
-                //                }
             }
 
             success = true;
@@ -808,7 +798,7 @@ PipelineStateDX9_t::FragmentProgDX9::CreateConstBuffer(unsigned buf_i)
 
         ConstBuf* cb = ConstBufDX9Pool::Get(handle);
 
-        cb->Construct(PROG_FRAGMENT, cbufReg[buf_i], cbufCount[buf_i]);
+        cb->Construct(PROG_FRAGMENT, cbufRegBase[buf_i], cbufRegCount[buf_i], cbufElemCount[buf_i]);
     }
 
     return handle;

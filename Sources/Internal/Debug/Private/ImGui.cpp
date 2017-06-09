@@ -495,7 +495,7 @@ bool OnInput(UIEvent* input)
         break;
     }
 
-    return false;
+    return (io.WantCaptureMouse || io.WantCaptureKeyboard || io.WantTextInput);
 }
 
 void Uninitialize()

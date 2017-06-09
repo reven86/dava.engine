@@ -4,6 +4,7 @@
 #include "RemoteTool/Private/MemoryTool/MemProfController.h"
 
 #include <Logger/Logger.h>
+#include <Base/TemplateHelpers.h>
 #include <Network/NetworkCommon.h>
 #include <Network/PeerDesription.h>
 

@@ -34,7 +34,7 @@ const ReflectedType* GetVirtualReflectedTypeImpl(const T* ptr, std::true_type)
 template <typename T>
 const ReflectedType* GetVirtualReflectedType(const T* ptr)
 {
-    static const bool isRefBase = std::is_base_of<ReflectionBase, T>::value;
+    static const bool isRefBase = (std::is_base_of<ReflectionBase, T>::value || std::is_same<ReflectionBase, T>::value);
     return GetVirtualReflectedTypeImpl(ptr, std::integral_constant<bool, isRefBase>());
 }
 } // namespace ReflectedTypeDBDetail
@@ -52,6 +52,8 @@ ReflectedType* ReflectedTypeDB::Edit()
     using DecayT = Type::DecayT<T>;
     ReflectedType* ret = CreateStatic<DecayT>();
 
+    // Newly created ReflectedType has `type == nullptr`,
+    // so check if returned ReflectedType is still not initialized
     if (nullptr == ret->type)
     {
         ret->type = Type::Instance<DecayT>();
@@ -78,10 +80,11 @@ const ReflectedType* ReflectedTypeDB::GetByPointer(const T* ptr)
     if (nullptr != ptr)
     {
         ret = ReflectedTypeDBDetail::GetVirtualReflectedType(ptr);
-        if (nullptr == ret)
-        {
-            ret = ReflectedTypeDB::Edit<T>();
-        }
+    }
+
+    if (nullptr == ret)
+    {
+        ret = ReflectedTypeDB::Edit<T>();
     }
 
     return ret;

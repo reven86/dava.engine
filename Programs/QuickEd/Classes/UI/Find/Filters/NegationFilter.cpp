@@ -9,12 +9,12 @@ NegationFilter::NegationFilter(std::shared_ptr<FindFilter> filter_)
 {
 }
 
-bool NegationFilter::CanAcceptPackage(const PackageInformation* package) const
+FindFilter::ePackageStatus NegationFilter::AcceptPackage(const PackageInformation* package) const
 {
-    return filter->CanAcceptPackage(package);
+    return filter->AcceptPackage(package);
 }
 
-bool NegationFilter::CanAcceptControl(const ControlInformation* control) const
+bool NegationFilter::AcceptControl(const ControlInformation* control) const
 {
-    return !filter->CanAcceptControl(control);
+    return !filter->AcceptControl(control);
 }

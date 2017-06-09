@@ -16,9 +16,7 @@ Formula::~Formula()
 
 bool Formula::Parse(const String& str)
 {
-    exp.reset();
-    parsingError = "";
-    calculationError = "";
+    Reset();
 
     try
     {
@@ -31,6 +29,13 @@ bool Formula::Parse(const String& str)
         parsingError = error.GetFormattedMessage();
         return false;
     }
+}
+
+void Formula::Reset()
+{
+    exp.reset();
+    parsingError = "";
+    calculationError = "";
 }
 
 bool Formula::IsValid() const

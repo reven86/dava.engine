@@ -41,8 +41,7 @@ QueryBufferMetal_t::~QueryBufferMetal_t()
 {
 }
 
-static Handle
-metal_QueryBuffer_Create(uint32 maxObjectCount)
+static Handle metal_QueryBuffer_Create(uint32 maxObjectCount)
 {
     Handle handle = QueryBufferMetalPool::Alloc();
     QueryBufferMetal_t* buf = QueryBufferMetalPool::Get(handle);
@@ -61,8 +60,7 @@ metal_QueryBuffer_Create(uint32 maxObjectCount)
     return handle;
 }
 
-static void
-metal_QueryBuffer_Reset(Handle handle)
+static void metal_QueryBuffer_Reset(Handle handle)
 {
     QueryBufferMetal_t* buf = QueryBufferMetalPool::Get(handle);
 
@@ -72,8 +70,7 @@ metal_QueryBuffer_Reset(Handle handle)
     }
 }
 
-static void
-metal_QueryBuffer_Delete(Handle handle)
+static void metal_QueryBuffer_Delete(Handle handle)
 {
     QueryBufferMetal_t* buf = QueryBufferMetalPool::Get(handle);
 
@@ -85,8 +82,7 @@ metal_QueryBuffer_Delete(Handle handle)
     QueryBufferMetalPool::Free(handle);
 }
 
-static bool
-metal_QueryBuffer_IsReady(Handle handle)
+static bool metal_QueryBuffer_IsReady(Handle handle)
 {
     return true;
     /*
@@ -101,8 +97,7 @@ metal_QueryBuffer_IsReady(Handle handle)
 */
 }
 
-static bool
-metal_QueryBuffer_ObjectIsReady(Handle handle, uint32 objectIndex)
+static bool metal_QueryBuffer_ObjectIsReady(Handle handle, uint32 objectIndex)
 {
     return true;
     /*
@@ -117,8 +112,7 @@ metal_QueryBuffer_ObjectIsReady(Handle handle, uint32 objectIndex)
 */
 }
 
-static int
-metal_QueryBuffer_Value(Handle handle, uint32 objectIndex)
+static int32 metal_QueryBuffer_Value(Handle handle, uint32 objectIndex)
 {
     int value = 0;
     QueryBufferMetal_t* buf = QueryBufferMetalPool::Get(handle);

@@ -148,8 +148,8 @@ SceneEditor2::SceneEditor2()
     materialSystem = new EditorMaterialSystem(this);
     AddSystem(materialSystem, MAKE_COMPONENT_MASK(DAVA::Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
-    wayEditSystem = new WayEditSystem(this, collisionSystem);
-    AddSystem(wayEditSystem, MAKE_COMPONENT_MASK(DAVA::Component::WAYPOINT_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT);
+    wayEditSystem = new WayEditSystem(this);
+    AddSystem(wayEditSystem, MAKE_COMPONENT_MASK(DAVA::Component::WAYPOINT_COMPONENT) | MAKE_COMPONENT_MASK(DAVA::Component::TRANSFORM_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS | SCENE_SYSTEM_REQUIRE_INPUT);
     structureSystem->AddDelegate(wayEditSystem);
 
     pathSystem = new PathSystem(this);
@@ -336,12 +336,21 @@ bool SceneEditor2::Export(const SceneExporter::Params& exportingParams)
         exporter.SetExportingParams(exportingParams);
 
         const DAVA::FilePath& scenePathname = GetScenePath();
-        DAVA::FilePath newScenePathname = exportingParams.dataFolder + scenePathname.GetRelativePathname(exportingParams.dataSourceFolder);
+        DAVA::FilePath newScenePathname = exportingParams.outputs[0].dataFolder + scenePathname.GetRelativePathname(exportingParams.dataSourceFolder);
         DAVA::FileSystem::Instance()->CreateDirectory(newScenePathname.GetDirectory(), true);
 
-        SceneExporter::ExportedObjectCollection exportedObjects;
-        bool sceneExported = exporter.ExportScene(clonedScene, scenePathname, exportedObjects);
-        bool objectExported = exporter.ExportObjects(exportedObjects);
+        DAVA::Vector<SceneExporter::ExportedObjectCollection> exportedObjects;
+        exportedObjects.resize(SceneExporter::OBJECT_COUNT);
+        bool sceneExported = exporter.ExportScene(clonedScene, scenePathname, newScenePathname, exportedObjects);
+
+        bool objectExported = true;
+        for (const SceneExporter::ExportedObjectCollection& collection : exportedObjects)
+        {
+            if (collection.empty() == false)
+            {
+                objectExported = exporter.ExportObjects(collection) && objectExported;
+            }
+        }
 
         return (sceneExported && objectExported);
     }

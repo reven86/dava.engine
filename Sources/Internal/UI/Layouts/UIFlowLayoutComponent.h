@@ -64,8 +64,8 @@ public:
     bool IsDynamicVerticalSpacing() const;
     void SetDynamicVerticalSpacing(bool dynamic);
 
-    float32 GetPaddingByAxis(int32 axis);
-    float32 GetSpacingByAxis(int32 axis);
+    float32 GetPaddingByAxis(int32 axis) const;
+    float32 GetSpacingByAxis(int32 axis) const;
 
     bool IsUseRtl() const;
     void SetUseRtl(bool use);

@@ -2,20 +2,25 @@
 
 #include "Classes/Commands2/RECommandIDs.h"
 
-SetFieldValueCommand::SetFieldValueCommand(const DAVA::Reflection::Field& field, const DAVA::Any& newValue_)
+SetFieldValueCommand::SetFieldValueCommand(const DAVA::Reflection::Field& field_, const DAVA::Any& newValue_)
     : RECommand(CMDID_REFLECTED_FIELD_MODIFY, "")
     , newValue(newValue_)
-    , reflection(field.ref)
+    , field(field_)
 {
-    oldValue = reflection.GetValue();
+    oldValue = field.ref.GetValue();
 }
 
 void SetFieldValueCommand::Redo()
 {
-    reflection.SetValueWithCast(newValue);
+    field.ref.SetValueWithCast(newValue);
 }
 
 void SetFieldValueCommand::Undo()
 {
-    reflection.SetValueWithCast(oldValue);
+    field.ref.SetValueWithCast(oldValue);
+}
+
+const DAVA::Reflection::Field& SetFieldValueCommand::GetField() const
+{
+    return field;
 }

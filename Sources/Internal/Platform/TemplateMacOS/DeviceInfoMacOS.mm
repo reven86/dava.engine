@@ -4,6 +4,7 @@
 
 #include "Platform/TemplateMacOS/DeviceInfoMacOS.h"
 #include "Base/GlobalEnum.h"
+#include "Base/TemplateHelpers.h"
 
 #include <stdlib.h>
 #include <stdio.h>

@@ -40,6 +40,8 @@ public:
     ~ResultList() = default;
     operator bool() const;
     bool IsSuccess() const;
+    bool HasErrors() const;
+    bool HasWarnings() const;
     ResultList& operator=(const ResultList& resultList) = default;
     ResultList& operator=(ResultList&& resultList);
     ResultList& operator<<(const Result& result);
@@ -51,20 +53,32 @@ public:
     ResultList& AddResultList(ResultList&& resultList);
 
     const Deque<Result>& GetResults() const;
+    String GetResultMessages() const;
 
 private:
-    bool allOk;
+    bool hasErrors = false;
+    bool hasWarnings = false;
     Deque<Result> results;
 };
 
 inline ResultList::operator bool() const
 {
-    return allOk;
+    return !hasErrors;
 }
 
 inline bool ResultList::IsSuccess() const
 {
-    return allOk;
+    return !hasErrors;
+}
+
+inline bool ResultList::HasErrors() const
+{
+    return hasErrors;
+}
+
+inline bool ResultList::HasWarnings() const
+{
+    return hasWarnings;
 }
 
 inline const Deque<Result>& ResultList::GetResults() const

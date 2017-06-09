@@ -4,6 +4,7 @@
 #include "Base/BaseObject.h"
 
 #include <functional>
+#include <Base/Result.h>
 
 namespace DAVA
 {
@@ -52,8 +53,14 @@ public:
     virtual bool CanCopy() const;
     virtual bool IsReadOnly() const;
 
+    void AddResult(const DAVA::Result& r);
+    const DAVA::ResultList& GetResults() const;
+    bool HasErrors() const;
+
 private:
     PackageBaseNode* parent;
+
+    DAVA::ResultList results;
 };
 
 //comparator to sort nodes by their hierarchy

@@ -125,7 +125,7 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     //  - Logger, to log messages on startup
     //  - FileSystem, to load config files with init options
     //  - DeviceManager, to check what hatdware is available
-    context->logger = new Logger;
+    context->logger = new Logger();
     context->settings = new EngineSettings();
     context->fileSystem = new FileSystem;
     FilePath::InitializeBundleName();
@@ -272,7 +272,6 @@ void EngineBackend::RunConsole()
     while (!quitConsole)
     {
         OnFrameConsole();
-        Thread::Sleep(1);
     }
     OnGameLoopStopped();
     OnEngineCleanup();
@@ -449,21 +448,27 @@ void EngineBackend::OnWindowCreated(Window* window)
         size_t nerased = justCreatedWindows.erase(window);
         DVASSERT(nerased == 1);
 
-        auto result = aliveWindows.insert(window);
-        DVASSERT(result.second == true);
+        DVASSERT(std::find(aliveWindows.begin(), aliveWindows.end(), window) == aliveWindows.end());
+        aliveWindows.push_back(window);
     }
     engine->windowCreated.Emit(window);
+
+    window->visibilityChanged.Connect(this, &EngineBackend::OnWindowVisibilityChanged);
 }
 
 void EngineBackend::OnWindowDestroyed(Window* window)
 {
     Logger::Info("EngineBackend::OnWindowDestroyed: enter");
 
+    window->visibilityChanged.Disconnect(this);
     engine->windowDestroyed.Emit(window);
 
-    // Remove window from alive window list and place it into dying window list to delete later
-    size_t nerased = aliveWindows.erase(window);
-    DVASSERT(nerased == 1);
+    // Remove window from alive window list
+    auto it = std::find(aliveWindows.begin(), aliveWindows.end(), window);
+    DVASSERT(it != aliveWindows.end());
+    aliveWindows.erase(it);
+
+    // Place it into dying window list to delete later
     dyingWindows.insert(window);
 
     if (aliveWindows.empty())
@@ -476,6 +481,32 @@ void EngineBackend::OnWindowDestroyed(Window* window)
     }
 
     Logger::Info("EngineBackend::OnWindowDestroyed: leave");
+}
+
+void EngineBackend::OnWindowVisibilityChanged(Window* window, bool visible)
+{
+    // Update atLeastOneWindowIsVisible variable
+    atLeastOneWindowIsVisible = false;
+    for (Window* w : GetWindows())
+    {
+        if (w->IsVisible())
+        {
+            atLeastOneWindowIsVisible = true;
+            break;
+        }
+    }
+
+    // Update screen timeout
+    if (atLeastOneWindowIsVisible)
+    {
+        // If at least one window is visible, switch to user setting
+        platformCore->SetScreenTimeoutEnabled(screenTimeoutEnabled);
+    }
+    else
+    {
+        // Enable screen timeout if all windows are hidden
+        platformCore->SetScreenTimeoutEnabled(true);
+    }
 }
 
 void EngineBackend::EventHandler(const MainDispatcherEvent& e)
@@ -549,14 +580,11 @@ void EngineBackend::HandleAppTerminate(const MainDispatcherEvent& e)
     {
         appIsTerminating = true;
 
-        // Usually windows send blocking event about destruction and aliveWindows can be
-        // modified while iterating over windows, so use such while construction.
-        auto it = aliveWindows.begin();
-        while (it != aliveWindows.end())
+        // WindowBackend::Close can lead to removing a window from aliveWindows list (inside of OnWindowDestroyed)
+        // So copy the vector and iterate over the copy to avoid dealing with invalid iterators
+        std::vector<Window*> aliveWindowsCopy = aliveWindows;
+        for (Window* w : aliveWindowsCopy)
         {
-            Window* w = *it;
-            ++it;
-
             // Directly call Close for WindowBackend to tell important information that application is terminating
             GetWindowBackend(w)->Close(true);
         }
@@ -968,9 +996,10 @@ void EngineBackend::DestroySubsystems()
         delete context->deviceManager;
         context->deviceManager = nullptr;
     }
+
     if (context->logger != nullptr)
     {
-        context->logger->Release();
+        delete context->logger;
         context->logger = nullptr;
     }
 }
@@ -991,6 +1020,18 @@ void EngineBackend::AdjustSystemTimer(int64 adjustMicro)
 {
     Logger::Info("System timer adjusted by %lld us", adjustMicro);
     SystemTimer::Adjust(adjustMicro);
+}
+
+void EngineBackend::SetScreenTimeoutEnabled(bool enabled)
+{
+    screenTimeoutEnabled = enabled;
+
+    // Apply this setting only if at least one window is shown
+    // Otherwise wait for it to be shown and apply it then
+    if (atLeastOneWindowIsVisible)
+    {
+        platformCore->SetScreenTimeoutEnabled(screenTimeoutEnabled);
+    }
 }
 
 bool EngineBackend::IsRunning() const

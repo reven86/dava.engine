@@ -22,6 +22,8 @@ class Type final
     friend struct TypeDetail::TypeHolder;
 
 public:
+    struct Seed;
+
     template <typename T>
     using DecayT = std::conditional_t<std::is_pointer<T>::value, std::add_pointer_t<std::decay_t<std::remove_pointer_t<T>>>, std::decay_t<T>>;
 
@@ -30,6 +32,8 @@ public:
 
     template <typename T>
     using PointerT = std::add_pointer_t<std::decay_t<T>>;
+
+    using SeedCastOP = const Type::Seed* (*)(const void*);
 
     Type(Type&&) = delete;
     Type(const Type&) = delete;
@@ -40,6 +44,7 @@ public:
     std::type_index GetTypeIndex() const;
     const TypeInheritance* GetInheritance() const;
     unsigned long GetTypeFlags() const;
+    SeedCastOP GetSeedCastOP() const;
 
     bool IsConst() const;
     bool IsPointer() const;
@@ -58,7 +63,7 @@ public:
     static const Type* Instance();
 
 private:
-    enum TypeFlag
+    enum eTypeFlag
     {
         isConst,
         isPointer,
@@ -75,18 +80,19 @@ private:
     size_t size = 0;
     const char* name = nullptr;
     const std::type_info* stdTypeInfo = &typeid(void);
+    SeedCastOP seedCastOP = nullptr;
 
     Type* const* derefType = nullptr;
     Type* const* decayType = nullptr;
     Type* const* pointerType = nullptr;
 
     std::bitset<sizeof(int) * 8> flags;
-    mutable std::unique_ptr<const TypeInheritance, void (*)(const TypeInheritance*)> inheritance;
+    std::unique_ptr<const TypeInheritance, void (*)(const TypeInheritance*)> inheritance;
+
+    Type();
 
     template <typename T>
     static Type* Init();
-
-    Type();
 };
 
 } // namespace DAVA

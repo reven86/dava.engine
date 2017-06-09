@@ -64,7 +64,6 @@ signals:
 
 protected:
     void UpdateAllChangedProperties();
-    void ResetInternal();
     // PropertyListener
     void PropertyChanged(AbstractProperty* property) override;
     void UpdateProperty(AbstractProperty* property);
@@ -100,13 +99,11 @@ protected:
     void OnPackageChanged(const DAVA::Any& package);
     void BindFields();
 
-    PackageBaseNode* nodeToReset = nullptr;
     ControlNode* controlNode = nullptr;
     StyleSheetNode* styleSheet = nullptr;
     AbstractProperty* rootProperty = nullptr;
     DAVA::Set<DAVA::RefPtr<AbstractProperty>> changedProperties;
     ContinuousUpdater propertiesUpdater;
-    ContinuousUpdater nodeUpdater;
 
     DAVA::TArc::ContextAccessor* accessor = nullptr;
     std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;

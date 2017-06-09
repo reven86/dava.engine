@@ -77,6 +77,15 @@ public:
     {
     }
 
+    ~Array()
+    {
+        if (buffer)
+        {
+            allocator->Delete<T>(buffer);
+            buffer = nullptr;
+        }
+    }
+
     void PushBack(const T& val)
     {
         DVASSERT(&val < buffer || &val >= buffer + m_size);
@@ -185,10 +194,11 @@ private:
 struct StringPool
 {
     StringPool(Allocator* allocator);
+    ~StringPool();
     const char* AddString(const char* string);
     bool GetContainsString(const char* string) const;
 
-    Array<const char*> stringArray;
+    Array<char*> stringArray;
 };
 
 enum Target

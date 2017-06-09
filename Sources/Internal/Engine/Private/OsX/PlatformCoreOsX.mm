@@ -7,10 +7,12 @@
 
 #import <AppKit/NSApplication.h>
 
+#include "Engine/Engine.h"
 #include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/OsX/Window/WindowBackendOsX.h"
 #include "Engine/Private/OsX/CoreNativeBridgeOsX.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
@@ -42,6 +44,30 @@ void PlatformCore::PrepareToQuit()
 void PlatformCore::Quit()
 {
     bridge->Quit();
+}
+
+void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
+{
+    if (enabled)
+    {
+        // Free the previous assertion, if any
+        if (screenTimeoutAssertionId != kIOPMNullAssertionID)
+        {
+            const IOReturn releaseResult = IOPMAssertionRelease(screenTimeoutAssertionId);
+            DVASSERT(releaseResult == kIOReturnSuccess);
+
+            screenTimeoutAssertionId = kIOPMNullAssertionID;
+        }
+    }
+    else if (screenTimeoutAssertionId == kIOPMNullAssertionID)
+    {
+        // Otherwise, create custom assertion if it hasn't been yet
+        const IOReturn createResult = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep,
+                                                                  kIOPMAssertionLevelOn,
+                                                                  CFSTR("Dava Engine application is running"),
+                                                                  &screenTimeoutAssertionId);
+        DVASSERT(createResult == kIOReturnSuccess);
+    }
 }
 
 int32 PlatformCore::OnFrame()

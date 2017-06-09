@@ -132,9 +132,17 @@ bool FMODFileSoundEvent::Trigger()
 
 void FMODFileSoundEvent::SetPosition(const Vector3& _position)
 {
-    position.x = _position.x;
-    position.y = _position.y;
-    position.z = _position.z;
+    const bool isFinite = std::isfinite(_position.x) && std::isfinite(_position.y) && std::isfinite(_position.z);
+    DVASSERT(isFinite);
+
+    if (isFinite)
+    {
+        position = _position;
+    }
+    else
+    {
+        Logger::Error("[FMODFileSoundEvent::SetPosition] Invalid vector was given: (%f, %f, %f), ignoring", _position.x, _position.y, _position.z);
+    }
 }
 
 void FMODFileSoundEvent::UpdateInstancesPosition()

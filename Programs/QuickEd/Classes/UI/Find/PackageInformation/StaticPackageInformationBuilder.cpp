@@ -1,6 +1,8 @@
 #include "UI/Find/PackageInformation/StaticPackageInformationBuilder.h"
-#include "Utils/Utils.h"
+
 #include <UI/UIControl.h>
+#include <Utils/Utils.h>
+#include <Utils/StringFormat.h>
 
 using namespace DAVA;
 
@@ -43,10 +45,10 @@ StaticPackageInformationBuilder::~StaticPackageInformationBuilder()
 {
 }
 
-void StaticPackageInformationBuilder::BeginPackage(const DAVA::FilePath& packagePath)
+void StaticPackageInformationBuilder::BeginPackage(const DAVA::FilePath& packagePath, int32 version)
 {
     DVASSERT(packageInformation.get() == nullptr);
-    packageInformation = std::make_shared<StaticPackageInformation>(packagePath.GetFrameworkPath());
+    packageInformation = std::make_shared<StaticPackageInformation>(packagePath.GetFrameworkPath(), version);
 }
 
 void StaticPackageInformationBuilder::EndPackage()
@@ -73,6 +75,13 @@ bool StaticPackageInformationBuilder::ProcessImportedPackage(const DAVA::String&
             cache->Put(pack);
             packageInformation->AddImportedPackage(pack);
             return true;
+        }
+        else
+        {
+            Result r(Result::RESULT_ERROR, Format("Can't import package '%s'", packagePathStr.c_str()));
+            results.AddResult(r);
+            packageInformation->AddResult(r);
+            return false;
         }
     }
 
@@ -123,14 +132,25 @@ const ReflectedType* StaticPackageInformationBuilder::BeginControlWithPrototype(
             return FilePath(pack->GetPath()).GetBasename() == packageName;
         });
 
-        prototypePackage = *it;
-        prototype = prototypePackage->FindPrototypeByName(prototypeName);
+        if (it != packages.end())
+        {
+            prototypePackage = *it;
+            prototype = prototypePackage->FindPrototypeByName(prototypeName);
+        }
     }
 
-    DVASSERT(prototypePackage.get() != nullptr);
-    DVASSERT(prototype.get() != nullptr);
-
-    stack.emplace_back(Description(std::make_shared<StaticControlInformation>(*prototype, controlName, prototypePackage, FastName(prototypeName)), true));
+    if (prototype && prototypePackage)
+    {
+        stack.emplace_back(std::make_shared<StaticControlInformation>(*prototype, controlName, prototypePackage, FastName(prototypeName)), true);
+    }
+    else
+    {
+        Description d(std::make_shared<StaticControlInformation>(controlName), true);
+        String errorMsg = Format("Can't find prototype '%s' from package '%s'",
+                                 prototypeName.c_str(), packageName.c_str());
+        d.controlInformation->AddResult(Result(Result::RESULT_ERROR, errorMsg));
+        stack.push_back(d);
+    }
     return ReflectedTypeDB::Get<UIControl>();
 }
 
@@ -144,15 +164,21 @@ const ReflectedType* StaticPackageInformationBuilder::BeginControlWithPath(const
         Split(pathName, "/", controlNames, false, true);
         for (String& name : controlNames)
         {
-            ptr = ptr->FindChildByName(FastName(name));
-            if (!ptr)
+            FastName childName(name);
+            std::shared_ptr<StaticControlInformation> child = ptr->FindChildByName(childName);
+            if (!child)
             {
-                DVASSERT(false);
-                break;
+                results.AddResult(Result(Result::RESULT_ERROR, Format("Access to removed control by path '%s'", pathName.c_str())));
+
+                child = std::make_shared<StaticControlInformation>(childName);
+                child->SetParent(ptr.get());
+                child->AddResult(Result(Result::RESULT_ERROR, "Control was removed in prototype"));
+                ptr->AddChild(child);
             }
+
+            ptr = child;
         }
 
-        DVASSERT(ptr.get() != nullptr);
         stack.emplace_back(Description(ptr, false));
     }
     else

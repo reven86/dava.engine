@@ -54,7 +54,6 @@ private:
     DAVA::TArc::DataContext::ContextID OpenDocument(const QString& path);
     DAVA::RefPtr<PackageNode> CreatePackage(const QString& path);
 
-    void CloseActiveDocument();
     void CloseDocument(DAVA::uint64 id);
     void CloseAllDocuments();
     void DeleteAllDocuments();
@@ -65,7 +64,7 @@ private:
     void ReloadDocuments(const DAVA::Set<DAVA::TArc::DataContext::ContextID>& ids);
 
     bool HasUnsavedDocuments() const;
-    void SaveDocument(const DAVA::TArc::DataContext::ContextID& contextID);
+    bool SaveDocument(const DAVA::TArc::DataContext::ContextID& contextID);
     void SaveAllDocuments();
     void SaveCurrentDocument();
 

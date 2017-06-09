@@ -20,6 +20,7 @@
 #include "UI/Package/PackageModel.h"
 
 #include <TArc/Core/ContextAccessor.h>
+#include <TArc/WindowSubSystem/UI.h>
 
 #include <QtTools/FileDialogs/FileDialog.h>
 
@@ -147,7 +148,6 @@ PackageWidget::PackageWidget(QWidget* parent)
 
     connect(packageModel, &PackageModel::BeforeProcessNodes, this, &PackageWidget::OnBeforeProcessNodes);
     connect(packageModel, &PackageModel::AfterProcessNodes, this, &PackageWidget::OnAfterProcessNodes);
-    connect(treeView->selectionModel(), &QItemSelectionModel::currentChanged, this, &PackageWidget::OnCurrentIndexChanged);
     connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChangedFromView);
 
     connect(filterLine, &QLineEdit::textChanged, this, &PackageWidget::OnFilterTextChanged);
@@ -163,10 +163,13 @@ void PackageWidget::SetAccessor(TArc::ContextAccessor* accessor_)
     packageModel->SetAccessor(accessor);
 }
 
-PackageWidget::~PackageWidget()
+void PackageWidget::SetUI(DAVA::TArc::UI* ui_)
 {
-    DVASSERT(currentIndexes.empty());
+    ui = ui_;
+    packageModel->SetUI(ui);
 }
+
+PackageWidget::~PackageWidget() = default;
 
 PackageModel* PackageWidget::GetPackageModel() const
 {
@@ -462,7 +465,7 @@ void PackageWidget::OnImport()
         packages.push_back(FilePath(fileName.toStdString()));
     }
     DVASSERT(!packages.empty());
-    QtModelPackageCommandExecutor commandExecutor(accessor);
+    QtModelPackageCommandExecutor commandExecutor(accessor, ui);
     commandExecutor.AddImportedPackagesIntoPackage(packages, documentData->GetPackageNode());
 }
 
@@ -497,7 +500,7 @@ void PackageWidget::OnPaste()
             DocumentData* documentData = activeContext->GetData<DocumentData>();
             DVASSERT(nullptr != documentData);
             PackageNode* package = documentData->GetPackageNode();
-            QtModelPackageCommandExecutor executor(accessor);
+            QtModelPackageCommandExecutor executor(accessor, ui);
             SelectedNodes selection = executor.Paste(package, baseNode, baseNode->GetCount(), string);
             if (selection.empty() == false)
             {
@@ -541,7 +544,7 @@ void PackageWidget::OnDuplicate()
             String string = clipboard->mimeData()->text().toStdString();
 
             PackageNode* package = documentData->GetPackageNode();
-            QtModelPackageCommandExecutor executor(accessor);
+            QtModelPackageCommandExecutor executor(accessor, ui);
 
             PackageBaseNode* lastSelected = sortedSelection.back();
             int index = parent->GetIndex(lastSelected);
@@ -564,7 +567,7 @@ void PackageWidget::OnCut()
 
     CopyNodesToClipboard(controls, styles);
 
-    QtModelPackageCommandExecutor executor(accessor);
+    QtModelPackageCommandExecutor executor(accessor, ui);
     executor.Remove(controls, styles);
 }
 
@@ -574,7 +577,7 @@ void PackageWidget::OnDelete()
     {
         return;
     }
-    QtModelPackageCommandExecutor executor(accessor);
+    QtModelPackageCommandExecutor executor(accessor, ui);
 
     Vector<ControlNode*> controls;
     CollectSelectedControls(controls, false, true);
@@ -620,7 +623,7 @@ void PackageWidget::OnAddStyle()
     DVASSERT(documentData != nullptr);
     ScopedPtr<StyleSheetNode> style(new StyleSheetNode(UIStyleSheetSourceInfo(documentData->GetPackagePath()), selectorChains, properties));
     PackageNode* package = documentData->GetPackageNode();
-    QtModelPackageCommandExecutor commandExecutor(accessor);
+    QtModelPackageCommandExecutor commandExecutor(accessor, ui);
     StyleSheetsNode* styleSheets = package->GetStyleSheets();
     commandExecutor.InsertStyle(style, styleSheets, styleSheets->GetCount());
 }
@@ -721,7 +724,7 @@ void PackageWidget::OnMoveRight()
 
 void PackageWidget::MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, uint32 destIndex)
 {
-    QtModelPackageCommandExecutor executor(accessor);
+    QtModelPackageCommandExecutor executor(accessor, ui);
     if (dynamic_cast<ControlNode*>(node) != nullptr)
     {
         Vector<ControlNode*> nodes = { static_cast<ControlNode*>(node) };
@@ -822,13 +825,6 @@ void PackageWidget::OnAfterProcessNodes(const SelectedNodes& nodes)
     expandedNodes.clear();
 }
 
-void PackageWidget::OnCurrentIndexChanged(const QModelIndex& index, const QModelIndex&)
-{
-    QModelIndex mappedIndex = filteredPackageModel->mapToSource(index);
-    PackageBaseNode* node = static_cast<PackageBaseNode*>(mappedIndex.internalPointer());
-    emit CurrentIndexChanged(node);
-}
-
 void PackageWidget::DeselectNodeImpl(PackageBaseNode* node)
 {
     QModelIndex srcIndex = packageModel->indexByNode(node);
@@ -838,46 +834,18 @@ void PackageWidget::DeselectNodeImpl(PackageBaseNode* node)
     {
         treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Deselect);
     }
-    DVASSERT(!currentIndexes.empty());
-    for (const QModelIndex& index : currentIndexes)
-    {
-        if (index == srcIndex)
-        {
-            currentIndexes.remove(index);
-            break;
-        }
-    }
-    if (!currentIndexes.empty())
-    {
-        QModelIndex index = currentIndexes.back();
-        if (srcIndex == index)
-        {
-            QModelIndex dstIndex = filteredPackageModel->mapFromSource(index);
-            if (dstIndex.isValid())
-            {
-                treeView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
-                treeView->scrollTo(dstIndex);
-            }
-        }
-    }
-    else
-    {
-        treeView->selectionModel()->setCurrentIndex(QModelIndex(), QItemSelectionModel::NoUpdate);
-    }
 }
 
 void PackageWidget::SelectNodeImpl(PackageBaseNode* node)
 {
     QModelIndex srcIndex = packageModel->indexByNode(node);
     DVASSERT(srcIndex.isValid());
-    currentIndexes.emplace_back(srcIndex);
 
     QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
     if (dstIndex.isValid())
     {
-        auto selectionModel = treeView->selectionModel();
-        selectionModel->setCurrentIndex(dstIndex, QItemSelectionModel::NoUpdate);
-        selectionModel->select(dstIndex, QItemSelectionModel::Select);
+        QItemSelectionModel* selectionModel = treeView->selectionModel();
+        selectionModel->setCurrentIndex(dstIndex, QItemSelectionModel::Select);
         treeView->scrollTo(dstIndex);
     }
 }

@@ -3,7 +3,6 @@ set( MODULE_TYPE STATIC )
 
 set( HPP_FILES Sources/*.h Sources/*.hpp )
 set( CPP_FILES Sources/*.cpp     )
-set( EXCLUDE_FROM_ALL 1 )
 
 set ( UNITY_IGNORE_LIST "Sources/CEFController.cpp"
                         "Sources/CEFWebViewControl.cpp"

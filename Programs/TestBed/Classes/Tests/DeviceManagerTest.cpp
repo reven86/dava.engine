@@ -4,6 +4,7 @@
 
 #include <Engine/Engine.h>
 #include <DeviceManager/DeviceManager.h>
+#include <UI/Render/UIDebugRenderComponent.h>
 
 using namespace DAVA;
 
@@ -75,7 +76,7 @@ void DeviceManagerTest::OnDisplayConfigChanged()
         UIStaticText* ui = new UIStaticText(rc);
         ui->SetTextColor(Color::White);
         ui->SetFont(font);
-        ui->SetDebugDraw(true);
+        ui->GetOrCreateComponent<UIDebugRenderComponent>();
         ui->SetInputEnabled(true);
         UIControlBackground* uiBg = ui->GetOrCreateComponent<UIControlBackground>();
         uiBg->SetColor(Color(0, 0, 0.8f, 1));

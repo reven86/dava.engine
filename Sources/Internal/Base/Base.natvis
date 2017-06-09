@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+  <Type Name="DAVA::FastName">
+    <DisplayString>{db->namesTable[index], s}</DisplayString>
+  </Type>
   <Type Name="DAVA::Type">
     <DisplayString>{name, s}, {*flags._Array, h}</DisplayString>
   </Type>

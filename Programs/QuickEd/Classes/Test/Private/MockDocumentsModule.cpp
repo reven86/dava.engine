@@ -2,6 +2,8 @@
 
 #include "Application/QEGlobal.h"
 
+#include <UI/UIControlSystem.h>
+#include <Render/2D/Systems/VirtualCoordinatesSystem.h>
 #include <Debug/DVAssert.h>
 
 namespace TestHelpers
@@ -22,8 +24,21 @@ DAVA_VIRTUAL_REFLECTION_IMPL(MockDocumentsModule)
 
 void MockDocumentsModule::PostInit()
 {
+    using namespace DAVA;
+    using namespace DAVA::TArc;
+
     RegisterOperation(QEGlobal::CloseAllDocuments.ID, this, &MockDocumentsModule::CloseAllDocuments);
     RegisterOperation(CreateDummyContextOperation.ID, this, &MockDocumentsModule::CreateDummyContext);
+
+    ContextAccessor* accessor = GetAccessor();
+    const EngineContext* engineContext = accessor->GetEngineContext();
+    VirtualCoordinatesSystem* vcs = engineContext->uiControlSystem->vcs;
+    vcs->UnregisterAllAvailableResourceSizes();
+    float32 width = 1.0f;
+    float32 height = 1.0f;
+    vcs->SetVirtualScreenSize(width, height);
+    vcs->RegisterAvailableResourceSize(width, height, "Gfx");
+    vcs->RegisterAvailableResourceSize(width, height, "Gfx2");
 }
 
 void MockDocumentsModule::OnContextCreated(DAVA::TArc::DataContext* context)
@@ -81,7 +96,7 @@ void MockDocumentsModule::CreateDummyContext()
     using namespace DAVA;
     using namespace DAVA::TArc;
 
-    Vector<std::unique_ptr<DataNode>> dummy;
+    Vector<std::unique_ptr<TArc::DataNode>> dummy;
     dummy.emplace_back(new MockData());
 
     ContextManager* manager = GetContextManager();

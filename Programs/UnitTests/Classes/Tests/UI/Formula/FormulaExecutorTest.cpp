@@ -133,16 +133,6 @@ DAVA_TESTCLASS (FormulaExecutorTest)
 
         try
         {
-            Execute("5U + 5UL");
-            TEST_VERIFY(false);
-        }
-        catch (const FormulaException& error)
-        {
-            TEST_VERIFY(error.GetFormattedMessage() == "[1, 4] Operator '+' cannot be applied to 'uint32', 'uint64'");
-        }
-
-        try
-        {
             Execute("5L + 5UL");
             TEST_VERIFY(false);
         }

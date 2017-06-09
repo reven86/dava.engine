@@ -51,10 +51,10 @@ private:
     void LinkDelegate(UIControl* linkedControl);
 
     template <typename Predicate>
-    bool Unlink(int32 linkType, Predicate);
+    void Unlink(int32 linkType, Predicate);
 
-    bool UnlinkScrollBar(UIScrollBarDelegateComponent* component);
-    bool UnlinkDelegate(UIControl* linkedControl);
+    void UnlinkScrollBar(UIScrollBarDelegateComponent* component);
+    void UnlinkDelegate(UIControl* linkedControl);
 
     Vector<Link> links;
 

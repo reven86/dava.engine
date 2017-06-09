@@ -97,15 +97,23 @@ BINARY_WIN64_DIR_RELWITHDEB
 JAR_FOLDERS_ANDROID
 JAVA_FOLDERS_ANDROID
 #
-EXCLUDE_FROM_ALL
-#
 PLUGIN_OUT_DIR
 PLUGIN_OUT_DIR_${DAVA_PLATFORM_CURENT}
 #
 PLUGIN_RELATIVE_PATH_TO_FOLDER
 PLUGIN_COPY_ADD_FILES 
 #
+DEBUG_POSTFIX
+CHECKED_POSTFIX
+PROFILE_POSTFIX
+RELEASE_POSTFIX
 )
+
+macro(apply_default_value VAR DEFAULT_VALUE)
+     if (NOT ${VAR})
+        set(${VAR} ${DEFAULT_VALUE} PARENT_SCOPE)
+     endif()
+endmacro()
 
 #
 set(  GLOBAL_PROPERTY_VALUES ${MAIN_MODULE_VALUES}  TARGET_MODULES_LIST 
@@ -165,7 +173,7 @@ macro( modules_tree_info_execute )
 endmacro()
 #
 macro( modules_tree_info )
-    if( NAME_MODULE )
+    if( NAME_MODULE AND ( NOT ${MODULE_TYPE} STREQUAL "PLUGIN" ) )
         append_property( LOADED_MODULES ${NAME_MODULE} )
     endif()
 
@@ -385,19 +393,16 @@ macro( setup_main_module )
 
     if( MODULE_COMPONENTS_VALUE_NAME )
         get_property(  MODULE_COMPONENTS GLOBAL PROPERTY COMPONENTS_${MODULE_COMPONENTS_VALUE_NAME} )
-        list (FIND MODULE_COMPONENTS "ALL" _index)
-        if ( ${_index} GREATER -1 AND NOT EXCLUDE_FROM_ALL)
-            set( INIT true )
-        else()
-            if( ORIGINAL_NAME_MODULE )
-                list (FIND MODULE_COMPONENTS ${ORIGINAL_NAME_MODULE} _index)
-                if ( ${_index} GREATER -1)
-                    set( INIT true )
-                endif()
-            else()
+
+        if( ORIGINAL_NAME_MODULE )
+            list (FIND MODULE_COMPONENTS ${ORIGINAL_NAME_MODULE} _index)
+            if ( ${_index} GREATER -1)
                 set( INIT true )
             endif()
-        endif() 
+        else()
+            set( INIT true )
+        endif()
+
     else()
         set( INIT true )
     endif()
@@ -444,8 +449,8 @@ macro( setup_main_module )
                 set( COVERAGE_STRING  )                
             endif()
 
-            set( MODULE_CACHE   ${ORIGINAL_NAME_MODULE}
-                                #${MODULE_COMPONENTS} 
+            set( MODULE_CACHE   "ROOT_${ORIGINAL_NAME_MODULE}"
+                                ${LOADED_MODULES} 
                                 ${DEFINITIONS} 
                                 ${DEFINITIONS_${DAVA_PLATFORM_CURENT}}  
                                 ${GLOBAL_DEFINITIONS_PROP}
@@ -709,19 +714,18 @@ macro( setup_main_module )
 #####
             set( CREATE_NEW_MODULE true )
 
-            # Temporarily disabled due to problems with stub / iml implementation of the module 
-            #if( ${MODULE_TYPE} STREQUAL "STATIC" )
-            #    get_property( MODULE_CACHE_LIST GLOBAL PROPERTY MODULE_CACHE_LIST )
-            #    list (FIND MODULE_CACHE_LIST ${MODULE_CACHE} _index)
-            #    if ( ${_index} GREATER -1 )
-            #        set( CREATE_NEW_MODULE )
-            #        list(GET MODULE_CACHE_LIST ${_index}  MODULE_CACHE )
-            #        get_property( MODULE_CACHE_LOADED_NAME GLOBAL PROPERTY ${MODULE_CACHE} )
-            #        set_property( GLOBAL PROPERTY CACHE_LOG_${NAME_MODULE}_MODULE_UNIQUE  false )
-            #        append_property( CACHE_LOG_${MODULE_CACHE_LOADED_NAME}_MODULE_USES_LIST ${NAME_MODULE} )  
-            #        set( NAME_MODULE ${MODULE_CACHE_LOADED_NAME} )
-            #    endif()
-            #endif()
+            if( ${MODULE_TYPE} STREQUAL "STATIC" )
+                get_property( MODULE_CACHE_LIST GLOBAL PROPERTY MODULE_CACHE_LIST )
+                list (FIND MODULE_CACHE_LIST ${MODULE_CACHE} _index)
+                if ( ${_index} GREATER -1 )
+                    set( CREATE_NEW_MODULE )
+                    list(GET MODULE_CACHE_LIST ${_index}  MODULE_CACHE )
+                    get_property( MODULE_CACHE_LOADED_NAME GLOBAL PROPERTY ${MODULE_CACHE} )
+                    set_property( GLOBAL PROPERTY CACHE_LOG_${NAME_MODULE}_MODULE_UNIQUE  false )
+                    append_property( CACHE_LOG_${MODULE_CACHE_LOADED_NAME}_MODULE_USES_LIST ${NAME_MODULE} )  
+                    set( NAME_MODULE ${MODULE_CACHE_LOADED_NAME} )
+                endif()
+            endif()
 
 ######
 
@@ -751,9 +755,17 @@ macro( setup_main_module )
                     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG" )
                 endif()
 
+                apply_default_value(DEBUG_POSTFIX "Debug")
+                apply_default_value(CHECKED_POSTFIX "")
+                apply_default_value(PROFILE_POSTFIX "")
+                apply_default_value(RELEASE_POSTFIX "")
+
                 set_target_properties( ${NAME_MODULE} PROPERTIES
                                                                  DEBUG_OUTPUT_NAME "${NAME_MODULE}" 
-                                                                 DEBUG_POSTFIX "Debug")
+                                                                 DEBUG_POSTFIX ${DEBUG_POSTFIX}
+                                                                 CHECKED_POSTFIX ${CHECKED_POSTFIX}
+                                                                 PROFILE_POSTFIX ${PROFILE_POSTFIX}
+                                                                 RELEASE_POSTFIX ${RELEASE_POSTFIX})
 
                 if( WIN32 AND NOT DEPLOY )
                     set( BINARY_WIN32_DIR_RELEASE    "${CMAKE_CURRENT_BINARY_DIR}/Release" )

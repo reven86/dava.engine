@@ -6,6 +6,7 @@
 #include "Utils/StringFormat.h"
 #import "Utils/NSStringUtils.h"
 #include "Base/GlobalEnum.h"
+#include "Base/TemplateHelpers.h"
 
 #import <UIKit/UIDevice.h>
 #import <UIKit/UIKit.h>
@@ -221,6 +222,10 @@ String DeviceInfoPrivate::GetModel()
             model = "iPad Pro WiFi";
         if ([modelName hasPrefix:@"iPad6,8"])
             model = "iPad Pro Cellular";
+        if ([modelName hasPrefix:@"iPad6,11"])
+            model = "iPad 5th gen WiFi";
+        if ([modelName hasPrefix:@"iPad6,12"])
+            model = "iPad 5th gen Cellular";
 
         // iPod
         if ([modelName hasPrefix:@"iPod1,1"])

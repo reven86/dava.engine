@@ -8,8 +8,8 @@ class CompositeFilter : public FindFilter
 public:
     CompositeFilter(const DAVA::Vector<std::shared_ptr<FindFilter>>& filters);
 
-    bool CanAcceptPackage(const PackageInformation* package) const override;
-    bool CanAcceptControl(const ControlInformation* control) const override;
+    ePackageStatus AcceptPackage(const PackageInformation* package) const override;
+    bool AcceptControl(const ControlInformation* control) const override;
 
 private:
     DAVA::Vector<std::shared_ptr<FindFilter>> filters;

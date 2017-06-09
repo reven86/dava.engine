@@ -302,7 +302,7 @@ void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
         case ON_DID_ACTIVATE_NOTIFICATION:
             if ([listener respondsToSelector:@selector(userNotificationCenter:didActivateNotification:)])
             {
-                [listener userNotificationCenter:static_cast<NSUserNotificationCenter*>(arg1) didActivateNotification:static_cast<NSUserNotification*>(arg1)];
+                [listener userNotificationCenter:static_cast<NSUserNotificationCenter*>(arg1) didActivateNotification:static_cast<NSUserNotification*>(arg2)];
             }
             break;
         default:

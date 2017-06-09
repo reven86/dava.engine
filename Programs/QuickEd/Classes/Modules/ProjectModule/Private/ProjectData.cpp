@@ -17,13 +17,13 @@
 DAVA_VIRTUAL_REFLECTION_IMPL(ProjectData)
 {
     DAVA::ReflectionRegistrator<ProjectData>::Begin()
-    .Field(projectPathPropertyName, &ProjectData::GetProjectFile, nullptr)
+    .Field(projectPathPropertyName.c_str(), &ProjectData::GetProjectFile, nullptr)
     .End();
 }
 
 using namespace DAVA;
 
-const char* ProjectData::projectPathPropertyName = "ProjectPath";
+DAVA::FastName ProjectData::projectPathPropertyName{ "ProjectPath" };
 
 DAVA::ResultList ProjectData::ParseLegacyProperties(const DAVA::FilePath& projectFile, const YamlNode* root, int version)
 {
@@ -360,6 +360,11 @@ DAVA::ResultList ProjectData::Parse(const DAVA::FilePath& projectFile, const Yam
     const YamlNode* gfxDirsNode = projectDataNode->Get("GfxDirectories");
     if (gfxDirsNode != nullptr)
     {
+        if (gfxDirsNode->GetCount() > 0)
+        {
+            gfxDirectories.clear();
+        }
+
         for (uint32 index = 0; index < gfxDirsNode->GetCount(); ++index)
         {
             const YamlNode* gfxDirNode = gfxDirsNode->Get(index);

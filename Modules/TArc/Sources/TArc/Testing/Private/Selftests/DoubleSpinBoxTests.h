@@ -107,68 +107,68 @@ public:
         Reflection ref = Reflection::Create(&model);
 
         {
-            ControlDescriptorBuilder<DoubleSpinBox::Fields> descr;
-            descr[DoubleSpinBox::Fields::Value] = "value";
-            DoubleSpinBox* edit = new DoubleSpinBox(descr, GetAccessor(), ref);
+            DoubleSpinBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[DoubleSpinBox::Fields::Value] = "value";
+            DoubleSpinBox* edit = new DoubleSpinBox(params, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_value");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<DoubleSpinBox::Fields> descr;
-            descr[DoubleSpinBox::Fields::Value] = "noRangeValue";
-            descr[DoubleSpinBox::Fields::Range] = "rangeMeta";
-            DoubleSpinBox* edit = new DoubleSpinBox(descr, GetAccessor(), ref);
+            DoubleSpinBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[DoubleSpinBox::Fields::Value] = "noRangeValue";
+            params.fields[DoubleSpinBox::Fields::Range] = "rangeMeta";
+            DoubleSpinBox* edit = new DoubleSpinBox(params, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_metaRangeValue");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<DoubleSpinBox::Fields> descr;
-            descr[DoubleSpinBox::Fields::Value] = "readOnlyValue";
-            DoubleSpinBox* edit = new DoubleSpinBox(descr, GetAccessor(), ref);
+            DoubleSpinBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[DoubleSpinBox::Fields::Value] = "readOnlyValue";
+            DoubleSpinBox* edit = new DoubleSpinBox(params, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_readOnlyValue");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<DoubleSpinBox::Fields> descr;
-            descr[DoubleSpinBox::Fields::Value] = "readOnlyMeta";
-            DoubleSpinBox* edit = new DoubleSpinBox(descr, GetAccessor(), ref);
+            DoubleSpinBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[DoubleSpinBox::Fields::Value] = "readOnlyMeta";
+            DoubleSpinBox* edit = new DoubleSpinBox(params, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_readOnlyMeta");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<DoubleSpinBox::Fields> descr;
-            descr[DoubleSpinBox::Fields::Value] = "value";
-            descr[DoubleSpinBox::Fields::IsReadOnly] = "isReadOnly";
-            DoubleSpinBox* edit = new DoubleSpinBox(descr, GetAccessor(), ref);
+            DoubleSpinBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[DoubleSpinBox::Fields::Value] = "value";
+            params.fields[DoubleSpinBox::Fields::IsReadOnly] = "isReadOnly";
+            DoubleSpinBox* edit = new DoubleSpinBox(params, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_readOnlyField");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<DoubleSpinBox::Fields> descr;
-            descr[DoubleSpinBox::Fields::Value] = "value";
-            descr[DoubleSpinBox::Fields::IsEnabled] = "isEnabled";
-            DoubleSpinBox* edit = new DoubleSpinBox(descr, GetAccessor(), ref);
+            DoubleSpinBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[DoubleSpinBox::Fields::Value] = "value";
+            params.fields[DoubleSpinBox::Fields::IsEnabled] = "isEnabled";
+            DoubleSpinBox* edit = new DoubleSpinBox(params, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_enable");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<DoubleSpinBox::Fields> descr;
-            descr[DoubleSpinBox::Fields::Value] = "noValue";
-            DoubleSpinBox* edit = new DoubleSpinBox(descr, GetAccessor(), ref);
+            DoubleSpinBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[DoubleSpinBox::Fields::Value] = "noValue";
+            DoubleSpinBox* edit = new DoubleSpinBox(params, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_noValue");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<DoubleSpinBox::Fields> descr;
-            descr[DoubleSpinBox::Fields::Value] = "noValueHint";
-            DoubleSpinBox* edit = new DoubleSpinBox(descr, GetAccessor(), ref);
+            DoubleSpinBox::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[DoubleSpinBox::Fields::Value] = "noValueHint";
+            DoubleSpinBox* edit = new DoubleSpinBox(params, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_noValuehint");
             layout->AddControl(edit);
         }
@@ -375,7 +375,7 @@ DAVA_TARC_TESTCLASS(DoubleSpinBoxTests)
 
         TEST_VERIFY(box->value() == 18.0);
         TEST_VERIFY(box->value() == module->model.value);
-        TEST_VERIFY(box->text() == QString::number(module->model.value));
+        TEST_VERIFY(box->text() == QString::number(module->model.value, 'f'));
 
         events.clear();
         SetFocus(box);
@@ -383,7 +383,7 @@ DAVA_TARC_TESTCLASS(DoubleSpinBoxTests)
         events.simulate(box);
         TEST_VERIFY(box->value() == 17.0);
         TEST_VERIFY(box->value() == module->model.value);
-        TEST_VERIFY(box->text() == QString::number(module->model.value));
+        TEST_VERIFY(box->text() == QString::number(module->model.value, 'f'));
 
         module->model.value = 10.0;
     }

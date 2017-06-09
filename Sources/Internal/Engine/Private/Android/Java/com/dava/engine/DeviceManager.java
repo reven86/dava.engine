@@ -1,11 +1,15 @@
 package com.dava.engine;
 
+import java.io.IOException;
+import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Scanner;
 
 import android.os.Build;
 // import android.support.annotation.RequiresApi;
+import android.util.Log;
 import android.view.Display;
 import android.view.Surface;
 import android.content.Context;
@@ -15,7 +19,9 @@ import android.hardware.display.DisplayManager;
 // Not thread-safe (should be used only from Android's main thread)
 // Only handles displays for now
 public final class DeviceManager
-{   
+{
+    // Displays
+
     public static final class DisplayInfo
     {
         public final String name;
@@ -195,5 +201,60 @@ public final class DeviceManager
         // metrics.xdpi & metrics.ydpi are filled by OEM and can be incorrect (for example on ZTE Nubia Z5S)
         // So we use densityDpi instead
         return new DisplayInfo(name, id, width, height, metrics.densityDpi, metrics.densityDpi);
+    }
+
+    // CPU stats
+
+    static boolean firstTimeCpuTempException = true;
+
+    float getCpuTemperature()
+    {
+        // Even though Android provides API for getting temperature from two sensors (TYPE_TEMPERATURE and TYPE_AMBIENT_TEMPERATURE),
+        // none of them guarantees that this temperature represents CPU temperature with some acceptable margin:
+        // - TYPE_TEMPERATURE is deprecated since API 14 and is not widely supported
+        // - TYPE_AMBIENT_TEMPERATURE gives ambient temperature which is not what we need
+        //
+        // The workaround is to read system files CPU temperature is written into.
+        // The most common one seems to be /sys/class/thermal/thermal_zone0/temp
+        // There are other files we can read this data from, but it seems to be sufficient to use only this one for now
+        // TODO we can do it from C++ code
+
+        float temperature = 0.0f;
+
+        final String filepath = "/sys/class/thermal/thermal_zone0/temp";
+        try
+        {
+            // Try to read int from the file
+
+            Scanner scanner = new Scanner(new File(filepath));
+            if (scanner.hasNextInt())
+            {
+                temperature = (float)scanner.nextInt();
+            }
+            else
+            {
+                Log.e(DavaActivity.LOG_TAG, "Could not retrieve CPU temperature from file: " + filepath + ": file format is wrong");
+            }
+            scanner.close();
+        }
+        catch (IOException e)
+        {
+            if (firstTimeCpuTempException)
+            {
+                Log.e(DavaActivity.LOG_TAG, "Could not retrieve CPU temperature from file: " + filepath + ", exception: " + e.getMessage());
+                firstTimeCpuTempException = false;
+            }
+        }
+
+        // Some vendors use thousands to represent one celsius degree
+        // So we should divide value we read by 1000.0f to get a real value
+        // Use 150.0f as top limit that should never be exceeded if value is not stored in thousands
+        final float topLimitTemperature = 150.0f;
+        if (temperature >= topLimitTemperature)
+        {
+            temperature /= 1000.0f;
+        }
+
+        return temperature;
     }
 }

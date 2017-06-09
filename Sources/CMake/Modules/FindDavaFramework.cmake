@@ -10,7 +10,7 @@ set( DAVA_LIBRARY    "DavaFramework" )
 if( DavaFramework_FIND_COMPONENTS )
     set( DAVA_COMPONENTS "${DAVA_LIBRARY};${DavaFramework_FIND_COMPONENTS}" )
 else()
-    set( DAVA_COMPONENTS "ALL" )
+    set( DAVA_COMPONENTS "${DAVA_LIBRARY}" )
 endif()
 
 

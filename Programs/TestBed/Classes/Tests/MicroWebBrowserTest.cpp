@@ -1,5 +1,6 @@
 #include "Tests/MicroWebBrowserTest.h"
 #include "UI/Focus/UIFocusComponent.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 
 MicroWebBrowserTest::MicroWebBrowserTest(TestBed& app)
     : BaseScreen(app, "MicroWebBrowserTest")
@@ -21,7 +22,7 @@ void MicroWebBrowserTest::LoadResources()
     webView.Set(new UIWebView(webViewRect));
     webView->SetVisibilityFlag(true);
     webView->SetRenderToTexture(true);
-    webView->SetDebugDraw(true);
+    webView->GetOrCreateComponent<UIDebugRenderComponent>();
     webView->SetInputEnabled(true);
     webView->GetOrCreateComponent<UIFocusComponent>();
     AddControl(webView.Get());
@@ -33,7 +34,7 @@ void MicroWebBrowserTest::LoadResources()
 
     textField.Set(new UITextField(textFieldRect));
     textField->SetFont(font);
-    textField->SetDebugDraw(true);
+    textField->GetOrCreateComponent<UIDebugRenderComponent>();
     textField->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
     textField->GetOrCreateComponent<UIFocusComponent>();
     textField->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
@@ -48,7 +49,7 @@ void MicroWebBrowserTest::LoadResources()
     loadPage->SetStateFont(0xFF, font);
     loadPage->SetStateFontColor(0xFF, Color::White);
     loadPage->SetStateText(0xFF, L"Load");
-    loadPage->SetDebugDraw(true);
+    loadPage->GetOrCreateComponent<UIDebugRenderComponent>();
     loadPage->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &MicroWebBrowserTest::OnLoadPage));
     AddControl(loadPage);
 

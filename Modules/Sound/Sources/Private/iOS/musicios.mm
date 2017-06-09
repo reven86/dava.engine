@@ -1,6 +1,7 @@
 #include "Logger/Logger.h"
 #include "FileSystem/FilePath.h"
 #include "FMODSoundSystem.h"
+#include "Math/Math2D.h"
 
 #include "musicios.h"
 #import <AVFoundation/AVFoundation.h>

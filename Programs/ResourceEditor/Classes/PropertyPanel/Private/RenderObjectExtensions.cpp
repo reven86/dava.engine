@@ -22,28 +22,28 @@ namespace RenderObjectExtensionsDetail
 class BillboardCommandProducer : public DAVA::M::CommandProducer
 {
 public:
-    bool IsApplyable(const DAVA::Reflection& field) const override;
+    bool IsApplyable(const std::shared_ptr<DAVA::TArc::PropertyNode>& node) const override;
     Info GetInfo() const override;
     void CreateCache(DAVA::TArc::ContextAccessor* accessor) override;
     void ClearCache() override;
-    std::unique_ptr<DAVA::Command> CreateCommand(const DAVA::Reflection& field, const Params& params) const override;
+    std::unique_ptr<DAVA::Command> CreateCommand(const std::shared_ptr<DAVA::TArc::PropertyNode>& node, const Params& params) const override;
 
 private:
     DAVA::UnorderedMap<DAVA::RenderObject*, DAVA::Entity*> cache;
 };
 
-bool BillboardCommandProducer::IsApplyable(const DAVA::Reflection& field) const
+bool BillboardCommandProducer::IsApplyable(const std::shared_ptr<DAVA::TArc::PropertyNode>& node) const
 {
     using namespace DAVA;
-    RenderObject* renderObject = *field.GetValueObject().GetPtr<RenderObject*>();
+    RenderObject* renderObject = *node->field.ref.GetValueObject().GetPtr<RenderObject*>();
     RenderObject::eType type = renderObject->GetType();
     return type == RenderObject::TYPE_MESH || type == RenderObject::TYPE_RENDEROBJECT;
 }
 
-std::unique_ptr<DAVA::Command> BillboardCommandProducer::CreateCommand(const DAVA::Reflection& field, const Params& params) const
+std::unique_ptr<DAVA::Command> BillboardCommandProducer::CreateCommand(const std::shared_ptr<DAVA::TArc::PropertyNode>& node, const Params& params) const
 {
     using namespace DAVA;
-    RenderObject* renderObject = *field.GetValueObject().GetPtr<RenderObject*>();
+    RenderObject* renderObject = *node->field.ref.GetValueObject().GetPtr<RenderObject*>();
     DAVA::RenderObject::eType type = renderObject->GetType();
     DVASSERT(type == DAVA::RenderObject::TYPE_MESH || type == DAVA::RenderObject::TYPE_RENDEROBJECT);
 
@@ -95,16 +95,16 @@ DAVA::M::CommandProducer::Info BillboardCommandProducer::GetInfo() const
 class FixLodsAndSwitches : public DAVA::M::CommandProducer
 {
 public:
-    bool IsApplyable(const DAVA::Reflection& field) const override;
+    bool IsApplyable(const std::shared_ptr<DAVA::TArc::PropertyNode>& node) const override;
     Info GetInfo() const override;
     bool OnlyForSingleSelection() const override;
-    std::unique_ptr<DAVA::Command> CreateCommand(const DAVA::Reflection& field, const Params& params) const override;
+    std::unique_ptr<DAVA::Command> CreateCommand(const std::shared_ptr<DAVA::TArc::PropertyNode>& node, const Params& params) const override;
 };
 
-bool FixLodsAndSwitches::IsApplyable(const DAVA::Reflection& field) const
+bool FixLodsAndSwitches::IsApplyable(const std::shared_ptr<DAVA::TArc::PropertyNode>& node) const
 {
     using namespace DAVA;
-    RenderObject* renderObject = *field.GetValueObject().GetPtr<RenderObject*>();
+    RenderObject* renderObject = *node->field.ref.GetValueObject().GetPtr<RenderObject*>();
     return SceneValidator::IsObjectHasDifferentLODsCount(renderObject);
 }
 
@@ -122,10 +122,10 @@ bool FixLodsAndSwitches::OnlyForSingleSelection() const
     return true;
 }
 
-std::unique_ptr<DAVA::Command> FixLodsAndSwitches::CreateCommand(const DAVA::Reflection& field, const Params& params) const
+std::unique_ptr<DAVA::Command> FixLodsAndSwitches::CreateCommand(const std::shared_ptr<DAVA::TArc::PropertyNode>& node, const Params& params) const
 {
     using namespace DAVA;
-    RenderObject* renderObject = *field.GetValueObject().GetPtr<RenderObject*>();
+    RenderObject* renderObject = *node->field.ref.GetValueObject().GetPtr<RenderObject*>();
     return std::make_unique<CloneLastBatchCommand>(renderObject);
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -134,18 +134,18 @@ std::unique_ptr<DAVA::Command> FixLodsAndSwitches::CreateCommand(const DAVA::Ref
 class RemoveRenderBatch : public DAVA::M::CommandProducer
 {
 public:
-    bool IsApplyable(const DAVA::Reflection& field) const override;
+    bool IsApplyable(const std::shared_ptr<DAVA::TArc::PropertyNode>& node) const override;
     Info GetInfo() const override;
     bool OnlyForSingleSelection() const override;
     void CreateCache(DAVA::TArc::ContextAccessor* accessor) override;
     void ClearCache() override;
-    std::unique_ptr<DAVA::Command> CreateCommand(const DAVA::Reflection& field, const Params& params) const override;
+    std::unique_ptr<DAVA::Command> CreateCommand(const std::shared_ptr<DAVA::TArc::PropertyNode>& node, const Params& params) const override;
 
 private:
     DAVA::UnorderedMap<DAVA::RenderBatch*, std::pair<DAVA::Entity*, DAVA::uint32>> cache;
 };
 
-bool RemoveRenderBatch::IsApplyable(const DAVA::Reflection& field) const
+bool RemoveRenderBatch::IsApplyable(const std::shared_ptr<DAVA::TArc::PropertyNode>& node) const
 {
     return true;
 }
@@ -194,12 +194,17 @@ void RemoveRenderBatch::ClearCache()
     cache.clear();
 }
 
-std::unique_ptr<DAVA::Command> RemoveRenderBatch::CreateCommand(const DAVA::Reflection& field, const Params& params) const
+std::unique_ptr<DAVA::Command> RemoveRenderBatch::CreateCommand(const std::shared_ptr<DAVA::TArc::PropertyNode>& node, const Params& params) const
 {
-    DAVA::RenderBatch* batch = *field.GetValueObject().GetPtr<DAVA::RenderBatch*>();
+    DAVA::RenderBatch* batch = *node->field.ref.GetValueObject().GetPtr<DAVA::RenderBatch*>();
     auto iter = cache.find(batch);
     DVASSERT(iter != cache.end());
-    return std::make_unique<DeleteRenderBatchCommand>(iter->second.first, batch->GetRenderObject(), iter->second.second);
+    DAVA::RenderObject* renderOject = batch->GetRenderObject();
+    if (renderOject->GetRenderBatchCount() < 2)
+    {
+        return nullptr;
+    }
+    return std::make_unique<DeleteRenderBatchCommand>(iter->second.first, renderOject, iter->second.second);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -208,20 +213,20 @@ std::unique_ptr<DAVA::Command> RemoveRenderBatch::CreateCommand(const DAVA::Refl
 class ConvertToShadow : public DAVA::M::CommandProducer
 {
 public:
-    bool IsApplyable(const DAVA::Reflection& field) const override;
+    bool IsApplyable(const std::shared_ptr<DAVA::TArc::PropertyNode>& node) const override;
     Info GetInfo() const override;
     bool OnlyForSingleSelection() const override;
     void CreateCache(DAVA::TArc::ContextAccessor* accessor) override;
     void ClearCache() override;
-    std::unique_ptr<DAVA::Command> CreateCommand(const DAVA::Reflection& field, const Params& params) const override;
+    std::unique_ptr<DAVA::Command> CreateCommand(const std::shared_ptr<DAVA::TArc::PropertyNode>& node, const Params& params) const override;
 
 private:
     DAVA::UnorderedMap<DAVA::RenderBatch*, DAVA::Entity*> cache;
 };
 
-bool ConvertToShadow::IsApplyable(const DAVA::Reflection& field) const
+bool ConvertToShadow::IsApplyable(const std::shared_ptr<DAVA::TArc::PropertyNode>& node) const
 {
-    DAVA::RenderBatch* batch = *field.GetValueObject().GetPtr<DAVA::RenderBatch*>();
+    DAVA::RenderBatch* batch = *node->field.ref.GetValueObject().GetPtr<DAVA::RenderBatch*>();
     return ConvertToShadowCommand::CanConvertBatchToShadow(batch);
 }
 
@@ -269,9 +274,9 @@ void ConvertToShadow::ClearCache()
     cache.clear();
 }
 
-std::unique_ptr<DAVA::Command> ConvertToShadow::CreateCommand(const DAVA::Reflection& field, const Params& params) const
+std::unique_ptr<DAVA::Command> ConvertToShadow::CreateCommand(const std::shared_ptr<DAVA::TArc::PropertyNode>& node, const Params& params) const
 {
-    DAVA::RenderBatch* batch = *field.GetValueObject().GetPtr<DAVA::RenderBatch*>();
+    DAVA::RenderBatch* batch = *node->field.ref.GetValueObject().GetPtr<DAVA::RenderBatch*>();
     auto iter = cache.find(batch);
     DVASSERT(iter != cache.end());
     return std::make_unique<ConvertToShadowCommand>(iter->second, batch);
@@ -283,19 +288,23 @@ std::unique_ptr<DAVA::Command> ConvertToShadow::CreateCommand(const DAVA::Reflec
 class RebuildTangentSpace : public DAVA::M::CommandProducer
 {
 public:
-    bool IsApplyable(const DAVA::Reflection& field) const override;
+    bool IsApplyable(const std::shared_ptr<DAVA::TArc::PropertyNode>& node) const override;
     Info GetInfo() const override;
     bool OnlyForSingleSelection() const override;
-    std::unique_ptr<DAVA::Command> CreateCommand(const DAVA::Reflection& field, const Params& params) const override;
+    std::unique_ptr<DAVA::Command> CreateCommand(const std::shared_ptr<DAVA::TArc::PropertyNode>& node, const Params& params) const override;
 
 private:
     DAVA::UnorderedMap<DAVA::RenderBatch*, DAVA::Entity*> cache;
 };
 
-bool RebuildTangentSpace::IsApplyable(const DAVA::Reflection& field) const
+bool RebuildTangentSpace::IsApplyable(const std::shared_ptr<DAVA::TArc::PropertyNode>& node) const
 {
-    DAVA::RenderBatch* batch = *field.GetValueObject().GetPtr<DAVA::RenderBatch*>();
+    DAVA::RenderBatch* batch = *node->field.ref.GetValueObject().GetPtr<DAVA::RenderBatch*>();
     DAVA::PolygonGroup* group = batch->GetPolygonGroup();
+    if (group == nullptr)
+    {
+        return false;
+    }
     bool isRebuildTsEnabled = true;
     const DAVA::int32 requiredVertexFormat = (DAVA::EVF_TEXCOORD0 | DAVA::EVF_NORMAL);
     isRebuildTsEnabled &= (group->GetPrimitiveType() == rhi::PRIMITIVE_TRIANGLELIST);
@@ -318,9 +327,9 @@ bool RebuildTangentSpace::OnlyForSingleSelection() const
     return true;
 }
 
-std::unique_ptr<DAVA::Command> RebuildTangentSpace::CreateCommand(const DAVA::Reflection& field, const Params& params) const
+std::unique_ptr<DAVA::Command> RebuildTangentSpace::CreateCommand(const std::shared_ptr<DAVA::TArc::PropertyNode>& node, const Params& params) const
 {
-    DAVA::RenderBatch* batch = *field.GetValueObject().GetPtr<DAVA::RenderBatch*>();
+    DAVA::RenderBatch* batch = *node->field.ref.GetValueObject().GetPtr<DAVA::RenderBatch*>();
     return std::make_unique<RebuildTangentSpaceCommand>(batch, true);
 }
 }

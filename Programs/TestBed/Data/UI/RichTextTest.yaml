@@ -1,0 +1,91 @@
+Header:
+    version: "12"
+StyleSheets:
+-   selector: ".text"
+    properties:
+        text-font: "DejaVuSans_18"
+-   selector: ".text.red"
+    properties:
+        text-textColor: [1.000000, 0.000000, 0.000000, 1.000000]
+-   selector: ".text.green"
+    properties:
+        text-textColor: [0.000000, 1.000000, 0.000000, 1.000000]
+-   selector: ".text.DejaVu"
+    properties:
+        text-font: "DejaVuSans_18"
+-   selector: ".text.img"
+    properties:
+        anchor-enabled: true
+        anchor-bottomAnchorEnabled: true
+        anchor-bottomAnchor: 0.000000
+        anchor-topAnchorEnabled: true
+        anchor-topAnchor: 0.000000
+Prototypes:
+-   class: "UIControl"
+    name: "Button"
+    position: [0.000000, 0.000000]
+    size: [112.000000, 32.000000]
+    debugDraw: false
+    components:
+        Background:
+            drawType: "DRAW_STRETCH_BOTH"
+            sprite: "~res:/UI/Images/GoldPin.png"
+            leftRightStretchCap: 5.000000
+            topBottomStretchCap: 5.000000
+    children:
+    -   class: "UIStaticText"
+        name: "UIStaticText"
+        position: [0.000000, 0.000000]
+        size: [112.000000, 32.000000]
+        textColor: [1.000000, 0.333333, 0.000000, 1.000000]
+        text: "Ok"
+        font: "Font_18"
+        components:
+            SizePolicy:
+                horizontalPolicy: "PercentOfParent"
+                verticalPolicy: "PercentOfParent"
+Controls:
+-   class: "UIControl"
+    name: "Root"
+    position: [0.000000, 0.000000]
+    size: [691.000000, 619.000000]
+    noInput: true
+    components:
+        SizePolicy:
+            horizontalPolicy: "PercentOfParent"
+            verticalPolicy: "PercentOfParent"
+    children:
+    -   class: "UITextField"
+        name: "Input"
+        position: [20.000000, 20.000000]
+        size: [315.500000, 406.000000]
+        debugDraw: true
+        text: "<h1>Header</h1> Example text with <img class=\"img\" src=\"~res:/UI/Images/GoldPin.png\" /> image and <btn /> object. <ul>List example:<li>Item 1</li><li>Item 2</li></ul> Text after list."
+        font: "DejaVuSans_18"
+        textalign: ["LEFT", "TOP"]
+        isMultiline: true
+        components:
+            Anchor:
+                leftAnchorEnabled: true
+                leftAnchor: 20.000000
+                hCenterAnchorEnabled: true
+                hCenterAnchor: -10.000000
+            Focus: {}
+    -   class: "UIControl"
+        name: "RichText"
+        position: [355.500000, 20.000000]
+        size: [315.500000, 406.000000]
+        debugDraw: true
+        components:
+            FlowLayout:
+                hSpacing: 5.000000
+                vSpacing: 10.000000
+            Anchor:
+                hCenterAnchorEnabled: true
+                hCenterAnchor: 10.000000
+                rightAnchorEnabled: true
+                rightAnchor: 20.000000
+            RichContent:
+                text: "<h1>Header</h1> Example text with <img class=\"img\" src=\"~res:/UI/Images/GoldPin.png\" /> image and <btn /> object. <ul>List example:<li>Item 1</li><li>Item 2</li></ul> Text after list."
+                baseClasses: "text"
+                aliases: "h1,<p class=\"DejaVu\" />;btn,<object path=\"~res:/UI/RichTextTest.yaml\" prototype=\"Button\" />;"

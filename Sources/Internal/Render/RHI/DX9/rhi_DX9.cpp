@@ -171,6 +171,7 @@ static void dx9_SynchronizeCPUGPU(uint64* cpuTimestamp, uint64* gpuTimestamp)
 }
 
 //------------------------------------------------------------------------------
+
 void DX9CheckMultisampleSupport()
 {
     const _D3DFORMAT formatsToCheck[] = { D3DFMT_A8R8G8B8, D3DFMT_D24S8 };
@@ -200,8 +201,19 @@ void DX9CheckMultisampleSupport()
     MutableDeviceCaps::Get().maxSamples = sampleCount / 2;
 }
 
-void dx9_InitCaps()
+struct AdapterInfo
 {
+    UINT index;
+    D3DCAPS9 caps;
+    D3DADAPTER_IDENTIFIER9 info;
+};
+
+void dx9_InitCaps(const AdapterInfo& adapterInfo)
+{
+    DVASSERT(_D3D9_Device);
+
+    Memcpy(MutableDeviceCaps::Get().deviceDescription, adapterInfo.info.Description, DAVA::Min(countof(MutableDeviceCaps::Get().deviceDescription), strlen(adapterInfo.info.Description) + 1));
+
     D3DCAPS9 caps = {};
     _D3D9_Device->GetDeviceCaps(&caps);
 
@@ -223,6 +235,11 @@ void dx9_InitCaps()
     MutableDeviceCaps::Get().isCenterPixelMapping = true;
     MutableDeviceCaps::Get().maxTextureSize = DAVA::Min(caps.MaxTextureWidth, caps.MaxTextureHeight);
 
+    if (adapterInfo.caps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY)
+    {
+        MutableDeviceCaps::Get().maxAnisotropy = adapterInfo.caps.MaxAnisotropy;
+    }
+
     {
         IDirect3DQuery9* freqQuery = nullptr;
         _D3D9_Device->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ, &freqQuery);
@@ -239,15 +256,18 @@ void dx9_InitCaps()
         }
     }
 
+    if (adapterInfo.info.VendorId == 0x8086 && adapterInfo.info.DeviceId == 0x0046) //filter Intel HD Graphics on Pentium Chip
+    {
+        MutableDeviceCaps::Get().isVertexTextureUnitsSupported = false;
+    }
+
+    if (adapterInfo.info.VendorId == 0x10DE && (adapterInfo.info.DeviceId >> 4) == 0x014) //DeviceID from 0x0140 to 0x014F - NV43 chip from NVIDIA
+    {
+        MutableDeviceCaps::Get().isInstancingSupported = false;
+    }
+
     DX9CheckMultisampleSupport();
 }
-
-struct AdapterInfo
-{
-    UINT index;
-    D3DCAPS9 caps;
-    D3DADAPTER_IDENTIFIER9 info;
-};
 
 const char* dx9_AdapterInfo(const D3DADAPTER_IDENTIFIER9& info)
 {
@@ -397,19 +417,13 @@ void dx9_InitContext()
 
         if (SUCCEEDED(hr))
         {
-            Memcpy(MutableDeviceCaps::Get().deviceDescription, adapter.info.Description,
-                   DAVA::Min(countof(MutableDeviceCaps::Get().deviceDescription), strlen(adapter.info.Description) + 1));
+            dx9_InitCaps(adapter);
+
             DAVA::Logger::Info("[RHI-D3D9] Device created with adapter: %s", dx9_AdapterInfo(adapter.info));
         }
         else
         {
-            Logger::Error("[RHI-D3D9] Failed to create device with adapter %s, reported error: %s",
-                          dx9_AdapterInfo(adapter.info), D3D9ErrorText(hr));
-        }
-
-        if (adapter.caps.RasterCaps & D3DPRASTERCAPS_ANISOTROPY)
-        {
-            MutableDeviceCaps::Get().maxAnisotropy = adapter.caps.MaxAnisotropy;
+            Logger::Error("[RHI-D3D9] Failed to create device with adapter %s, reported error: %s", dx9_AdapterInfo(adapter.info), D3D9ErrorText(hr));
         }
     }
     else
@@ -420,11 +434,7 @@ void dx9_InitContext()
             DAVA::Logger::Error("[RHI-D3D9] %s", dx9_AdapterInfo(adapter.info));
     }
 
-    if (_D3D9_Device)
-    {
-        dx9_InitCaps();
-    }
-    else if (_DX9_InitParam.renderingErrorCallback)
+    if (_D3D9_Device == nullptr && _DX9_InitParam.renderingErrorCallback)
     {
         _DX9_InitParam.renderingErrorCallback(RenderingError::FailedToCreateDevice, _DX9_InitParam.renderingErrorCallbackContext);
     }

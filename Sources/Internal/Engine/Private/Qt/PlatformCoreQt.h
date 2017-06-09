@@ -29,6 +29,8 @@ public:
     void PrepareToQuit();
     void Quit();
 
+    void SetScreenTimeoutEnabled(bool enabled);
+
     QApplication* GetApplication();
     RenderWidget* GetRenderWidget();
 

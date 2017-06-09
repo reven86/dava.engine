@@ -110,26 +110,21 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     desc.transformVirtualToPhysical = true;
 
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
+    UIControlSystem* controlSystem = UIControlSystem::Instance();
     if (prepareControl)
     {
-        PrepareControl(control);
+        controlSystem->ForceUpdateControl(0.0f, control);
     }
-    control->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData(), nullptr);
+    controlSystem->ForceDrawControl(control);
 
     //[CLEAR ALPHA]
     if (clearAlpha)
     {
-        Vector2 rectSize = UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtual(Vector2(float32(screenshot->GetWidth()), float32(screenshot->GetHeight())));
+        Vector2 rectSize = controlSystem->vcs->ConvertPhysicalToVirtual(Vector2(float32(screenshot->GetWidth()), float32(screenshot->GetHeight())));
         RenderSystem2D::Instance()->FillRect(Rect(0.0f, 0.0f, rectSize.dx, rectSize.dy), Color::White, RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL);
     }
 
     RenderSystem2D::Instance()->EndRenderTargetPass();
     // End render
-}
-
-void UIScreenshoter::PrepareControl(UIControl* control)
-{
-    control->SystemUpdate(0.f);
-    UIControlSystem::Instance()->UpdateControl(control);
 }
 };

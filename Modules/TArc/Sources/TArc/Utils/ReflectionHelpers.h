@@ -40,9 +40,9 @@ const T* GetTypeMeta(const Any& value)
 }
 
 template <typename TMeta, typename TIndex>
-void EmplaceTypeMeta(ReflectedType* type, Meta<TMeta, TIndex>&& meta)
+void EmplaceTypeMeta(const ReflectedType* type, Meta<TMeta, TIndex>&& meta)
 {
-    ReflectedStructure* structure = type->GetStructure();
+    ReflectedStructure* structure = type->EditStructure();
     DVASSERT(structure != nullptr);
 
     if (structure->meta == nullptr)
@@ -56,19 +56,19 @@ void EmplaceTypeMeta(ReflectedType* type, Meta<TMeta, TIndex>&& meta)
 template <typename T, typename TMeta, typename TIndex>
 void EmplaceTypeMeta(Meta<TMeta, TIndex>&& meta)
 {
-    ReflectedType* type = const_cast<ReflectedType*>(ReflectedTypeDB::Get<T>());
+    const ReflectedType* type = ReflectedTypeDB::Get<T>();
     DVASSERT(type != nullptr);
 
     EmplaceTypeMeta(type, std::move(meta));
 }
 
 template <typename T, typename TMeta, typename TIndex>
-void EmplaceFieldMeta(const String& fieldName, Meta<TMeta, TIndex>&& meta)
+void EmplaceFieldMeta(FastName fieldName, Meta<TMeta, TIndex>&& meta)
 {
-    ReflectedType* type = const_cast<ReflectedType*>(ReflectedTypeDB::Get<T>());
+    const ReflectedType* type = ReflectedTypeDB::Get<T>();
     DVASSERT(type != nullptr);
 
-    ReflectedStructure* structure = type->GetStructure();
+    ReflectedStructure* structure = type->EditStructure();
     DVASSERT(structure != nullptr);
 
     for (std::unique_ptr<ReflectedStructure::Field>& field : structure->fields)

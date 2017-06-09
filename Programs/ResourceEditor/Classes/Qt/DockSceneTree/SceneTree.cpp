@@ -753,7 +753,7 @@ protected:
 
         if (selectedPath.isEmpty() == false)
         {
-            FilePath yamlPath = selectedPath.toStdString();
+            DAVA::FilePath yamlPath = selectedPath.toStdString();
             SettingsManager::SetValue(Settings::Internal_ParticleLastLoadEmitterDir, DAVA::VariantType(yamlPath.GetDirectory()));
 
             GetScene()->Exec(CreateLoadCommand(yamlPath));
@@ -1059,6 +1059,7 @@ void SceneTree::CommandExecuted(SceneEditor2* scene, const RECommandNotification
     CMDID_PARTICLE_EMITTER_FORCE_ADD,
     CMDID_PARTICLE_EMITTER_FORCE_REMOVE,
     CMDID_PARTICLE_EFFECT_EMITTER_REMOVE,
+    CMDID_REFLECTED_FIELD_MODIFY
     } };
 
     if (commandNotification.MatchCommandIDs(idsForUpdate))

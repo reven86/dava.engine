@@ -51,7 +51,7 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
                      UIStyleSheetPropertyDescriptor(&staticTextGroup, "textColor", Color::White),
                      UIStyleSheetPropertyDescriptor(&staticTextGroup, "textcolorInheritType", UIControlBackground::COLOR_MULTIPLY_ON_PARENT),
                      UIStyleSheetPropertyDescriptor(&staticTextGroup, "shadowoffset", Vector2(0.0f, 0.0f)),
-                     UIStyleSheetPropertyDescriptor(&staticTextGroup, "shadowcolor", Color::White),
+                     UIStyleSheetPropertyDescriptor(&staticTextGroup, "shadowcolor", Color::Black),
                      UIStyleSheetPropertyDescriptor(&staticTextGroup, "textalign", ALIGN_HCENTER | ALIGN_VCENTER),
 
                      UIStyleSheetPropertyDescriptor(&linearLayoutGroup, "enabled", true),

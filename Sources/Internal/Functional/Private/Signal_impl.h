@@ -148,18 +148,36 @@ void Signal<Args...>::AddSlot(Connection&& c, Group group)
 }
 
 template <typename... Args>
-void Signal<Args...>::RemoveSlot(Connection& c)
+typename Signal<Args...>::ConnectionIt Signal<Args...>::RemoveSlot(ConnectionIt& it)
 {
-    if (!c.flags.test(Connection::Deleted))
+    if (!it->flags.test(Connection::Deleted))
     {
-        if (nullptr != c.tracked)
+        if (nullptr != it->tracked)
         {
-            Unwatch(c.tracked);
-            c.tracked = nullptr;
+            Unwatch(it->tracked);
+            it->tracked = nullptr;
         }
 
-        c.object = nullptr;
-        c.flags.set(Connection::Deleted, true);
+        it->object = nullptr;
+        it->flags.set(Connection::Deleted, true);
+    }
+
+    // We shouldn't really erase specified by 'it' connection
+    // if it's in Emitting state. This must be done in order
+    // not to break Emit() processing cycle with wrond iterator.
+    // (avoiding crash when we are erasing list item by iterator
+    // and that performing operator++() under the same iterator)
+    if (!it->flags.test(Connection::Emiting))
+    {
+        // not in Emitting state: we can safely
+        // erase it and return next one
+        return connections.erase(it);
+    }
+    else
+    {
+        // in Emiting state: it was marked as Deleted
+        // so just return next one
+        return ++it;
     }
 }
 
@@ -168,11 +186,13 @@ void Signal<Args...>::Disconnect(Token token)
 {
     DVASSERT(SignalTokenProvider::IsValid(token));
 
-    for (auto& c : connections)
+    auto it = connections.begin();
+    auto end = connections.end();
+    for (; it != end; it++)
     {
-        if (c.token == token)
+        if (it->token == token)
         {
-            RemoveSlot(c);
+            RemoveSlot(it);
             break;
         }
     }
@@ -183,11 +203,17 @@ void Signal<Args...>::Disconnect(void* obj)
 {
     DVASSERT(nullptr != obj);
 
-    for (auto& c : connections)
+    auto it = connections.begin();
+    auto end = connections.end();
+    for (; it != end;)
     {
-        if (c.object == obj || c.tracked == obj)
+        if (it->object == obj || it->tracked == obj)
         {
-            RemoveSlot(c);
+            it = RemoveSlot(it);
+        }
+        else
+        {
+            it++;
         }
     }
 }
@@ -195,9 +221,11 @@ void Signal<Args...>::Disconnect(void* obj)
 template <typename... Args>
 void Signal<Args...>::DisconnectAll()
 {
-    for (auto& c : connections)
+    auto it = connections.begin();
+    auto end = connections.end();
+    for (; it != end;)
     {
-        RemoveSlot(c);
+        it = RemoveSlot(it);
     }
 }
 
@@ -207,16 +235,16 @@ void Signal<Args...>::Track(Token token, TrackedObject* tracked)
     DVASSERT(SignalTokenProvider::IsValid(token));
     DVASSERT(nullptr != tracked);
 
-    auto i = connections.rbegin();
+    auto it = connections.rbegin();
     auto rend = connections.rend();
-    for (; i != rend; ++i)
+    for (; it != rend; ++it)
     {
-        if (i->token == token && i->tracked != tracked)
+        if (it->token == token && it->tracked != tracked)
         {
-            if (nullptr != i->tracked)
-                Unwatch(i->tracked);
+            if (nullptr != it->tracked)
+                Unwatch(it->tracked);
 
-            i->tracked = tracked;
+            it->tracked = tracked;
             Watch(tracked);
         }
     }
@@ -265,26 +293,28 @@ bool Signal<Args...>::IsBlocked(Token token) const
 template <typename... Args>
 void Signal<Args...>::Emit(Args... args)
 {
-    bool hasDeletedSlots = false;
+    auto it = connections.begin();
+    auto end = connections.end();
 
-    for (auto& c : connections)
+    while (it != end)
     {
-        if (!c.flags.test(Connection::Deleted))
+        if (!it->flags.test(Connection::Blocked))
         {
-            if (!c.flags.test(Connection::Blocked))
-            {
-                c.fn(args...);
-            }
+            it->flags.set(Connection::Emiting, true);
+            it->fn(args...);
+            it->flags.set(Connection::Emiting, false);
+        }
+
+        if (it->flags.test(Connection::Deleted))
+        {
+            // erase slots that are already marked as 'deleted'
+            // see RemoveSlot() function for more description
+            it = RemoveSlot(it);
         }
         else
         {
-            hasDeletedSlots = true;
+            it++;
         }
-    }
-
-    if (hasDeletedSlots)
-    {
-        connections.remove_if([](const Connection& c) { return c.flags.test(Connection::Deleted); });
     }
 }
 } // namespace DAVA

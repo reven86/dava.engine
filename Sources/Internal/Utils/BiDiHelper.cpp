@@ -1,4 +1,5 @@
 #include "BiDiHelper.h"
+#include "Debug/DVAssert.h"
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
 #include "Utils/StringUtils.h"
@@ -20,6 +21,7 @@
 #endif
 #include <unicode/ubidi.h>
 #include <unicode/ushape.h>
+#include <unicode/ustring.h>
 #if __clang__
     #pragma clang diagnostic pop
 #endif
@@ -33,6 +35,7 @@ class BiDiWrapper
 public:
     bool Prepare(const WideString& logicalStr, WideString& preparedStr, bool* isRTL);
     bool Reorder(const WideString& preparedStr, WideString& reorderedStr, const bool forceRtl);
+    BiDiHelper::Direction GetDirectionUTF8String(const String& utf8String);
 
 private:
     Mutex mutex;
@@ -224,6 +227,82 @@ bool BiDiWrapper::Reorder(const WideString& preparedStr, WideString& reorderedSt
 #endif
 }
 
+BiDiHelper::Direction BiDiWrapper::GetDirectionUTF8String(const String& utf8String)
+{
+    LockGuard<Mutex> guard(mutex);
+
+#if DAVA_FRIBIDI
+    static FriBidiFlags flags = FRIBIDI_FLAGS_DEFAULT | FRIBIDI_FLAGS_ARABIC;
+
+    FriBidiParType base_dir = FRIBIDI_PAR_ON;
+    uint32 fribidi_len = static_cast<uint32>(logicalStr.length());
+
+    logicalBuffer.assign(logicalStr.begin(), logicalStr.end());
+    bidiTypes.resize(fribidi_len);
+    bidiLevels.resize(fribidi_len);
+    visualBuffer.resize(fribidi_len);
+    arabicProps.resize(fribidi_len);
+
+    fribidi_get_bidi_types(&logicalBuffer[0], fribidi_len, &bidiTypes[0]);
+
+    FriBidiLevel max_level = fribidi_get_par_embedding_levels(&bidiTypes[0], fribidi_len, &base_dir, &bidiLevels[0]) - 1;
+    if (max_level < 0)
+    {
+        return false;
+    }
+
+    if (FRIBIDI_IS_NEUTRAL(base_dir))
+    {
+        return Direction::NEUTRAL;
+    }
+    else if (FRIBIDI_IS_RTL(base_dir))
+    {
+        return Direction::RTL;
+    }
+    else
+    {
+        return Direction::LTR;
+    }
+
+#elif DAVA_ICU
+    int32 ucharLength = 0;
+    UErrorCode error = U_ZERO_ERROR;
+    u_strFromUTF8(nullptr, 0, &ucharLength, utf8String.c_str(), static_cast<int32_t>(utf8String.length()), &error);
+    if (error != U_ZERO_ERROR && error != U_BUFFER_OVERFLOW_ERROR)
+    {
+        return BiDiHelper::Direction::LTR;
+    }
+
+    logicalBuffer.resize(ucharLength + 1); // +1 for \0 character
+    error = U_ZERO_ERROR;
+    u_strFromUTF8(logicalBuffer.data(), ucharLength + 1, nullptr, utf8String.c_str(), static_cast<int32_t>(utf8String.length()), &error);
+    if (error != U_ZERO_ERROR)
+    {
+        return BiDiHelper::Direction::LTR;
+    }
+
+    UBiDiDirection direction = ubidi_getBaseDirection(logicalBuffer.data(), ucharLength);
+    switch (direction)
+    {
+    case UBIDI_LTR:
+        return BiDiHelper::Direction::LTR;
+    case UBIDI_RTL:
+        return BiDiHelper::Direction::RTL;
+    case UBIDI_MIXED:
+        return BiDiHelper::Direction::MIXED;
+    case UBIDI_NEUTRAL:
+        return BiDiHelper::Direction::NEUTRAL;
+    default:
+        DVASSERT(false);
+        return BiDiHelper::Direction::LTR;
+    }
+
+#else
+    return false;
+
+#endif
+}
+
 BiDiHelper::BiDiHelper()
     : wrapper(new BiDiWrapper())
 {
@@ -258,5 +337,10 @@ bool BiDiHelper::IsBiDiSpecialCharacter(uint32 character) const
     return false;
 
 #endif
+}
+
+BiDiHelper::Direction BiDiHelper::GetDirectionUTF8String(const String& utf8String) const
+{
+    return wrapper->GetDirectionUTF8String(utf8String);
 }
 }

@@ -21,6 +21,12 @@ DAVA_VIRTUAL_REFLECTION_IMPL(SoundComponentElement)
     .End();
 }
 
+template <>
+bool AnyCompare<SoundComponentElement>::IsEqual(const Any& v1, const Any& v2)
+{
+    return v1.Get<SoundComponentElement>() == v2.Get<SoundComponentElement>();
+}
+
 bool SoundComponentElement::operator==(const SoundComponentElement& other) const
 {
     return soundEvent == other.soundEvent &&

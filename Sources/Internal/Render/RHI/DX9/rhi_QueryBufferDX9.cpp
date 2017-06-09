@@ -38,8 +38,7 @@ std::vector<QueryBufferDX9_t*> queryBuffers;
 
 //==============================================================================
 
-static Handle
-dx9_QueryBuffer_Create(uint32 maxObjectCount)
+static Handle dx9_QueryBuffer_Create(uint32 maxObjectCount)
 {
     Handle handle = QueryBufferDX9Pool::Alloc();
     QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
@@ -56,8 +55,7 @@ dx9_QueryBuffer_Create(uint32 maxObjectCount)
     return handle;
 }
 
-static void
-dx9_QueryBuffer_Delete(Handle handle)
+static void dx9_QueryBuffer_Delete(Handle handle)
 {
     QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
     DVASSERT(buf);
@@ -75,8 +73,7 @@ dx9_QueryBuffer_Delete(Handle handle)
     QueryBufferDX9Pool::Free(handle);
 }
 
-static void
-dx9_QueryBuffer_Reset(Handle handle)
+static void dx9_QueryBuffer_Reset(Handle handle)
 {
     QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
     DVASSERT(buf);
@@ -95,8 +92,7 @@ dx9_QueryBuffer_Reset(Handle handle)
     buf->bufferCompleted = false;
 }
 
-static void
-dx9_Check_Query_Results(QueryBufferDX9_t* buf)
+static void dx9_Check_Query_Results(QueryBufferDX9_t* buf)
 {
     DX9Command cmd[DX9_MAX_PENDING_QUERIES];
     DWORD results[DX9_MAX_PENDING_QUERIES] = {};
@@ -130,8 +126,7 @@ dx9_Check_Query_Results(QueryBufferDX9_t* buf)
     }
 }
 
-static bool
-dx9_QueryBuffer_IsReady(Handle handle)
+static bool dx9_QueryBuffer_IsReady(Handle handle)
 {
     bool ready = false;
     QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
@@ -146,8 +141,7 @@ dx9_QueryBuffer_IsReady(Handle handle)
     return ready;
 }
 
-static bool
-dx9_QueryBuffer_ObjectIsReady(Handle handle, uint32 objectIndex)
+static bool dx9_QueryBuffer_ObjectIsReady(Handle handle, uint32 objectIndex)
 {
     bool ready = false;
     QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
@@ -171,8 +165,7 @@ dx9_QueryBuffer_ObjectIsReady(Handle handle, uint32 objectIndex)
     return ready;
 }
 
-static int
-dx9_QueryBuffer_Value(Handle handle, uint32 objectIndex)
+static int32 dx9_QueryBuffer_Value(Handle handle, uint32 objectIndex)
 {
     QueryBufferDX9_t* buf = QueryBufferDX9Pool::Get(handle);
     DVASSERT(buf);

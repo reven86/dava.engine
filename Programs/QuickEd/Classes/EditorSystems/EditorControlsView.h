@@ -6,7 +6,7 @@
 #include "Utils/PackageListenerProxy.h"
 
 #include <TArc/DataProcessing/DataWrapper.h>
-
+#include <UI/Layouts/UILayoutSystemListener.h>
 #include <Base/BaseTypes.h>
 
 class EditorSystemsManager;
@@ -22,7 +22,7 @@ class FieldBinder;
 }
 }
 
-class EditorControlsView final : public BaseEditorSystem, PackageListener
+class EditorControlsView final : public BaseEditorSystem, PackageListener, DAVA::UILayoutSystemListener
 {
 public:
     EditorControlsView(DAVA::UIControl* canvasParent, EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor);
@@ -39,6 +39,10 @@ private:
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
+
+    // UILayoutSystemListener
+    void OnControlLayouted(DAVA::UIControl* control) override;
+
     BackgroundController* CreateControlBackground(PackageBaseNode* node);
     void AddBackgroundControllerToCanvas(BackgroundController* backgroundController, size_t pos);
 

@@ -1,4 +1,5 @@
 #include "QtDelayedExecutor.h"
+#include "QtEventIds.h"
 
 #include <QEvent>
 #include <QApplication>
@@ -9,7 +10,7 @@ class QtDelayedExecuteEvent : public QEvent
 {
 public:
     QtDelayedExecuteEvent(const DAVA::Function<void()>& functor_)
-        : QEvent(delayedEventType)
+        : QEvent(QT_EVENT_TYPE(QtToolsEventsTable::DelayedExecute))
         , functor(functor_)
     {
     }
@@ -19,13 +20,9 @@ public:
         functor();
     }
 
-    static QEvent::Type delayedEventType;
-
 private:
     DAVA::Function<void()> functor;
 };
-
-QEvent::Type QtDelayedExecuteEvent::delayedEventType = static_cast<QEvent::Type>(QEvent::User + 1);
 }
 
 QtDelayedExecutor::QtDelayedExecutor(QObject* parent /*= nullptr*/)
@@ -40,7 +37,7 @@ void QtDelayedExecutor::DelayedExecute(const DAVA::Function<void()>& functor)
 
 bool QtDelayedExecutor::event(QEvent* e)
 {
-    if (e->type() == QtDelayedExecutorDetail::QtDelayedExecuteEvent::delayedEventType)
+    if (e->type() == QT_EVENT_TYPE(QtToolsEventsTable::DelayedExecute))
     {
         QtDelayedExecutorDetail::QtDelayedExecuteEvent* event = static_cast<QtDelayedExecutorDetail::QtDelayedExecuteEvent*>(e);
         event->Execute();

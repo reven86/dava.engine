@@ -36,11 +36,8 @@ using namespace DAVA;
 PropertiesModel::PropertiesModel(QObject* parent)
     : QAbstractItemModel(parent)
     , propertiesUpdater(500)
-    , nodeUpdater(300)
 {
     propertiesUpdater.SetUpdater(MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties));
-    nodeUpdater.SetUpdater(MakeFunction(this, &PropertiesModel::ResetInternal));
-    nodeUpdater.SetStopper([this]() { return nodeToReset == nullptr; });
 
     UIControlSystem::Instance()->GetStyleSheetSystem()->SetListener(this);
 }
@@ -51,7 +48,6 @@ PropertiesModel::~PropertiesModel()
 
     CleanUp();
     propertiesUpdater.Abort();
-    nodeUpdater.Abort();
 }
 
 void PropertiesModel::SetAccessor(DAVA::TArc::ContextAccessor* accessor_)
@@ -60,14 +56,7 @@ void PropertiesModel::SetAccessor(DAVA::TArc::ContextAccessor* accessor_)
     BindFields();
 }
 
-void PropertiesModel::Reset(PackageBaseNode* node_)
-{
-    nodeToReset = node_;
-
-    nodeUpdater.Update();
-}
-
-void PropertiesModel::ResetInternal()
+void PropertiesModel::Reset(PackageBaseNode* nodeToReset)
 {
     propertiesUpdater.Abort();
     beginResetModel();
@@ -680,7 +669,7 @@ void PropertiesModel::CleanUp()
 
 void PropertiesModel::OnPackageChanged(const DAVA::Any& /*package*/)
 {
-    nodeUpdater.Abort();
+    propertiesUpdater.Abort();
 }
 
 void PropertiesModel::BindFields()

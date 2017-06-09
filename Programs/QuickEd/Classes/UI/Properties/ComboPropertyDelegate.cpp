@@ -30,7 +30,6 @@ QWidget* ComboPropertyDelegate::createEditor(QWidget* parent, const PropertiesCo
     comboBox->addItem("");
     comboBox->addItems(completionsProvider->GetCompletions(property));
 
-    connect(comboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCurrentIndexChanged()));
     connect(comboBox, SIGNAL(activated(const QString&)), this, SLOT(OnActivated(const QString&)));
 
     return comboBox;

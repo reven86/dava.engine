@@ -2,13 +2,12 @@
 #include "Logger/Logger.h"
 #include "FileSystem/File.h"
 #include "Concurrency/Thread.h"
+#include "DLCManager/Private/DLCDownloaderImpl.h"
 
 #include <curl/curl.h>
 
 namespace DAVA
 {
-bool CurlDownloader::isCURLInit = false;
-
 static DownloadError ErrorForEasyHandle(CURL* easyHandle, CURLcode status, bool isRangeRequestSent);
 static DownloadError HandleDownloadResults(CURLM* multiHandle, bool isRangeRequestSent);
 static DownloadError CurlmCodeToDownloadError(CURLMcode curlMultiCode);
@@ -51,15 +50,12 @@ CurlDownloader::CurlDownloader()
     , maxChunkSize(20 * 1024 * 1024)
     , minChunkSize(16 * 1024)
 {
-    if (!isCURLInit && CURLE_OK == curl_global_init(CURL_GLOBAL_ALL))
-    {
-        isCURLInit = true;
-    }
+    CurlGlobalInit();
 }
 
 CurlDownloader::~CurlDownloader()
 {
-    curl_global_cleanup();
+    CurlGlobalDeinit();
 }
 
 size_t CurlDownloader::CurlDataRecvHandler(void* ptr, size_t size, size_t nmemb, void* part)
@@ -839,11 +835,14 @@ DownloadError HttpCodeToDownloadError(long code, bool isRangeRequestSent)
 
 void CurlDownloader::SetTimeout(CURL* easyHandle)
 {
-    curl_easy_setopt(easyHandle, CURLOPT_CONNECTTIMEOUT, operationTimeout);
-    // we could set operation time limit which produce timeout if operation takes setted time.
     curl_easy_setopt(easyHandle, CURLOPT_TIMEOUT, 0L);
+
+    curl_easy_setopt(easyHandle, CURLOPT_CONNECTTIMEOUT, operationTimeout);
     curl_easy_setopt(easyHandle, CURLOPT_DNS_CACHE_TIMEOUT, operationTimeout);
-    curl_easy_setopt(easyHandle, CURLOPT_SERVER_RESPONSE_TIMEOUT, operationTimeout);
+
+    // abort if slower than 30 bytes/sec during operationTimeout seconds
+    curl_easy_setopt(easyHandle, CURLOPT_LOW_SPEED_TIME, 30L);
+    curl_easy_setopt(easyHandle, CURLOPT_LOW_SPEED_LIMIT, operationTimeout);
 }
 
 static DownloadError HandleDownloadResults(CURLM* multiHandle, bool isRangeRequestSent)

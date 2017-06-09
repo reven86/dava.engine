@@ -18,7 +18,7 @@ protected:
     virtual ~IntrospectionProperty();
 
 public:
-    static IntrospectionProperty* Create(DAVA::UIControl* control, const DAVA::String& name, const DAVA::Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType cloneType);
+    static IntrospectionProperty* Create(DAVA::BaseObject* object, DAVA::uint32 componentType, const DAVA::String& name, const DAVA::Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType cloneType);
 
     void Accept(PropertyVisitor* visitor) override;
 

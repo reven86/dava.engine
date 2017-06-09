@@ -43,13 +43,6 @@ public:
 #endif
                                      ));
 
-    /**
-	 \brief Sets the fill border ordrer. Borders fills Only when they are present on the screen. You can change filling type by overloading FillScreenBorders method.
-	 
-	 \param fillOrder Sets the borders filling order.
-	 */
-    void SetFillBorderOrder(UIScreen::eFillBorderOrder fillOrder);
-
     /* 
 		This is block of functions used by transition
 	 */
@@ -62,7 +55,6 @@ public:
 
     virtual int32 GetGroupId();
 
-    void SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground) override; // Internal method used by ControlSystem
     void SystemScreenSizeChanged(const Rect& newFullScreenSize) override;
 
 protected:
@@ -73,20 +65,12 @@ protected:
     {
     }
 
-    /**
-	 \brief Fills borders thats appears in non proportional screen scaling.
-	 
-	 \param geometricData Base geometric data. This parameter is'n used in the default realisation.
-	 */
-    virtual void FillScreenBorders(const UIGeometricData& geometricData);
-
     int32 groupId;
 
 private:
     bool isLoaded;
     static List<UIScreen*> appScreens;
     static int32 groupIdCounter;
-    eFillBorderOrder fillBorderOrder;
 };
 };
 

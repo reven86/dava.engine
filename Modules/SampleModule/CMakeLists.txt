@@ -11,6 +11,4 @@ set( MODULE_INITIALIZATION_NAMESPACE Test )      # set module namespace
 set( HPP_FILES *.h )                             # 
 set( CPP_FILES Private/*.cpp )                   # set where are sources
 
-set( EXCLUDE_FROM_ALL true )                     
-
 setup_main_module()                              # induce macros of module formation

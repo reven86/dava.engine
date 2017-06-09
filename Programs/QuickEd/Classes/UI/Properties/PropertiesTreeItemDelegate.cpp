@@ -34,6 +34,7 @@
 #include "FontPropertyDelegate.h"
 #include "TablePropertyDelegate.h"
 #include "CompletionsProviderForScrollBar.h"
+#include "PredefinedCompletionsProvider.h"
 #include "Modules/LegacySupportModule/Private/Project.h"
 
 using namespace DAVA;
@@ -62,6 +63,18 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     const QString& gfxExtension = Project::GetGraphicsFileExtension();
     const QString& particleExtension = Project::Get3dFileExtension();
 
+    QStringList formulaCompletions;
+    formulaCompletions << "childrenSum"
+                       << "maxChild"
+                       << "firstChild"
+                       << "lastChild"
+                       << "content"
+                       << "parent"
+                       << "parentRest"
+                       << "parentLine"
+                       << "min(parentRest, content)"
+                       << "max(parent, childrenSum)";
+
     propertyNameTypeItemDelegates[PropertyPath("*", "actions")] = new TablePropertyDelegate(QList<QString>({ "Action", "Shortcut" }), this);
     propertyNameTypeItemDelegates[PropertyPath("*", "sprite")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
     propertyNameTypeItemDelegates[PropertyPath("*", "mask")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
@@ -79,11 +92,15 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     propertyNameTypeItemDelegates[PropertyPath("*", "bg-contour")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
     propertyNameTypeItemDelegates[PropertyPath("*", "text-font")] = new FontPropertyDelegate(this);
 
+    propertyNameTypeItemDelegates[PropertyPath("RichContent", "aliases")] = new TablePropertyDelegate(QList<QString>({ "Alias", "Xml" }), this);
     propertyNameTypeItemDelegates[PropertyPath("Sound", "*")] = new FMODEventPropertyDelegate(this);
     propertyNameTypeItemDelegates[PropertyPath("*", "sound-touchDown")] = new FMODEventPropertyDelegate(this);
     propertyNameTypeItemDelegates[PropertyPath("*", "sound-touchUpInside")] = new FMODEventPropertyDelegate(this);
     propertyNameTypeItemDelegates[PropertyPath("*", "sound-touchUpOutside")] = new FMODEventPropertyDelegate(this);
     propertyNameTypeItemDelegates[PropertyPath("*", "sound-touchValueChanged")] = new FMODEventPropertyDelegate(this);
+
+    propertyNameTypeItemDelegates[PropertyPath("SizePolicy", "horizontalFormula")] = new ComboPropertyDelegate(this, std::make_unique<PredefinedCompletionsProvider>(formulaCompletions));
+    propertyNameTypeItemDelegates[PropertyPath("SizePolicy", "verticalFormula")] = new ComboPropertyDelegate(this, std::make_unique<PredefinedCompletionsProvider>(formulaCompletions));
 }
 
 PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()

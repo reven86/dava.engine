@@ -11,8 +11,27 @@ bool TypeInheritance::TryCast(const Type* from, const Type* to, CastType castTyp
         return true;
     }
 
-    to = to->IsPointer() ? to->Deref()->Decay() : to->Decay();
-    from = from->IsPointer() ? from->Deref()->Decay() : from->Decay();
+    bool fromIsPointer = from->IsPointer();
+    bool toIsPointer = to->IsPointer();
+
+    // both types are pointers or not-pointers
+    if (fromIsPointer == toIsPointer)
+    {
+        // if pointer - deref them first
+        if (fromIsPointer)
+        {
+            to = to->Deref();
+            from = from->Deref();
+        }
+
+        // now decay both types
+        to = to->Decay();
+        from = from->Decay();
+    }
+    else
+    {
+        return false;
+    }
 
     if (to == from)
     {

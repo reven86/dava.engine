@@ -24,7 +24,7 @@ public:
     StaticPackageInformationBuilder(PackageInformationCache* cache);
     ~StaticPackageInformationBuilder() override;
 
-    void BeginPackage(const DAVA::FilePath& packagePath) override;
+    void BeginPackage(const DAVA::FilePath& packagePath, DAVA::int32 version) override;
     void EndPackage() override;
 
     bool ProcessImportedPackage(const DAVA::String& packagePath, DAVA::AbstractUIPackageLoader* loader) override;
@@ -55,4 +55,5 @@ private:
     DAVA::Function<void(const DAVA::ReflectedStructure::Field& member, const DAVA::Any& value)> propertyProcessor;
 
     PackageInformationCache* cache = nullptr;
+    DAVA::ResultList results;
 };

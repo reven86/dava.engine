@@ -27,7 +27,7 @@ private slots:
     void OnTextChanged(const QString& text);
 
 private:
-    bool IsPathValid(const QString& path);
+    bool IsPathValid(const QString& path, bool allowAnyExtension);
     QString RestoreSymLinkInFilePath(const QString& filePath) const;
 
     QPointer<QLineEdit> lineEdit = nullptr;

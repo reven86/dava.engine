@@ -18,7 +18,7 @@ ControlPropertiesSection::ControlPropertiesSection(const DAVA::String& name, DAV
         {
             String name = field.key.Cast<String>();
             IntrospectionProperty* sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindChildPropertyByName(name);
-            IntrospectionProperty* prop = IntrospectionProperty::Create(control, name, field.ref, sourceProperty, cloneType);
+            IntrospectionProperty* prop = IntrospectionProperty::Create(control, -1, name, field.ref, sourceProperty, cloneType);
             AddProperty(prop);
             SafeRelease(prop);
         }

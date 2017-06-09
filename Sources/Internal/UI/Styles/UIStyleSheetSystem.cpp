@@ -10,6 +10,8 @@
 #include "Render/Renderer.h"
 #include "UI/UIScreen.h"
 #include "UI/UIScreenTransition.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 
 namespace DAVA
 {
@@ -101,28 +103,37 @@ UIStyleSheetSystem::~UIStyleSheetSystem()
 {
 }
 
-void UIStyleSheetSystem::Process(DAVA::float32 elapsedTime)
+void UIStyleSheetSystem::Process(float32 elapsedTime)
 {
-    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
-    {
-        return;
-    }
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_STYLE_SHEET_SYSTEM);
 
     CheckDirty();
 
+    if (!needUpdate)
+        return;
+
     if (currentScreenTransition.Valid())
     {
-        Update(currentScreenTransition.Get());
+        ProcessControlHierarhy(currentScreenTransition.Get());
     }
     else if (currentScreen.Valid())
     {
-        Update(currentScreen.Get());
+        ProcessControlHierarhy(currentScreen.Get());
     }
 
     if (popupContainer.Valid())
     {
-        Update(popupContainer.Get());
+        ProcessControlHierarhy(popupContainer.Get());
     }
+}
+
+void UIStyleSheetSystem::ForceProcessControl(float32 elapsedTime, UIControl* control)
+{
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_STYLE_SHEET_SYSTEM);
+    if (!needUpdate && !dirty)
+        return;
+
+    ProcessControlHierarhy(control);
 }
 
 void UIStyleSheetSystem::SetCurrentScreen(const RefPtr<UIScreen>& screen)
@@ -150,7 +161,7 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, bool styleSheetListC
 #if STYLESHEET_STATS
     uint64 startTime = SystemTimer::GetUs();
 #endif
-    ProcessControl(control, 0, styleSheetListChanged, true, false, nullptr);
+    ProcessControlImpl(control, 0, styleSheetListChanged, true, false, nullptr);
 #if STYLESHEET_STATS
     statsTime += SystemTimer::GetUs() - startTime;
 #endif
@@ -158,10 +169,10 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, bool styleSheetListC
 
 void UIStyleSheetSystem::DebugControl(UIControl* control, UIStyleSheetProcessDebugData* debugData)
 {
-    ProcessControl(control, 0, true, false, true, debugData);
+    ProcessControlImpl(control, 0, true, false, true, debugData);
 }
 
-void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDirty, bool styleSheetListChanged, bool recursively, bool dryRun, UIStyleSheetProcessDebugData* debugData)
+void UIStyleSheetSystem::ProcessControlImpl(UIControl* control, int32 distanceFromDirty, bool styleSheetListChanged, bool recursively, bool dryRun, UIStyleSheetProcessDebugData* debugData)
 {
     UIControlPackageContext* packageContext = control->GetPackageContext();
     const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
@@ -265,7 +276,7 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDi
     {
         for (UIControl* child : control->GetChildren())
         {
-            ProcessControl(child, distanceFromDirty + 1, styleSheetListChanged, true, dryRun, debugData);
+            ProcessControlImpl(child, distanceFromDirty + 1, styleSheetListChanged, true, dryRun, debugData);
         }
     }
 }
@@ -323,16 +334,10 @@ void UIStyleSheetSystem::DumpStats()
     }
 }
 
-void UIStyleSheetSystem::Update(UIControl* root)
+void UIStyleSheetSystem::ProcessControlHierarhy(UIControl* control)
 {
-    if (!(needUpdate || dirty) || !root)
-        return;
-    UpdateControl(root);
-}
-
-void UIStyleSheetSystem::UpdateControl(UIControl* control)
-{
-    if ((control->IsVisible() || control->GetStyledPropertySet().test(UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetVisiblePropertyIndex()))
+    uint32 propIndex = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetVisiblePropertyIndex();
+    if ((control->IsVisible() || control->GetStyledPropertySet().test(propIndex))
         && control->IsStyleSheetDirty())
     {
         ProcessControl(control);
@@ -340,7 +345,7 @@ void UIStyleSheetSystem::UpdateControl(UIControl* control)
 
     for (UIControl* child : control->GetChildren())
     {
-        UpdateControl(child);
+        ProcessControlHierarhy(child);
     }
 }
 
@@ -420,7 +425,7 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
         {
             const char* componentName = GlobalEnumMap<UIComponent::eType>::Instance()->ToString(descr.group->componentType);
             const char* controlName = control->GetName().c_str();
-            Logger::Warning("Style sheet can not find component \'%s\' in control \'%s\'", componentName, controlName);
+            Logger::Error("Style sheet can not find component \'%s\' in control \'%s\'", componentName, controlName);
         }
     }
 }

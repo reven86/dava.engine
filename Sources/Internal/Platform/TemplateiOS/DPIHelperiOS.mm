@@ -31,7 +31,7 @@ enum eIOS_DPI
     IPHONE_3_IPAD_MINI = 163,
     IPHONE_4_5_6_SE_IPAD_MINI2_MINI3 = 326,
     IPAD_1_2 = 132,
-    IPAD_3_4_AIR_AIR2_PRO = 264,
+    IPAD_3_4_5_AIR_AIR2_PRO = 264,
     IPHONE_6_PLUS = 401,
     IPHONE_6_PLUS_ZOOM = 461,
 };
@@ -45,9 +45,9 @@ const static DeviceScreenInfo devicesInfoList[] =
   DeviceScreenInfo(768, IPHONE_3_IPAD_MINI, "mini"),
   DeviceScreenInfo(1080, IPHONE_6_PLUS, ""),
   DeviceScreenInfo(1242, IPHONE_6_PLUS_ZOOM, ""),
-  DeviceScreenInfo(1536, IPAD_3_4_AIR_AIR2_PRO, ""),
+  DeviceScreenInfo(1536, IPAD_3_4_5_AIR_AIR2_PRO, ""),
   DeviceScreenInfo(1536, IPHONE_4_5_6_SE_IPAD_MINI2_MINI3, "mini"),
-  DeviceScreenInfo(2048, IPAD_3_4_AIR_AIR2_PRO, "")
+  DeviceScreenInfo(2048, IPAD_3_4_5_AIR_AIR2_PRO, "")
 };
 
 uint32 GetDPIInfoListByDimension(uint32 minDimension, List<const DeviceScreenInfo*>& outputList)
