@@ -67,6 +67,7 @@ void RulerWidget::ShowContextMenu(const QPoint& point)
 
 void RulerWidget::paintEvent(QPaintEvent* paintEvent)
 {
+    UpdateDoubleBufferImage();
     QPainter painter(this);
     painter.drawPixmap(0, 0, doubleBuffer);
     if (markerPosition == 0)

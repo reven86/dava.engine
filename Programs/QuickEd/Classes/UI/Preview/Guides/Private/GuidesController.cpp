@@ -214,7 +214,10 @@ void GuidesController::SetDisplayState(eDisplayState state)
 void GuidesController::EnableDrag(DAVA::float32 position)
 {
     DVASSERT(IsEnabled());
-    DVASSERT(dragState == NO_DRAG);
+    if (dragState == DRAG)
+    {
+        return;
+    }
 
     DVASSERT(valuePtr == nullptr);
     valuePtr = GetNearestValuePtr(position);
@@ -302,6 +305,10 @@ void GuidesController::SyncGuidesWithValues()
 
     //this function can be called recursively because we creating container child here
     static bool syncGuard = false;
+    if (syncGuard)
+    {
+        return;
+    }
     SCOPE_EXIT
     {
         syncGuard = false;
@@ -313,6 +320,7 @@ void GuidesController::SyncGuidesWithValues()
     auto endIter = std::upper_bound(values.begin(), values.end(), maxValue);
 
     int size = std::distance(iter, endIter);
+
     while (guides.size() > size)
     {
         RemoveLastGuide();
