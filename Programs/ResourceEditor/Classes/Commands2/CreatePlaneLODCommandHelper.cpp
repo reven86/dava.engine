@@ -2,6 +2,7 @@
 
 #include "Render/Material/NMaterialNames.h"
 #include "Render/Renderer.h"
+#include "Render/Highlevel/SpeedTreeObject.h"
 #include "Scene3D/Lod/LodSystem.h"
 
 #include "Scene/SceneHelper.h"
@@ -170,7 +171,7 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
     Vector2 cellCenterTxCoordOffset = Vector2(.5f / gridSizeX, .5f / gridSizeY) * txCoordPlaneScale;
 
     ScopedPtr<PolygonGroup> planePG(new PolygonGroup());
-    planePG->AllocateData(EVF_VERTEX | EVF_TEXCOORD0, vxCount, indCount);
+    planePG->AllocateData(EVF_VERTEX | EVF_TEXCOORD0 | EVF_PIVOT4, vxCount, indCount);
 
     int32 currentIndex = 0;
     for (int32 z = 0; z <= gridSizeY; ++z)
@@ -192,17 +193,25 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
             float32 xCoord = min.x + size.x * xy / (float32)gridSizeX; //first plane in Oxz
             float32 yCoord = min.y + size.y * xy / (float32)gridSizeX; //second plane in Oyz
 
+            if (xy == gridSizeX / 2) //align middle vertices to center
+            {
+                xCoord = 0.f;
+                yCoord = 0.f;
+            }
+
             Vector3 coord1(xCoord, 0.f, rowCoord); //1st plane
             Vector3 coord2(0.f, yCoord, rowCoord); //2nd plane
 
-            Vector2 txCoord1 = Vector2(xy / (float32)gridSizeX, rowTxCoord) * txCoordPlaneScale;
-            Vector2 txCoord2 = txCoord1 + txCoordPlane2Offset;
+            Vector2 txCoord1 = Vector2((xCoord - min.x) / size.x, rowTxCoord) * txCoordPlaneScale;
+            Vector2 txCoord2 = Vector2((yCoord - min.y) / size.y, rowTxCoord) * txCoordPlaneScale + txCoordPlane2Offset;
 
             planePG->SetCoord(vxIndex1, coord1);
             planePG->SetTexcoord(0, vxIndex1, txCoord1);
+            planePG->SetPivot(vxIndex1, Vector4());
 
             planePG->SetCoord(vxIndex2, coord2);
             planePG->SetTexcoord(0, vxIndex2, txCoord2);
+            planePG->SetPivot(vxIndex2, Vector4());
 
             // cell center vertices
             if (z != gridSizeY && xy != gridSizeX)
@@ -238,14 +247,20 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
             }
         }
     }
-    planePG->BuildBuffers();
+
+    if (GetSpeedTreeObject(fromEntity) != nullptr)
+        planePG.reset(SpeedTreeObject::CreateSortedPolygonGroup(planePG));
 
     ScopedPtr<NMaterial> material(new NMaterial());
     material->SetMaterialName(FastName(DAVA::Format("plane_lod_%d_for_%s", request->newLodIndex, fromEntity->GetName().c_str())));
-    material->SetFXName(NMaterialName::TEXTURED_ALPHATEST);
+    material->SetFXName(NMaterialName::TEXTURED_ALPHABLEND);
+
+    ScopedPtr<NMaterial> materialInstance(new NMaterial());
+    materialInstance->SetParent(material);
+    materialInstance->SetMaterialName(FastName("Instance0"));
 
     request->planeBatch->SetPolygonGroup(planePG);
-    request->planeBatch->SetMaterial(material);
+    request->planeBatch->SetMaterial(materialInstance);
 }
 
 void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& request, DAVA::Entity* fromEntity, DAVA::Camera* camera,

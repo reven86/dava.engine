@@ -1,5 +1,6 @@
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
+#include "Engine/Engine.h"
 
 using namespace DAVA;
 
@@ -15,7 +16,8 @@ DAVA_TESTCLASS (LoggerFileTest)
             ScopedPtr<File> log(File::Create(logFilePath, File::CREATE | File::WRITE));
         }
 
-        Logger::Instance()->SetMaxFileSize(logCutSize);
+        Logger* logger = GetEngineContext()->logger;
+        logger->SetMaxFileSize(logCutSize);
 
         for (uint32 i = 0; i < 10; ++i)
         {
@@ -29,7 +31,7 @@ DAVA_TESTCLASS (LoggerFileTest)
             }
 
             // choult to cut file to logCutSize
-            Logger::Instance()->SetLogFilename(filename);
+            logger->SetLogFilename(filename);
 
             {
                 ScopedPtr<File> log(File::Create(logFilePath, File::OPEN | File::READ));

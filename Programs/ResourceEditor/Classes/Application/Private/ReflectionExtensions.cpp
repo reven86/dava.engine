@@ -71,8 +71,15 @@ void RegisterComponentsExtensions()
             DVASSERT(false, "We has component that derived from DAVA::Component, but without created ReflectedType");
         }
 
+        const ReflectedStructure* structure = refType->GetStructure();
+        DVASSERT(structure != nullptr, "Somebody has forgotten to declare reflected structure for component");
+
         M::CommandProducerHolder holder;
-        holder.AddCommandProducer(CreateRemoveComponentProducer());
+        if (structure->meta == nullptr || structure->meta->GetMeta<M::CantBeDeletedManualyComponent>() == nullptr)
+        {
+            holder.AddCommandProducer(CreateRemoveComponentProducer());
+        }
+
         if (derived.type == actionComponent)
         {
             holder.AddCommandProducer(CreateActionsEditProducer());

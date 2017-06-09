@@ -22,6 +22,7 @@
 #include "UI/UIControlSystem.h"
 #include "UI/UIButton.h"
 #include "UI/Layouts/UIAnchorComponent.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 
 namespace OverdrawPerformanceTester
 {
@@ -46,6 +47,7 @@ using DAVA::FilePath;
 using DAVA::Rect;
 using DAVA::UIScreen;
 using DAVA::UIAnchorComponent;
+using DAVA::UIDebugRenderComponent;
 using DAVA::UIButton;
 using DAVA::Message;
 using DAVA::FTFont;
@@ -173,7 +175,7 @@ UIButton* OverdrawTestingScreen::CreateButton(const Rect&& rect, const Message&&
     button->SetStateFontColor(UIControl::STATE_NORMAL, Color::White);
     button->SetStateFontColor(UIControl::STATE_PRESSED_INSIDE, Color(0.7f, 0.7f, 0.7f, 1.f));
     button->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, msg);
-    button->SetDebugDraw(true);
+    button->GetOrCreateComponent<UIDebugRenderComponent>();
     button->SetTag(tag);
     AddControl(button);
     return button;

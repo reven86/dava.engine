@@ -492,11 +492,11 @@ public:
 
     bool IsSupportedFormat() const;
 
-    File* file;
+    File* file = nullptr;
     dds::DDS_HEADER mainHeader;
     dds::DDS_HEADER_DXT10 extHeader;
     bool fileStoresTextureInD3DFormat = false;
-    dds::D3D_FORMAT d3dPixelFormat;
+    dds::D3D_FORMAT d3dPixelFormat = dds::D3D_FORMAT::D3DFMT_R8G8B8;
     PixelFormat davaPixelFormat = FORMAT_INVALID;
     uint32 faceCount = 1;
     Array<rhi::TextureFace, Texture::CUBE_FACE_COUNT> faces;

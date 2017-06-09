@@ -18,16 +18,17 @@ private:
     void LoadResources() override;
     void UnloadResources() override;
 
-    void OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData);
-    void OnStartSyncClicked(DAVA::BaseObject* sender, void* data, void* callerData);
-    void OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData);
-    void OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData);
-    void OnOffRequestingClicked(DAVA::BaseObject* sender, void* data, void* callerData);
-    void OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData);
-    void OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData);
-    void OnStartStopLocalServerClicked(DAVA::BaseObject* sender, void* data, void* callerData);
-    void OnCheckFileClicked(DAVA::BaseObject* sender, void* data, void* callerData);
-    void OnListInDvpkClicked(DAVA::BaseObject* sender, void* data, void* callerData);
+    void OnStartInitClicked(BaseObject* sender, void* data, void* callerData);
+    void OnIOErrorClicked(BaseObject* sender, void* data, void* callerData);
+    void OnClearDocsClicked(BaseObject* sender, void* data, void* callerData);
+    void OnListPacksClicked(BaseObject* sender, void* data, void* callerData);
+    void OnOffRequestingClicked(BaseObject* sender, void* data, void* callerData);
+    void OnStartDownloadClicked(BaseObject* sender, void* data, void* callerData);
+    void OnStartNextPackClicked(BaseObject* sender, void* data, void* callerData);
+    void OnStartStopLocalServerClicked(BaseObject* sender, void* data, void* callerData);
+    void OnCheckFileClicked(BaseObject* sender, void* data, void* callerData);
+    void OnListInDvpkClicked(BaseObject* sender, void* data, void* callerData);
+    void OnExitButton(BaseObject* obj, void* data, void* callerData) override;
 
     void WriteErrorOnDevice(const DAVA::String& filePath, DAVA::int32 errVal);
     void OnRequestUpdated(const DAVA::DLCManager::IRequest& request);
@@ -63,7 +64,7 @@ private:
     DAVA::UITextField* filePathField = nullptr;
     DAVA::UIButton* checkFile = nullptr;
     DAVA::UIButton* startInit = nullptr;
-    DAVA::UIButton* startSync = nullptr;
+    DAVA::UIButton* genIOError = nullptr;
     DAVA::UIButton* clearDocs = nullptr;
     DAVA::UIButton* lsDvpks = nullptr;
     DAVA::UIButton* OnOffRequesting = nullptr;

@@ -852,13 +852,9 @@ void SceneManagerModule::ExportScene()
         DAVA::FilePath dataSourceFolder = projectPath + "DataSource/3d/";
 
         SceneExporter::Params exportingParams;
-        exportingParams.dataFolder = dlg.GetDataFolder();
+        exportingParams.outputs.emplace_back(dlg.GetDataFolder(), dlg.GetGPUs(), dlg.GetQuality(), dlg.GetUseHDTextures());
         exportingParams.dataSourceFolder = dataSourceFolder;
-        exportingParams.exportForGPUs = dlg.GetGPUs();
-        exportingParams.quality = dlg.GetQuality();
         exportingParams.optimizeOnExport = dlg.GetOptimizeOnExport();
-        exportingParams.useHDTextures = dlg.GetUseHDTextures();
-        exportingParams.forceCompressTextures = dlg.GetForceCompressTextures();
 
         scene->Export(exportingParams);
 

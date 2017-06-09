@@ -7,14 +7,14 @@ namespace DAVA
 {
 namespace TArc
 {
-ReflectedButton::ReflectedButton(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QToolButton>(fields, wrappersProcessor, model, parent)
+ReflectedButton::ReflectedButton(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
+    : ControlProxyImpl<QToolButton>(params, params.fields, wrappersProcessor, model, parent)
 {
     SetupControl();
 }
 
-ReflectedButton::ReflectedButton(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QToolButton>(fields, accessor, model, parent)
+ReflectedButton::ReflectedButton(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent)
+    : ControlProxyImpl<QToolButton>(params, params.fields, accessor, model, parent)
 {
     SetupControl();
 }
@@ -30,6 +30,10 @@ void ReflectedButton::SetupControl()
 
 void ReflectedButton::UpdateControl(const ControlDescriptor& changedFields)
 {
+    if (changedFields.IsChanged(Fields::Visible) == true)
+    {
+        setVisible(GetFieldValue<bool>(Fields::Visible, false));
+    }
     if (changedFields.IsChanged(Fields::Icon) == true)
     {
         icon = GetFieldValue<QIcon>(Fields::Icon, QIcon());
@@ -41,6 +45,19 @@ void ReflectedButton::UpdateControl(const ControlDescriptor& changedFields)
 
     setIcon(icon);
     setText(text);
+
+    if (changedFields.IsChanged(Fields::Tooltip) == true)
+    {
+        QString tooltip = GetFieldValue<QString>(Fields::Tooltip, QString());
+        setToolTip(tooltip);
+    }
+
+    if (changedFields.IsChanged(Fields::IconSize) == true)
+    {
+        QSize iconSize = GetFieldValue<QSize>(Fields::IconSize, QSize(16, 16));
+        setIconSize(iconSize);
+    }
+
     if (icon.isNull() == false && text.isEmpty() == false)
     {
         setToolButtonStyle(Qt::ToolButtonTextBesideIcon);

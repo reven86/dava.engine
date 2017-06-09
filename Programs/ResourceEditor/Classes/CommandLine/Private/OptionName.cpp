@@ -1,8 +1,6 @@
 #include "CommandLine/Private/OptionName.h"
 #include "Render/GPUFamilyDescriptor.h"
 
-const DAVA::String OptionName::deprecated_Export("-export");
-
 const DAVA::String OptionName::Output("-output");
 const DAVA::String OptionName::OutFile("-outfile");
 const DAVA::String OptionName::OutDir("-outdir");

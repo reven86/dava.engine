@@ -39,17 +39,15 @@ vertex_in
     #endif
 
 
-    #if SPEED_TREE_LEAF
-    float3 texcoord3 : TEXCOORD3;
+    #if SPEED_TREE_OBJECT
+    float4 pivot       : TEXCOORD4;
     #if WIND_ANIMATION
-    float2 texcoord4 : TEXCOORD4;
+    float2 angleSinCos : TEXCOORD6;
     #endif
     #endif
-
-
     
     #if WIND_ANIMATION
-    float texcoord5 : TEXCOORD5;
+    float flexibility : TEXCOORD5;
     #endif
 
     #if FRAME_BLEND
@@ -127,11 +125,9 @@ vertex_out
 ////////////////////////////////////////////////////////////////////////////////
 // properties
 
-#if !SPEED_TREE_LEAF || CUT_LEAF
 [auto][a] property float4x4 worldViewProjMatrix;
-#endif
 
-#if VERTEX_LIT || PIXEL_LIT || VERTEX_FOG || SPEED_TREE_LEAF || SPHERICAL_LIT
+#if VERTEX_LIT || PIXEL_LIT || VERTEX_FOG || SPEED_TREE_OBJECT || SPHERICAL_LIT
 [auto][a] property float4x4 worldViewMatrix;
 #endif
 
@@ -144,7 +140,6 @@ vertex_out
 #if VERTEX_LIT || PIXEL_LIT || (VERTEX_FOG && FOG_ATMOSPHERE)
 [auto][a] property float4 lightPosition0;
 #endif
-
 
 #if VERTEX_LIT
 [material][a] property float materialSpecularShininess = 0.5;
@@ -169,7 +164,7 @@ vertex_out
 [auto][a] property float2 trunkOscillationParams;
 #endif
 
-#if SPEED_TREE_LEAF
+#if SPEED_TREE_OBJECT
 [auto][a] property float3 worldScale;
 [auto][a] property float4x4 projMatrix;
 
@@ -308,21 +303,6 @@ vertex_out vp_main( vertex_in input )
     float4  weightedVertexQuaternion = jointQuaternions[index];
 #endif
 
-    
-    #if SPEED_TREE_LEAF
-    float3 inPivot = input.texcoord3;
-    #if WIND_ANIMATION
-    float2 inAngleSinCos = input.texcoord4;
-    #endif
-    #endif
-    #if WIND_ANIMATION
-    float inFlexibility = input.texcoord5;
-    #endif
-
-    #if VERTEX_COLOR
-    float4 inVertexColor = input.color0;
-    #endif
-
 #if FLOWMAP
     float scaledTime = globalTime * flowAnimSpeed;
     float2 flowPhases = frac(float2(scaledTime, scaledTime+0.5))-float2(0.5, 0.5);
@@ -341,58 +321,45 @@ vertex_out vp_main( vertex_in input )
     float4   vecPos         = mul( float4(input.position.xyz,1.0), mwpWOtranslate );
     output.position = float4(vecPos.x, vecPos.y, vecPos.w - 0.0001, vecPos.w);
 
-#elif SPEED_TREE_LEAF
+#elif SPEED_TREE_OBJECT
 
-    float4  eyeCoordsPosition4;
-
+    float3 position = lerp(input.position.xyz, input.pivot.xyz, input.pivot.w);
+    float3 billboardOffset = input.position.xyz - position.xyz;
+    
     #if CUT_LEAF
-        float4 tangentInCameraSpace = mul( float4(inPivot,1.0), worldViewMatrix );
-        if (tangentInCameraSpace.z < -cutDistance)
-        {
-            output.position = mul( float4(inPivot,1.0), worldViewProjMatrix );
-        }
-        else
-        {
+	    float pivotDistance = dot(position.xyz, float3(worldViewMatrix[0].z, worldViewMatrix[1].z, worldViewMatrix[2].z)) + worldViewMatrix[3].z;
+        billboardOffset *= step(-cutDistance, pivotDistance);
     #endif
-
-            float3 offset = input.position.xyz - inPivot;
-            float3 pivot = inPivot;
-            
-            
-            #if WIND_ANIMATION
-            
-            //inAngleSinCos:        x: cos(T0);  y: sin(T0);
-            //leafOscillationParams:  x: A*sin(T); y: A*cos(T);
-            float3 windVectorFlex = float3(trunkOscillationParams * inFlexibility, 0.0);
-            pivot += windVectorFlex;
-            
-            float2 SinCos = inAngleSinCos * leafOscillationParams; //vec2(A*sin(t)*cos(t0), A*cos(t)*sin(t0))
-            float sinT = SinCos.x + SinCos.y;     //sin(t+t0)*A = sin*cos + cos*sin
-            float cosT = 1.0 - 0.5 * sinT * sinT; //cos(t+t0)*A = 1 - 0.5*sin^2
-            
-            float4 SinCosT = float4(sinT, cosT, cosT, sinT); //temp vec for mul
-            float4 offsetXY = float4(offset.x, offset.y, offset.x, offset.y); //temp vec for mul
-            float4 rotatedOffsetXY = offsetXY * SinCosT; //vec4(x*sin, y*cos, x*cos, y*sin)
-            
-            offset.x = rotatedOffsetXY.z - rotatedOffsetXY.w; //x*cos - y*sin
-            offset.y = rotatedOffsetXY.x + rotatedOffsetXY.y; //x*sin + y*cos
-
-            #endif //end of (not WIND_ANIMATION and SPEED_TREE_LEAF)
-
-            
-            float4 eyeCoordsPivot = mul( float4(pivot,1.0), worldViewMatrix );
-            eyeCoordsPosition4 = float4(worldScale * offset, 0.0) + eyeCoordsPivot;
-            output.position = mul(eyeCoordsPosition4,projMatrix);
+	
+    #if WIND_ANIMATION
+    
+        //inAngleSinCos:          x: cos(T0);  y: sin(T0);
+        //leafOscillationParams:  x: A*sin(T); y: A*cos(T);
+        float3 windVectorFlex = float3(trunkOscillationParams * input.flexibility, 0.0);
+        position += windVectorFlex;
         
-    #if CUT_LEAF
-        }
-    #endif // not CUT_LEAF
+        float2 SinCos = input.angleSinCos * leafOscillationParams; //vec2(A*sin(t)*cos(t0), A*cos(t)*sin(t0))
+        float sinT = SinCos.x + SinCos.y;     //sin(t+t0)*A = sin*cos + cos*sin
+        float cosT = 1.0 - 0.5 * sinT * sinT; //cos(t+t0)*A = 1 - 0.5*sin^2
+        
+        float4 SinCosT = float4(sinT, cosT, cosT, sinT); //temp vec for mul
+        float4 offsetXY = float4(billboardOffset.x, billboardOffset.y, billboardOffset.x, billboardOffset.y); //temp vec for mul
+        float4 rotatedOffsetXY = offsetXY * SinCosT; //vec4(x*sin, y*cos, x*cos, y*sin)
+        
+        billboardOffset.x = rotatedOffsetXY.z - rotatedOffsetXY.w; //x*cos - y*sin
+        billboardOffset.y = rotatedOffsetXY.x + rotatedOffsetXY.y; //x*sin + y*cos
 
-#else // not SPEED_TREE_LEAF
+    #endif
+    
+    float4 eyeCoordsPosition4 = mul( float4(position, 1.0), worldViewMatrix ) + float4(worldScale * billboardOffset, 0.0);
+
+    output.position = mul(eyeCoordsPosition4, projMatrix);
+
+#else
 
     #if WIND_ANIMATION
 
-        float3 windVectorFlex = float3(trunkOscillationParams * inFlexibility, 0.0);
+        float3 windVectorFlex = float3(trunkOscillationParams * input.flexibility, 0.0);
         output.position = mul( float4(input.position.xyz + windVectorFlex, 1.0), worldViewProjMatrix );
         
     #else // WIND_ANIMATION
@@ -412,10 +379,10 @@ vertex_out vp_main( vertex_in input )
 
     #endif // WIND_ANIMATION
 
-#endif //end "not SPEED_TREE_LEAF
+#endif
 
 
-#if SPEED_TREE_LEAF
+#if SPEED_TREE_OBJECT
     float3 eyeCoordsPosition = eyeCoordsPosition4.xyz;
 #elif VERTEX_LIT || PIXEL_LIT || VERTEX_FOG || SPHERICAL_LIT
     #if SKINNING
@@ -588,7 +555,7 @@ vertex_out vp_main( vertex_in input )
         float3 sphericalLightFactor = A0 * sphericalHarmonics.xyz;
     #endif
     
-    #if SPEED_TREE_LEAF
+    #if SPEED_TREE_OBJECT
         float3 localSphericalLightFactor = sphericalLightFactor;
     #endif
     
@@ -606,10 +573,11 @@ vertex_out vp_main( vertex_in input )
                                          float3(sphericalHarmonics[2].yzw));
             sphericalLightFactor += A1 * mul(float3(n.y, n.z, n.x), shMatrix);
         
-            #if SPEED_TREE_LEAF
-                float3 localNormal = mul( (eyeCoordsPosition - float3(eyeCoordsPivot.xyz)), invViewMatrix3 );
+            #if SPEED_TREE_OBJECT
+                float3 localNormal = mul( (worldScale * billboardOffset), invViewMatrix3 );
+                localNormal.z += 1.0 - input.pivot.w; //in case regular geometry (not billboard) we have zero 'localNoraml', so add something to correct 'normalize'
                 float3 ln = normalize(localNormal);
-                localSphericalLightFactor += A1 * mul(float3(ln.y, ln.z, ln.x), shMatrix);
+                localSphericalLightFactor += (A1 * mul(float3(ln.y, ln.z, ln.x), shMatrix)) * input.pivot.w;
             #endif
 
             #if SPHERICAL_HARMONICS_9
@@ -620,7 +588,7 @@ vertex_out vp_main( vertex_in input )
                 sphericalLightFactor += Y22(n)  * float3(sphericalHarmonics[6].xyz);
             #endif
 
-            #if SPEED_TREE_LEAF
+            #if SPEED_TREE_OBJECT
                 sphericalLightFactor = lerp(sphericalLightFactor, localSphericalLightFactor, speedTreeLightSmoothing);
             #endif
         
@@ -640,9 +608,9 @@ vertex_out vp_main( vertex_in input )
     #undef Y21 
     #undef Y22 
 
-#elif SPEED_TREE_LEAF //legacy for old tree lighting
+#elif SPEED_TREE_OBJECT //legacy for old tree lighting
     
-    output.varVertexColor.xyz = half3(inVertexColor.xyz * treeLeafColorMul.xyz * treeLeafOcclusionMul + float3(treeLeafOcclusionOffset,treeLeafOcclusionOffset,treeLeafOcclusionOffset));
+    output.varVertexColor.xyz = half3(input.color0.xyz * treeLeafColorMul.xyz * treeLeafOcclusionMul + float3(treeLeafOcclusionOffset,treeLeafOcclusionOffset,treeLeafOcclusionOffset));
 
 #endif
 

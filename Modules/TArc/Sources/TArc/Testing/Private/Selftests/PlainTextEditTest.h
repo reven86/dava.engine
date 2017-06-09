@@ -66,45 +66,45 @@ public:
         QtVBoxLayout* layout = new QtVBoxLayout(w);
 
         {
-            ControlDescriptorBuilder<PlainTextEdit::Fields> descr;
-            descr[PlainTextEdit::Fields::Text] = "text";
-            PlainTextEdit* edit = new PlainTextEdit(descr, GetAccessor(), Reflection::Create(&model));
+            PlainTextEdit::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[PlainTextEdit::Fields::Text] = "text";
+            PlainTextEdit* edit = new PlainTextEdit(params, GetAccessor(), Reflection::Create(&model));
             edit->SetObjectName("PlainTextEdit");
             layout->AddControl(edit);
         }
 
         Reflection refModel = Reflection::Create(&dataSource);
         {
-            ControlDescriptorBuilder<PlainTextEdit::Fields> descr;
-            descr[PlainTextEdit::Fields::Text] = "readOnlyTextMeta";
-            PlainTextEdit* edit = new PlainTextEdit(descr, GetAccessor(), refModel);
+            PlainTextEdit::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[PlainTextEdit::Fields::Text] = "readOnlyTextMeta";
+            PlainTextEdit* edit = new PlainTextEdit(params, GetAccessor(), refModel);
             edit->SetObjectName("PlainTextEdit_readOnlyMeta");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<PlainTextEdit::Fields> descr;
-            descr[PlainTextEdit::Fields::Text] = "readOnlyText";
-            PlainTextEdit* edit = new PlainTextEdit(descr, GetAccessor(), refModel);
+            PlainTextEdit::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[PlainTextEdit::Fields::Text] = "readOnlyText";
+            PlainTextEdit* edit = new PlainTextEdit(params, GetAccessor(), refModel);
             edit->SetObjectName("PlainTextEdit_readOnlyText");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<PlainTextEdit::Fields> descr;
-            descr[PlainTextEdit::Fields::Text] = "text";
-            descr[PlainTextEdit::Fields::PlaceHolder] = "placeHolder";
-            descr[PlainTextEdit::Fields::IsReadOnly] = "isReadOnly";
-            descr[PlainTextEdit::Fields::IsEnabled] = "isEnabled";
-            PlainTextEdit* edit = new PlainTextEdit(descr, GetAccessor(), refModel);
+            PlainTextEdit::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[PlainTextEdit::Fields::Text] = "text";
+            params.fields[PlainTextEdit::Fields::PlaceHolder] = "placeHolder";
+            params.fields[PlainTextEdit::Fields::IsReadOnly] = "isReadOnly";
+            params.fields[PlainTextEdit::Fields::IsEnabled] = "isEnabled";
+            PlainTextEdit* edit = new PlainTextEdit(params, GetAccessor(), refModel);
             edit->SetObjectName("PlainTextEdit_text");
             layout->AddControl(edit);
         }
 
         {
-            ControlDescriptorBuilder<PlainTextEdit::Fields> descr;
-            descr[PlainTextEdit::Fields::Text] = "shortText";
-            PlainTextEdit* edit = new PlainTextEdit(descr, GetAccessor(), refModel);
+            PlainTextEdit::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[PlainTextEdit::Fields::Text] = "shortText";
+            PlainTextEdit* edit = new PlainTextEdit(params, GetAccessor(), refModel);
             edit->SetObjectName("PlainTextEdit_shortText");
             layout->AddControl(edit);
         }

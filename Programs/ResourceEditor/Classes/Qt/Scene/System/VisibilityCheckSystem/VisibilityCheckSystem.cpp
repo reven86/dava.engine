@@ -1,4 +1,5 @@
 #include "VisibilityCheckSystem.h"
+#include "VisibilityCheckRenderer.h"
 
 #include "Constants.h"
 #include "Scene3D/Scene.h"
@@ -11,9 +12,11 @@
 #include "Math/MathHelpers.h"
 #include "Utils/Random.h"
 
-#include "Render/Renderer.h"
-#include "Render/Highlevel/RenderSystem.h"
-#include "Render/Highlevel/Landscape.h"
+#include <Render/Renderer.h>
+#include <Render/2D/Systems/RenderSystem2D.h>
+#include <Render/PixelFormatDescriptor.h>
+#include <Render/Highlevel/RenderSystem.h>
+#include <Render/Highlevel/Landscape.h>
 
 namespace VCSInternal
 {
@@ -26,7 +29,7 @@ DAVA::Texture* CubemapRenderTargetAtIndex(DAVA::uint32 index)
     DVASSERT(index < CUBEMAPS_POOL_SIZE);
     if (cubemapPool[index] == nullptr)
     {
-        const PixelFormatDescriptor& pfd = PixelFormatDescriptor::GetPixelFormatDescriptor(VisibilityCheckRenderer::TEXTURE_FORMAT);
+        const DAVA::PixelFormatDescriptor& pfd = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(VisibilityCheckRenderer::TEXTURE_FORMAT);
         DVASSERT(rhi::TextureFormatSupported(pfd.format, rhi::PROG_FRAGMENT));
         cubemapPool[index] = DAVA::Texture::CreateFBO(CUBEMAP_SIZE, CUBEMAP_SIZE, VisibilityCheckRenderer::TEXTURE_FORMAT, true, rhi::TEXTURE_TYPE_CUBE);
     }
@@ -40,7 +43,7 @@ VisibilityCheckSystem::VisibilityCheckSystem(DAVA::Scene* scene)
 {
     renderer.SetDelegate(this);
     debugMaterial->SetFXName(DAVA::FastName("~res:/ResourceEditor/LandscapeEditor/Materials/Distance.Debug2D.material"));
-    debugMaterial->PreBuildMaterial(PASS_FORWARD);
+    debugMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 }
 
 VisibilityCheckSystem::~VisibilityCheckSystem() = default;
@@ -192,7 +195,7 @@ void VisibilityCheckSystem::Draw()
 
         if (visibilityComponent->IsEnabled())
         {
-            const Matrix4& worldTransform = mapItem.first->GetWorldTransform();
+            const DAVA::Matrix4& worldTransform = mapItem.first->GetWorldTransform();
             DAVA::Vector3 position = worldTransform.GetTranslationVector();
             DAVA::Vector3 direction = MultiplyVectorMat3x3(DAVA::Vector3(0.0f, 0.0f, 1.0f), worldTransform);
             dbg->DrawCircle(position, direction, visibilityComponent->GetRadius(), 36, DAVA::Color::White, DAVA::RenderHelper::DRAW_WIRE_DEPTH);
@@ -250,18 +253,18 @@ void VisibilityCheckSystem::Draw()
 
     if (enableDebug)
     {
-        DAVA::Rect dstRect = DAVA::Rect(0.0f, 0.0f, 0.0f, static_cast<float32>(stateCache.viewportSize.dy / VCSInternal::CUBEMAPS_POOL_SIZE));
+        DAVA::Rect dstRect = DAVA::Rect(0.0f, 0.0f, 0.0f, static_cast<DAVA::float32>(stateCache.viewportSize.dy / VCSInternal::CUBEMAPS_POOL_SIZE));
         dstRect.dx = 2.0f * dstRect.dy;
 
-        if (dstRect.dx > static_cast<float32>(stateCache.viewportSize.dx))
+        if (dstRect.dx > static_cast<DAVA::float32>(stateCache.viewportSize.dx))
         {
-            dstRect.dx = static_cast<float32>(stateCache.viewportSize.dx);
+            dstRect.dx = static_cast<DAVA::float32>(stateCache.viewportSize.dx);
             dstRect.dy = 0.5f * dstRect.dx;
         }
 
         for (DAVA::uint32 cm = 0; cm < VCSInternal::CUBEMAPS_POOL_SIZE; ++cm)
         {
-            RenderSystem2D::Instance()->DrawTexture(VCSInternal::CubemapRenderTargetAtIndex(cm), debugMaterial, DAVA::Color::White, dstRect);
+            DAVA::RenderSystem2D::Instance()->DrawTexture(VCSInternal::CubemapRenderTargetAtIndex(cm), debugMaterial, DAVA::Color::White, dstRect);
             dstRect.y += dstRect.dy;
         }
     }

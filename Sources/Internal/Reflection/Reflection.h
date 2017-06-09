@@ -131,6 +131,7 @@ public:
 
     const Type* GetValueType() const;
     ReflectedObject GetValueObject() const;
+    ReflectedObject GetDirectObject() const;
 
     Any GetValue() const;
     bool SetValue(const Any& value) const;
@@ -159,6 +160,7 @@ public:
     static Reflection Create(const Any& any, const ReflectedMeta* objectMeta = nullptr);
 
     DAVA_DEPRECATED(static Reflection Create(const Reflection& etalon, const Reflection& metaProvider));
+    DAVA_DEPRECATED(static Reflection Create(const Reflection& etalon, const ReflectedMeta* objectMeta));
 
     //
     // Experimental API for fields add/remove/insert create.
