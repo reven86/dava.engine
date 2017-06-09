@@ -1,7 +1,6 @@
 #include "ui_PropertiesWidget.h"
 #include "UI/Properties/PropertiesWidget.h"
 #include "UI/Properties/PropertiesModel.h"
-#include "UI/Properties/PropertiesWidgetData.h"
 
 #include "Modules/DocumentsModule/DocumentData.h"
 #include "Modules/LegacySupportModule/Private/Project.h"
@@ -382,100 +381,34 @@ void PropertiesWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, con
         return;
     }
 
-    bool selectionWasChanged = std::find(fields.begin(), fields.end(), DocumentData::selectionPropertyName) != fields.end();
-    bool packageWasChanged = std::find(fields.begin(), fields.end(), DocumentData::packagePropertyName) != fields.end();
+    bool currentNodeWasChanged = fields.empty() || std::find(fields.begin(), fields.end(), DocumentData::currentNodePropertyName) != fields.end();
+    bool packageWasChanged = fields.empty() || std::find(fields.begin(), fields.end(), DocumentData::packagePropertyName) != fields.end();
 
-    if (packageWasChanged && selectionWasChanged)
+    if (packageWasChanged)
     {
         //clear last cached value because next selected value will be delayed
         UpdateModel(nullptr);
     }
-    if (selectionWasChanged)
+
+    if (currentNodeWasChanged)
     {
-        //prepare selection
-        Any selectionData = documentDataWrapper.GetFieldValue(DocumentData::selectionPropertyName);
-        SelectedNodes selection = selectionData.Cast<SelectedNodes>(SelectedNodes());
-        for (auto iter = selection.begin(); iter != selection.end();)
+        Any currentNodeValue = wrapper.GetFieldValue(DocumentData::currentNodePropertyName);
+        if (currentNodeValue.CanGet<PackageBaseNode*>())
         {
-            PackageBaseNode* node = *iter;
-            PackageBaseNode* parent = node->GetParent();
-            if (parent == nullptr || parent->GetParent() == nullptr)
+            PackageBaseNode* currentNode = currentNodeValue.Get<PackageBaseNode*>();
+            if (currentNode != nullptr)
             {
-                iter = selection.erase(iter);
-            }
-            else
-            {
-                ++iter;
+                PackageBaseNode* parent = currentNode->GetParent();
+                if (parent != nullptr && parent->GetParent() != nullptr)
+                {
+                    UpdateModel(currentNode);
+                    return;
+                }
             }
         }
-        DataContext* activeContext = accessor->GetActiveContext();
-        DVASSERT(activeContext != nullptr);
-        PropertiesWidgetData* widgetData = activeContext->GetData<PropertiesWidgetData>();
-
-        SelectedNodes& cachedSelection = widgetData->cachedSelection;
-        List<PackageBaseNode*>& selectionHistory = widgetData->selectionHistory;
-
-        if (selection.empty())
+        if (packageWasChanged == false)
         {
-            selectionHistory.clear();
-            cachedSelection.clear();
             UpdateModel(nullptr);
-            return;
         }
-
-        SortedPackageBaseNodeSet newSelection(CompareByLCA);
-        std::set_difference(selection.begin(),
-                            selection.end(),
-                            cachedSelection.begin(),
-                            cachedSelection.end(),
-                            std::inserter(newSelection, newSelection.end()));
-
-        if (newSelection.empty())
-        {
-            SelectedNodes removedSelection;
-            std::set_difference(cachedSelection.begin(),
-                                cachedSelection.end(),
-                                selection.begin(),
-                                selection.end(),
-                                std::inserter(removedSelection, removedSelection.end()));
-
-            for (PackageBaseNode* node : removedSelection)
-            {
-                selectionHistory.remove(node);
-            }
-            UpdateModel(selectionHistory.back());
-        }
-        else
-        {
-            //take any node from new selection. If this node is higher than cached selection top node, display properties for most top node from new selection
-            //otherwise if this node is lower than cached selection bottom node, display properties for most bottom node from new selection
-            PackageBaseNode* newSelectedNode = *newSelection.begin();
-            DVASSERT(newSelectedNode != nullptr);
-
-            bool selectionAddedToTop = true;
-            if (cachedSelection.empty() == false)
-            {
-                PackageBaseNode* cachedTopNode = *cachedSelection.begin();
-                selectionAddedToTop = CompareByLCA(newSelectedNode, cachedTopNode);
-            }
-
-            if (selectionAddedToTop)
-            {
-                for (auto reverseIter = newSelection.rbegin(); reverseIter != newSelection.rend(); ++reverseIter)
-                {
-                    selectionHistory.push_back(*reverseIter);
-                }
-                UpdateModel(newSelectedNode);
-            }
-            else
-            {
-                for (PackageBaseNode* node : newSelection)
-                {
-                    selectionHistory.push_back(node);
-                }
-                UpdateModel(*newSelection.rbegin());
-            }
-        }
-        cachedSelection = selection;
     }
 }

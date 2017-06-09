@@ -136,7 +136,7 @@
 
 - (void)webView:(UIWebView*)webView didFailLoadWithError:(NSError*)error
 {
-    DAVA::Logger::Instance()->Error("WebView error: %s", [[error description] UTF8String]);
+    DAVA::Logger::Error("WebView error: %s", [[error description] UTF8String]);
     if (delegate && self->webView)
     {
         delegate->PageLoaded(self->webView);

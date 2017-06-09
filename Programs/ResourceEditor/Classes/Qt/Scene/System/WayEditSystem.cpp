@@ -14,6 +14,7 @@
 #include <Math/AABBox3.h>
 #include <Scene3D/Components/Waypoint/PathComponent.h>
 #include <Scene3D/Components/Waypoint/WaypointComponent.h>
+#include <Scene3D/Components/SingleComponents/TransformSingleComponent.h>
 #include <Utils/Utils.h>
 
 namespace WayEditSystemDetail
@@ -68,19 +69,6 @@ bool IsAccessible(const AccessibleQueryParams& params)
 WayEditSystem::WayEditSystem(DAVA::Scene* scene)
     : DAVA::SceneSystem(scene)
 {
-}
-
-void WayEditSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint32 event)
-{
-    if (event == DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED)
-    {
-        DAVA::Entity* parentEntity = component->GetEntity();
-        DAVA::WaypointComponent* waypoint = DAVA::GetWaypointComponent(parentEntity);
-        if (waypoint != nullptr)
-        {
-            waypoint->GetWaypoint()->position = parentEntity->GetLocalTransform().GetTranslationVector();
-        }
-    }
 }
 
 void WayEditSystem::AddEntity(DAVA::Entity* newWaypoint)
@@ -213,29 +201,23 @@ void WayEditSystem::PerformRemoving(DAVA::Entity* entityToRemove)
     }
 }
 
-void WayEditSystem::SetScene(DAVA::Scene* scene)
-{
-    {
-        DAVA::Scene* currentScene = GetScene();
-        if (currentScene != nullptr)
-        {
-            currentScene->GetEventSystem()->UnregisterSystemForEvent(this, DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED);
-        }
-    }
-
-    SceneSystem::SetScene(scene);
-
-    {
-        DAVA::Scene* currentScene = GetScene();
-        if (currentScene != nullptr)
-        {
-            currentScene->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED);
-        }
-    }
-}
-
 void WayEditSystem::Process(DAVA::float32 timeElapsed)
 {
+    DAVA::TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+    for (auto& pair : tsc->worldTransformChanged.map)
+    {
+        if (pair.first->GetComponentsCount(DAVA::Component::WAYPOINT_COMPONENT) > 0)
+        {
+            for (DAVA::Entity* entity : pair.second)
+            {
+                DAVA::WaypointComponent* waypoint = static_cast<DAVA::WaypointComponent*>(entity->GetComponent(DAVA::Component::WAYPOINT_COMPONENT));
+                if (waypoint != nullptr)
+                {
+                    waypoint->GetWaypoint()->position = entity->GetLocalTransform().GetTranslationVector();
+                }
+            }
+        }
+    }
 }
 
 void WayEditSystem::ResetSelection()

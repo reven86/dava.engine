@@ -32,16 +32,22 @@
  name: "PixelLit SpecularMap Opaque"
  path: PixelLit.SpecularMap.Opaque.material
 -
- name: "SpeedTreeLeaf"
- path: SpeedTreeLeaf.material
+ name: "SpeedTree Alphatest"
+ path: SpeedTreeLeaf.Alphatest.material
 -
- name: "SpeedTreeLeaf Opaque"
+ name: "SpeedTree Alphablend"
+ path: SpeedTreeLeaf.Alphablend.material
+-
+ name: "SpeedTree Opaque"
  path: SpeedTreeLeaf.Opaque.material
 -
- name: "SphericalLit AllQualities SpeedTreeLeaf"
- path: SphericalLitAllQualities.SpeedTreeLeaf.material
+ name: "SphericalLit AllQualities SpeedTree Alphatest"
+ path: SphericalLitAllQualities.SpeedTreeLeaf.Alphatest.material
 -
- name: "SphericalLit AllQualities SpeedTreeLeaf Opaque"
+ name: "SphericalLit AllQualities SpeedTree Alphablend"
+ path: SphericalLitAllQualities.SpeedTreeLeaf.Alphablend.material
+-
+ name: "SphericalLit AllQualities SpeedTree Opaque"
  path: SphericalLitAllQualities.SpeedTreeLeaf.Opaque.material
 -
  name: "SphericalLit AllQualities Textured Alphatest"
