@@ -151,8 +151,8 @@ bool PackRequest::IsDownloaded() const
     {
         if (!packManagerImpl->IsTop(this))
         {
-            return false;
             // wait for dependencies to download first
+            return false;
         }
     }
 
@@ -261,15 +261,14 @@ void PackRequest::DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest
     fileRequest.status = LoadingPackFile;
 }
 
-void PackRequest::DisableRequestingAndFireSignalIOError(FileRequest& fileRequest) const
+void PackRequest::DisableRequestingAndFireSignalIOError(FileRequest& fileRequest, int32 errVal) const
 {
-    int32 errnoValue = errno; // save in local variable if other error happen
-    packManagerImpl->GetLog() << "device IO Error:(" << errnoValue << ")"
-                              << std::strerror(errnoValue) << " file: "
+    packManagerImpl->GetLog() << "device IO Error:(" << errVal << ")"
+                              << std::strerror(errVal) << " file: "
                               << fileRequest.localFile.GetAbsolutePathname()
                               << " disable DLCManager requesting" << std::endl;
     packManagerImpl->SetRequestingEnabled(false);
-    packManagerImpl->fileErrorOccured.Emit(fileRequest.localFile.GetAbsolutePathname().c_str(), errnoValue);
+    packManagerImpl->fileErrorOccured.Emit(fileRequest.localFile.GetAbsolutePathname().c_str(), errVal);
 }
 
 bool PackRequest::CheckLocalFileState(FileSystem* fs, FileRequest& fileRequest)
@@ -341,7 +340,7 @@ bool PackRequest::CheckLoadingStatusOfFileRequest(FileRequest& fileRequest, DLCD
             if (status.error.fileErrno != 0)
             {
                 out << " I/O error: " << status.error.errStr << std::endl;
-                DisableRequestingAndFireSignalIOError(fileRequest);
+                DisableRequestingAndFireSignalIOError(fileRequest, status.error.fileErrno);
                 return false;
             }
 
@@ -366,13 +365,13 @@ bool PackRequest::LoadingPackFileState(FileSystem* fs, FileRequest& fileRequest)
             FileSystem::eCreateDirectoryResult dirCreate = fs->CreateDirectory(dirPath, true);
             if (dirCreate == FileSystem::DIRECTORY_CANT_CREATE)
             {
-                DisableRequestingAndFireSignalIOError(fileRequest);
+                DisableRequestingAndFireSignalIOError(fileRequest, errno);
                 return false;
             }
             ScopedPtr<File> f(File::Create(fileRequest.localFile, File::CREATE | File::WRITE));
             if (!f)
             {
-                DisableRequestingAndFireSignalIOError(fileRequest);
+                DisableRequestingAndFireSignalIOError(fileRequest, errno);
                 return false;
             }
             f->Truncate(0);
@@ -412,7 +411,7 @@ bool PackRequest::CheckHaskState(FileRequest& fileRequest)
             if (!f)
             {
                 // not enough space
-                DisableRequestingAndFireSignalIOError(fileRequest);
+                DisableRequestingAndFireSignalIOError(fileRequest, errno);
                 return false;
             }
 
@@ -420,7 +419,7 @@ bool PackRequest::CheckHaskState(FileRequest& fileRequest)
             if (written != sizeof(footer))
             {
                 // not enough space
-                DisableRequestingAndFireSignalIOError(fileRequest);
+                DisableRequestingAndFireSignalIOError(fileRequest, errno);
                 return false;
             }
         }
