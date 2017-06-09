@@ -337,7 +337,11 @@ void GuidesController::SyncGuidesWithValues()
 
 DAVA::float32* GuidesController::GetNearestValuePtr(DAVA::float32 position)
 {
-    const DAVA::float32 range = 1;
+    DAVA::float32 range = 1;
+    if (scale < 1.0f)
+    {
+        range = 3 / scale;
+    }
 
     cachedValues = GetValues();
 
@@ -418,10 +422,7 @@ void GuidesController::DragGuide(DAVA::float32 position)
     DVASSERT(valuePtr != nullptr);
 
     DAVA::float32 value = PositionToValue(position);
-    if (value < minValue || value > maxValue)
-    {
-        SetDisplayState(DISPLAY_REMOVE);
-    }
+    SetDisplayState((value < minValue || value > maxValue) ? DISPLAY_REMOVE : DISPLAY_DRAG);
 
     *valuePtr = PositionToValue(position);
     cachedValues.sort();

@@ -20,6 +20,10 @@ void GuideLabel::paintEvent(QPaintEvent*)
     painter.setRenderHint(QPainter::Antialiasing, true);
     painter.setRenderHint(QPainter::TextAntialiasing, true);
 
+    QFont painterFont = painter.font();
+    painterFont.setPixelSize(10);
+    painter.setFont(painterFont);
+
     QPalette palette;
     QColor rectColor = palette.color(QPalette::Window);
     rectColor = rectColor.lighter();
@@ -29,12 +33,8 @@ void GuideLabel::paintEvent(QPaintEvent*)
     painter.setBrush(QBrush(rectColor));
     painter.setPen(rectColor);
 
-    const int radius = 0;
-    QRect roundedRect(radius / 2,
-                      radius / 2,
-                      width() - radius,
-                      height() - radius);
-    painter.drawRoundedRect(roundedRect, radius, radius);
+    const int radius = 3;
+    painter.drawRoundedRect(rect(), radius, radius);
 
     painter.restore();
 

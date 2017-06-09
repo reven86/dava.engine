@@ -94,7 +94,7 @@ void RulerWidget::paintEvent(QPaintEvent* paintEvent)
 
 QSize RulerWidget::minimumSizeHint() const
 {
-    static const int minimumSize = 20;
+    static const int minimumSize = 25;
     return QSize(minimumSize, minimumSize);
 }
 
@@ -140,13 +140,14 @@ void RulerWidget::DrawScale(QPainter& painter, int tickStep, int tickStartPos, i
     {
         int curPos = i + tickOffset;
         int curPosValue = (int)(i + numberOffset) / settings.zoomLevel;
+        const int textOffset = 5;
 
         if (orientation == Qt::Horizontal)
         {
             linesVector.append(QLine(curPos, tickStartPos, curPos, tickEndPos));
             if (drawValues)
             {
-                painter.drawText(curPos + 5, fontPos, QString::number(curPosValue));
+                painter.drawText(curPos + textOffset, fontPos + textOffset, QString::number(curPosValue));
             }
         }
         else
@@ -158,7 +159,7 @@ void RulerWidget::DrawScale(QPainter& painter, int tickStep, int tickStartPos, i
                 painter.save();
                 painter.translate(tickStartPos, curPos);
                 painter.rotate(-90);
-                painter.drawText(5, fontPos, QString::number(curPosValue));
+                painter.drawText(textOffset, fontPos + textOffset, QString::number(curPosValue));
                 painter.restore();
             }
         }
