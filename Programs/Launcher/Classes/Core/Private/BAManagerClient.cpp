@@ -84,7 +84,7 @@ void BAManagerClient::ProcessCommand(const QJsonObject& object)
 
 void BAManagerClient::SendReply(eResult result, const QString& message, const QString& commandID)
 {
-    QString urlStr = "http://ba-manager.wargaming.net/panel/modules/jsonAPI/launcher/lite.php";
+    QString urlStr = "http://ba-manager.wargaming.net/modules/jsonAPI/launcher/lite.php";
     QByteArray data = "source=command_result";
     data.append("&command_id=" + commandID);
     data.append("&key=");
@@ -105,7 +105,7 @@ void BAManagerClient::SendReply(eResult result, const QString& message, const QS
 
 void BAManagerClient::AskForCommands()
 {
-    QString urlStr = "http://ba-manager.wargaming.net/panel/modules/jsonAPI/launcher/lite.php";
+    QString urlStr = "http://ba-manager.wargaming.net/modules/jsonAPI/launcher/lite.php";
     QByteArray data = "source=commands";
     data.append("&key=");
     QString key = GetProtocolKey();

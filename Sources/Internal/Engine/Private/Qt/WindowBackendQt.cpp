@@ -304,7 +304,8 @@ void WindowBackend::OnDragMoved(QDragMoveEvent* qtEvent)
 
 void WindowBackend::OnMouseDBClick(QMouseEvent* qtEvent)
 {
-    // Do not handle mouse double click as dava.engine internals produce double clicks
+    OnMousePressed(qtEvent);
+    OnMouseReleased(qtEvent);
 }
 
 void WindowBackend::OnWheel(QWheelEvent* qtEvent)

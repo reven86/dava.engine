@@ -64,6 +64,8 @@ private:
     };
     Vector<Glyph> glyphs;
 
+    bool initialized = false;
+
     void ClearString();
     int32 LoadString(float32 size, const WideString& str);
     void Prepare(FT_Face face, FT_Vector* advances);
@@ -267,10 +269,7 @@ FTInternalFont::FTInternalFont(const FilePath& path)
 
     FT_Face face = nullptr;
     FT_Error error = ftm->LookupFace(this, &face);
-    if (error != FT_Err_Ok || face == nullptr)
-    {
-        DVASSERT(false, "Error on lookup FT face");
-    }
+    initialized = (error == FT_Err_Ok && face != nullptr);
 }
 
 FTInternalFont::~FTInternalFont()
@@ -319,11 +318,11 @@ FT_Error FTInternalFont::OpenFace(FT_Library library, FT_Face* ftface)
     FT_Error error = FT_Open_Face(library, &args, 0, ftface);
     if (error == FT_Err_Unknown_File_Format)
     {
-        Logger::Error("FTInternalFont::FTInternalFont FT_Err_Unknown_File_Format: %s", fontFile->GetFilename().GetStringValue().c_str());
+        Logger::Error("FTInternalFont::FTInternalFont FT_Err_Unknown_File_Format: %s", fontPath.GetStringValue().c_str());
     }
     else if (error)
     {
-        Logger::Error("FTInternalFont::FTInternalFont cannot create font: %s", fontFile->GetFilename().GetStringValue().c_str());
+        Logger::Error("FTInternalFont::FTInternalFont cannot create font: %s", fontPath.GetStringValue().c_str());
     }
     return error;
 }
@@ -337,6 +336,15 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
                                                Vector<float32>* charSizes,
                                                bool contentScaleIncluded)
 {
+    if (!initialized)
+    {
+        if (charSizes)
+        {
+            charSizes->assign(str.length(), 0.f);
+        }
+        return Font::StringMetrics();
+    }
+
     drawStringMutex.Lock();
 
     bool drawNondefGlyph = Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_NONDEF_GLYPH);
@@ -565,12 +573,22 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
 
 bool FTInternalFont::IsCharAvaliable(char16 ch)
 {
+    if (!initialized)
+    {
+        return false;
+    }
+
     uint32 index = ftm->LookupGlyphIndex(this, ch);
     return index != 0;
 }
 
 uint32 FTInternalFont::GetFontHeight(float32 size, float32 ascendScale, float32 descendScale)
 {
+    if (!initialized)
+    {
+        return 0;
+    }
+
     size = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(size); // increase size for high dpi screens
     FT_Size ft_size = nullptr;
     if (ftm->LookupSize(this, size, &ft_size) == FT_Err_Ok)
@@ -585,6 +603,11 @@ uint32 FTInternalFont::GetFontHeight(float32 size, float32 ascendScale, float32 
 
 void FTInternalFont::Prepare(FT_Face face, FT_Vector* advances)
 {
+    if (!initialized)
+    {
+        return;
+    }
+
     FT_Vector* prevAdvance = 0;
     FT_UInt prevIndex = 0;
     const bool useKerning = (FT_HAS_KERNING(face) > 0);

@@ -1,4 +1,5 @@
 #include "VisibilityCheckSystem.h"
+#include "VisibilityCheckRenderer.h"
 
 #include "Constants.h"
 #include "Scene3D/Scene.h"

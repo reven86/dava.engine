@@ -397,7 +397,7 @@ void SplitLoggerMessage(const String& logString, String& logLevel, String& messa
 
 void TeamcityTestOutputFunc(const char* logLevelStr, const char* messageStr)
 {
-    Logger* logger = Logger::Instance();
+    Logger* logger = GetEngineContext()->logger;
     Logger::eLogLevel ll = logger->GetLogLevelFromString(logLevelStr);
 
     if (ll != Logger::LEVEL__DISABLE)

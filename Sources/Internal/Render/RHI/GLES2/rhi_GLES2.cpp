@@ -12,6 +12,8 @@
 #include "Logger/Logger.h"
 using DAVA::Logger;
 
+#include <cstring>
+
 #include "_gl.h"
 
 GLuint _GLES2_Bound_FrameBuffer = 0;
@@ -311,7 +313,7 @@ static void gles_check_GL_extensions()
     const char* renderer = reinterpret_cast<const char*>(glGetString(GL_RENDERER));
     if (!IsEmptyString(renderer))
     {
-        memcpy(MutableDeviceCaps::Get().deviceDescription, renderer, strlen(renderer));
+        std::strncpy(MutableDeviceCaps::Get().deviceDescription, renderer, 127);
         runningOnMali = strstr(renderer, "Mali") != nullptr;
         runningOnTegra = strcmp(renderer, "NVIDIA Tegra") == 0;
     }
