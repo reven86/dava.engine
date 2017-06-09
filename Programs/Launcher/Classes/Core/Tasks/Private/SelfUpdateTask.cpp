@@ -105,8 +105,7 @@ void SelfUpdateTask::OnUnpacked()
     if (fileManager->MoveLauncherRecursively(appDirPath, tempDir, this)
         && fileManager->MoveLauncherRecursively(selfUpdateDirPath, appDirPath, this))
     {
-        quitController->requireRestart = true;
-        qApp->quit();
+        quitController->RestartApplication();
     }
 
     emit Finished();

@@ -2,6 +2,8 @@
 
 #include <QDialog>
 
+#include <memory>
+
 namespace DAVA
 {
 namespace TArc
