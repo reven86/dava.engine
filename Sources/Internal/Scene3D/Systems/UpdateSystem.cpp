@@ -72,10 +72,6 @@ void UpdateSystem::RemoveEntity(Entity* entity)
     }
 }
 
-void UpdateSystem::Process(float32 timeElapsed)
-{
-}
-
 void UpdateSystem::UpdatePreTransform(float32 timeElapsed)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_UPDATE_SYSTEM_PRE_TRANSFORM);
