@@ -58,21 +58,6 @@ void SelectionSystem::ProcessInput(UIEvent* currentInput)
         return;
     }
 
-    //this block was implemented by task DF-13985
-    //TODO: remove it when HUD will be around all selected controls
-    {
-        static SelectedNodes selectionCopy;
-        DVASSERT(currentInput->tapCount > 0);
-
-        if (currentInput->tapCount == 1)
-        {
-            selectionCopy = documentDataWrapper.GetFieldValue(DocumentData::selectionPropertyName).Cast<SelectedNodes>(SelectedNodes());
-        }
-        else
-        {
-            documentDataWrapper.SetFieldValue(DocumentData::selectionPropertyName, selectionCopy);
-        }
-    }
     ControlNode* selectedNode = systemsManager->GetControlNodeAtPoint(currentInput->point, currentInput->tapCount > 1);
     if (nullptr != selectedNode)
     {
@@ -354,9 +339,17 @@ ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const DAVA::Vector2& point
 
             //search child of selected to move down by hierarchy
             // or search neighbor to move left-right
-            if (canGoDeeper && selection.find(nodeParent) != selection.end())
+            if (selection.find(nodeParent) != selection.end())
             {
-                return node;
+                if (canGoDeeper)
+                {
+                    return node;
+                }
+                else
+                {
+                    DVASSERT(dynamic_cast<ControlNode*>(nodeParent) != nullptr);
+                    return dynamic_cast<ControlNode*>(nodeParent);
+                }
             }
             else if (selection.find(node) == selection.end()
                      && parentsOfSelectedNodes.find(nodeParent) != parentsOfSelectedNodes.end())
