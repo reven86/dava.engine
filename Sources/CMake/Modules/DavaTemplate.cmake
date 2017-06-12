@@ -44,7 +44,7 @@ macro( exctact_external_unittests )
     foreach( TEST_FOLDER ${EXTERNAL_TEST_FOLDERS} )
     file( GLOB_RECURSE TEST_FILES "${TEST_FOLDER}/*.unittest"  )
 
-    if( ANDROID )#Fucking android
+    if( ANDROID OR LINUX )#Fucking android
         foreach( FILE ${TEST_FILES} )
             get_filename_component( FILE_NAME ${FILE} NAME )
             set( OUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/EXTERNAL_TEST/${FILE_NAME}.cpp )
