@@ -1,5 +1,7 @@
 package com.dava.engine.notification;
+
 import com.dava.engine.DavaActivity;
+import com.dava.engine.DavaLog;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -9,7 +11,6 @@ import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
 public class ScheduledNotificationReceiver extends BroadcastReceiver
 {
@@ -20,7 +21,7 @@ public class ScheduledNotificationReceiver extends BroadcastReceiver
         String activityClassName = intent.getStringExtra("activityClassName");
 		if (null == activityClassName)
 		{
-			Log.e(DavaActivity.LOG_TAG, "ScheduledNotificationReceiver.onReceive intent not contain activityClassName.");
+			DavaLog.e(DavaActivity.LOG_TAG, "ScheduledNotificationReceiver.onReceive intent not contain activityClassName.");
             return;
 		}
         try
@@ -30,7 +31,7 @@ public class ScheduledNotificationReceiver extends BroadcastReceiver
         }
         catch (ClassNotFoundException e)
         {
-			Log.e(DavaActivity.LOG_TAG, "ScheduledNotificationReceiver.onReceive activityClassName not found.");
+            DavaLog.e(DavaActivity.LOG_TAG, "ScheduledNotificationReceiver.onReceive activityClassName not found.");
             return;
         }
 

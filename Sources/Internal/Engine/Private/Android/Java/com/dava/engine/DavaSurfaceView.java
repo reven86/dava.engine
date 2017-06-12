@@ -1,11 +1,9 @@
 package com.dava.engine;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
-import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -17,7 +15,6 @@ import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
-import android.util.Log;
 import android.util.DisplayMetrics;
 import java.lang.reflect.Constructor;
 
@@ -81,7 +78,7 @@ final class DavaSurfaceView extends SurfaceView
             Constructor<?> ctor = clazz.getConstructor(DavaSurfaceView.class, Long.TYPE);
             return ctor.newInstance(this, backendPointer);
         } catch (Throwable e) {
-            Log.e(DavaActivity.LOG_TAG, String.format("DavaSurfaceView.createNativeControl '%s' failed: %s", className, e.toString()));
+            DavaLog.e(DavaActivity.LOG_TAG, String.format("DavaSurfaceView.createNativeControl '%s' failed: %s", className, e.toString()));
             return null;
         }
     }
@@ -162,7 +159,7 @@ final class DavaSurfaceView extends SurfaceView
     @Override
     public void surfaceCreated(SurfaceHolder holder)
     {
-        Log.d(DavaActivity.LOG_TAG, "DavaSurface.surfaceCreated");
+        DavaLog.d(DavaActivity.LOG_TAG, "DavaSurface.surfaceCreated");
         nativeSurfaceViewOnSurfaceCreated(windowBackendPointer, this);
     }
 
@@ -191,14 +188,14 @@ final class DavaSurfaceView extends SurfaceView
         
         if (skip)
         {
-            Log.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: skip w=%d, h=%d", w, h));
+            DavaLog.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: skip w=%d, h=%d", w, h));
             return;
         }
 
         int dpi = getDpi();
         isSurfaceReady = true;
-        
-        Log.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: w=%d, h=%d, surfW=%d, surfH=%d, dpi=%d", w, h, w, h, dpi));
+
+        DavaLog.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: w=%d, h=%d, surfW=%d, surfH=%d, dpi=%d", w, h, w, h, dpi));
         nativeSurfaceViewOnSurfaceChanged(windowBackendPointer, holder.getSurface(), w, h, w, h, dpi);
         
         if (!DavaActivity.isNativeThreadRunning())
@@ -212,7 +209,7 @@ final class DavaSurfaceView extends SurfaceView
     @Override
     public void surfaceDestroyed(SurfaceHolder holder)
     {
-        Log.d(DavaActivity.LOG_TAG, "DavaSurface.surfaceDestroyed");
+        DavaLog.d(DavaActivity.LOG_TAG, "DavaSurface.surfaceDestroyed");
         
         DavaActivity.instance().handlePause();
         if (isSurfaceReady)

@@ -14,7 +14,6 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.Gravity;
@@ -474,7 +473,7 @@ final class DavaTextField implements TextWatcher,
 
     void setKeyboardAppearanceType(int value)
     {
-        Log.w(DavaActivity.LOG_TAG, "TextField: setKeyboardAppearanceType is not supported");
+        DavaLog.w(DavaActivity.LOG_TAG, "TextField: setKeyboardAppearanceType is not supported");
     }
 
     void setKeyboardType(int value)
@@ -493,7 +492,7 @@ final class DavaTextField implements TextWatcher,
 
     void setEnableReturnKeyAutomatically(boolean value)
     {
-        Log.w(DavaActivity.LOG_TAG, "TextField: setEnableReturnKeyAutomatically is not supported");
+        DavaLog.w(DavaActivity.LOG_TAG, "TextField: setEnableReturnKeyAutomatically is not supported");
     }
 
     int getCursorPos()

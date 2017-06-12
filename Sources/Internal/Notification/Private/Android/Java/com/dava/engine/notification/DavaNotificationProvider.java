@@ -1,5 +1,7 @@
 package com.dava.engine.notification;
+
 import com.dava.engine.DavaActivity;
+import com.dava.engine.DavaLog;
 
 import android.content.Context;
 import android.app.Application;
@@ -12,8 +14,6 @@ import android.content.Intent;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
-
-import android.util.Log;
 
 import java.util.Calendar;
 
@@ -29,7 +29,7 @@ public class DavaNotificationProvider {
  
     static void Init(DavaActivity davaActivity)
     {
-        Log.d(DavaActivity.LOG_TAG, "DavaNotificationProvider.Init");
+        DavaLog.d(DavaActivity.LOG_TAG, "DavaNotificationProvider.Init");
         activity = davaActivity;
         context = davaActivity.getApplication();
         
@@ -40,7 +40,7 @@ public class DavaNotificationProvider {
         isInited = (null != notificationManager && null != assetsManager);
         if (!isInited)
         {
-            Log.d(DavaActivity.LOG_TAG, "DavaNotificationProvider not inited!");
+            DavaLog.d(DavaActivity.LOG_TAG, "DavaNotificationProvider not inited!");
             return;
         }
 
@@ -69,7 +69,7 @@ public class DavaNotificationProvider {
 
     static void CleanBuilder()
     {
-        Log.d(DavaActivity.LOG_TAG, "DavaNotificationProvider.CleanBuilder");
+        DavaLog.d(DavaActivity.LOG_TAG, "DavaNotificationProvider.CleanBuilder");
         builder.setContentTitle("").setContentText("").setProgress(0, 0, false);
     }
 
@@ -108,7 +108,7 @@ public class DavaNotificationProvider {
     
     static void NotifyText(String uid, String title, String text, boolean useSound)
     {
-        Log.d(DavaActivity.LOG_TAG, "DavaNotificationProvider.NotifyText");
+        DavaLog.d(DavaActivity.LOG_TAG, "DavaNotificationProvider.NotifyText");
         if (isInited)
         {
             CleanBuilder();
@@ -137,7 +137,7 @@ public class DavaNotificationProvider {
 
     static void NotifyDelayed(String uid, String title, String text, int delaySeconds, boolean useSound)
     {
-        Log.d(DavaActivity.LOG_TAG, "DavaNotificationProvider.NotifyDelayed");
+        DavaLog.d(DavaActivity.LOG_TAG, "DavaNotificationProvider.NotifyDelayed");
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(context, ScheduledNotificationReceiver.class);
         intent.putExtra("uid", uid);
@@ -155,7 +155,7 @@ public class DavaNotificationProvider {
 
     static void RemoveAllDelayedNotifications()
     {
-        Log.d(DavaActivity.LOG_TAG, "DavaNotificationProvider.RemoveAllDelayedNotifications");
+        DavaLog.d(DavaActivity.LOG_TAG, "DavaNotificationProvider.RemoveAllDelayedNotifications");
         Intent intent = new Intent(context, ScheduledNotificationReceiver.class);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
@@ -164,7 +164,7 @@ public class DavaNotificationProvider {
 
     static void HideNotification(String uid)
     {
-        Log.d(DavaActivity.LOG_TAG, "DavaNotificationProvider.HideNotification");
+        DavaLog.d(DavaActivity.LOG_TAG, "DavaNotificationProvider.HideNotification");
         if (isInited)
         {
             CleanBuilder();

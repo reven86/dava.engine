@@ -9,7 +9,6 @@ import android.net.Uri;
 import android.graphics.Color;
 import android.webkit.WebView;
 import android.webkit.CookieManager;
-import android.util.Log;
 
 final class DavaWebView
 {
@@ -460,7 +459,7 @@ final class DavaWebView
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     DavaActivity.instance().startActivity(intent);
                 } catch (Exception e) {
-                    Log.e(DavaActivity.LOG_TAG, String.format("[WebView] failed to open '%s' in browser: %s", url, e.toString()));
+                    DavaLog.e(DavaActivity.LOG_TAG, String.format("[WebView] failed to open '%s' in browser: %s", url, e.toString()));
                 }
                 return true;
             case eAction.NO_PROCESS:
@@ -474,7 +473,7 @@ final class DavaWebView
 
     public void onReceivedError(int errorCode, String description, String failingUrl)
     {
-        Log.e(DavaActivity.LOG_TAG, String.format("DavaWebView.onReceivedError: error=%d url='%s' description=%s", errorCode, failingUrl, description));
+        DavaLog.e(DavaActivity.LOG_TAG, String.format("DavaWebView.onReceivedError: error=%d url='%s' description=%s", errorCode, failingUrl, description));
     }
 
     public void onJsAlert(String url, String message)

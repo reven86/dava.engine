@@ -1,7 +1,8 @@
 package com.dava.engine.notification;
-import com.dava.engine.DavaActivity;
 
-import android.util.Log;
+import com.dava.engine.DavaActivity;
+import com.dava.engine.DavaLog;
+
 import android.content.Intent;
 
 public class LocalNotificationListener extends DavaActivity.ActivityListenerImpl
@@ -15,7 +16,7 @@ public class LocalNotificationListener extends DavaActivity.ActivityListenerImpl
         localNotificationController = controller;
         DavaActivity.instance().registerActivityListener(this);
         DavaNotificationProvider.Init(DavaActivity.instance());
-        Log.d(DavaActivity.LOG_TAG, "LocalNotificationListener.<init> Create class instance.");
+        DavaLog.d(DavaActivity.LOG_TAG, "LocalNotificationListener.<init> Create class instance.");
     }
 
     void release()

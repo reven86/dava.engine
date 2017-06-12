@@ -2,7 +2,6 @@ package com.dava.engine;
 
 import android.graphics.Color;
 import android.media.MediaPlayer;
-import android.util.Log;
 import android.view.View;
 import android.widget.VideoView;
 import android.widget.RelativeLayout;
@@ -368,7 +367,7 @@ final class DavaMovieView implements MediaPlayer.OnCompletionListener,
                 os.close();
                 return targetFile.getAbsolutePath();
             } catch (Exception e) {
-                Log.e(DavaActivity.LOG_TAG, "DavaMovieView: failed to extract file from assets: " + e.toString());
+                DavaLog.e(DavaActivity.LOG_TAG, "DavaMovieView: failed to extract file from assets: " + e.toString());
             }
         }
         else
@@ -462,7 +461,7 @@ final class DavaMovieView implements MediaPlayer.OnCompletionListener,
     @Override
     public boolean onError(MediaPlayer mplayer, int what, int extra)
     {
-        Log.e(DavaActivity.LOG_TAG, String.format("DavaMovieView.onError: file='%s', what=%d, extra=%d", movieFile, what, extra));
+        DavaLog.e(DavaActivity.LOG_TAG, String.format("DavaMovieView.onError: file='%s', what=%d, extra=%d", movieFile, what, extra));
 
         tellPlayingStatus(false);
         // Return true to prevent showing error dialog on error
