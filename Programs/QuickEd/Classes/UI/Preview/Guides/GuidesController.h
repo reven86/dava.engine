@@ -109,9 +109,10 @@ private:
 
     void SyncGuidesWithValues();
 
-    //descr: returns closest value to given position
-    //returns nullptr if closest value is too far or if no values available
-    DAVA::float32* GetNearestValuePtr(DAVA::float32 position);
+    //returns closest value to given position
+    //store current values in cachedValues variable
+    //returns cachedValues.end() if closest value is too far or if no values available
+    PackageNode::AxisGuides::iterator GetNearestValuePtr(DAVA::float32 position);
 
     bool IsEnabled() const;
     PackageNode::AxisGuides GetValues() const;
@@ -173,7 +174,7 @@ private:
     QWidget* container = nullptr;
 
     //pointer to currentGuide to modify it value on drag
-    DAVA::float32* valuePtr = nullptr;
+    PackageNode::AxisGuides::iterator valuePtr;
 
     //semi-transparent preview guide
     Guide previewGuide;

@@ -69,11 +69,12 @@ void GuidesController::OnMousePress(DAVA::float32 position)
         PackageNode::AxisGuides values = GetValues();
 
         values.push_back(PositionToValue(position));
-        values.sort();
 
         SetValues(values);
 
         SyncGuidesWithValues();
+
+        previewGuide.Raise();
 
         SetDisplayState(DISPLAY_DRAG);
     }
@@ -90,12 +91,12 @@ void GuidesController::OnMouseMove(DAVA::float32 position)
 
     if (dragState == DRAG)
     {
-        DVASSERT(valuePtr != nullptr);
         DragGuide(position);
     }
     else
     {
-        if (GetNearestValuePtr(position) != nullptr)
+        PackageNode::AxisGuides::iterator valuePtr = GetNearestValuePtr(position);
+        if (valuePtr != cachedValues.end())
         {
             SetDisplayState(DISPLAY_DRAG);
         }
@@ -115,13 +116,11 @@ void GuidesController::OnMouseRelease(DAVA::float32 position)
     }
 
     //copy  pointer to dragged item to remove it if we drag outside of screen
-    DAVA::float32* valuePtrCopy = valuePtr;
     DisableDrag();
 
     if (displayState == DISPLAY_REMOVE)
     {
-        DVASSERT(valuePtrCopy != nullptr);
-        RemoveGuide(*valuePtrCopy);
+        RemoveLastGuide();
         SetDisplayState(NO_DISPLAY);
     }
 }
@@ -137,7 +136,7 @@ void GuidesController::OnMouseLeave()
 
 QList<QAction*> GuidesController::GetActions(DAVA::float32 position, QObject* parent)
 {
-    //we can call context menu when we draging guide
+    //we can call context menu when we dragging guide
     DisableDrag();
 
     QList<QAction*> actions;
@@ -154,8 +153,8 @@ QList<QAction*> GuidesController::GetActions(DAVA::float32 position, QObject* pa
         return actions;
     }
 
-    DAVA::float32* valuePtr = GetNearestValuePtr(position);
-    if (valuePtr != nullptr)
+    PackageNode::AxisGuides::iterator valuePtr = GetNearestValuePtr(position);
+    if (valuePtr != cachedValues.end())
     {
         QAction* removeGuideAction = new QAction("Remove Guide", parent);
         connect(removeGuideAction, &QAction::triggered, std::bind(&GuidesController::RemoveGuide, this, *valuePtr));
@@ -200,6 +199,7 @@ void GuidesController::SetDisplayState(eDisplayState state)
     {
     case DISPLAY_PREVIEW:
         previewGuide.Show();
+        previewGuide.Raise();
         break;
     case DISPLAY_DRAG:
         container->setCursor(GetOrientation() == DAVA::Vector2::AXIS_X ? Qt::SplitHCursor : Qt::SplitVCursor);
@@ -219,17 +219,19 @@ void GuidesController::EnableDrag(DAVA::float32 position)
         return;
     }
 
-    DVASSERT(valuePtr == nullptr);
     valuePtr = GetNearestValuePtr(position);
 
-    DVASSERT(valuePtr != nullptr);
-    if (valuePtr != nullptr)
+    DVASSERT(valuePtr != cachedValues.end());
+    if (valuePtr != cachedValues.end())
     {
         dragState = DRAG;
 
         DAVA::TArc::DataContext* active = accessor->GetActiveContext();
         DocumentData* data = active->GetData<DocumentData>();
         data->BeginBatch("Dragging guide");
+
+        //move dragged guide to the end of list to display it under all other guides
+        cachedValues.splice(cachedValues.end(), cachedValues, valuePtr);
     }
 }
 
@@ -245,9 +247,6 @@ void GuidesController::DisableDrag()
     data->EndBatch();
 
     dragState = NO_DRAG;
-
-    DVASSERT(valuePtr != nullptr);
-    valuePtr = nullptr;
 }
 
 void GuidesController::BindFields()
@@ -304,10 +303,16 @@ void GuidesController::SyncGuidesWithValues()
     }
 
     PackageNode::AxisGuides values = GetValues();
-    auto iter = std::lower_bound(values.begin(), values.end(), minValue);
-    auto endIter = std::upper_bound(values.begin(), values.end(), maxValue);
+    PackageNode::AxisGuides visibleValues;
+    for (DAVA::float32 value : values)
+    {
+        if (value > minValue && value < maxValue)
+        {
+            visibleValues.push_back(value);
+        }
+    }
 
-    int size = std::distance(iter, endIter);
+    std::size_t size = visibleValues.size();
 
     while (guides.size() > size)
     {
@@ -319,23 +324,21 @@ void GuidesController::SyncGuidesWithValues()
         guides.append(guide);
     }
 
+    DVASSERT(size == guides.size());
     int index = 0;
-    for (; iter != endIter; ++iter, ++index)
+    for (DAVA::float32 value : visibleValues)
     {
-        Guide& guide = guides[index];
+        Guide& guide = guides[index++];
         ResizeGuide(guide);
-        DAVA::float32 value = *iter;
-        static_cast<GuideLabel*>(guide.text)->SetValue(value);
+        guide.text->SetValue(value);
         MoveGuide(value, guide);
-    }
 
-    for (Guide& guide : guides)
-    {
         guide.Show();
+        guide.Raise();
     }
 }
 
-DAVA::float32* GuidesController::GetNearestValuePtr(DAVA::float32 position)
+PackageNode::AxisGuides::iterator GuidesController::GetNearestValuePtr(DAVA::float32 position)
 {
     DAVA::float32 range = 1;
     if (scale < 1.0f)
@@ -347,7 +350,7 @@ DAVA::float32* GuidesController::GetNearestValuePtr(DAVA::float32 position)
 
     if (cachedValues.empty())
     {
-        return nullptr;
+        return cachedValues.end();
     }
 
     DAVA::float32 value = PositionToValue(position);
@@ -358,9 +361,9 @@ DAVA::float32* GuidesController::GetNearestValuePtr(DAVA::float32 position)
                                                               });
     if (std::fabs(*iter - value) > range)
     {
-        return nullptr;
+        return cachedValues.end();
     }
-    return &(*iter);
+    return iter;
 }
 
 bool GuidesController::IsEnabled() const
@@ -400,7 +403,7 @@ void GuidesController::SetupPreviewGuide(DAVA::float32 position)
 {
     DAVA::float32 value = PositionToValue(position);
     ResizeGuide(previewGuide);
-    static_cast<GuideLabel*>(previewGuide.text)->SetValue(value);
+    previewGuide.text->SetValue(value);
     MoveGuide(value, previewGuide);
 }
 
@@ -419,13 +422,12 @@ Guide GuidesController::CreateGuide(const DAVA::Color& color) const
 void GuidesController::DragGuide(DAVA::float32 position)
 {
     DVASSERT(IsEnabled());
-    DVASSERT(valuePtr != nullptr);
+    DVASSERT(dragState == DRAG);
 
     DAVA::float32 value = PositionToValue(position);
     SetDisplayState((value < minValue || value > maxValue) ? DISPLAY_REMOVE : DISPLAY_DRAG);
 
     *valuePtr = PositionToValue(position);
-    cachedValues.sort();
     SetValues(cachedValues);
 
     SyncGuidesWithValues();
