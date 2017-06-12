@@ -1,16 +1,54 @@
 #include "Physics/PhysicsModule.h"
+#include "Physics/Private/PhysicsMath.h"
 
 #include <Engine/Engine.h>
 #include <Engine/EngineContext.h>
 #include <Logger/Logger.h>
 #include <MemoryManager/MemoryManager.h>
-#include <Reflection/ReflectedTypeDB.h>
+#include <Reflection/ReflectionRegistrator.h>
 
 #include <physx/PxPhysicsAPI.h>
 #include <PxShared/pvd/PxPvd.h>
 
 namespace DAVA
 {
+namespace
+{
+physx::PxPvd* CreatePvd(physx::PxFoundation* foundation)
+{
+    IModule* physicsDebugModule = GetEngineContext()->moduleManager->GetModule("PhysicsDebug");
+    if (physicsDebugModule == nullptr)
+    {
+        return nullptr;
+    }
+
+    Reflection moduleRef = Reflection::Create(ReflectedObject(physicsDebugModule));
+    AnyFn fn = moduleRef.GetMethod("CreatePvd");
+    DVASSERT(fn.IsValid() == true);
+#if defined(__DAVAENGINE_DEBUG__)
+    AnyFn::Params params = fn.GetInvokeParams();
+    DVASSERT(params.retType == Type::Instance<physx::PxPvd*>());
+    DVASSERT(params.argsType.size() == 1);
+    DVASSERT(params.argsType[0] == Type::Instance<physx::PxFoundation*>());
+#endif
+
+    return fn.Invoke(foundation).Cast<physx::PxPvd*>(nullptr);
+}
+
+void ReleasePvd()
+{
+    IModule* physicsDebugModule = GetEngineContext()->moduleManager->GetModule("PhysicsDebug");
+    if (physicsDebugModule == nullptr)
+    {
+        return;
+    }
+
+    Reflection moduleRef = Reflection::Create(ReflectedObject(physicsDebugModule));
+    AnyFn fn = moduleRef.GetMethod("ReleasePvd");
+    DVASSERT(fn.IsValid() == true);
+    fn.Invoke();
+}
+}
 class Physics::PhysicsAllocator : public physx::PxAllocatorCallback
 {
 public:
@@ -64,12 +102,7 @@ void Physics::Init()
     foundation = PxCreateFoundation(PX_FOUNDATION_VERSION, *allocator, *errorCallback);
     DVASSERT(foundation);
 
-    IModule* physicsDebugModule = GetEngineContext()->moduleManager->GetModule("PhysicsDebugModule");
-    if (physicsDebugModule)
-    {
-        pvd = physx::PxCreatePvd(*foundation);
-    }
-
+    physx::PxPvd* pvd = CreatePvd(foundation);
     physics = PxCreateBasePhysics(PX_PHYSICS_VERSION, *foundation, PxTolerancesScale(), true, pvd);
     DVASSERT(physics);
     PxRegisterHeightFields(*physics);
@@ -78,10 +111,7 @@ void Physics::Init()
 void Physics::Shutdown()
 {
     physics->release();
-    if (pvd != nullptr)
-    {
-        pvd->release();
-    }
+    ReleasePvd(); // PxPvd should be released between PxPhysics and PxFoundation
     foundation->release();
     SafeDelete(allocator);
     SafeDelete(errorCallback);
@@ -92,7 +122,36 @@ bool Physics::IsInitialized() const
     return foundation != nullptr && physics != nullptr;
 }
 
+physx::PxPhysics* Physics::GetPhysics() const
+{
+    return physics;
+}
+
+physx::PxScene* Physics::CreateScene(const PhysicsSceneConfig& config) const
+{
+    using namespace physx;
+
+    DVASSERT(physics != nullptr);
+
+    PxSceneDesc sceneDesc(physics->getTolerancesScale());
+    sceneDesc.flags = PxSceneFlag::eENABLE_ACTIVE_ACTORS;
+    sceneDesc.gravity = PhysicsMath::Vector3ToPxVec3(config.gravity);
+
+    PxDefaultCpuDispatcher* cpuDispatcher = PxDefaultCpuDispatcherCreate(config.threadCount);
+    DVASSERT(cpuDispatcher);
+    sceneDesc.cpuDispatcher = cpuDispatcher;
+
+    sceneDesc.filterShader = PxDefaultSimulationFilterShader;
+
+    PxScene* scene = physics->createScene(sceneDesc);
+    DVASSERT(scene);
+
+    return scene;
+}
+
 DAVA_VIRTUAL_REFLECTION_IMPL(Physics)
 {
+    ReflectionRegistrator<Physics>::Begin()
+    .End();
 }
 }

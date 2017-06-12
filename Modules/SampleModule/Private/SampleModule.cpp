@@ -1,5 +1,6 @@
 #include "SampleModule.h"
 #include "Reflection/Reflection.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
@@ -21,5 +22,7 @@ void SampleModule::Shutdown()
 
 DAVA_VIRTUAL_REFLECTION_IMPL(SampleModule)
 {
+    ReflectionRegistrator<SampleModule>::Begin()
+    .End();
 }
 }

@@ -1,16 +1,17 @@
 #pragma once
 
-#include "ModuleManager/IModule.h"
-#include "ModuleManager/ModuleManager.h"
+#include "Physics/PhysicsConfigs.h"
 
-#include "Base/Singleton.h"
-#include "Base/BaseTypes.h"
+#include <ModuleManager/IModule.h>
+#include <ModuleManager/ModuleManager.h>
+
+#include <Base/BaseTypes.h>
 
 namespace physx
 {
 class PxFoundation;
 class PxPhysics;
-class PxPvd;
+class PxScene;
 }
 
 namespace DAVA
@@ -25,8 +26,10 @@ public:
 
     bool IsInitialized() const;
 
+    physx::PxPhysics* GetPhysics() const;
+    physx::PxScene* CreateScene(const PhysicsSceneConfig& config) const;
+
 private:
-    physx::PxPvd* pvd = nullptr;
     physx::PxFoundation* foundation = nullptr;
     physx::PxPhysics* physics = nullptr;
 

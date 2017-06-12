@@ -2,48 +2,10 @@
 #include "ModuleManager/IModule.h"
 
 @IMODULE_INCLUDES@
-
 namespace DAVA
 {
-
-@IMODULE_INIT_POINTERS@
-@IMODULE_GET_MODULE_CODE@
-ModuleManager::ModuleManager(Engine* engine)
-: pointersToModules( new PointersToModules )
+Vector<IModule*> CreateModuleInstances(Engine* engine)
 {
 @IMODULE_CTOR_CODE@
 }
-
-ModuleManager::~ModuleManager()
-{
-    for(auto it = rbegin(modules); it != rend(modules); ++it)
-    {
-        delete *it;
-    }
-    modules.clear();
-}
-
-void ModuleManager::InitModules()
-{
-	for (IModule* module : modules)
-    {
-		 module->Init();
-	}
-}
-    
-void ModuleManager::ShutdownModules()
-{
-    for (auto it = rbegin(modules); it != rend(modules); ++it)
-    {
-        (*it)->Shutdown();
-    }
-
-    for(auto it = rbegin(modules); it != rend(modules); ++it)
-    {
-        delete *it;
-    }
-    modules.clear();
-}
-    
-
 }

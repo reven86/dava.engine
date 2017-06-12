@@ -200,6 +200,7 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     }
 
     Thread::InitMainThread();
+    RegisterReflectionForBaseTypes();
     // For now only next subsystems/modules are created on demand:
     //  - LocalizationSystem
     //  - JobManager
@@ -210,7 +211,6 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     CreateSubsystems(modules);
 
     RegisterDAVAClasses();
-    RegisterReflectionForBaseTypes();
 
     isInitialized = true;
 }
