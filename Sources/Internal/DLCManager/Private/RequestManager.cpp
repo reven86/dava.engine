@@ -36,6 +36,11 @@ void RequestManager::Update()
 
         if (request->IsDownloaded())
         {
+            if (callSignal == false && request->GetDownloadedSize() == 0)
+            {
+                // empty pack, so we need inform signal
+                packManager.requestStartLoading.Emit(*request);
+            }
             callSignal = true; // we need to inform on empty pack too
             Pop();
             if (!Empty())
