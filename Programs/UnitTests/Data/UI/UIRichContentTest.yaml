@@ -37,8 +37,12 @@ Controls:
     size: [380.000000, 352.000000]
     components:
         RichContent: {}
+        RichContentAliases: {}
+        Background: {}
 -   class: "UIControl"
     name: "CustomControl"
     size: [32.000000, 32.000000]
     debugDraw: true
     debugDrawColor: [0.000000, 1.000000, 0.000000, 1.000000]
+    components:
+        Background: {}

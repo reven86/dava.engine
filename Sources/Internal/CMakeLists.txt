@@ -15,7 +15,9 @@ set( MODULE_TYPE STATIC )#INLINE STATIC DYNAMIC
 
 set( EXTERNAL_MODULES_WIN           ${DAVA_EXTERNAL_DIR}/cef )
 set( EXTERNAL_MODULES               ${DAVA_MODULES_DIR}/SampleModule
-                                    ${DAVA_MODULES_DIR}/NetworkCore )
+                                    ${DAVA_MODULES_DIR}/NetworkCore
+                                    ${DAVA_MODULES_DIR}/Physics
+                                    )
 
 set( INCLUDES_PRIVATE               ${DAVA_ENGINE_DIR} 
                                     ${DAVA_THIRD_PARTY_INCLUDES_PATH}  )

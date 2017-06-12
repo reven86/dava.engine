@@ -13,7 +13,6 @@ class UpdateSystem : public SceneSystem
 public:
     UpdateSystem(Scene* scene);
 
-    void Process(float32 timeElapsed) override;
     void AddEntity(Entity* entity) override;
     void RemoveEntity(Entity* entity) override;
 

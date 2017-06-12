@@ -3,6 +3,7 @@
 
 #include "Base/Platform.h"
 #include "Base/Exception.h"
+#include "Debug/Backtrace.h"
 
 #include "FileSystem/FileAPIHelper.h"
 #include "FileSystem/FileSystem.h"
@@ -277,7 +278,8 @@ bool FileSystem::DeleteFile(const FilePath& filePath)
     DVASSERT(filePath.GetType() != FilePath::PATH_IN_RESOURCES);
 
     // function unlink return 0 on success, -1 on error
-    const auto& fileName = filePath.GetAbsolutePathname();
+    String fileName = filePath.GetAbsolutePathname();
+
     int res = FileAPI::RemoveFile(fileName);
     if (res == 0)
     {
@@ -302,7 +304,7 @@ bool FileSystem::DeleteDirectory(const FilePath& path, bool isRecursive)
         return false;
     }
 
-    FileList* fileList = new FileList(path);
+    ScopedPtr<FileList> fileList(new FileList(path));
     for (uint32 i = 0; i < fileList->GetCount(); ++i)
     {
         if (fileList->IsDirectory(i))
@@ -327,7 +329,7 @@ bool FileSystem::DeleteDirectory(const FilePath& path, bool isRecursive)
                 return false;
         }
     }
-    SafeRelease(fileList);
+    
 #ifdef __DAVAENGINE_WINDOWS__
     WideString sysPath = UTF8Utils::EncodeToWideString(path.GetAbsolutePathname());
     int32 chmodres = _wchmod(sysPath.c_str(), _S_IWRITE); // change read-only file mode
@@ -346,7 +348,7 @@ uint32 FileSystem::DeleteDirectoryFiles(const FilePath& path, bool isRecursive)
 
     uint32 fileCount = 0;
 
-    FileList* fileList = new FileList(path);
+    ScopedPtr<FileList> fileList(new FileList(path));
     for (uint32 i = 0; i < fileList->GetCount(); ++i)
     {
         if (fileList->IsDirectory(i))
@@ -366,7 +368,6 @@ uint32 FileSystem::DeleteDirectoryFiles(const FilePath& path, bool isRecursive)
                 fileCount++;
         }
     }
-    SafeRelease(fileList);
 
     return fileCount;
 }
@@ -513,7 +514,7 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
         return true;
     }
 
-    nativePath += ".dvpl";
+    nativePath += extDvpl;
 
     if (FileAPI::IsRegularFile(nativePath))
     {
@@ -691,13 +692,15 @@ bool FileSystem::IsFileLocked(const FilePath& filePath) const
 #if defined(__DAVAENGINE_WINDOWS__)
 
     HANDLE hFile = CreateFileWin(path);
-    if (hFile == INVALID_HANDLE_VALUE || GetLastError() == ERROR_SHARING_VIOLATION)
+    DWORD createFileError = GetLastError();
+
+    if (hFile == INVALID_HANDLE_VALUE)
     {
-        return true;
+        return false;
     }
 
     CloseHandle(hFile);
-    return false;
+    return (createFileError == ERROR_SHARING_VIOLATION);
 
 #elif defined(__DAVAENGINE_MACOS__)
 

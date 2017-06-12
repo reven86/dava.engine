@@ -3,9 +3,7 @@
 #include "FileSystem/Private/PackMetaData.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
-#include "Utils/Utils.h"
 #include "Logger/Logger.h"
-#include "DLC/DLC.h"
 
 #include <numeric>
 
@@ -38,26 +36,27 @@ PackRequest& PackRequest::operator=(PackRequest&& other)
     return *this;
 }
 
-void PackRequest::CancelCurrentsDownloads()
+void PackRequest::CancelCurrentDownloadRequests()
 {
-    DLCDownloader* dm = packManagerImpl->GetDownloader();
-    if (dm)
+    DLCDownloader* downloader = packManagerImpl->GetDownloader();
+    if (downloader)
     {
         for (FileRequest& r : requests)
         {
-            if (r.taskId != nullptr)
+            if (r.task != nullptr)
             {
-                dm->RemoveTask(r.taskId);
-                r.taskId = nullptr;
-                r.status = LoadingPackFile; // to resume loading after update
+                downloader->RemoveTask(r.task);
+                r.task = nullptr;
             }
         }
+        requests.clear();
+        requests.shrink_to_fit();
     }
 }
 
 PackRequest::~PackRequest()
 {
-    CancelCurrentsDownloads();
+    CancelCurrentDownloadRequests();
     packManagerImpl = nullptr;
     requests.clear();
     fileIndexes.clear();
@@ -73,7 +72,8 @@ void PackRequest::Start()
 
 void PackRequest::Stop()
 {
-    CancelCurrentsDownloads();
+    CancelCurrentDownloadRequests();
+    numOfDownloadedFile = 0;
 }
 
 const String& PackRequest::GetRequestedPackName() const
@@ -119,6 +119,7 @@ uint64 PackRequest::GetDownloadedSize() const
     });
     return requestsSize;
 }
+
 /** return true when all files loaded and ready */
 bool PackRequest::IsDownloaded() const
 {
@@ -129,7 +130,8 @@ bool PackRequest::IsDownloaded() const
 
     if (requests.size() != fileIndexes.size())
     {
-        return false; // not initialized yet
+        // not initialized yet
+        return false;
     }
 
     if (!packManagerImpl->IsInitialized())
@@ -149,7 +151,8 @@ bool PackRequest::IsDownloaded() const
     {
         if (!packManagerImpl->IsTop(this))
         {
-            return false; // wait for dependencies to download first
+            // wait for dependencies to download first
+            return false;
         }
     }
 
@@ -233,14 +236,14 @@ void PackRequest::InitializeFileRequest(const uint32 fileIndex_,
                                         const Compressor::Type compressionType_,
                                         FileRequest& fileRequest)
 {
-    fileRequest.localFile = fileName_ + ".dvpl";
+    fileRequest.localFile = fileName_ + extDvpl;
     fileRequest.hashFromMeta = hash_;
     fileRequest.startLoadingPos = startLoadingPos_;
     fileRequest.sizeOfCompressedFile = fileComressedSize_;
     fileRequest.sizeOfUncompressedFile = fileUncompressedSize_;
     fileRequest.fileIndex = fileIndex_;
     fileRequest.status = Wait;
-    fileRequest.taskId = 0;
+    fileRequest.task = nullptr;
     fileRequest.url = url_;
     fileRequest.downloadedFileSize = 0;
     fileRequest.compressionType = compressionType_;
@@ -249,7 +252,8 @@ void PackRequest::InitializeFileRequest(const uint32 fileIndex_,
 void PackRequest::DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest)
 {
     fileRequest.downloadedFileSize = 0;
-    bool deleteOk = FileSystem::Instance()->DeleteFile(fileRequest.localFile);
+    FileSystem* fs = GetEngineContext()->fileSystem;
+    bool deleteOk = fs->DeleteFile(fileRequest.localFile);
     if (!deleteOk)
     {
         Logger::Error("DLCManager can't delete invalid file: %s", fileRequest.localFile.GetStringValue().c_str());
@@ -257,215 +261,228 @@ void PackRequest::DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest
     fileRequest.status = LoadingPackFile;
 }
 
-void PackRequest::DisableRequestingAndFireSignalNoSpaceLeft(FileRequest& fileRequest) const
+void PackRequest::DisableRequestingAndFireSignalIOError(FileRequest& fileRequest, int32 errVal) const
 {
-    int32 errnoValue = errno; // save in local variable if other error happen
-    packManagerImpl->GetLog() << "No space on device!!! errno(" << errnoValue << ") Can't create or write file: "
+    packManagerImpl->GetLog() << "device IO Error:(" << errVal << ")"
+                              << std::strerror(errVal) << " file: "
                               << fileRequest.localFile.GetAbsolutePathname()
                               << " disable DLCManager requesting" << std::endl;
     packManagerImpl->SetRequestingEnabled(false);
-    packManagerImpl->fileErrorOccured.Emit(fileRequest.localFile.GetAbsolutePathname().c_str(), errnoValue);
+    packManagerImpl->fileErrorOccured.Emit(fileRequest.localFile.GetAbsolutePathname().c_str(), errVal);
+}
+
+bool PackRequest::CheckLocalFileState(FileSystem* fs, FileRequest& fileRequest)
+{
+    if (packManagerImpl->IsFileReady(fileRequest.fileIndex))
+    {
+        fileRequest.status = Ready;
+        uint64 fileSize = 0;
+        if (fs->GetFileSize(fileRequest.localFile, fileSize))
+        {
+            if (fileSize == fileRequest.sizeOfCompressedFile + sizeof(PackFormat::LitePack::Footer))
+            {
+                fileRequest.downloadedFileSize = fileSize;
+                return true;
+            }
+            // file exist but may be invalid so let's check it out
+            fileRequest.status = CheckHash;
+            return false;
+        }
+    }
+    else
+    {
+        fileRequest.status = LoadingPackFile;
+    }
+    return false;
+}
+
+bool PackRequest::CheckLoadingStatusOfFileRequest(FileRequest& fileRequest, DLCDownloader* dm, const String& dstPath)
+{
+    if (fileRequest.task == nullptr)
+    {
+        return false;
+    }
+
+    DLCDownloader::TaskStatus status = dm->GetTaskStatus(fileRequest.task);
+    {
+        switch (status.state)
+        {
+        case DLCDownloader::TaskState::JustAdded:
+            break;
+        case DLCDownloader::TaskState::Downloading:
+        {
+            if (fileRequest.downloadedFileSize != status.sizeDownloaded)
+            {
+                fileRequest.downloadedFileSize = status.sizeDownloaded;
+                return true;
+            }
+        }
+        break;
+        case DLCDownloader::TaskState::Finished:
+        {
+            dm->RemoveTask(fileRequest.task);
+            fileRequest.task = nullptr;
+
+            bool allGood = !status.error.errorHappened;
+
+            if (allGood)
+            {
+                fileRequest.task = nullptr;
+                fileRequest.downloadedFileSize = status.sizeDownloaded;
+                fileRequest.status = CheckHash;
+                return true;
+            }
+
+            std::ostream& out = packManagerImpl->GetLog();
+
+            out << "file_request failed: can't download file: " << dstPath << " status: " << status;
+
+            if (status.error.fileErrno != 0)
+            {
+                out << " I/O error: " << status.error.errStr << std::endl;
+                DisableRequestingAndFireSignalIOError(fileRequest, status.error.fileErrno);
+                return false;
+            }
+
+            DeleteJustDownloadedFileAndStartAgain(fileRequest);
+            return false;
+        }
+        }
+    }
+    return false;
+}
+
+bool PackRequest::LoadingPackFileState(FileSystem* fs, FileRequest& fileRequest)
+{
+    DLCDownloader* dm = packManagerImpl->GetDownloader();
+    String dstPath = fileRequest.localFile.GetAbsolutePathname();
+    if (fileRequest.task == nullptr)
+    {
+        if (fileRequest.sizeOfCompressedFile == 0)
+        {
+            // just create empty file, and go to next state
+            FilePath dirPath = fileRequest.localFile.GetDirectory();
+            FileSystem::eCreateDirectoryResult dirCreate = fs->CreateDirectory(dirPath, true);
+            if (dirCreate == FileSystem::DIRECTORY_CANT_CREATE)
+            {
+                DisableRequestingAndFireSignalIOError(fileRequest, errno);
+                return false;
+            }
+            ScopedPtr<File> f(File::Create(fileRequest.localFile, File::CREATE | File::WRITE));
+            if (!f)
+            {
+                DisableRequestingAndFireSignalIOError(fileRequest, errno);
+                return false;
+            }
+            f->Truncate(0);
+            fileRequest.task = nullptr;
+            fileRequest.status = CheckHash;
+            return true;
+        }
+
+        DLCDownloader::Range range = DLCDownloader::Range(fileRequest.startLoadingPos, fileRequest.sizeOfCompressedFile);
+        fileRequest.task = dm->ResumeTask(fileRequest.url, dstPath, range);
+        if (nullptr == fileRequest.task)
+        {
+            Logger::Error("can't create task: url: %s, dstPath: %s, range: %lld-%lld", fileRequest.url.c_str(), dstPath.c_str(), range.size, range.offset);
+            fileRequest.status = Wait; // lets start all over again
+        }
+        return false;
+    }
+
+    return CheckLoadingStatusOfFileRequest(fileRequest, dm, dstPath);
+}
+
+bool PackRequest::CheckHaskState(FileRequest& fileRequest)
+{
+    uint32 fileCrc32 = CRC32::ForFile(fileRequest.localFile);
+    if (fileCrc32 == fileRequest.hashFromMeta)
+    {
+        // write 20 bytes LitePack footer
+        PackFormat::LitePack::Footer footer;
+        footer.type = fileRequest.compressionType;
+        footer.crc32Compressed = fileRequest.hashFromMeta;
+        footer.sizeUncompressed = static_cast<uint32>(fileRequest.sizeOfUncompressedFile);
+        footer.sizeCompressed = static_cast<uint32>(fileRequest.sizeOfCompressedFile);
+        footer.packMarkerLite = PackFormat::FILE_MARKER_LITE;
+
+        {
+            ScopedPtr<File> f(File::Create(fileRequest.localFile, File::WRITE | File::APPEND));
+            if (!f)
+            {
+                // not enough space
+                DisableRequestingAndFireSignalIOError(fileRequest, errno);
+                return false;
+            }
+
+            uint32 written = f->Write(&footer, sizeof(footer));
+            if (written != sizeof(footer))
+            {
+                // not enough space
+                DisableRequestingAndFireSignalIOError(fileRequest, errno);
+                return false;
+            }
+        }
+
+        fileRequest.downloadedFileSize += sizeof(footer);
+        fileRequest.status = Ready;
+
+        packManagerImpl->SetFileIsReady(fileRequest.fileIndex);
+
+        return true;
+    }
+
+    // try download again
+    DeleteJustDownloadedFileAndStartAgain(fileRequest);
+    return false;
 }
 
 bool PackRequest::UpdateFileRequests()
 {
-    // TODO refactoring method
-    bool callSignal = false;
+    // return true if at least one part file continue downloading
+    bool callUpdateSignal = false;
 
-    FileSystem* fs = FileSystem::Instance();
+    FileSystem* fs = GetEngineContext()->fileSystem;
 
     for (FileRequest& fileRequest : requests)
     {
+        bool downloadedMore = false;
         switch (fileRequest.status)
         {
         case Wait:
+        {
             fileRequest.status = CheckLocalFile;
             break;
+        }
         case CheckLocalFile:
         {
-            if (packManagerImpl->IsFileReady(fileRequest.fileIndex))
-            {
-                fileRequest.status = Ready;
-                uint64 fileSize = 0;
-                if (fs->GetFileSize(fileRequest.localFile, fileSize))
-                {
-                    if (fileSize == fileRequest.sizeOfCompressedFile + sizeof(PackFormat::LitePack::Footer))
-                    {
-                        fileRequest.downloadedFileSize = fileSize;
-                        callSignal = true;
-                    }
-                    else
-                    {
-                        // file exist but may be invalid so let's check it out
-                        fileRequest.status = CheckHash;
-                        callSignal = false;
-                    }
-                }
-            }
-            else
-            {
-                fileRequest.status = LoadingPackFile;
-            }
+            downloadedMore = CheckLocalFileState(fs, fileRequest);
             break;
         }
         case LoadingPackFile:
         {
-            DLCDownloader* dm = packManagerImpl->GetDownloader();
-            String dstPath = fileRequest.localFile.GetAbsolutePathname();
-            if (fileRequest.taskId == nullptr)
-            {
-                if (fileRequest.sizeOfCompressedFile == 0)
-                {
-                    // just create empty file, and go to next state
-                    FilePath dirPath = fileRequest.localFile.GetDirectory();
-                    FileSystem::eCreateDirectoryResult dirCreate = fs->CreateDirectory(dirPath, true);
-                    if (dirCreate == FileSystem::DIRECTORY_CANT_CREATE)
-                    {
-                        DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
-                        return false;
-                    }
-                    ScopedPtr<File> f(File::Create(fileRequest.localFile, File::CREATE | File::WRITE));
-                    if (!f)
-                    {
-                        DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
-                        return false;
-                    }
-                    f->Truncate(0);
-                    fileRequest.taskId = nullptr;
-                    fileRequest.status = CheckHash;
-                    callSignal = true;
-                }
-                else
-                {
-                    fs->DeleteFile(fileRequest.localFile); // just in case (hash not match, size not match...)
-
-                    DLCDownloader::Range range = DLCDownloader::Range(fileRequest.startLoadingPos, fileRequest.sizeOfCompressedFile);
-                    fileRequest.taskId = dm->ResumeTask(fileRequest.url, dstPath, range);
-                    if (nullptr == fileRequest.taskId)
-                    {
-                        DAVA_THROW(Exception, "can't be, something very very wrong");
-                    }
-                }
-            }
-            else
-            {
-                // TODO move to separate function
-                DLCDownloader::TaskStatus status = dm->GetTaskStatus(fileRequest.taskId);
-                {
-                    switch (status.state)
-                    {
-                    case DLCDownloader::TaskState::JustAdded:
-                        break;
-                    case DLCDownloader::TaskState::Downloading:
-                    {
-                        if (fileRequest.downloadedFileSize != status.sizeDownloaded)
-                        {
-                            fileRequest.downloadedFileSize = status.sizeDownloaded;
-                            callSignal = true;
-                        }
-                    }
-                    break;
-                    case DLCDownloader::TaskState::Finished:
-                    {
-                        dm->RemoveTask(fileRequest.taskId);
-                        fileRequest.taskId = nullptr;
-
-                        bool allGood = !status.error.errorHappened;
-
-                        if (allGood)
-                        {
-                            fileRequest.taskId = nullptr;
-                            fileRequest.downloadedFileSize = status.sizeDownloaded;
-                            fileRequest.status = CheckHash;
-                            callSignal = true;
-                        }
-                        else
-                        {
-                            std::ostream& out = packManagerImpl->GetLog();
-
-                            out << "can't download file: " << dstPath;
-
-                            if (status.error.fileErrno != 0)
-                            {
-                                out << " I/O error: " << status.error.errStr << std::endl;
-                                DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
-                                return true;
-                            }
-
-                            if (status.error.httpCode >= 400)
-                            {
-                                out << " httpCode error(" << status.error.httpCode << "): " << status.error.errStr << std::endl;
-                            }
-
-                            if (status.error.curlErr != 0)
-                            {
-                                out << " curl easy error(" << status.error.curlErr << "): " << status.error.errStr << std::endl;
-                            }
-
-                            if (status.error.curlMErr != 0)
-                            {
-                                out << " curl multi error(" << status.error.curlMErr << "): " << status.error.errStr << std::endl;
-                            }
-
-                            DeleteJustDownloadedFileAndStartAgain(fileRequest);
-                            return false;
-                        }
-                    }
-                    break;
-                    }
-                }
-            }
+            downloadedMore = LoadingPackFileState(fs, fileRequest);
             break;
         }
         case CheckHash:
         {
-            uint32 fileCrc32 = CRC32::ForFile(fileRequest.localFile);
-            if (fileCrc32 == fileRequest.hashFromMeta)
-            {
-                // write 20 bytes LitePack footer
-                PackFormat::LitePack::Footer footer;
-                footer.type = fileRequest.compressionType;
-                footer.crc32Compressed = fileRequest.hashFromMeta;
-                footer.sizeUncompressed = static_cast<uint32>(fileRequest.sizeOfUncompressedFile);
-                footer.sizeCompressed = static_cast<uint32>(fileRequest.sizeOfCompressedFile);
-                footer.packMarkerLite = PackFormat::FILE_MARKER_LITE;
-
-                {
-                    ScopedPtr<File> f(File::Create(fileRequest.localFile, File::WRITE | File::APPEND | File::OPEN));
-                    uint32 written = f->Write(&footer, sizeof(footer));
-                    if (written != sizeof(footer))
-                    {
-                        // not enough space
-                        DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
-                        return false;
-                    }
-                }
-
-                DVASSERT(fileRequest.downloadedFileSize == footer.sizeCompressed);
-
-                fileRequest.downloadedFileSize += sizeof(footer);
-
-                fileRequest.status = Ready;
-                callSignal = true;
-
-                packManagerImpl->SetFileIsReady(fileRequest.fileIndex);
-            }
-            else
-            {
-                // try download again
-                DeleteJustDownloadedFileAndStartAgain(fileRequest);
-            }
+            downloadedMore = CheckHaskState(fileRequest);
+            break;
         }
-        break;
         case Ready:
             break;
         case Error:
             break;
         } // end switch
+
+        if (downloadedMore)
+        {
+            callUpdateSignal = true;
+        }
     } // end for requests
 
     // call signal only once during update
-    return callSignal;
+    return callUpdateSignal;
 }
 
 } // end namespace DAVA

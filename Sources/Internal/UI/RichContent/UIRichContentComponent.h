@@ -3,7 +3,6 @@
 #include "Functional/Signal.h"
 #include "Reflection/Reflection.h"
 #include "UI/Components/UIComponent.h"
-#include "UI/RichContent/UIRichAliasMap.h"
 
 namespace DAVA
 {
@@ -31,24 +30,6 @@ class UIControl;
         witch contain in package by specialized path. Also set name to this clone
         from name attribute. Attribute `path` and one of attributes `control` or
         `prototype` are required. Attribute `name` is optional.
-
-    RichContent compoent also support tag aliases. Any alias contains alias
-    name, original tag and original attributes. After declaration of alias you
-    can use it like an any tag in the content source. But all attributes witch
-    will be added to alias in content source will be ignored and replaced by
-    attributes from alias data.
-
-    For example:
-    <code>
-        Defined aliases:
-        h1 = <p class="header" />
-
-        Source:
-        <h1 class="ordinary_text">Header</h1>
-    </code>
-    In this case tag `h1` with its attributes will be raplaced by tag `p` with
-    attributes `class="header"`.
-
 */
 class UIRichContentComponent : public UIBaseComponent<UIComponent::RICH_CONTENT_COMPONENT>
 {
@@ -74,15 +55,10 @@ public:
     /** Return top level classes for rich content. */
     const String& GetBaseClasses() const;
 
-    /** Set aliases for tags with attributes. */
-    void SetAliases(const UIRichAliasMap& aliases);
-    /** Return aliases for tags. */
-    const UIRichAliasMap& GetAliases() const;
-
-    /** Set aliases for tags from specified string. */
-    void SetAliasesFromString(const String& aliases);
-    /** Return aliases for tags as string. */
-    const String& GetAliasesAsString();
+    /** Set classes inheritance flag for nested elements. */
+    void SetClassesInheritance(bool inheritance);
+    /** Return classes inheritance flag for nested elements. */
+    bool GetClassesInheritance() const;
 
     /** Set modification flag. */
     void SetModified(bool modified);
@@ -98,7 +74,7 @@ protected:
 private:
     String text;
     String baseClasses;
-    UIRichAliasMap aliases;
+    bool classesInheritance = false;
     bool modified = false;
 };
 
@@ -112,13 +88,13 @@ inline const String& UIRichContentComponent::GetBaseClasses() const
     return baseClasses;
 }
 
+inline bool UIRichContentComponent::GetClassesInheritance() const
+{
+    return classesInheritance;
+}
+
 inline bool UIRichContentComponent::IsModified() const
 {
     return modified;
-}
-
-inline const UIRichAliasMap& UIRichContentComponent::GetAliases() const
-{
-    return aliases;
 }
 }

@@ -10,8 +10,6 @@
 #include <EmbeddedWebServer.h>
 #include <DLCManager/DLCDownloader.h>
 
-using namespace DAVA;
-
 DLCManagerTest::DLCManagerTest(TestBed& app)
     : BaseScreen(app, "DLCManagerTest")
     , engine(app.GetEngine())
@@ -20,23 +18,24 @@ DLCManagerTest::DLCManagerTest(TestBed& app)
 
 DLCManagerTest::~DLCManagerTest()
 {
-    DLCManager& dm = *engine.GetContext()->dlcManager;
+    DAVA::DLCManager& dm = *engine.GetContext()->dlcManager;
 
     dm.requestUpdated.DisconnectAll();
     dm.networkReady.DisconnectAll();
 }
 
-void DLCManagerTest::TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& /*oldText*/)
+void DLCManagerTest::TextFieldOnTextChanged(DAVA::UITextField* textField, const DAVA::WideString& newText, const DAVA::WideString& /*oldText*/)
 {
     if (url == textField)
     {
-        urlToServerSuperpack = UTF8Utils::EncodeToUTF8(newText);
+        urlToServerSuperpack = DAVA::UTF8Utils::EncodeToUTF8(newText);
         UpdateDescription();
     }
 }
 
 void DLCManagerTest::UpdateDescription()
 {
+    using namespace DAVA;
     String message = DAVA::Format("type name of pack you want to download\n"
                                   "Directory to downloaded packs: \"%s\"\nUrl to common packs: \"%s\"\n",
                                   folderWithDownloadedPacks.GetAbsolutePathname().c_str(),
@@ -46,6 +45,7 @@ void DLCManagerTest::UpdateDescription()
 
 void DLCManagerTest::LoadResources()
 {
+    using namespace DAVA;
     BaseScreen::LoadResources();
 
     ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
@@ -279,8 +279,9 @@ void DLCManagerTest::UnloadResources()
     BaseScreen::UnloadResources();
 }
 
-void DLCManagerTest::WriteErrorOnDevice(const String& filePath, int32 errnoVal)
+void DLCManagerTest::WriteErrorOnDevice(const DAVA::String& filePath, DAVA::int32 errnoVal)
 {
+    using namespace DAVA;
     StringStream ss(logPring->GetUtf8Text());
     ss << "Error: can't write file: " << filePath << " errno: " << strerror(errnoVal) << std::endl;
     std::string str = ss.str();
@@ -290,6 +291,7 @@ void DLCManagerTest::WriteErrorOnDevice(const String& filePath, int32 errnoVal)
 
 void DLCManagerTest::OnRequestUpdated(const DAVA::DLCManager::IRequest& request)
 {
+    using namespace DAVA;
     const String& packName = request.GetRequestedPackName();
     // change total download progress
     uint64 total = request.GetSize();
@@ -318,6 +320,7 @@ void DLCManagerTest::OnRequestUpdated(const DAVA::DLCManager::IRequest& request)
 
 void DLCManagerTest::OnNetworkReady(bool isReady)
 {
+    using namespace DAVA;
     // To visualize on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
     std::stringstream ss;
@@ -336,6 +339,7 @@ void DLCManagerTest::OnInitializeFinished(size_t numDownloaded, size_t numTotalF
 
 void DLCManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    using namespace DAVA;
     DLCManager& dm = *engine.GetContext()->dlcManager;
 
     packNameLoading->SetText(L"done: start init");
@@ -357,6 +361,8 @@ void DLCManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, vo
     DLCManager::Hints hints;
     hints.downloaderMaxHandles = static_cast<uint32>(numHandles);
     hints.downloaderChankBufSize = static_cast<uint32>(bufSize);
+    FilePath publicDocsPath = GetEngineContext()->fileSystem->GetPublicDocumentsPath();
+    hints.logFilePath = publicDocsPath.GetStringValue() + "dlc_manager_testbed.log";
 
     dm.Initialize(folderWithDownloadedPacks, urlToServerSuperpack, hints);
 
@@ -367,6 +373,7 @@ void DLCManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, vo
 
 void DLCManagerTest::OnIOErrorClicked(BaseObject*, void*, void*)
 {
+    using namespace DAVA;
     DebugFS::IOErrorTypes ioErr;
     ioErr.closeFailed = true;
     ioErr.openOrCreateFailed = true;
@@ -380,6 +387,7 @@ void DLCManagerTest::OnIOErrorClicked(BaseObject*, void*, void*)
 
 void DLCManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    using namespace DAVA;
     DLCManager& dm = *engine.GetContext()->dlcManager;
 
     FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks, true);
@@ -389,6 +397,7 @@ void DLCManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, vo
 
 void DLCManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    using namespace DAVA;
     DLCManager& dm = *engine.GetContext()->dlcManager;
     std::stringstream ss;
     String s = ss.str();
@@ -398,6 +407,7 @@ void DLCManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, vo
 
 void DLCManagerTest::OnOffRequestingClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    using namespace DAVA;
     DLCManager& dm = *engine.GetContext()->dlcManager;
     if (dm.IsRequestingEnabled())
     {
@@ -411,6 +421,7 @@ void DLCManagerTest::OnOffRequestingClicked(DAVA::BaseObject* sender, void* data
 
 void DLCManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    using namespace DAVA;
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
 
@@ -444,6 +455,7 @@ void DLCManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data
 
 void DLCManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    using namespace DAVA;
     DLCManager& pm = *engine.GetContext()->dlcManager;
     String packName = packNextInput->GetUtf8Text();
 
@@ -476,6 +488,7 @@ void DLCManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data
 
 void DLCManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    using namespace DAVA;
     if (sender == startServerButton)
     {
         FileSystem* fs = FileSystem::Instance();
@@ -520,6 +533,7 @@ void DLCManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, voi
 
 void DLCManagerTest::OnCheckFileClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    using namespace DAVA;
     DAVA::WideString text = filePathField->GetText();
     DAVA::String fileName = UTF8Utils::EncodeToUTF8(text);
 
@@ -539,6 +553,7 @@ void DLCManagerTest::OnCheckFileClicked(DAVA::BaseObject* sender, void* data, vo
 
 void DLCManagerTest::OnListInDvpkClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    using namespace DAVA;
     DLCManager& pm = *engine.GetContext()->dlcManager;
 
     DLCManager::Progress progress = pm.GetProgress();
@@ -551,4 +566,13 @@ void DLCManagerTest::OnListInDvpkClicked(DAVA::BaseObject* sender, void* data, v
 
     String t = logPring->GetUtf8Text();
     logPring->SetUtf8Text(t + '\n' + ss.str());
+}
+
+void DLCManagerTest::OnExitButton(BaseObject* obj, void* data, void* callerData)
+{
+    using namespace DAVA;
+    DLCManager& pm = *engine.GetContext()->dlcManager;
+    pm.Deinitialize();
+
+    BaseScreen::OnExitButton(obj, data, callerData);
 }

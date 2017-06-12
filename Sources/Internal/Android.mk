@@ -468,6 +468,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/UI/Focus/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Input/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/RichContent/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/RichContent/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Scroll/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Sound/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Private/*.cpp) \
