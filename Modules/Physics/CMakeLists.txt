@@ -13,7 +13,7 @@ set(INCLUDES "${PhysicsRootDir}/Sources"
              "${PhysicsRootDir}/Libs/include/PxShared")
 set(INCLUDES_PRIVATE ${DAVA_INCLUDE_DIR})
 set( MODULE_INITIALIZATION_CODE Sources/Physics/PhysicsModule.h )
-set(DEFINES __DAVAENGINE_PHYSICS_ENABLED__)
+set(DEFINITIONS -D__DAVAENGINE_PHYSICS_ENABLED__)
 
 set (LibsPath "${PhysicsRootDir}/Libs")
 
