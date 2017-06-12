@@ -1,4 +1,4 @@
-set(NAME_MODULE PhysXExtensions)
+set(NAME_MODULE PhysX3Extensions)
 set(MODULE_TYPE STATIC)#INLINE STATIC DYNAMIC 
 
 get_filename_component(PhysXRoot "${CMAKE_CURRENT_SOURCE_DIR}/../../" ABSOLUTE)

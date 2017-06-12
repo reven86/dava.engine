@@ -34,6 +34,16 @@ if (NOT ANDROID)
     list ( APPEND DAVA_COMPONENTS "SampleModule" )
 endif()
 
+# add physics
+if(ANDROID AND ANDROID_ABI STREQUAL "x86" )
+    # we don't have physx for android x86, so skip this
+elseif (WINDOWS_UAP AND WINDOWS_UAP_PLATFORMS MATCHES "ARM")
+    # we don't have physx for win uap arm, so skip this
+else()
+    dava_add_definitions(-D__DAVAENGINE_PHYSICS_ENABLED__)
+    list ( APPEND DAVA_COMPONENTS "Physics" )
+endif()
+
 find_package( Steam REQUIRED )
 find_package( DavaFramework REQUIRED COMPONENTS "${DAVA_COMPONENTS}" )
 find_package( EmbeddedWebServer REQUIRED )
@@ -72,8 +82,6 @@ set( ANDROID_ICO                ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-we
 
 set( ADDED_SRC                  ${IOS_ADD_SRC} )
 
-set( EXTERNAL_TEST_FOLDERS      ${DAVA_MODULES_DIR} ${DAVA_ENGINE_DIR} )
-
 #uncomment this 2 strings to link libjpeg as additional project.
 #set( LIBRARIES jpeg )
 #add_subdirectory ( "${CMAKE_CURRENT_LIST_DIR}/../../Libs/libjpeg" ${CMAKE_CURRENT_BINARY_DIR}/libjpeg )
@@ -88,6 +96,7 @@ if (ANDROID)
     set (ANDROID_BOOT_CLASSES "com.dava.unittests.UnitTests")
 endif()
 
+exctact_external_unittests()
 setup_main_executable()
 convert_graphics()
  
