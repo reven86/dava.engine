@@ -99,6 +99,8 @@ UIControlSystem::UIControlSystem()
 
 UIControlSystem::~UIControlSystem()
 {
+    DVASSERT(lastClickData.touchLocker == nullptr);
+
     inputSystem->SetPopupContainer(nullptr);
     inputSystem->SetCurrentScreen(nullptr);
     styleSheetSystem->SetPopupContainer(RefPtr<UIControl>());
@@ -735,6 +737,11 @@ void UIControlSystem::RegisterVisibleControl(UIControl* control)
 
 void UIControlSystem::UnregisterVisibleControl(UIControl* control)
 {
+    if (lastClickData.touchLocker == control)
+    {
+        // Free reference to invisible control
+        lastClickData.touchLocker == nullptr;
+    }
     for (auto& system : systems)
     {
         system->OnControlInvisible(control);
