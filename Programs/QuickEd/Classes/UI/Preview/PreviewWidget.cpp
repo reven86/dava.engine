@@ -701,3 +701,16 @@ void PreviewWidget::OnRulersGeometryChanged()
     hGuidesController->OnContainerGeometryChanged(bottomLeft, topRight, horizontalRuler->pos().x());
     vGuidesController->OnContainerGeometryChanged(bottomLeft, topRight, verticalRuler->pos().y());
 }
+
+bool PreviewWidget::event(QEvent* event)
+{
+    //we have bug when horizontalRuler->geometry() returns uncorrect value on ruler resizeEvent
+    QEvent::Type type = event->type();
+    if (type == QEvent::LayoutRequest)
+    {
+        bool returnValue = QFrame::event(event);
+        OnRulersGeometryChanged();
+        return returnValue;
+    }
+    return QFrame::event(event);
+}

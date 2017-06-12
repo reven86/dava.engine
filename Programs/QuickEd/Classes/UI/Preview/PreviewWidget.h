@@ -112,6 +112,8 @@ private:
 
     float GetScaleFromComboboxText() const;
 
+    bool event(QEvent* event) override;
+
     DAVA::TArc::ContextAccessor* accessor = nullptr;
     DAVA::RenderWidget* renderWidget = nullptr;
 
