@@ -17,38 +17,42 @@ set(MODULE_INITIALIZATION_CODE Sources/PhysicsDebug/PhysicsDebugModule.h)
 set(LibsPath "${PhysicsRootDir}/Libs")
 
 set(WIN32_STATIC_DEBUG_LIBS "${LibsPath}/Win32/x86/PxPvdSDKDEBUG_x86.lib")
-
 set(WIN32_DYNAMIC_DEBUG_LIBS "${LibsPath}/Win32/x86/nvToolsExt32_1.dll"
                              "${LibsPath}/Win32/x86/PxPvdSDKDEBUG_x86.dll")
 
 set(WIN32_STATIC_CHECKED_LIBS "${LibsPath}/Win32/x86/PxPvdSDKCHECKED_x86.lib")
-
 set(WIN32_DYNAMIC_CHECKED_LIBS "${LibsPath}/Win32/x86/nvToolsExt32_1.dll"
                                "${LibsPath}/Win32/x86/PxPvdSDKCHECKED_x86.dll")
 
 set(WIN32_STATIC_PROFILE_LIBS "${LibsPath}/Win32/x86/PxPvdSDKPROFILE_x86.lib")
-
 set(WIN32_DYNAMIC_PROFILE_LIBS "${LibsPath}/Win32/x86/nvToolsExt32_1.dll"
                                "${LibsPath}/Win32/x86/PxPvdSDKPROFILE_x86.dll")
 
-set(WIN64_STATIC_DEBUG_LIBS "${LibsPath}/Win32/x64/PxPvdSDKDEBUG_x64.lib")
+set(WIN32_STATIC_RELEASE_LIBS "${LibsPath}/Win32/x86/PxPvdSDK_x86.lib")
+set(WIN32_DYNAMIC_RELEASE_LIBS "${LibsPath}/Win32/x86/PxPvdSDK_x86.dll")
 
+set(WIN64_STATIC_DEBUG_LIBS "${LibsPath}/Win32/x64/PxPvdSDKDEBUG_x64.lib")
 set(WIN64_DYNAMIC_DEBUG_LIBS "${LibsPath}/Win32/x64/nvToolsExt64_1.dll"
                              "${LibsPath}/Win32/x64/PxPvdSDKDEBUG_x64.dll")
 
 set(WIN64_STATIC_CHECKED_LIBS "${LibsPath}/Win32/x64/PxPvdSDKCHECKED_x64.lib")
-
 set(WIN64_DYNAMIC_CHECKED_LIBS "${LibsPath}/Win32/x64/nvToolsExt64_1.dll"
                                "${LibsPath}/Win32/x64/PxPvdSDKCHECKED_x64.dll")
 
 set(WIN64_STATIC_PROFILE_LIBS "${LibsPath}/Win32/x64/PxPvdSDKPROFILE_x64.lib")
-
 set(WIN64_DYNAMIC_PROFILE_LIBS "${LibsPath}/Win32/x64/nvToolsExt64_1.dll"
                                "${LibsPath}/Win32/x64/PxPvdSDKPROFILE_x64.dll")
 
+set(WIN64_STATIC_RELEASE_LIBS "${LibsPath}/Win32/x64/PxPvdSDK_x64.lib")
+set(WIN64_DYNAMIC_RELEASE_LIBS "${LibsPath}/Win32/x64/PxPvdSDK_x64.dll")
+
 set(WIN_UAP_STATIC_DEBUG_LIBS "${LibsPath}/Win10/$(Platform)/Debug/PxPvdSDKDEBUG_$(PlatformShortName).lib")
-set(WIN_UAP_DYNAMIC_DEBUG_LIBS "${LibsPath}/Win10/Win32/Debug/nvToolsExt32_1.dll"
-                               "${LibsPath}/Win10/x64/Debug/PxPvdSDKDEBUG_x64.dll")
+set(WIN_UAP_DYNAMIC_DEBUG_LIBS "${LibsPath}/Win10/x64/Debug/PxPvdSDKDEBUG_x64.dll"
+                               "${LibsPath}/Win10/Win32/Debug/PxPvdSDKDEBUG_x86.dll")
+
+set(WIN_UAP_STATIC_RELEASE_LIBS "${LibsPath}/Win10/$(Platform)/Release/PxPvdSDK_$(PlatformShortName).lib")
+set(WIN_UAP_DYNAMIC_RELEASE_LIBS "${LibsPath}/Win10/x64/Release/PxPvdSDK_x64.dll"
+                                 "${LibsPath}/Win10/Win32/Release/PxPvdSDK_x86.dll")
 
 set(MACOS_STATIC_DEBUG_LIBS "${LibsPath}/MacOS/libPxPvdSDKDEBUG.a")
 set(MACOS_STATIC_CHECKED_LIBS "${LibsPath}/MacOS/libPxPvdSDKCHECKED.a")
@@ -58,17 +62,27 @@ set(MACOS_STATIC_RELEASE_LIBS "${LibsPath}/MacOS/libPxPvdSDK.a")
 set(IOS_STATIC_DEBUG_LIBS "${LibsPath}/iOS/libPxPvdSDKDEBUG.a")
 set(IOS_STATIC_CHECKED_LIBS "${LibsPath}/iOS/libPxPvdSDKCHECKED.a")
 set(IOS_STATIC_PROFILE_LIBS "${LibsPath}/iOS/libPxPvdSDKPROFILE.a")
+set(IOS_STATIC_RELEASE_LIBS "${LibsPath}/iOS/libPxPvdSDK.a")
 
 set(ANDROID_STATIC_LIBS "${LibsPath}/Android/armeabi-v7a/libPxPvdSDK.a")
 
 set(STATIC_LIBRARIES_WIN32_DEBUG "${WIN32_STATIC_DEBUG_LIBS}")
 set(DYNAMIC_LIBRARIES_WIN32_DEBUG "${WIN32_DYNAMIC_DEBUG_LIBS}")
 
+set(STATIC_LIBRARIES_WIN32_RELEASE "${WIN32_STATIC_RELEASE_LIBS}")
+set(DYNAMIC_LIBRARIES_WIN32_RELEASE "${WIN32_DYNAMIC_RELEASe_LIBS}")
+
 set(STATIC_LIBRARIES_WIN64_DEBUG "${WIN64_STATIC_DEBUG_LIBS}")
 set(DYNAMIC_LIBRARIES_WIN64_DEBUG "${WIN64_DYNAMIC_DEBUG_LIBS}")
 
+set(STATIC_LIBRARIES_WIN64_RELEASE "${WIN64_STATIC_RELEASE_LIBS}")
+set(DYNAMIC_LIBRARIES_WIN64_RELEASE "${WIN64_DYNAMIC_RELEASE_LIBS}")
+
 set(STATIC_LIBRARIES_WINUAP_DEBUG "${WIN_UAP_STATIC_DEBUG_LIBS}")
 set(DYNAMIC_LIBRARIES_WINUAP_DEBUG "${WIN_UAP_DYNAMIC_DEBUG_LIBS}")
+
+set(STATIC_LIBRARIES_WINUAP_RELEASE "${WIN_UAP_STATIC_RELEASE_LIBS}")
+set(DYNAMIC_LIBRARIES_WINUAP_RELEASE "${WIN_UAP_DYNAMIC_RELEASE_LIBS}")
 
 set(STATIC_LIBRARIES_MACOS_RELEASE "${MACOS_STATIC_RELEASE_LIBS}")
 set(STATIC_LIBRARIES_MACOS_DEBUG "${MACOS_STATIC_DEBUG_LIBS}")
