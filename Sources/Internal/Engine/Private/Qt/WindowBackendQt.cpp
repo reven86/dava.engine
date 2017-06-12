@@ -305,7 +305,6 @@ void WindowBackend::OnDragMoved(QDragMoveEvent* qtEvent)
 void WindowBackend::OnMouseDBClick(QMouseEvent* qtEvent)
 {
     OnMousePressed(qtEvent);
-    OnMouseReleased(qtEvent);
 }
 
 void WindowBackend::OnWheel(QWheelEvent* qtEvent)
