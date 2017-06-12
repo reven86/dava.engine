@@ -1,5 +1,4 @@
-#ifndef __RULERSETTINGS__H__
-#define __RULERSETTINGS__H__
+#pragma once
 
 // Settings for the ruler widget.
 struct RulerSettings
@@ -10,5 +9,3 @@ struct RulerSettings
 
     float zoomLevel = 1.0f; // Zoom level for the current control.
 };
-
-#endif /* defined(__RULERSETTINGS__H__) */

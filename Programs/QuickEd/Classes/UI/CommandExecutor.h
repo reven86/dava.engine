@@ -33,10 +33,10 @@ class AbstractProperty;
 class ControlsContainerNode;
 class ComponentPropertiesSection;
 
-class QtModelPackageCommandExecutor
+class CommandExecutor
 {
 public:
-    QtModelPackageCommandExecutor(DAVA::TArc::ContextAccessor* accessor, DAVA::TArc::UI* ui);
+    CommandExecutor(DAVA::TArc::ContextAccessor* accessor, DAVA::TArc::UI* ui);
 
     void AddImportedPackagesIntoPackage(const DAVA::Vector<DAVA::FilePath> packagePaths, const PackageNode* package);
     void RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*>& importedPackage, const PackageNode* package);
@@ -75,6 +75,9 @@ private:
     void AddComponentImpl(ControlNode* node, DAVA::int32 type, DAVA::int32 index, ComponentPropertiesSection* prototypeSection);
     void RemoveComponentImpl(ControlNode* node, ComponentPropertiesSection* section);
     bool IsNodeInHierarchy(const PackageBaseNode* node) const;
+
+    void OnControlPropertyWillBeChanged(ControlNode* node, AbstractProperty* property, const DAVA::Any& oldValue, const DAVA::Any& newValue);
+
     static bool IsControlNodesHasSameParentControlNode(const ControlNode* n1, const ControlNode* n2);
     DocumentData* GetDocumentData() const;
     ProjectData* GetProjectData() const;
