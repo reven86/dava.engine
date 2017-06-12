@@ -99,8 +99,6 @@ UIControlSystem::UIControlSystem()
 
 UIControlSystem::~UIControlSystem()
 {
-    DVASSERT(lastClickData.touchLocker == nullptr);
-
     inputSystem->SetPopupContainer(nullptr);
     inputSystem->SetCurrentScreen(nullptr);
     styleSheetSystem->SetPopupContainer(RefPtr<UIControl>());
@@ -121,6 +119,8 @@ UIControlSystem::~UIControlSystem()
         currentScreen->InvokeInactive();
         currentScreen = nullptr;
     }
+
+    DVASSERT(lastClickData.touchLocker == nullptr);
 
     soundSystem = nullptr;
     inputSystem = nullptr;
@@ -721,6 +721,11 @@ void UIControlSystem::RegisterControl(UIControl* control)
 
 void UIControlSystem::UnregisterControl(UIControl* control)
 {
+    if (lastClickData.touchLocker == control)
+    {
+        // Free reference to removed control
+        lastClickData.touchLocker.Set(nullptr);
+    }
     for (auto& system : systems)
     {
         system->UnregisterControl(control);
@@ -740,7 +745,7 @@ void UIControlSystem::UnregisterVisibleControl(UIControl* control)
     if (lastClickData.touchLocker == control)
     {
         // Free reference to invisible control
-        lastClickData.touchLocker == nullptr;
+        lastClickData.touchLocker.Set(nullptr);
     }
     for (auto& system : systems)
     {
