@@ -1,4 +1,5 @@
-#include "UIRichContentComponent.h"
+#include "UI/RichContent/UIRichContentComponent.h"
+
 #include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
@@ -10,7 +11,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIRichContentComponent)
     .DestructorByPointer([](UIRichContentComponent* o) { o->Release(); })
     .Field("text", &UIRichContentComponent::GetText, &UIRichContentComponent::SetText)
     .Field("baseClasses", &UIRichContentComponent::GetBaseClasses, &UIRichContentComponent::SetBaseClasses)
-    .Field("aliases", &UIRichContentComponent::GetAliasesAsString, &UIRichContentComponent::SetAliasesFromString)
+    .Field("classesInheritance", &UIRichContentComponent::GetClassesInheritance, &UIRichContentComponent::SetClassesInheritance)
     .End();
 }
 
@@ -18,7 +19,7 @@ UIRichContentComponent::UIRichContentComponent(const UIRichContentComponent& src
     : UIBaseComponent(src)
     , text(src.text)
     , baseClasses(src.baseClasses)
-    , aliases(src.aliases)
+    , classesInheritance(src.classesInheritance)
     , modified(true)
 {
 }
@@ -46,28 +47,17 @@ void UIRichContentComponent::SetBaseClasses(const String& classes)
     }
 }
 
-void UIRichContentComponent::SetAliases(const UIRichAliasMap& _aliases)
+void UIRichContentComponent::SetClassesInheritance(bool inheritance)
 {
-    if (aliases != _aliases)
+    if (classesInheritance != inheritance)
     {
-        aliases = _aliases;
+        classesInheritance = inheritance;
+        modified = true;
     }
-    modified = true;
 }
 
 void UIRichContentComponent::SetModified(bool _modified)
 {
     modified = _modified;
-}
-
-void UIRichContentComponent::SetAliasesFromString(const String& _aliases)
-{
-    aliases.FromString(_aliases);
-    modified = true;
-}
-
-const String& UIRichContentComponent::GetAliasesAsString()
-{
-    return aliases.AsString();
 }
 }

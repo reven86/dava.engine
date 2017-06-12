@@ -299,7 +299,7 @@ void Scene::CreateSystems()
     if (SCENE_SYSTEM_LIGHT_UPDATE_FLAG & systemsMask)
     {
         lightUpdateSystem = new LightUpdateSystem(this);
-        AddSystem(lightUpdateSystem, MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT) | MAKE_COMPONENT_MASK(Component::LIGHT_COMPONENT));
+        AddSystem(lightUpdateSystem, MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT) | MAKE_COMPONENT_MASK(Component::LIGHT_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if (SCENE_SYSTEM_ACTION_UPDATE_FLAG & systemsMask)

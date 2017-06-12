@@ -117,7 +117,8 @@ bool LoadExportedObjects(const DAVA::FilePath& linkPathname, DAVA::Vector<SceneE
         std::pair<bool, DAVA::int32> collectionsCount = ReadInt(linksFile);
         if (collectionsCount.first == true && collectionsCount.second > 0)
         {
-            exportedObjects.resize(collectionsCount.second);
+            int32 count = Min(collectionsCount.second, static_cast<int32>(SceneExporter::eExportedObjectType::OBJECT_COUNT));
+            exportedObjects.resize(count);
 
             int32 collectionType = SceneExporter::eExportedObjectType::OBJECT_SCENE;
             for (SceneExporter::ExportedObjectCollection& collection : exportedObjects)
