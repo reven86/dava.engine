@@ -196,5 +196,11 @@
 -
  name: "Normalized BlinnPhong With Lightmap All Qualities"
  path: NormalizedBlinnPhongWithLightmapAllQualities.Opaque.material
+-
+ name: "Detail All Qualities"
+ path: DetailAllQualities.Opaque.material
+-
+ name: "Detail With Lightmap All Qualities"
+ path: DetailAllQualities.Lightmap.Opaque.material
 
  
