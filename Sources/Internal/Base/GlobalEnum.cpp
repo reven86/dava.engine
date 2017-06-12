@@ -355,6 +355,7 @@ ENUM_DECLARE(UIComponent::eType)
     ENUM_ADD_DESCR(UIComponent::UPDATE_COMPONENT, "Update");
     ENUM_ADD_DESCR(UIComponent::CUSTOM_UPDATE_DELTA_COMPONENT, "CustomDeltaUpdate");
     ENUM_ADD_DESCR(UIComponent::RICH_CONTENT_COMPONENT, "RichContent");
+    ENUM_ADD_DESCR(UIComponent::RICH_CONTENT_ALIASES_COMPONENT, "RichContentAliases");
     ENUM_ADD_DESCR(UIComponent::RICH_CONTENT_OBJECT_COMPONENT, "RichContentObject");
     ENUM_ADD_DESCR(UIComponent::SCENE_COMPONENT, "SceneComponent");
     ENUM_ADD_DESCR(UIComponent::DEBUG_RENDER_COMPONENT, "DebugRender");

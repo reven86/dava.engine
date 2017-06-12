@@ -7,8 +7,6 @@
 class OptionName
 {
 public:
-    static const DAVA::String deprecated_Export;
-
     static const DAVA::String Output;
     static const DAVA::String OutFile;
     static const DAVA::String OutDir;

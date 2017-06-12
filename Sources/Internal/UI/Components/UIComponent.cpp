@@ -19,6 +19,7 @@
 #include "UI/Render/UIClipContentComponent.h"
 #include "UI/Render/UIDebugRenderComponent.h"
 #include "UI/Render/UISceneComponent.h"
+#include "UI/RichContent/UIRichContentAliasesComponent.h"
 #include "UI/RichContent/UIRichContentComponent.h"
 #include "UI/RichContent/UIRichContentObjectComponent.h"
 #include "UI/Scroll/UIScrollBarDelegateComponent.h"
@@ -130,6 +131,9 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
     case RICH_CONTENT_COMPONENT:
         return new UIRichContentComponent();
 
+    case RICH_CONTENT_ALIASES_COMPONENT:
+        return new UIRichContentAliasesComponent();
+
     case RICH_CONTENT_OBJECT_COMPONENT:
         return new UIRichContentObjectComponent();
 
@@ -155,6 +159,12 @@ RefPtr<UIComponent> UIComponent::SafeCreateByType(uint32 componentType)
 
 bool UIComponent::IsMultiple(uint32 componentType)
 {
+    switch (componentType)
+    {
+    case RICH_CONTENT_ALIASES_COMPONENT:
+        return true;
+    }
+
     return false;
 }
 

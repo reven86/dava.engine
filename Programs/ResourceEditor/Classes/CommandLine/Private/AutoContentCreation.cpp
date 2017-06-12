@@ -3,6 +3,8 @@
 #include "Classes/CommandLine/Private/SceneConsoleHelper.h"
 #include "Classes/Utils/SceneSaver/SceneSaver.h"
 
+#include <TArc/Utils/ModuleCollection.h>
+
 #include <Engine/Engine.h>
 #include <Engine/EngineContext.h>
 #include <FileSystem/FileSystem.h>
@@ -10,6 +12,7 @@
 #include <FileSystem/File.h>
 #include <Logger/Logger.h>
 #include <Base/ScopedPtr.h>
+#include <Utils/StringFormat.h>
 
 DuplicateObjectTool::DuplicateObjectTool(const DAVA::Vector<DAVA::String>& commandLine)
     : CommandLineModule(commandLine, "-duplicate")

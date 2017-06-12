@@ -1,5 +1,5 @@
 Header:
-    version: "12"
+    version: "15"
 StyleSheets:
 -   selector: ".text"
     properties:
@@ -10,9 +10,9 @@ StyleSheets:
 -   selector: ".text.green"
     properties:
         text-textColor: [0.000000, 1.000000, 0.000000, 1.000000]
--   selector: ".text.DejaVu"
+-   selector: ".text.Droid"
     properties:
-        text-font: "DejaVuSans_18"
+        text-font: "DroidSansMono_18"
 -   selector: ".text.img"
     properties:
         anchor-enabled: true
@@ -25,13 +25,14 @@ Prototypes:
     name: "Button"
     position: [0.000000, 0.000000]
     size: [112.000000, 32.000000]
-    debugDraw: false
     components:
         Background:
             drawType: "DRAW_STRETCH_BOTH"
             sprite: "~res:/UI/Images/GoldPin.png"
             leftRightStretchCap: 5.000000
             topBottomStretchCap: 5.000000
+        DebugRender:
+            enabled: false
     children:
     -   class: "UIStaticText"
         name: "UIStaticText"
@@ -44,6 +45,22 @@ Prototypes:
             SizePolicy:
                 horizontalPolicy: "PercentOfParent"
                 verticalPolicy: "PercentOfParent"
+-   class: "UIControl"
+    name: "ProtoRich"
+    position: [0.000000, 0.000000]
+    size: [180.000000, 125.000000]
+    components:
+        FlowLayout:
+            hSpacing: 5.000000
+        RichContent:
+            baseClasses: "text"
+        RichContentAliases0:
+            aliases: "btn,<object path=\"~res:/UI/RichTextTest.yaml\" prototype=\"Button\" />;"
+-   prototype: "ProtoRich"
+    name: "ProtoRich2"
+    components:
+        RichContentAliases1:
+            aliases: "h1,<p class=\"Droid\" />;"
 Controls:
 -   class: "UIControl"
     name: "Root"
@@ -58,8 +75,7 @@ Controls:
     -   class: "UITextField"
         name: "Input"
         position: [20.000000, 20.000000]
-        size: [315.500000, 406.000000]
-        debugDraw: true
+        size: [315.500000, 350.000000]
         text: "<h1>Header</h1> Example text with <img class=\"img\" src=\"~res:/UI/Images/GoldPin.png\" /> image and <btn /> object. <ul>List example:<li>Item 1</li><li>Item 2</li></ul> Text after list."
         font: "DejaVuSans_18"
         textalign: ["LEFT", "TOP"]
@@ -71,15 +87,15 @@ Controls:
                 hCenterAnchorEnabled: true
                 hCenterAnchor: -10.000000
             Focus: {}
+            DebugRender:
+                enabled: true
     -   class: "UIControl"
         name: "RichText"
         position: [355.500000, 20.000000]
-        size: [315.500000, 406.000000]
-        debugDraw: true
+        size: [315.500000, 350.000000]
         components:
             FlowLayout:
                 hSpacing: 5.000000
-                vSpacing: 10.000000
             Anchor:
                 hCenterAnchorEnabled: true
                 hCenterAnchor: 10.000000
@@ -88,4 +104,19 @@ Controls:
             RichContent:
                 text: "<h1>Header</h1> Example text with <img class=\"img\" src=\"~res:/UI/Images/GoldPin.png\" /> image and <btn /> object. <ul>List example:<li>Item 1</li><li>Item 2</li></ul> Text after list."
                 baseClasses: "text"
-                aliases: "h1,<p class=\"DejaVu\" />;btn,<object path=\"~res:/UI/RichTextTest.yaml\" prototype=\"Button\" />;"
+                classesInheritance: true
+            RichContentAliases0:
+                aliases: "h1,<p class=\"Droid\" />;"
+            RichContentAliases1:
+                aliases: "btn,<object path=\"~res:/UI/RichTextTest.yaml\" prototype=\"Button\" />;"
+            DebugRender:
+                enabled: true
+    -   prototype: "ProtoRich2"
+        name: "ProtoRich2"
+        position: [20.000000, 389.000000]
+        size: [651.000000, 210.000000]
+        components:
+            RichContent:
+                text: "<h1>Header</h1> Example text with <img class=\"img\" src=\"~res:/UI/Images/GoldPin.png\" /> image and <btn /> object. <ul>List example:<li>Item 1</li><li>Item 2</li></ul> Text after list."
+                classesInheritance: true
+            DebugRender: {}
