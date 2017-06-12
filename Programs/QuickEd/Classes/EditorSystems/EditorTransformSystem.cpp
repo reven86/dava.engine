@@ -310,6 +310,7 @@ void EditorTransformSystem::OnDragStateChanged(EditorSystemsManager::eDragState 
 
 void EditorTransformSystem::ProcessKey(Key key)
 {
+    PrepareDrag();
     if (!selectedControlNodes.empty())
     {
         Vector2 step(expandedmoveStepByKeyboard2);
