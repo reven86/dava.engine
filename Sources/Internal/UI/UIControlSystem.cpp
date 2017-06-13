@@ -721,11 +721,6 @@ void UIControlSystem::RegisterControl(UIControl* control)
 
 void UIControlSystem::UnregisterControl(UIControl* control)
 {
-    if (lastClickData.touchLocker == control)
-    {
-        // Free reference to removed control
-        lastClickData.touchLocker.Set(nullptr);
-    }
     for (auto& system : systems)
     {
         system->UnregisterControl(control);
@@ -745,7 +740,7 @@ void UIControlSystem::UnregisterVisibleControl(UIControl* control)
     if (lastClickData.touchLocker == control)
     {
         // Free reference to invisible control
-        lastClickData.touchLocker.Set(nullptr);
+        lastClickData.touchLocker = nullptr;
     }
     for (auto& system : systems)
     {
