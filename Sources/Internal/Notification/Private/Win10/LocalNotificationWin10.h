@@ -29,6 +29,8 @@ private:
     Windows::UI::Notifications::ToastNotifier ^ toastNotifier;
     Windows::UI::Notifications::ToastNotification ^ notification;
     Platform::String ^ nativeNotificationId;
+
+    bool valid = true;
 };
 }
 

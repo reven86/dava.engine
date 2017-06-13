@@ -44,7 +44,24 @@ LocalNotificationUAP::LocalNotificationUAP(const String& _id)
 
     notificationId = _id;
     nativeNotificationId = ref new Platform::String(UTF8Utils::EncodeToWideString(_id).c_str());
-    toastNotifier = ToastNotificationManager::CreateToastNotifier();
+
+    // Microsoft says that:
+    // "The presence of the notification system on the customer's machine is outside the control of the app.
+    // If notifications aren't available, inadvertently using the notification interfaces generates an exception that should be handled by the app"
+    // (https://blogs.windows.com/buildingapps/2014/05/23/understanding-and-resolving-app-crashes-and-failures-in-windows-store-apps-part-2-json-and-tiles/#aRFLBMqSo2IswEUh.97)
+    //
+    // CreateToastNotifier and other methods might throw an exception, e.g. with WPN_E_PLATFORM_UNAVAILABLE in case notification system is not initialized
+    // We want to handle that by catching exception and claiming notification object to be invalid, so that subsequent calls to it do not do anything
+    try
+    {
+        toastNotifier = ToastNotificationManager::CreateToastNotifier();
+    }
+    catch (Platform::Exception ^ e)
+    {
+        valid = false;
+        DVASSERT(false);
+        Logger::Error("Exception occured when tried to create toast notifier: %s (hresult=0x%08X)", UTF8Utils::EncodeToUTF8(e->Message->Data()).c_str(), e->HResult);
+    }
 }
 
 void LocalNotificationUAP::SetAction(const WideString& action)
@@ -53,6 +70,11 @@ void LocalNotificationUAP::SetAction(const WideString& action)
 
 void LocalNotificationUAP::Hide()
 {
+    if (!valid)
+    {
+        return;
+    }
+
     if (!notification)
     {
         return;
@@ -66,6 +88,11 @@ void LocalNotificationUAP::ShowText(const WideString& title, const WideString& t
 {
     using ::Windows::Data::Xml::Dom::XmlDocument;
 
+    if (!valid)
+    {
+        return;
+    }
+
     XmlDocument ^ toastDoc = GenerateToastDeclaration(title, text, useSound, nativeNotificationId);
     CreateOrUpdateNotification(toastDoc);
 }
@@ -77,6 +104,11 @@ void LocalNotificationUAP::ShowProgress(const WideString& title,
                                         bool useSound)
 {
     using ::Windows::Data::Xml::Dom::XmlDocument;
+
+    if (!valid)
+    {
+        return;
+    }
 
     double percentage = (static_cast<double>(progress) / total) * 100.0;
     WideString titleText = title + Format(L" %.02f%%", percentage);
@@ -92,6 +124,11 @@ void LocalNotificationUAP::PostDelayedNotification(const WideString& title,
 {
     using ::Windows::Data::Xml::Dom::XmlDocument;
 
+    if (!valid)
+    {
+        return;
+    }
+
     XmlDocument ^ toastDoc = GenerateToastDeclaration(title, text, useSound, nativeNotificationId);
 
     CreateOrUpdateNotification(toastDoc, delaySeconds);
@@ -99,11 +136,24 @@ void LocalNotificationUAP::PostDelayedNotification(const WideString& title,
 
 void LocalNotificationUAP::RemoveAllDelayedNotifications()
 {
-    auto scheduledNotifications = toastNotifier->GetScheduledToastNotifications();
-
-    for (unsigned i = 0; i < scheduledNotifications->Size; ++i)
+    if (!valid)
     {
-        toastNotifier->RemoveFromSchedule(scheduledNotifications->GetAt(i));
+        return;
+    }
+
+    try
+    {
+        auto scheduledNotifications = toastNotifier->GetScheduledToastNotifications();
+
+        for (unsigned i = 0; i < scheduledNotifications->Size; ++i)
+        {
+            toastNotifier->RemoveFromSchedule(scheduledNotifications->GetAt(i));
+        }
+    }
+    catch (Platform::Exception ^ e)
+    {
+        DVASSERT(false);
+        Logger::Error("Exception occured when tried to removed notification from schedule: %s (hresult=0x%08X)", UTF8Utils::EncodeToUTF8(e->Message->Data()).c_str(), e->HResult);
     }
 }
 
@@ -113,46 +163,46 @@ void LocalNotificationUAP::CreateOrUpdateNotification(::Windows::Data::Xml::Dom:
 {
     using namespace ::Windows::UI::Notifications;
 
-    if (delayInSeconds < 0)
+    try
     {
-        DVASSERT(false, Format("Attempt to create a local notification in the past. Requested delay in seconds = %d. Ignored", delayInSeconds).c_str());
-    }
-    else if (delayInSeconds == 0)
-    {
-        ToastNotification ^ notif = ref new ToastNotification(notificationDeclaration);
-        notif->SuppressPopup = ghostNotification;
-        toastNotifier->Show(notif);
-
-        if (notification)
+        if (delayInSeconds < 0)
         {
-            toastNotifier->Hide(notification);
+            DVASSERT(false, Format("Attempt to create a local notification in the past. Requested delay in seconds = %d. Ignored", delayInSeconds).c_str());
         }
-        notification = notif;
-    }
-    else
-    {
-        auto scheduledNotifications = toastNotifier->GetScheduledToastNotifications();
-        if (scheduledNotifications->Size >= 4096)
+        else if (delayInSeconds == 0)
         {
-            DVASSERT(false, "UWP forbids scheduling more than 4096 notifications. Ignored");
-            return;
+            ToastNotification ^ notif = ref new ToastNotification(notificationDeclaration);
+            notif->SuppressPopup = ghostNotification;
+            toastNotifier->Show(notif);
+
+            if (notification)
+            {
+                toastNotifier->Hide(notification);
+            }
+            notification = notif;
         }
-
-        Windows::Globalization::Calendar ^ calendar = ref new Windows::Globalization::Calendar;
-        calendar->AddSeconds(delayInSeconds);
-        Windows::Foundation::DateTime deliveryTime = calendar->GetDateTime();
-
-        ScheduledToastNotification ^ notif = ref new ScheduledToastNotification(notificationDeclaration, deliveryTime);
-        notif->SuppressPopup = ghostNotification;
-
-        try
+        else
         {
+            auto scheduledNotifications = toastNotifier->GetScheduledToastNotifications();
+            if (scheduledNotifications->Size >= 4096)
+            {
+                DVASSERT(false, "UWP forbids scheduling more than 4096 notifications. Ignored");
+                return;
+            }
+
+            Windows::Globalization::Calendar ^ calendar = ref new Windows::Globalization::Calendar;
+            calendar->AddSeconds(delayInSeconds);
+            Windows::Foundation::DateTime deliveryTime = calendar->GetDateTime();
+
+            ScheduledToastNotification ^ notif = ref new ScheduledToastNotification(notificationDeclaration, deliveryTime);
+            notif->SuppressPopup = ghostNotification;
+
             toastNotifier->AddToSchedule(notif);
         }
-        catch (Platform::Exception ^ e)
-        {
-            Logger::Error("Exception occured when tried to schedule a notification: %s (hresult=0x%08X)", UTF8Utils::EncodeToUTF8(e->Message->Data()).c_str(), e->HResult);
-        }
+    }
+    catch (Platform::Exception ^ e)
+    {
+        Logger::Error("Exception occured when tried to create or update notification: %s (hresult=0x%08X)", UTF8Utils::EncodeToUTF8(e->Message->Data()).c_str(), e->HResult);
     }
 }
 
