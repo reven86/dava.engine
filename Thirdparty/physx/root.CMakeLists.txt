@@ -62,7 +62,6 @@ include(ModuleHelper)
 
 set(COMMON_DEFINES "-DANDROID"
                    "-DGLES2"
-                   "-D__STDC_LIMIT_MACROS"
                    "-D__ARM_ARCH_5__"
                    "-D__ARM_ARCH_5T__"
                    "-D__ARM_ARCH_5E__"

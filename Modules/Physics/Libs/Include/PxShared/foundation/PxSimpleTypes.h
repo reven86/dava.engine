@@ -44,8 +44,10 @@
 // header
 #endif
 
-#if PX_LINUX
+#if PX_LINUX || PX_ANDROID
+#ifndef __STDC_LIMIT_MACROS
 #define __STDC_LIMIT_MACROS
+#endif
 #endif
 
 #include <stdint.h>

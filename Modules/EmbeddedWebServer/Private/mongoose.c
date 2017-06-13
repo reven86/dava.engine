@@ -28,14 +28,7 @@
 #endif
 #define _LARGEFILE_SOURCE     // Enable 64-bit file offsets
 #define __STDC_FORMAT_MACROS  // <inttypes.h> wants this for C++
-
-// Don't define __STDC_LIMIT_MACROS in code, as cmake system define it's globaly
-// for all dava-based projects and modules. This is avoiding integration problems of physx.
-// PhysX is require LIMIT_MACROS and use this macroses in header file, so we have to propagate
-// __STDC_LIMIT_MACROS into all our projects and modules
-#if !defined(__STDC_LIMIT_MACROS)
 #define __STDC_LIMIT_MACROS   // C++ wants that for INT64_MAX
-#endif
 #endif
 
 #if defined (_MSC_VER)
