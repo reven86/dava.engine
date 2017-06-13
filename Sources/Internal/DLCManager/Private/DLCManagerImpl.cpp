@@ -228,7 +228,7 @@ void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
         hints = hints_;
 
         preloadedPacks.clear();
-        if (preloadedPacks.empty() && !hints.preloadedPacks.empty())
+        if (!hints.preloadedPacks.empty())
         {
             StringStream ss(hints.preloadedPacks);
             for (String packName; getline(ss, packName);)
@@ -237,6 +237,7 @@ void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
                 {
                     continue; // skip empty lines if any
                 }
+                DVASSERT(packName.find(' ') == String::npos); // No spaces
                 preloadedPacks.emplace(packName, PreloadedPack(packName));
             }
         }
