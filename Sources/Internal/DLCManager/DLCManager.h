@@ -131,7 +131,7 @@ public:
         and then request itself */
     virtual void SetRequestPriority(const IRequest* request) = 0;
 
-    virtual void RemovePack(const String& packName) = 0;
+    virtual void RemovePack(const String& packName, bool withChildPacks = true) = 0;
 
     struct Progress
     {

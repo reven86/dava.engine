@@ -1032,11 +1032,27 @@ void DLCManagerImpl::SetRequestPriority(const IRequest* request)
     }
 }
 
-void DLCManagerImpl::RemovePack(const String& requestedPackName)
+void DLCManagerImpl::RemovePack(const String& requestedPackName, bool withChildPacks)
 {
     DVASSERT(Thread::IsMainThread());
 
     PackRequest* request = FindRequest(requestedPackName);
+    if (request != nullptr && withChildPacks && meta.get() != nullptr)
+    {
+        Vector<uint32> deps = request->GetDependencies();
+
+        for (uint32 dependent : deps)
+        {
+            const String& depPackName = meta->GetPackInfo(dependent).packName;
+            PackRequest* r = FindRequest(depPackName);
+            if (nullptr != r)
+            {
+                String packToRemove = r->GetRequestedPackName();
+                RemovePack(packToRemove, withChildPacks);
+            }
+        }
+    }
+
     if (nullptr != request)
     {
         requestManager->Remove(request);
@@ -1058,6 +1074,8 @@ void DLCManagerImpl::RemovePack(const String& requestedPackName)
 
     if (IsInitialized())
     {
+        std::stringstream undeletedFiles;
+        FileSystem* fs = GetEngineContext()->fileSystem;
         // remove all files for pack
         Vector<uint32> fileIndexes = meta->GetFileIndexes(requestedPackName);
         for (uint32 index : fileIndexes)
@@ -1065,9 +1083,19 @@ void DLCManagerImpl::RemovePack(const String& requestedPackName)
             if (IsFileReady(index))
             {
                 const String relFile = GetRelativeFilePath(index);
-                FileSystem::Instance()->DeleteFile(dirToDownloadedPacks + relFile);
-                scanFileReady[index] = false;
+
+                FilePath filePath = dirToDownloadedPacks + (relFile + extDvpl);
+                if (!fs->DeleteFile(filePath))
+                {
+                    undeletedFiles << filePath.GetStringValue() << '\n';
+                }
+                scanFileReady[index] = false; // clear flag anyway
             }
+        }
+        String errMsg = undeletedFiles.str();
+        if (!errMsg.empty())
+        {
+            Logger::Error("can't delete files: %s", errMsg.c_str());
         }
     }
 }

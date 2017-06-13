@@ -137,7 +137,7 @@ void AndroidBridge::InitializeJNI(JNIEnv* env)
         JNI::CheckJavaException(env, true);
 
         // Get java.lang.Class<com.dava.engine.DavaActivity>
-        jclass jclassClass = env->GetObjectClass(jclassDavaActivity);
+        JNI::LocalRef<jclass> jclassClass = env->GetObjectClass(jclassDavaActivity);
         JNI::CheckJavaException(env, true);
 
         // Get Class<java.lang.Class>.getClassLoader method

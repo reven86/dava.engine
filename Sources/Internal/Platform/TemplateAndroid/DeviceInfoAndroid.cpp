@@ -199,7 +199,7 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::StorageInfoFromJava(jobject object)
     if (object)
     {
         JNIEnv* env = JNI::GetEnv();
-        jclass classInfo = env->GetObjectClass(object);
+        JNI::LocalRef<jclass> classInfo = env->GetObjectClass(object);
 
         jfieldID fieldID;
 

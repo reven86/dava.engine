@@ -160,7 +160,7 @@ public:
 
     void SetRequestPriority(const IRequest* request) override;
 
-    void RemovePack(const String& packName) override;
+    void RemovePack(const String& packName, bool withChildPacks = true) override;
 
     Progress GetProgress() const override;
 
