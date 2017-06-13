@@ -16,10 +16,6 @@ class ControlsContainerNode;
 namespace DAVA
 {
 class Vector2;
-namespace TArc
-{
-class FieldBinder;
-}
 }
 
 class SelectionSystem : public BaseEditorSystem, public DAVA::InspBase
@@ -39,8 +35,6 @@ public:
     ControlNode* GetCommonNodeUnderPoint(const DAVA::Vector2& point, bool canGoDeeper) const;
 
 private:
-    void InitFieldBinder();
-
     bool CanProcessInput(DAVA::UIEvent* currentInput) const override;
     void ProcessInput(DAVA::UIEvent* currentInput) override;
 
@@ -49,18 +43,14 @@ private:
 
     void FocusToChild(bool next);
     void SelectNodes(const SelectedNodes& selection);
-    void OnSelectionChanged(const DAVA::Any& selection);
 
     ControlNode* FindSmallNodeUnderNode(const DAVA::Vector<ControlNode*>& nodesUnderPoint) const;
 
-    SelectionContainer selectionContainer;
     bool canFindCommonForSelection = true;
 
-    bool selectOnRelease = false;
     DAVA::Vector2 pressedPoint = DAVA::Vector2(-1.0f, -1.0f);
 
     DAVA::TArc::DataWrapper documentDataWrapper;
-    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 
 public:
     INTROSPECTION(SelectionSystem,

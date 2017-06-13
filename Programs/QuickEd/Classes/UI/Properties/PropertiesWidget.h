@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ui_PropertiesWidget.h"
-#include "EditorSystems/SelectionContainer.h"
 
 #include <TArc/DataProcessing/DataWrapper.h>
 #include <TArc/DataProcessing/DataListener.h>
