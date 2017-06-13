@@ -476,7 +476,15 @@ PackageNode::Guides PackageNode::GetGuides(const DAVA::String& name) const
 
 bool PackageNode::HasCustomData() const
 {
-    return allGuides.empty() == false;
+    for (const auto& mapItem : allGuides)
+    {
+        const Guides& guides = mapItem.second;
+        if (guides[Vector2::AXIS_X].empty() == false || guides[Vector2::AXIS_Y].empty() == false)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 void PackageNode::SetGuides(const DAVA::String& name, const PackageNode::Guides& guides)
