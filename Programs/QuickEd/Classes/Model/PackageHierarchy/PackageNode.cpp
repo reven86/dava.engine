@@ -474,9 +474,9 @@ PackageNode::Guides PackageNode::GetGuides(const DAVA::String& name) const
     return Guides();
 }
 
-const DAVA::Map<DAVA::String, PackageNode::Guides>& PackageNode::GetGuides() const
+bool PackageNode::HasCustomData() const
 {
-    return allGuides;
+    return allGuides.empty() == false;
 }
 
 void PackageNode::SetGuides(const DAVA::String& name, const PackageNode::Guides& guides)
