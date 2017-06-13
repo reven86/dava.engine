@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
         return DAVAMain(std::move(cmdargs));
     } catch (const Exception& e) {
         StringStream ss;
-        ss << "!!! Unhandled DAVA::Exception at `" << e.file << "`: " << e.line << std::endl;
+        ss << "!!! Unhandled DAVA::Exception \"" << e.what() << "\" at `" << e.file << "`:" << e.line << std::endl;
         ss << Debug::GetBacktraceString(e.callstack) << std::endl;
         Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
         throw;
