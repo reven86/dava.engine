@@ -14,9 +14,9 @@ public class DavaLog
         logger.setLevel(Level.FINEST);
     }
 
-    public static void addHandler(Handler handler)
+    public static Logger getLogger()
     {
-        logger.addHandler(handler);
+        return logger;
     }
 
     public static int e(String tag, String msg)
