@@ -21,29 +21,25 @@ public class DavaLog
 
     public static int e(String tag, String msg)
     {
-        android.util.Log.e(tag, msg);
         logger.log(Level.SEVERE, tag + ": " + msg);
-        return 0;
+        return android.util.Log.e(tag, msg);
     }
 
     public static int w(String tag, String msg)
     {
-        android.util.Log.w(tag, msg);
         logger.log(Level.WARNING, tag + ": " + msg);
-        return 0;
+        return android.util.Log.w(tag, msg);
     }
 
     public static int i(String tag, String msg)
     {
-        android.util.Log.i(tag, msg);
         logger.log(Level.INFO, tag + ": " + msg);
-        return 0;
+        return android.util.Log.i(tag, msg);
     }
 
     public static int d(String tag, String msg)
     {
-        android.util.Log.d(tag, msg);
         logger.log(Level.FINEST, tag + ": " + msg);
-        return 0;
+        return android.util.Log.d(tag, msg);
     }
 }
