@@ -413,7 +413,7 @@ void AutotestingSystem::DrawTouches()
 void AutotestingSystem::OnTestStarted()
 {
     Logger::Info("AutotestingSystem::OnTestsStarted");
-    startTime = SystemTimer::GetFrameTimestamp();
+    startTime = SystemTimer::GetFrameTimestampMs();
     luaSystem->StartTest();
 }
 
