@@ -432,6 +432,10 @@ macro( setup_main_module )
         endif()
 
 #####
+        if (${MODULE_TYPE} STREQUAL "STATIC" OR ${MODULE_TYPE} STREQUAL "DYNAMIC" )
+            append_property(EXTERNAL_TEST_FOLDERS ${CMAKE_CURRENT_LIST_DIR})
+        endif()
+        
         if( ${MODULE_TYPE} STREQUAL "STATIC" )
 
             if( CPP_FILES_EXECUTE )
@@ -768,12 +772,12 @@ macro( setup_main_module )
                                                                  RELEASE_POSTFIX ${RELEASE_POSTFIX})
 
                 if( WIN32 AND NOT DEPLOY )
-                    set( BINARY_WIN32_DIR_RELEASE    "${CMAKE_CURRENT_BINARY_DIR}/Release" )
-                    set( BINARY_WIN32_DIR_DEBUG      "${CMAKE_CURRENT_BINARY_DIR}/Debug" )
-                    set( BINARY_WIN32_DIR_RELWITHDEB "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebinfo" )
-                    set( BINARY_WIN64_DIR_RELEASE    "${CMAKE_CURRENT_BINARY_DIR}/Release" )
-                    set( BINARY_WIN64_DIR_DEBUG      "${CMAKE_CURRENT_BINARY_DIR}/Debug" )
-                    set( BINARY_WIN64_DIR_RELWITHDEB "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebinfo" )
+                    set( BINARY_WIN32_DIR_RELEASE    "${BINARY_WIN32_DIR_RELEASE}" "${CMAKE_CURRENT_BINARY_DIR}/Release" )
+                    set( BINARY_WIN32_DIR_DEBUG    "${BINARY_WIN32_DIR_DEBUG}"   "${CMAKE_CURRENT_BINARY_DIR}/Debug" )
+                    set( BINARY_WIN32_DIR_RELWITHDEB  "${BINARY_WIN32_DIR_RELWITHDEB}"  "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebinfo" )
+                    set( BINARY_WIN64_DIR_RELEASE  "${BINARY_WIN64_DIR_RELEASE}"  "${CMAKE_CURRENT_BINARY_DIR}/Release" )
+                    set( BINARY_WIN64_DIR_DEBUG    "${BINARY_WIN64_DIR_DEBUG}"  "${CMAKE_CURRENT_BINARY_DIR}/Debug" )
+                    set( BINARY_WIN64_DIR_RELWITHDEB "${BINARY_WIN64_DIR_RELWITHDEB}" "${CMAKE_CURRENT_BINARY_DIR}/RelWithDebinfo" )
                     save_property( PROPERTY_LIST BINARY_WIN32_DIR_RELEASE 
                                                  BINARY_WIN32_DIR_DEBUG
                                                  BINARY_WIN32_DIR_RELWITHDEB

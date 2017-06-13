@@ -143,6 +143,8 @@ void PackageSerializer::VisitPackage(PackageNode* node)
             control->Accept(this);
         EndArray();
     }
+
+    PutCustomData(node);
 }
 
 void PackageSerializer::VisitImportedPackages(ImportedPackagesNode* node)
@@ -515,5 +517,62 @@ void PackageSerializer::PutValueProperty(const DAVA::String& name, ValueProperty
     else
     {
         PutValue(name, AnyToString(value), value.CanGet<String>() || value.CanGet<FilePath>() || value.CanGet<FastName>());
+    }
+}
+
+void PackageSerializer::PutCustomData(const PackageNode* node)
+{
+    BeginMap("CustomData");
+    PutGuides(node);
+    EndMap();
+}
+
+void PackageSerializer::PutGuides(const PackageNode* node)
+{
+    BeginMap("Guides");
+
+    Vector<PackageControlsNode*> packageControlsContainers = {
+        node->GetPackageControlsNode(), node->GetPrototypes()
+    };
+    Set<String> names;
+    for (PackageControlsNode* packageControlsContainer : packageControlsContainers)
+    {
+        for (int i = 0, count = packageControlsContainer->GetCount(); i < count; ++i)
+        {
+            ControlNode* rootControl = packageControlsContainer->Get(i);
+            names.insert(rootControl->GetName());
+        }
+    }
+    for (const String& name : names)
+    {
+        const PackageNode::Guides& mapItemValue = node->GetGuides(name);
+        if (mapItemValue[Vector2::AXIS_X].empty() == false || mapItemValue[Vector2::AXIS_Y].empty() == false)
+        {
+            BeginMap(name);
+            {
+                if (mapItemValue[Vector2::AXIS_X].empty() == false)
+                {
+                    BeginArray("Vertical");
+                    PutGuidesList(mapItemValue[Vector2::AXIS_X]);
+                    EndArray();
+                }
+                if (mapItemValue[Vector2::AXIS_Y].empty() == false)
+                {
+                    BeginArray("Horizontal");
+                    PutGuidesList(mapItemValue[Vector2::AXIS_Y]);
+                    EndArray();
+                }
+            }
+            EndMap();
+        }
+    }
+    EndMap();
+}
+
+void PackageSerializer::PutGuidesList(const PackageNode::AxisGuides& values)
+{
+    for (float32 value : values)
+    {
+        PutValue(AnyToString(value), false);
     }
 }

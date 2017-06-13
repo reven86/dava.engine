@@ -2,7 +2,7 @@
 
 #include "Modules/DocumentsModule/DocumentData.h"
 
-#include "UI/QtModelPackageCommandExecutor.h"
+#include "UI/CommandExecutor.h"
 #include "UI/IconHelper.h"
 #include "Utils/QtDavaConvertion.h"
 #include "Model/PackageHierarchy/PackageNode.h"
@@ -495,7 +495,7 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
     ControlsContainerNode* destControlContainer = dynamic_cast<ControlsContainerNode*>(destNode);
     StyleSheetsNode* destStylesContainer = dynamic_cast<StyleSheetsNode*>(destNode);
 
-    QtModelPackageCommandExecutor executor(accessor, ui);
+    CommandExecutor executor(accessor, ui);
 
     if (destControlContainer && data->hasFormat(PackageMimeData::MIME_TYPE))
     {
