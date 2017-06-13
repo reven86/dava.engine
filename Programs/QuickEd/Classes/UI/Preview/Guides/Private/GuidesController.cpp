@@ -120,7 +120,7 @@ void GuidesController::OnMouseRelease(DAVA::float32 position)
 
     if (displayState == DISPLAY_REMOVE)
     {
-        RemoveLastGuide();
+        RemoveGuide(GetValues().back());
         SetDisplayState(NO_DISPLAY);
     }
 }
@@ -297,7 +297,7 @@ void GuidesController::SyncGuidesWithValues()
     {
         while (guides.empty() == false)
         {
-            RemoveLastGuide();
+            RemoveLastGuideWidget();
         }
         return;
     }
@@ -316,7 +316,7 @@ void GuidesController::SyncGuidesWithValues()
 
     while (guides.size() > size)
     {
-        RemoveLastGuide();
+        RemoveLastGuideWidget();
     }
     while (guides.size() < size)
     {
@@ -484,7 +484,7 @@ void GuidesController::SetGuideColor(QWidget* guide, const DAVA::Color& color) c
     guide->setStyleSheet(QString("QWidget { background-color: %1; }").arg(colorString));
 }
 
-void GuidesController::RemoveLastGuide()
+void GuidesController::RemoveLastGuideWidget()
 {
     Guide& guide = guides.last();
     delete guide.line;

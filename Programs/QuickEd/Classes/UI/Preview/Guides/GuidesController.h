@@ -132,7 +132,8 @@ private:
 
     Guide CreateGuide(const DAVA::Color& color) const;
     void SetGuideColor(QWidget* guide, const DAVA::Color& color) const;
-    void RemoveLastGuide();
+
+    void RemoveLastGuideWidget();
 
     //behavior
     virtual void ProcessGeometryChanged(const QPoint& bottomLeft, const QPoint& topRight) = 0;
