@@ -14,6 +14,7 @@ public:
     GuideLabel(DAVA::Vector2::eAxis orientation, QWidget* parent);
 
     void SetValue(int value);
+    int GetValue() const;
 
 private:
     void paintEvent(QPaintEvent*);
