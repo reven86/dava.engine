@@ -1073,7 +1073,7 @@ void DLCManagerImpl::RemovePack(const String& requestedPackName, bool withDepend
 
     if (IsInitialized())
     {
-        std::stringstream undeletedFiles;
+        StringStream undeletedFiles;
         FileSystem* fs = GetEngineContext()->fileSystem;
         // remove all files for pack
         Vector<uint32> fileIndexes = meta->GetFileIndexes(requestedPackName);
