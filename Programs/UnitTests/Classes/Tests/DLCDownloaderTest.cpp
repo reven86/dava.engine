@@ -1,6 +1,6 @@
 #include "UnitTests/UnitTests.h"
 
-#ifndef __DAVAENGINE_WIN_UAP__
+#if !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_IOS__)
 #include <DLCManager/DLCDownloader.h>
 #include <DLCManager/Private/DLCManagerImpl.h>
 #include <Logger/Logger.h>
@@ -91,7 +91,6 @@ DAVA_TESTCLASS (DLCDownloaderTest)
 {
     EmbededWebServer embeddedServer;
     const DAVA::int64 FULL_SIZE_ON_SERVER = 29738138; // old full dlc build size 1618083461;
-    bool skipIfFailedOnIOS_7_1 = false;
 
     DAVA_TEST (GetFileSizeTest)
     {
@@ -105,12 +104,6 @@ DAVA_TESTCLASS (DLCDownloaderTest)
 
         auto& info = downloader->GetTaskInfo(task);
         auto& status = downloader->GetTaskStatus(task);
-
-        if (status.error.errorHappened && DeviceInfo::GetPlatformString() == "iOS")
-        {
-            skipIfFailedOnIOS_7_1 = true;
-            return;
-        }
 
         TEST_VERIFY(info.rangeOffset == -1);
         TEST_VERIFY(info.rangeSize == -1);
@@ -137,10 +130,6 @@ DAVA_TESTCLASS (DLCDownloaderTest)
     DAVA_TEST (RangeRequestTest)
     {
         using namespace DAVA;
-        if (skipIfFailedOnIOS_7_1)
-        {
-            return;
-        }
 
         std::array<char, 4> buf;
         MemoryBufferWriter writer(buf.data(), buf.size());
@@ -155,12 +144,6 @@ DAVA_TESTCLASS (DLCDownloaderTest)
 
         auto& info = downloader->GetTaskInfo(downloadLast4Bytes);
         auto& status = downloader->GetTaskStatus(downloadLast4Bytes);
-
-        if (status.error.errorHappened && DeviceInfo::GetPlatformString() == "iOS")
-        {
-            skipIfFailedOnIOS_7_1 = true;
-            return;
-        }
 
         TEST_VERIFY(info.rangeOffset == startRangeIndex);
         TEST_VERIFY(info.rangeSize == rangeSize);
@@ -191,11 +174,6 @@ DAVA_TESTCLASS (DLCDownloaderTest)
     {
         using namespace DAVA;
 
-        if (skipIfFailedOnIOS_7_1)
-        {
-            return;
-        }
-
         FileSystem* fs = FileSystem::Instance();
         std::unique_ptr<DLCDownloader> downloader(DLCDownloader::Create());
         String url = URL;
@@ -222,12 +200,6 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         }
 
         auto status = downloader->GetTaskStatus(task);
-
-        if (status.error.errorHappened && DeviceInfo::GetPlatformString() == "iOS")
-        {
-            skipIfFailedOnIOS_7_1 = true;
-            return;
-        }
 
         finish = SystemTimer::GetMs();
 
@@ -259,12 +231,6 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         downloader->WaitTask(task);
 
         status = downloader->GetTaskStatus(task);
-
-        if (status.error.errorHappened && DeviceInfo::GetPlatformString() == "iOS")
-        {
-            skipIfFailedOnIOS_7_1 = true;
-            return;
-        }
 
         downloader->RemoveTask(task);
 
@@ -308,14 +274,6 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         for (auto t : allTasks)
         {
             downloader->WaitTask(t);
-
-            status = downloader->GetTaskStatus(t);
-
-            if (status.error.errorHappened && DeviceInfo::GetPlatformString() == "iOS")
-            {
-                skipIfFailedOnIOS_7_1 = true;
-                return;
-            }
         }
 
         finish = SystemTimer::GetMs();
@@ -336,11 +294,6 @@ DAVA_TESTCLASS (DLCDownloaderTest)
     {
         using namespace DAVA;
 
-        if (skipIfFailedOnIOS_7_1)
-        {
-            return;
-        }
-
         EmbededWebServer::allwaysReturnErrorStaticHtml = true;
 
         {
@@ -359,12 +312,6 @@ DAVA_TESTCLASS (DLCDownloaderTest)
 
             auto& info = downloader->GetTaskInfo(downloadLast4Bytes);
             auto& status = downloader->GetTaskStatus(downloadLast4Bytes);
-
-            if (status.error.errorHappened && DeviceInfo::GetPlatformString() == "iOS")
-            {
-                skipIfFailedOnIOS_7_1 = true;
-                return;
-            }
 
             TEST_VERIFY(info.rangeOffset == startRangeIndex);
             TEST_VERIFY(info.rangeSize == rangeSize);

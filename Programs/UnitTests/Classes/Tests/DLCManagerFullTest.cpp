@@ -12,7 +12,7 @@
 #include "UnitTests/UnitTests.h"
 #include <Platform/DeviceInfo.h>
 
-#ifndef __DAVAENGINE_WIN_UAP__
+#if !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_IOS__)
 
 DAVA::FilePath documentRootDir;
 const char* const localPort = "8282";
@@ -84,7 +84,6 @@ struct FSMTest02
         break;
         case WaitSecondConnectAttempt:
         {
-            // TODO how to check second connect attempt?
             TEST_VERIFY(dlcManager.IsInitialized());
 
             TEST_VERIFY(dlcManager.IsRequestingEnabled());
@@ -133,11 +132,6 @@ struct FSMTest02
 
         if (time > timeout)
         {
-            if (DAVA::DeviceInfo::GetPlatformString() == "iOS")
-            {
-                Cleanup(dlcManager);
-                return true;
-            }
             auto prog = dlcManager.GetProgress();
 
             DAVA::Logger::Error("timeout: total: %llu in_queue: %llu downloaded: %lld", prog.total, prog.inQueue, prog.alreadyDownloaded);
