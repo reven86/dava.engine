@@ -1032,15 +1032,14 @@ void DLCManagerImpl::SetRequestPriority(const IRequest* request)
     }
 }
 
-void DLCManagerImpl::RemovePack(const String& requestedPackName, bool withChildPacks)
+void DLCManagerImpl::RemovePack(const String& requestedPackName, bool withDependentPacks)
 {
     DVASSERT(Thread::IsMainThread());
 
     PackRequest* request = FindRequest(requestedPackName);
-    if (request != nullptr && withChildPacks && meta.get() != nullptr)
+    if (request != nullptr && withDependentPacks && IsInitialized())
     {
         Vector<uint32> deps = request->GetDependencies();
-
         for (uint32 dependent : deps)
         {
             const String& depPackName = meta->GetPackInfo(dependent).packName;
@@ -1048,7 +1047,7 @@ void DLCManagerImpl::RemovePack(const String& requestedPackName, bool withChildP
             if (nullptr != r)
             {
                 String packToRemove = r->GetRequestedPackName();
-                RemovePack(packToRemove, withChildPacks);
+                RemovePack(packToRemove, withDependentPacks);
             }
         }
     }
@@ -1087,7 +1086,10 @@ void DLCManagerImpl::RemovePack(const String& requestedPackName, bool withChildP
                 FilePath filePath = dirToDownloadedPacks + (relFile + extDvpl);
                 if (!fs->DeleteFile(filePath))
                 {
-                    undeletedFiles << filePath.GetStringValue() << '\n';
+                    if (fs->IsFile(filePath))
+                    {
+                        undeletedFiles << filePath.GetStringValue() << '\n';
+                    }
                 }
                 scanFileReady[index] = false; // clear flag anyway
             }
