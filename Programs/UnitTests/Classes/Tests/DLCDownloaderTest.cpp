@@ -10,7 +10,6 @@
 #include <Utils/CRC32.h>
 #include <EmbeddedWebServer.h>
 #include <Engine/Engine.h>
-#include <Platform/DeviceInfo.h>
 
 #include <iomanip>
 
@@ -189,7 +188,6 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         FilePath pathOld("~doc:/big_tmp_file_from_server.old.remove.me");
         fs->DeleteFile(pathOld);
 
-        //////----first--------------------------------------------------------
         //// ----next-------------------------------------------------------
         {
             start = SystemTimer::GetMs();
@@ -276,7 +274,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
 
         seconds = (finish - start) / 1000.0;
 
-        Logger::Info("1024 part of %f Gb download from in house server for: %f", sizeInGb, seconds);
+        Logger::Info("%d part of %f Gb download from in house server for: %f", static_cast<int>(numAll), sizeInGb, seconds);
 
         // free memory
         for (auto t : allTasks)
