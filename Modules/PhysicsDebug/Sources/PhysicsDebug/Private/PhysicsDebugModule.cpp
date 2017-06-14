@@ -43,6 +43,7 @@ void PhysicsDebug::Shutdown()
         }
 
         transport->release();
+        transport = nullptr;
     }
 }
 

@@ -24,7 +24,7 @@ protected:
     void Update(DAVA::float32 timeElapsed) override;
 
 private:
-    physx::PxScene* scene;
+    physx::PxScene* scene = nullptr;
     void* simulationBlock = nullptr;
     DAVA::uint32 simulationBlockSize = 16 * 1024 * 512;
 };

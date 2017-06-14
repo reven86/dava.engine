@@ -53,6 +53,7 @@ void PhysicsTest::UnloadResources()
 {
     free(simulationBlock);
     scene->release();
+    scene = nullptr;
     BaseScreen::UnloadResources();
 }
 
