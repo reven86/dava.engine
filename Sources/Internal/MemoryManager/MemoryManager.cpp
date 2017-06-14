@@ -1,5 +1,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/Platform.h"
+#include "Base/GlobalEnum.h"
+#include "MemoryManager/AllocPools.h"
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 
@@ -20,6 +22,8 @@
 #include <unwind.h>
 #include <dlfcn.h>
 #include <cxxabi.h>
+#elif defined(__DAVAENGINE_LINUX__)
+#include <malloc.h>
 #else
 #error "Unknown platform"
 #endif
@@ -141,6 +145,7 @@ MemoryManager::MemoryManager()
 
     RegisterAllocPoolName(ALLOC_POOL_LUA, "lua engine");
     RegisterAllocPoolName(ALLOC_POOL_SQLITE, "sqlite");
+    RegisterAllocPoolName(ALLOC_POOL_PHYSICS, "physics");
 }
 
 MemoryManager* MemoryManager::Instance()
@@ -523,11 +528,16 @@ uint32 MemoryManager::GetSystemMemoryUsage() const
         return static_cast<uint32>(info.resident_size);
     }
     return 0;
-#elif defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_LINUX__)
     // http://stackoverflow.com/questions/17109284/how-to-find-memory-usage-of-my-android-application-written-c-using-ndk
     // http://androidxref.com/source/xref/frameworks/base/core/jni/android_os_Debug.cpp (Jelly Bean 4.2)
-    struct mallinfo info = mallinfo();
+    // For linux: http://man7.org/linux/man-pages/man3/mallinfo.3.html
+    struct mallinfo info
+    {
+    };
     return static_cast<uint32>(info.uordblks);
+#else
+#error "Unknown platform"
 #endif
 }
 
@@ -1132,3 +1142,31 @@ void MemoryManager::SymbolCollectorThread()
 } // namespace DAVA
 
 #endif // defined(DAVA_MEMORY_PROFILING_ENABLE)
+
+ENUM_DECLARE(DAVA::ePredefAllocPools)
+{
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_TOTAL, "ALLOC_POOL_TOTAL");
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_DEFAULT, "ALLOC_POOL_DEFAULT");
+    ENUM_ADD_DESCR(DAVA::ALLOC_GPU_TEXTURE, "ALLOC_GPU_TEXTURE");
+    ENUM_ADD_DESCR(DAVA::ALLOC_GPU_RDO_VERTEX, "ALLOC_GPU_RDO_VERTEX");
+    ENUM_ADD_DESCR(DAVA::ALLOC_GPU_RDO_INDEX, "ALLOC_GPU_RDO_INDEX");
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_SYSTEM, "ALLOC_POOL_SYSTEM");
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_FMOD, "ALLOC_POOL_FMOD");
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_BULLET, "ALLOC_POOL_BULLET");
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_BASEOBJECT, "ALLOC_POOL_BASEOBJECT");
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_POLYGONGROUP, "ALLOC_POOL_POLYGONGROUP");
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_COMPONENT, "ALLOC_POOL_COMPONENT");
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_ENTITY, "ALLOC_POOL_ENTITY");
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_LANDSCAPE, "ALLOC_POOL_LANDSCAPE");
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_IMAGE, "ALLOC_POOL_IMAGE");
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_TEXTURE, "ALLOC_POOL_TEXTURE");
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_NMATERIAL, "ALLOC_POOL_NMATERIAL");
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_RHI_BUFFER, "ALLOC_POOL_RHI_BUFFER");
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_RHI_VERTEX_MAP, "ALLOC_POOL_RHI_VERTEX_MAP");
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_RHI_INDEX_MAP, "ALLOC_POOL_RHI_INDEX_MAP");
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_RHI_TEXTURE_MAP, "ALLOC_POOL_RHI_TEXTURE_MAP");
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_RHI_RESOURCE_POOL, "ALLOC_POOL_RHI_RESOURCE_POOL");
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_LUA, "ALLOC_POOL_LUA");
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_SQLITE, "ALLOC_POOL_SQLITE");
+    ENUM_ADD_DESCR(DAVA::ALLOC_POOL_PHYSICS, "ALLOC_POOL_PHYSICS");
+};

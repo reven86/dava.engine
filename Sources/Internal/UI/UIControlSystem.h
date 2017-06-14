@@ -365,6 +365,7 @@ private:
         float64 timestamp = 0.0;
         int32 tapCount = 0;
         bool lastClickEnded = false;
+        RefPtr<UIControl> touchLocker; // last control has handled input
     };
     LastClickData lastClickData;
 };

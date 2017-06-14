@@ -13,6 +13,7 @@ set( HPP_FILES *.h
     Formula/*.h
     Formula/Private/*.h
     RichContent/*.h
+    RichContent/Private/*.h
     Render/*.h
     )
 
@@ -31,6 +32,7 @@ set( CPP_FILES *.cpp
     Formula/*.cpp
     Formula/Private/*.cpp
     RichContent/*.cpp
+    RichContent/Private/*.cpp
     Render/*.cpp
     )
 
@@ -64,5 +66,7 @@ set( ERASE_FILES_NOT_MACOS       UIScreenManagerDefault.h
 
 set( ERASE_FILES_NOT_WIN         ${ERASE_FILES_NOT_MACOS} )
 set( ERASE_FILES_NOT_WINUAP      ${ERASE_FILES_NOT_MACOS} )
+
+set( ERASE_FILES_NOT_LINUX       ${ERASE_FILES_NOT_MACOS} )
 
 setup_main_module()

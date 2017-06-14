@@ -138,6 +138,7 @@ ENUM_DECLARE(DeviceInfo::ePlatform)
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_WIN32, "Win32");
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_DESKTOP_WIN_UAP, "Windows Desktop UAP");
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_PHONE_WIN_UAP, "Windows Phone UAP");
+    ENUM_ADD_DESCR(DeviceInfo::PLATFORM_LINUX, "Linux");
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_UNKNOWN_VALUE, "Unknown");
 }
 
@@ -355,6 +356,7 @@ ENUM_DECLARE(UIComponent::eType)
     ENUM_ADD_DESCR(UIComponent::UPDATE_COMPONENT, "Update");
     ENUM_ADD_DESCR(UIComponent::CUSTOM_UPDATE_DELTA_COMPONENT, "CustomDeltaUpdate");
     ENUM_ADD_DESCR(UIComponent::RICH_CONTENT_COMPONENT, "RichContent");
+    ENUM_ADD_DESCR(UIComponent::RICH_CONTENT_ALIASES_COMPONENT, "RichContentAliases");
     ENUM_ADD_DESCR(UIComponent::RICH_CONTENT_OBJECT_COMPONENT, "RichContentObject");
     ENUM_ADD_DESCR(UIComponent::SCENE_COMPONENT, "SceneComponent");
     ENUM_ADD_DESCR(UIComponent::DEBUG_RENDER_COMPONENT, "DebugRender");

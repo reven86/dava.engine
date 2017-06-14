@@ -120,6 +120,8 @@ UIControlSystem::~UIControlSystem()
         currentScreen = nullptr;
     }
 
+    DVASSERT(lastClickData.touchLocker == nullptr);
+
     soundSystem = nullptr;
     inputSystem = nullptr;
     styleSheetSystem = nullptr;
@@ -447,6 +449,11 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
             Replay::Instance()->RecordEvent(newEvent);
         }
         inputSystem->HandleEvent(newEvent);
+        // Store last 'touchLocker' reference.
+        if (newEvent->touchLocker)
+        {
+            lastClickData.touchLocker = newEvent->touchLocker;
+        }
     } // end if frameSkip <= 0
 }
 
@@ -651,7 +658,10 @@ int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
         // only if last event ended
         if (lastClickData.lastClickEnded)
         {
-            if (CheckTimeAndPosition(newEvent))
+            // Make addditional 'IsPointInside' check for correct double tap detection.
+            // Event point must be in previously tapped control rect.
+            UIControl* lastTouchLocker = lastClickData.touchLocker.Get();
+            if (CheckTimeAndPosition(newEvent) && (lastTouchLocker == nullptr || lastTouchLocker->IsPointInside(newEvent->point)))
             {
                 tapCount = lastClickData.tapCount + 1;
             }
@@ -711,6 +721,11 @@ void UIControlSystem::RegisterControl(UIControl* control)
 
 void UIControlSystem::UnregisterControl(UIControl* control)
 {
+    if (lastClickData.touchLocker == control)
+    {
+        // Free reference to removed control
+        lastClickData.touchLocker.Set(nullptr);
+    }
     for (auto& system : systems)
     {
         system->UnregisterControl(control);
@@ -727,6 +742,11 @@ void UIControlSystem::RegisterVisibleControl(UIControl* control)
 
 void UIControlSystem::UnregisterVisibleControl(UIControl* control)
 {
+    if (lastClickData.touchLocker == control)
+    {
+        // Free reference to invisible control
+        lastClickData.touchLocker.Set(nullptr);
+    }
     for (auto& system : systems)
     {
         system->OnControlInvisible(control);

@@ -47,6 +47,8 @@ public:
     QString GetUndoText() const;
     QString GetRedoText() const;
 
+    PackageNode::Guides GetGuides() const;
+
     bool IsDocumentExists() const;
 
     PackageBaseNode* GetCurrentNode() const;
@@ -63,6 +65,7 @@ public:
     static DAVA::FastName currentNodePropertyName;
     static DAVA::FastName selectionPropertyName;
     static DAVA::FastName displayedRootControlsPropertyName;
+    static DAVA::FastName guidesPropertyName;
 
 private:
     friend class DocumentsModule;
@@ -101,3 +104,7 @@ void DocumentData::ExecCommand(Arguments&&... args)
     std::unique_ptr<DAVA::Command> command = CreateCommand<T>(std::forward<Arguments>(args)...);
     ExecCommand(std::move(command));
 }
+
+template <>
+bool DAVA::AnyCompare<PackageNode::Guides>::IsEqual(const DAVA::Any&, const DAVA::Any&);
+extern template struct DAVA::AnyCompare<PackageNode::Guides>;

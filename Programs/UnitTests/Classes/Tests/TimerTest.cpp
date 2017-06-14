@@ -73,17 +73,14 @@ DAVA_TESTCLASS (TimerTest)
 
         if (testFrameDeltaStage == 0)
         {
-            prevFrameTimestamp = SystemTimer::GetFrameTimestamp();
             prevFrameTimestampMs = SystemTimer::GetFrameTimestampMs();
 
             // On first Update call make sleep to ensure real frame delta is greater than frame delta
             Thread::Sleep(1000);
 
             // Test that frame timestamp does not change during frame
-            float32 checkTimestamp = SystemTimer::GetFrameTimestamp();
             int64 checkTimestampMs = SystemTimer::GetFrameTimestampMs();
             TEST_VERIFY(checkTimestampMs == prevFrameTimestampMs);
-            TEST_VERIFY(prevFrameTimestamp == checkTimestamp);
         }
         else
         {
@@ -96,9 +93,7 @@ DAVA_TESTCLASS (TimerTest)
             TEST_VERIFY(realFrameDelta >= 1.f);
 
             // Test that next frame timestamp is greater than previous
-            float32 checkTimestamp = SystemTimer::GetFrameTimestamp();
             int64 checkTimestampMs = SystemTimer::GetFrameTimestampMs();
-            TEST_VERIFY(checkTimestamp > prevFrameTimestamp);
             TEST_VERIFY(checkTimestampMs > prevFrameTimestampMs);
         }
         testFrameDeltaStage += 1;
@@ -115,5 +110,4 @@ DAVA_TESTCLASS (TimerTest)
 
     int testFrameDeltaStage = 0;
     DAVA::int64 prevFrameTimestampMs = 0;
-    DAVA::float32 prevFrameTimestamp = 0.f;
 };

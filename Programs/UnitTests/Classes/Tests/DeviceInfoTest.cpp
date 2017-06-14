@@ -23,11 +23,13 @@ DAVA_TESTCLASS (DeviceInfoTest)
         String locale = DeviceInfo::GetLocale();
         TEST_VERIFY("" != locale && "Not yet implemented" != locale);
 
+#if !defined(__DAVAENGINE_LINUX__)
         String region = DeviceInfo::GetRegion();
         TEST_VERIFY("" != region && "Not yet implemented" != region);
 
         String timeZone = DeviceInfo::GetTimeZone();
         TEST_VERIFY("" != timeZone); // not implemented for win32.
+#endif
 
         String manufacturer = DeviceInfo::GetManufacturer();
         TEST_VERIFY("Not yet implemented" != manufacturer);

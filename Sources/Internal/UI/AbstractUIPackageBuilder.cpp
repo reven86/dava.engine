@@ -13,4 +13,8 @@ AbstractUIPackageBuilder::AbstractUIPackageBuilder()
 AbstractUIPackageBuilder::~AbstractUIPackageBuilder()
 {
 }
+
+void AbstractUIPackageBuilder::ProcessCustomData(const YamlNode* customDataNode)
+{
+}
 }

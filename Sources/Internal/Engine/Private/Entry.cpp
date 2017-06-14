@@ -45,7 +45,7 @@ extern int DAVAMain(DAVA::Vector<DAVA::String> cmdline);
 
 // Defined in EntryApple.mm since it requies obj-c capabilities
 
-#elif defined(__DAVAENGINE_QT__ ) || (defined(__DAVAENGINE_WIN32__) && defined(CONSOLE))
+#elif defined(__DAVAENGINE_LINUX__) || defined(__DAVAENGINE_QT__ ) || (defined(__DAVAENGINE_WIN32__) && defined(CONSOLE))
 
 int main(int argc, char* argv[])
 {

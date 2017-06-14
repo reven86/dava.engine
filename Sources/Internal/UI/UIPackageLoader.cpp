@@ -184,6 +184,12 @@ bool UIPackageLoader::LoadPackage(const YamlNode* rootNode, const FilePath& pack
         loadingQueue.clear();
     }
 
+    const YamlNode* customDataNode = rootNode->Get("CustomData");
+    if (customDataNode != nullptr)
+    {
+        builder->ProcessCustomData(customDataNode);
+    }
+
     builder->EndPackage();
 
     return true;
@@ -366,6 +372,11 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
         if (version <= LAST_VERSION_WITH_LEGACY_CLIP_CONTENT)
         {
             ProcessLegacyClipContent(node, builder);
+        }
+
+        if (version <= LAST_VERSION_WITH_RICH_SINGLE_ALISES)
+        {
+            ProcessLegacyRichSingleAliases(node, builder);
         }
     }
 
@@ -561,6 +572,48 @@ void UIPackageLoader::ProcessLegacyClipContent(const YamlNode* node, AbstractUIP
     if (node->Get("clip"))
     {
         builder->BeginComponentPropertiesSection(UIComponent::CLIP_CONTENT_COMPONENT, 0);
+        builder->EndComponentPropertiesSection();
+    }
+}
+
+void UIPackageLoader::ProcessLegacyRichSingleAliases(const YamlNode* node, AbstractUIPackageBuilder* builder) const
+{
+    static const String COMPONENTS_NAME = "components";
+    static const String RICH_CONTENT_NAME = "RichContent";
+    static const String ALIASES_NAME = "aliases";
+
+    const YamlNode* richContentWithAliasesNode = nullptr;
+    const YamlNode* componentsNode = node->Get(COMPONENTS_NAME);
+    if (componentsNode)
+    {
+        richContentWithAliasesNode = componentsNode->Get(RICH_CONTENT_NAME);
+        if (richContentWithAliasesNode && richContentWithAliasesNode->Get(ALIASES_NAME) == nullptr)
+        {
+            richContentWithAliasesNode = nullptr;
+        }
+    }
+
+    if (richContentWithAliasesNode != nullptr)
+    {
+        const ReflectedType* componentRef = builder->BeginComponentPropertiesSection(UIComponent::RICH_CONTENT_ALIASES_COMPONENT, 0);
+        if (componentRef != nullptr && componentRef->GetStructure() != nullptr)
+        {
+            const Vector<std::unique_ptr<ReflectedStructure::Field>>& fields = componentRef->GetStructure()->fields;
+            for (const std::unique_ptr<ReflectedStructure::Field>& field : fields)
+            {
+                String name(field->name.c_str());
+                if (name == ALIASES_NAME)
+                {
+                    Any res = ReadAnyFromYamlNode(field.get(), richContentWithAliasesNode, ALIASES_NAME);
+                    if (res.IsEmpty())
+                    {
+                        res = Any(false);
+                    }
+                    builder->ProcessProperty(*field, res);
+                }
+            }
+        }
+
         builder->EndComponentPropertiesSection();
     }
 }

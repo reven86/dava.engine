@@ -1,8 +1,6 @@
-PATCHED: retarget solution on Win10 sdk version, Cuda and PxGPU linkage removed. Remove define PX_NVTX that provide data transfer to external debugger
-
-From d49b0893f73278a6768d096a29329ad0040e3d25 Mon Sep 17 00:00:00 2001
+From 728f6f329ccda7fe2f31231c9e985611589adda4 Mon Sep 17 00:00:00 2001
 From: y_rakhuba <y_rakhuba@wargaming.net>
-Date: Thu, 25 May 2017 10:02:25 +0300
+Date: Wed, 7 Jun 2017 14:30:46 +0300
 Subject: [PATCH] diff
 
 ---
@@ -32,19 +30,18 @@ Subject: [PATCH] diff
  .../Source/compiler/vc14win64/PhysXVehicle.vcxproj |  640 +++----
  .../Source/compiler/vc14win64/SceneQuery.vcxproj   |  560 +++---
  .../vc14win64/SimulationController.vcxproj         |  860 ++++-----
- .../PxShared/include/foundation/PxPreprocessor.h   |    2 +
- .../src/compiler/vc14win32/PsFastXml.vcxproj       |  118 +-
- .../src/compiler/vc14win32/PxFoundation.vcxproj    |  418 +++--
- .../src/compiler/vc14win32/PxPvdSDK.vcxproj        |  376 ++--
- .../PxShared/src/compiler/vc14win32/PxTask.vcxproj |  136 +-
- .../src/compiler/vc14win64/PsFastXml.vcxproj       |  118 +-
- .../src/compiler/vc14win64/PxFoundation.vcxproj    |  418 +++--
- .../src/compiler/vc14win64/PxPvdSDK.vcxproj        |  376 ++--
- .../PxShared/src/compiler/vc14win64/PxTask.vcxproj |  136 +-
- 35 files changed, 12584 insertions(+), 12222 deletions(-)
+ .../src/compiler/vc14win32/PsFastXml.vcxproj       |  126 +-
+ .../src/compiler/vc14win32/PxFoundation.vcxproj    |  426 +++--
+ .../src/compiler/vc14win32/PxPvdSDK.vcxproj        |  384 ++--
+ .../PxShared/src/compiler/vc14win32/PxTask.vcxproj |  144 +-
+ .../src/compiler/vc14win64/PsFastXml.vcxproj       |  126 +-
+ .../src/compiler/vc14win64/PxFoundation.vcxproj    |  426 +++--
+ .../src/compiler/vc14win64/PxPvdSDK.vcxproj        |  384 ++--
+ .../PxShared/src/compiler/vc14win64/PxTask.vcxproj |  144 +-
+ 34 files changed, 12614 insertions(+), 12254 deletions(-)
 
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/LowLevel.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/LowLevel.vcxproj
-index 354a96d..e11659f 100644
+index 354a96d..ac62512 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/LowLevel.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/LowLevel.vcxproj
 @@ -1,382 +1,388 @@
@@ -510,7 +507,7 @@ index 354a96d..e11659f 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -553,7 +550,7 @@ index 354a96d..e11659f 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=CHECKED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -596,7 +593,7 @@ index 354a96d..e11659f 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -640,7 +637,7 @@ index 354a96d..e11659f 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -819,7 +816,7 @@ index 354a96d..e11659f 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/LowLevelAABB.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/LowLevelAABB.vcxproj
-index 79c56a2..da17639 100644
+index 79c56a2..84878d4 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/LowLevelAABB.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/LowLevelAABB.vcxproj
 @@ -1,268 +1,274 @@
@@ -1171,7 +1168,7 @@ index 79c56a2..da17639 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -1214,7 +1211,7 @@ index 79c56a2..da17639 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=CHECKED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -1257,7 +1254,7 @@ index 79c56a2..da17639 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -1301,7 +1298,7 @@ index 79c56a2..da17639 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -1366,7 +1363,7 @@ index 79c56a2..da17639 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/LowLevelCloth.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/LowLevelCloth.vcxproj
-index 956ca34..4de26ba 100644
+index 956ca34..4527ac4 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/LowLevelCloth.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/LowLevelCloth.vcxproj
 @@ -1,336 +1,342 @@
@@ -1786,7 +1783,7 @@ index 956ca34..4de26ba 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -1829,7 +1826,7 @@ index 956ca34..4de26ba 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=CHECKED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -1872,7 +1869,7 @@ index 956ca34..4de26ba 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -1916,7 +1913,7 @@ index 956ca34..4de26ba 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -2049,7 +2046,7 @@ index 956ca34..4de26ba 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/LowLevelDynamics.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/LowLevelDynamics.vcxproj
-index aa8df75..1bac874 100644
+index aa8df75..f9ac201 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/LowLevelDynamics.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/LowLevelDynamics.vcxproj
 @@ -1,372 +1,378 @@
@@ -2505,7 +2502,7 @@ index aa8df75..1bac874 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -2548,7 +2545,7 @@ index aa8df75..1bac874 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=CHECKED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -2591,7 +2588,7 @@ index aa8df75..1bac874 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -2635,7 +2632,7 @@ index aa8df75..1bac874 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -2804,7 +2801,7 @@ index aa8df75..1bac874 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/LowLevelParticles.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/LowLevelParticles.vcxproj
-index c2eaa23..c2a33a5 100644
+index c2eaa23..6e608f6 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/LowLevelParticles.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/LowLevelParticles.vcxproj
 @@ -1,338 +1,344 @@
@@ -3226,7 +3223,7 @@ index c2eaa23..c2a33a5 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -3269,7 +3266,7 @@ index c2eaa23..c2a33a5 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=CHECKED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -3312,7 +3309,7 @@ index c2eaa23..c2a33a5 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -3356,7 +3353,7 @@ index c2eaa23..c2a33a5 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -3491,7 +3488,7 @@ index c2eaa23..c2a33a5 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysX.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysX.vcxproj
-index f207cad..99c173d 100644
+index f207cad..ea65411 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysX.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysX.vcxproj
 @@ -1,707 +1,713 @@
@@ -4283,7 +4280,7 @@ index f207cad..99c173d 100644
 +      <PreprocessorDefinitions>PX_PHYSX_CORE_EXPORTS;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -4330,7 +4327,7 @@ index f207cad..99c173d 100644
 +      <PreprocessorDefinitions>PX_PHYSX_CORE_EXPORTS;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=CHECKED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -4377,7 +4374,7 @@ index f207cad..99c173d 100644
 +      <PreprocessorDefinitions>PX_PHYSX_CORE_EXPORTS;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -4424,7 +4421,7 @@ index f207cad..99c173d 100644
 +      <PreprocessorDefinitions>PX_PHYSX_CORE_EXPORTS;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -4916,7 +4913,7 @@ index f207cad..99c173d 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysXCharacterKinematic.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysXCharacterKinematic.vcxproj
-index 84317a3..9fb55b6 100644
+index 84317a3..eacd2a8 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysXCharacterKinematic.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysXCharacterKinematic.vcxproj
 @@ -1,325 +1,331 @@
@@ -5326,7 +5323,7 @@ index 84317a3..9fb55b6 100644
 +      <PreprocessorDefinitions>PX_PHYSX_CHARACTER_EXPORTS;PX_PHYSX_CORE_EXPORTS;PX_FOUNDATION_DLL=1;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -5373,7 +5370,7 @@ index 84317a3..9fb55b6 100644
 +      <PreprocessorDefinitions>PX_PHYSX_CHARACTER_EXPORTS;PX_PHYSX_CORE_EXPORTS;PX_FOUNDATION_DLL=1;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=CHECKED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -5420,7 +5417,7 @@ index 84317a3..9fb55b6 100644
 +      <PreprocessorDefinitions>PX_PHYSX_CHARACTER_EXPORTS;PX_PHYSX_CORE_EXPORTS;PX_FOUNDATION_DLL=1;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -5467,7 +5464,7 @@ index 84317a3..9fb55b6 100644
 +      <PreprocessorDefinitions>PX_PHYSX_CHARACTER_EXPORTS;PX_PHYSX_CORE_EXPORTS;PX_FOUNDATION_DLL=1;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -5577,7 +5574,7 @@ index 84317a3..9fb55b6 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysXCommon.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysXCommon.vcxproj
-index 7acaf68..70693ca 100644
+index 7acaf68..3918806 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysXCommon.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysXCommon.vcxproj
 @@ -1,983 +1,989 @@
@@ -6645,7 +6642,7 @@ index 7acaf68..70693ca 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_FOUNDATION_DLL=1;PX_PHYSX_COMMON_EXPORTS;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -6692,7 +6689,7 @@ index 7acaf68..70693ca 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_FOUNDATION_DLL=1;PX_PHYSX_COMMON_EXPORTS;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=CHECKED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -6739,7 +6736,7 @@ index 7acaf68..70693ca 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_FOUNDATION_DLL=1;PX_PHYSX_COMMON_EXPORTS;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -6786,7 +6783,7 @@ index 7acaf68..70693ca 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_FOUNDATION_DLL=1;PX_PHYSX_COMMON_EXPORTS;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -7554,7 +7551,7 @@ index 7acaf68..70693ca 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysXCooking.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysXCooking.vcxproj
-index 961491e..14c9d1f 100644
+index 961491e..2c5c5f5 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysXCooking.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysXCooking.vcxproj
 @@ -1,367 +1,373 @@
@@ -8006,7 +8003,7 @@ index 961491e..14c9d1f 100644
 +      <PreprocessorDefinitions>PX_PHYSX_LOADER_EXPORTS;PX_PHYSX_COOKING_EXPORTS;PX_PHYSX_CORE_EXPORTS;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_COOKING;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -8053,7 +8050,7 @@ index 961491e..14c9d1f 100644
 +      <PreprocessorDefinitions>PX_PHYSX_LOADER_EXPORTS;PX_PHYSX_COOKING_EXPORTS;PX_PHYSX_CORE_EXPORTS;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_COOKING;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=CHECKED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -8100,7 +8097,7 @@ index 961491e..14c9d1f 100644
 +      <PreprocessorDefinitions>PX_PHYSX_LOADER_EXPORTS;PX_PHYSX_COOKING_EXPORTS;PX_PHYSX_CORE_EXPORTS;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_COOKING;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -8147,7 +8144,7 @@ index 961491e..14c9d1f 100644
 +      <PreprocessorDefinitions>PX_PHYSX_LOADER_EXPORTS;PX_PHYSX_COOKING_EXPORTS;PX_PHYSX_CORE_EXPORTS;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_COOKING;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -8299,7 +8296,7 @@ index 961491e..14c9d1f 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysXExtensions.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysXExtensions.vcxproj
-index 2590001..be0ea22 100644
+index 2590001..cc4c15c 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysXExtensions.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysXExtensions.vcxproj
 @@ -1,563 +1,569 @@
@@ -8946,7 +8943,7 @@ index 2590001..be0ea22 100644
 +      <PreprocessorDefinitions>PX_BUILD_NUMBER=22017532;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -8989,7 +8986,7 @@ index 2590001..be0ea22 100644
 +      <PreprocessorDefinitions>PX_BUILD_NUMBER=22017532;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -9032,7 +9029,7 @@ index 2590001..be0ea22 100644
 +      <PreprocessorDefinitions>PX_BUILD_NUMBER=22017532;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -9076,7 +9073,7 @@ index 2590001..be0ea22 100644
 +      <PreprocessorDefinitions>PX_BUILD_NUMBER=22017532;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -9436,7 +9433,7 @@ index 2590001..be0ea22 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysXVehicle.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysXVehicle.vcxproj
-index 616dd9c..67b4d12 100644
+index 616dd9c..db55557 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysXVehicle.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/PhysXVehicle.vcxproj
 @@ -1,322 +1,328 @@
@@ -9842,7 +9839,7 @@ index 616dd9c..67b4d12 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -9885,7 +9882,7 @@ index 616dd9c..67b4d12 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -9928,7 +9925,7 @@ index 616dd9c..67b4d12 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -9972,7 +9969,7 @@ index 616dd9c..67b4d12 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -10091,7 +10088,7 @@ index 616dd9c..67b4d12 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/SceneQuery.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/SceneQuery.vcxproj
-index 7415c73..6f037aa 100644
+index 7415c73..3f264bf 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/SceneQuery.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/SceneQuery.vcxproj
 @@ -1,282 +1,288 @@
@@ -10457,7 +10454,7 @@ index 7415c73..6f037aa 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -10500,7 +10497,7 @@ index 7415c73..6f037aa 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -10543,7 +10540,7 @@ index 7415c73..6f037aa 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -10587,7 +10584,7 @@ index 7415c73..6f037aa 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -10666,7 +10663,7 @@ index 7415c73..6f037aa 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/SimulationController.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/SimulationController.vcxproj
-index 9a15cc3..48b856f 100644
+index 9a15cc3..8a7105b 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/SimulationController.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win32/SimulationController.vcxproj
 @@ -1,432 +1,438 @@
@@ -11182,7 +11179,7 @@ index 9a15cc3..48b856f 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -11225,7 +11222,7 @@ index 9a15cc3..48b856f 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -11268,7 +11265,7 @@ index 9a15cc3..48b856f 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -11312,7 +11309,7 @@ index 9a15cc3..48b856f 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -11541,7 +11538,7 @@ index 9a15cc3..48b856f 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/LowLevel.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/LowLevel.vcxproj
-index 28f6001..56cb429 100644
+index 28f6001..070057a 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/LowLevel.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/LowLevel.vcxproj
 @@ -1,378 +1,384 @@
@@ -12002,7 +11999,7 @@ index 28f6001..56cb429 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -12044,7 +12041,7 @@ index 28f6001..56cb429 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=CHECKED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -12086,7 +12083,7 @@ index 28f6001..56cb429 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -12129,7 +12126,7 @@ index 28f6001..56cb429 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -12308,7 +12305,7 @@ index 28f6001..56cb429 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/LowLevelAABB.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/LowLevelAABB.vcxproj
-index a6bbc2c..533a2dd 100644
+index a6bbc2c..88ba540 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/LowLevelAABB.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/LowLevelAABB.vcxproj
 @@ -1,264 +1,270 @@
@@ -12655,7 +12652,7 @@ index a6bbc2c..533a2dd 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -12697,7 +12694,7 @@ index a6bbc2c..533a2dd 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=CHECKED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -12739,7 +12736,7 @@ index a6bbc2c..533a2dd 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -12782,7 +12779,7 @@ index a6bbc2c..533a2dd 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -12847,7 +12844,7 @@ index a6bbc2c..533a2dd 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/LowLevelCloth.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/LowLevelCloth.vcxproj
-index c730691..1e0ad63 100644
+index c730691..27dede1 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/LowLevelCloth.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/LowLevelCloth.vcxproj
 @@ -1,332 +1,338 @@
@@ -13262,7 +13259,7 @@ index c730691..1e0ad63 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -13304,7 +13301,7 @@ index c730691..1e0ad63 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=CHECKED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -13346,7 +13343,7 @@ index c730691..1e0ad63 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -13389,7 +13386,7 @@ index c730691..1e0ad63 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -13522,7 +13519,7 @@ index c730691..1e0ad63 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/LowLevelDynamics.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/LowLevelDynamics.vcxproj
-index d9f1cd2..277e12d 100644
+index d9f1cd2..e479172 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/LowLevelDynamics.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/LowLevelDynamics.vcxproj
 @@ -1,368 +1,374 @@
@@ -13973,7 +13970,7 @@ index d9f1cd2..277e12d 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -14015,7 +14012,7 @@ index d9f1cd2..277e12d 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=CHECKED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -14057,7 +14054,7 @@ index d9f1cd2..277e12d 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -14100,7 +14097,7 @@ index d9f1cd2..277e12d 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -14269,7 +14266,7 @@ index d9f1cd2..277e12d 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/LowLevelParticles.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/LowLevelParticles.vcxproj
-index cd06b13..c732f67 100644
+index cd06b13..9864fe4 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/LowLevelParticles.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/LowLevelParticles.vcxproj
 @@ -1,334 +1,340 @@
@@ -14686,7 +14683,7 @@ index cd06b13..c732f67 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -14728,7 +14725,7 @@ index cd06b13..c732f67 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=CHECKED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -14770,7 +14767,7 @@ index cd06b13..c732f67 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -14813,7 +14810,7 @@ index cd06b13..c732f67 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -14948,7 +14945,7 @@ index cd06b13..c732f67 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysX.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysX.vcxproj
-index 0626231..e56666b 100644
+index 0626231..6c2bf90 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysX.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysX.vcxproj
 @@ -1,703 +1,709 @@
@@ -15735,7 +15732,7 @@ index 0626231..e56666b 100644
 +      <PreprocessorDefinitions>PX_PHYSX_CORE_EXPORTS;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -15781,7 +15778,7 @@ index 0626231..e56666b 100644
 +      <PreprocessorDefinitions>PX_PHYSX_CORE_EXPORTS;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=CHECKED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -15827,7 +15824,7 @@ index 0626231..e56666b 100644
 +      <PreprocessorDefinitions>PX_PHYSX_CORE_EXPORTS;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -15873,7 +15870,7 @@ index 0626231..e56666b 100644
 +      <PreprocessorDefinitions>PX_PHYSX_CORE_EXPORTS;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -16365,7 +16362,7 @@ index 0626231..e56666b 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysXCharacterKinematic.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysXCharacterKinematic.vcxproj
-index 1d9efcb..6168f58 100644
+index 1d9efcb..818e275 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysXCharacterKinematic.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysXCharacterKinematic.vcxproj
 @@ -1,321 +1,327 @@
@@ -16770,7 +16767,7 @@ index 1d9efcb..6168f58 100644
 +      <PreprocessorDefinitions>PX_PHYSX_CHARACTER_EXPORTS;PX_PHYSX_CORE_EXPORTS;PX_FOUNDATION_DLL=1;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -16816,7 +16813,7 @@ index 1d9efcb..6168f58 100644
 +      <PreprocessorDefinitions>PX_PHYSX_CHARACTER_EXPORTS;PX_PHYSX_CORE_EXPORTS;PX_FOUNDATION_DLL=1;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=CHECKED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -16862,7 +16859,7 @@ index 1d9efcb..6168f58 100644
 +      <PreprocessorDefinitions>PX_PHYSX_CHARACTER_EXPORTS;PX_PHYSX_CORE_EXPORTS;PX_FOUNDATION_DLL=1;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -16908,7 +16905,7 @@ index 1d9efcb..6168f58 100644
 +      <PreprocessorDefinitions>PX_PHYSX_CHARACTER_EXPORTS;PX_PHYSX_CORE_EXPORTS;PX_FOUNDATION_DLL=1;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -17018,7 +17015,7 @@ index 1d9efcb..6168f58 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysXCommon.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysXCommon.vcxproj
-index beac083..b1b3712 100644
+index beac083..f5cd1a3 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysXCommon.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysXCommon.vcxproj
 @@ -1,979 +1,985 @@
@@ -18081,7 +18078,7 @@ index beac083..b1b3712 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_FOUNDATION_DLL=1;PX_PHYSX_COMMON_EXPORTS;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -18127,7 +18124,7 @@ index beac083..b1b3712 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_FOUNDATION_DLL=1;PX_PHYSX_COMMON_EXPORTS;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=CHECKED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -18173,7 +18170,7 @@ index beac083..b1b3712 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_FOUNDATION_DLL=1;PX_PHYSX_COMMON_EXPORTS;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -18219,7 +18216,7 @@ index beac083..b1b3712 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_FOUNDATION_DLL=1;PX_PHYSX_COMMON_EXPORTS;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -18987,7 +18984,7 @@ index beac083..b1b3712 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysXCooking.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysXCooking.vcxproj
-index 5c32b27..5b65b29 100644
+index 5c32b27..6ebb0ca 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysXCooking.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysXCooking.vcxproj
 @@ -1,363 +1,369 @@
@@ -19434,7 +19431,7 @@ index 5c32b27..5b65b29 100644
 +      <PreprocessorDefinitions>PX_PHYSX_LOADER_EXPORTS;PX_PHYSX_COOKING_EXPORTS;PX_PHYSX_CORE_EXPORTS;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_COOKING;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -19480,7 +19477,7 @@ index 5c32b27..5b65b29 100644
 +      <PreprocessorDefinitions>PX_PHYSX_LOADER_EXPORTS;PX_PHYSX_COOKING_EXPORTS;PX_PHYSX_CORE_EXPORTS;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_COOKING;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=CHECKED;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -19526,7 +19523,7 @@ index 5c32b27..5b65b29 100644
 +      <PreprocessorDefinitions>PX_PHYSX_LOADER_EXPORTS;PX_PHYSX_COOKING_EXPORTS;PX_PHYSX_CORE_EXPORTS;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_COOKING;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;PX_PHYSX_DLL_NAME_POSTFIX=PROFILE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -19572,7 +19569,7 @@ index 5c32b27..5b65b29 100644
 +      <PreprocessorDefinitions>PX_PHYSX_LOADER_EXPORTS;PX_PHYSX_COOKING_EXPORTS;PX_PHYSX_CORE_EXPORTS;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_COOKING;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -19724,7 +19721,7 @@ index 5c32b27..5b65b29 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysXExtensions.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysXExtensions.vcxproj
-index f058dd5..ef7853c 100644
+index f058dd5..37aa27d 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysXExtensions.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysXExtensions.vcxproj
 @@ -1,559 +1,565 @@
@@ -20366,7 +20363,7 @@ index f058dd5..ef7853c 100644
 +      <PreprocessorDefinitions>PX_BUILD_NUMBER=22017532;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -20408,7 +20405,7 @@ index f058dd5..ef7853c 100644
 +      <PreprocessorDefinitions>PX_BUILD_NUMBER=22017532;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -20450,7 +20447,7 @@ index f058dd5..ef7853c 100644
 +      <PreprocessorDefinitions>PX_BUILD_NUMBER=22017532;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -20493,7 +20490,7 @@ index f058dd5..ef7853c 100644
 +      <PreprocessorDefinitions>PX_BUILD_NUMBER=22017532;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -20853,7 +20850,7 @@ index f058dd5..ef7853c 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysXVehicle.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysXVehicle.vcxproj
-index 50dab75..6675058 100644
+index 50dab75..b23cb46 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysXVehicle.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/PhysXVehicle.vcxproj
 @@ -1,318 +1,324 @@
@@ -21254,7 +21251,7 @@ index 50dab75..6675058 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -21296,7 +21293,7 @@ index 50dab75..6675058 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -21338,7 +21335,7 @@ index 50dab75..6675058 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -21381,7 +21378,7 @@ index 50dab75..6675058 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -21500,7 +21497,7 @@ index 50dab75..6675058 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/SceneQuery.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/SceneQuery.vcxproj
-index 220779b..c671153 100644
+index 220779b..0d2ccc1 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/SceneQuery.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/SceneQuery.vcxproj
 @@ -1,278 +1,284 @@
@@ -21861,7 +21858,7 @@ index 220779b..c671153 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -21903,7 +21900,7 @@ index 220779b..c671153 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -21945,7 +21942,7 @@ index 220779b..c671153 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -21988,7 +21985,7 @@ index 220779b..c671153 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -22067,7 +22064,7 @@ index 220779b..c671153 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/SimulationController.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/SimulationController.vcxproj
-index 8b1e33e..32ce78f 100644
+index 8b1e33e..c452ca2 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/SimulationController.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc14win64/SimulationController.vcxproj
 @@ -1,428 +1,434 @@
@@ -22578,7 +22575,7 @@ index 8b1e33e..32ce78f 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -22620,7 +22617,7 @@ index 8b1e33e..32ce78f 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_CHECKED=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -22662,7 +22659,7 @@ index 8b1e33e..32ce78f 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_PROFILE=1;PX_NVTX=1;PX_SUPPORT_PVD=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -22705,7 +22702,7 @@ index 8b1e33e..32ce78f 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PHYSX_STATIC_LIB;NDEBUG;PX_SUPPORT_PVD=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
 +      <ExceptionHandling>false</ExceptionHandling>
 +      <WarningLevel>Level4</WarningLevel>
-+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
 +      <PrecompiledHeader>NotUsing</PrecompiledHeader>
 +      <PrecompiledHeaderFile>
 +      </PrecompiledHeaderFile>
@@ -22933,21 +22930,8 @@ index 8b1e33e..32ce78f 100644
 +  </ImportGroup>
 +</Project>
 \ No newline at end of file
-diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PxShared/include/foundation/PxPreprocessor.h b/Thirdparty/output/physx/PhysX-3.4-master/PxShared/include/foundation/PxPreprocessor.h
-index 7921217..d0df49b 100644
---- a/Thirdparty/output/physx/PhysX-3.4-master/PxShared/include/foundation/PxPreprocessor.h
-+++ b/Thirdparty/output/physx/PhysX-3.4-master/PxShared/include/foundation/PxPreprocessor.h
-@@ -523,6 +523,8 @@ protected:
- #define PX_CONCAT_HELPER(X, Y) X##Y
- #define PX_CONCAT(X, Y) PX_CONCAT_HELPER(X, Y)
- 
-+#define DISABLE_CUDA_PHYSX
-+
- #ifndef DISABLE_CUDA_PHYSX
- //CUDA is currently supported only on windows 
- #define PX_SUPPORT_GPU_PHYSX ((PX_WINDOWS_FAMILY) || (PX_LINUX && PX_X64))
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win32/PsFastXml.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win32/PsFastXml.vcxproj
-index cebf90f..15cea05 100644
+index cebf90f..7d712f8 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win32/PsFastXml.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win32/PsFastXml.vcxproj
 @@ -1,8 +1,5 @@
@@ -23057,9 +23041,12 @@ index cebf90f..15cea05 100644
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|Win32'">
      <ClCompile>
-@@ -114,7 +81,8 @@
+@@ -112,9 +79,10 @@
+       <PreprocessorDefinitions>PX_FOUNDATION_DLL=0;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -23088,9 +23075,12 @@ index cebf90f..15cea05 100644
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|Win32'">
      <ClCompile>
-@@ -155,7 +124,8 @@
+@@ -153,9 +122,10 @@
+       <PreprocessorDefinitions>PX_FOUNDATION_DLL=0;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -23119,9 +23109,12 @@ index cebf90f..15cea05 100644
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='checked|Win32'">
      <ClCompile>
-@@ -197,7 +168,8 @@
+@@ -195,9 +166,10 @@
+       <PreprocessorDefinitions>PX_FOUNDATION_DLL=0;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_CHECKED=1;PX_NVTX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -23150,9 +23143,12 @@ index cebf90f..15cea05 100644
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|Win32'">
      <ClCompile>
-@@ -238,7 +211,8 @@
+@@ -236,9 +209,10 @@
+       <PreprocessorDefinitions>PX_FOUNDATION_DLL=0;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_PROFILE=1;PX_NVTX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -23189,7 +23185,7 @@ index cebf90f..15cea05 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win32/PxFoundation.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win32/PxFoundation.vcxproj
-index f08b20d..3c4c722 100644
+index f08b20d..549a12b 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win32/PxFoundation.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win32/PxFoundation.vcxproj
 @@ -1,8 +1,5 @@
@@ -23299,9 +23295,12 @@ index f08b20d..3c4c722 100644
      <SkipCopyingSymbolsToOutputDirectory>true</SkipCopyingSymbolsToOutputDirectory>
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|Win32'">
-@@ -115,7 +82,8 @@
+@@ -113,9 +80,10 @@
+       <PreprocessorDefinitions>PX_FOUNDATION_DLL=1;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -23333,9 +23332,12 @@ index f08b20d..3c4c722 100644
      <SkipCopyingSymbolsToOutputDirectory>true</SkipCopyingSymbolsToOutputDirectory>
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|Win32'">
-@@ -158,7 +128,8 @@
+@@ -156,9 +126,10 @@
+       <PreprocessorDefinitions>PX_FOUNDATION_DLL=1;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -23367,9 +23369,12 @@ index f08b20d..3c4c722 100644
      <SkipCopyingSymbolsToOutputDirectory>true</SkipCopyingSymbolsToOutputDirectory>
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='checked|Win32'">
-@@ -202,7 +175,8 @@
+@@ -200,9 +173,10 @@
+       <PreprocessorDefinitions>PX_FOUNDATION_DLL=1;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_CHECKED=1;PX_NVTX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -23401,9 +23406,12 @@ index f08b20d..3c4c722 100644
      <SkipCopyingSymbolsToOutputDirectory>true</SkipCopyingSymbolsToOutputDirectory>
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|Win32'">
-@@ -245,7 +221,8 @@
+@@ -243,9 +219,10 @@
+       <PreprocessorDefinitions>PX_FOUNDATION_DLL=1;WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_PROFILE=1;PX_NVTX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -23738,7 +23746,7 @@ index f08b20d..3c4c722 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win32/PxPvdSDK.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win32/PxPvdSDK.vcxproj
-index 5262950..a13bff6 100644
+index 5262950..5ca95f8 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win32/PxPvdSDK.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win32/PxPvdSDK.vcxproj
 @@ -1,8 +1,5 @@
@@ -23856,7 +23864,8 @@ index 5262950..a13bff6 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PVDSDK_DLL=1;PX_FOUNDATION_DLL=1;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
        <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -23888,9 +23897,12 @@ index 5262950..a13bff6 100644
      <SkipCopyingSymbolsToOutputDirectory>true</SkipCopyingSymbolsToOutputDirectory>
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|Win32'">
-@@ -159,7 +129,8 @@
+@@ -157,9 +127,10 @@
+       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PVDSDK_DLL=1;PX_FOUNDATION_DLL=1;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -23930,7 +23942,8 @@ index 5262950..a13bff6 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PVDSDK_DLL=1;PX_FOUNDATION_DLL=1;NDEBUG;PX_CHECKED=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
        <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -23970,7 +23983,8 @@ index 5262950..a13bff6 100644
 +      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PVDSDK_DLL=1;PX_FOUNDATION_DLL=1;NDEBUG;PX_PROFILE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
        <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -24260,7 +24274,7 @@ index 5262950..a13bff6 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win32/PxTask.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win32/PxTask.vcxproj
-index 8be5ecd..fd7ed03 100644
+index 8be5ecd..fe7ccbf 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win32/PxTask.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win32/PxTask.vcxproj
 @@ -1,8 +1,5 @@
@@ -24370,9 +24384,12 @@ index 8be5ecd..fd7ed03 100644
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|Win32'">
      <ClCompile>
-@@ -114,7 +81,8 @@
+@@ -112,9 +79,10 @@
+       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -24401,9 +24418,12 @@ index 8be5ecd..fd7ed03 100644
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|Win32'">
      <ClCompile>
-@@ -155,7 +124,8 @@
+@@ -153,9 +122,10 @@
+       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -24432,9 +24452,12 @@ index 8be5ecd..fd7ed03 100644
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='checked|Win32'">
      <ClCompile>
-@@ -197,7 +168,8 @@
+@@ -195,9 +166,10 @@
+       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_CHECKED=1;PX_NVTX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -24463,9 +24486,12 @@ index 8be5ecd..fd7ed03 100644
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|Win32'">
      <ClCompile>
-@@ -238,7 +211,8 @@
+@@ -236,9 +209,10 @@
+       <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_PROFILE=1;PX_NVTX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -24520,7 +24546,7 @@ index 8be5ecd..fd7ed03 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win64/PsFastXml.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win64/PsFastXml.vcxproj
-index 1355c04..2605c95 100644
+index 1355c04..9b29e84 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win64/PsFastXml.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win64/PsFastXml.vcxproj
 @@ -1,8 +1,5 @@
@@ -24630,9 +24656,12 @@ index 1355c04..2605c95 100644
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
      <ClCompile>
-@@ -113,7 +80,8 @@
+@@ -111,9 +78,10 @@
+       <PreprocessorDefinitions>PX_FOUNDATION_DLL=0;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -24661,9 +24690,12 @@ index 1355c04..2605c95 100644
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
      <ClCompile>
-@@ -153,7 +122,8 @@
+@@ -151,9 +120,10 @@
+       <PreprocessorDefinitions>PX_FOUNDATION_DLL=0;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -24692,9 +24724,12 @@ index 1355c04..2605c95 100644
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='checked|x64'">
      <ClCompile>
-@@ -194,7 +165,8 @@
+@@ -192,9 +163,10 @@
+       <PreprocessorDefinitions>PX_FOUNDATION_DLL=0;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_CHECKED=1;PX_NVTX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -24723,9 +24758,12 @@ index 1355c04..2605c95 100644
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'">
      <ClCompile>
-@@ -234,7 +207,8 @@
+@@ -232,9 +205,10 @@
+       <PreprocessorDefinitions>PX_FOUNDATION_DLL=0;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_PROFILE=1;PX_NVTX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -24762,7 +24800,7 @@ index 1355c04..2605c95 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win64/PxFoundation.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win64/PxFoundation.vcxproj
-index bca1fa2..1bbed6f 100644
+index bca1fa2..0e18487 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win64/PxFoundation.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win64/PxFoundation.vcxproj
 @@ -1,8 +1,5 @@
@@ -24872,9 +24910,12 @@ index bca1fa2..1bbed6f 100644
      <SkipCopyingSymbolsToOutputDirectory>true</SkipCopyingSymbolsToOutputDirectory>
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
-@@ -114,7 +81,8 @@
+@@ -112,9 +79,10 @@
+       <PreprocessorDefinitions>PX_FOUNDATION_DLL=1;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -24906,9 +24947,12 @@ index bca1fa2..1bbed6f 100644
      <SkipCopyingSymbolsToOutputDirectory>true</SkipCopyingSymbolsToOutputDirectory>
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
-@@ -156,7 +126,8 @@
+@@ -154,9 +124,10 @@
+       <PreprocessorDefinitions>PX_FOUNDATION_DLL=1;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -24940,9 +24984,12 @@ index bca1fa2..1bbed6f 100644
      <SkipCopyingSymbolsToOutputDirectory>true</SkipCopyingSymbolsToOutputDirectory>
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='checked|x64'">
-@@ -199,7 +172,8 @@
+@@ -197,9 +170,10 @@
+       <PreprocessorDefinitions>PX_FOUNDATION_DLL=1;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_CHECKED=1;PX_NVTX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -24974,9 +25021,12 @@ index bca1fa2..1bbed6f 100644
      <SkipCopyingSymbolsToOutputDirectory>true</SkipCopyingSymbolsToOutputDirectory>
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'">
-@@ -241,7 +217,8 @@
+@@ -239,9 +215,10 @@
+       <PreprocessorDefinitions>PX_FOUNDATION_DLL=1;WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_PROFILE=1;PX_NVTX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -25311,7 +25361,7 @@ index bca1fa2..1bbed6f 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win64/PxPvdSDK.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win64/PxPvdSDK.vcxproj
-index cbf31a0..952d839 100644
+index cbf31a0..533eb26 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win64/PxPvdSDK.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win64/PxPvdSDK.vcxproj
 @@ -1,8 +1,5 @@
@@ -25429,7 +25479,8 @@ index cbf31a0..952d839 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PVDSDK_DLL=1;PX_FOUNDATION_DLL=1;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
        <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -25461,9 +25512,12 @@ index cbf31a0..952d839 100644
      <SkipCopyingSymbolsToOutputDirectory>true</SkipCopyingSymbolsToOutputDirectory>
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
-@@ -157,7 +127,8 @@
+@@ -155,9 +125,10 @@
+       <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PVDSDK_DLL=1;PX_FOUNDATION_DLL=1;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -25503,7 +25557,8 @@ index cbf31a0..952d839 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PVDSDK_DLL=1;PX_FOUNDATION_DLL=1;NDEBUG;PX_CHECKED=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
        <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -25543,7 +25598,8 @@ index cbf31a0..952d839 100644
 +      <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;PX_PVDSDK_DLL=1;PX_FOUNDATION_DLL=1;NDEBUG;PX_PROFILE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
        <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -25833,7 +25889,7 @@ index cbf31a0..952d839 100644
 +</Project>
 \ No newline at end of file
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win64/PxTask.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win64/PxTask.vcxproj
-index 241f533..0d88fd3 100644
+index 241f533..d7b1f79 100644
 --- a/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win64/PxTask.vcxproj
 +++ b/Thirdparty/output/physx/PhysX-3.4-master/PxShared/src/compiler/vc14win64/PxTask.vcxproj
 @@ -1,8 +1,5 @@
@@ -25943,9 +25999,12 @@ index 241f533..0d88fd3 100644
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
      <ClCompile>
-@@ -113,7 +80,8 @@
+@@ -111,9 +78,10 @@
+       <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;_DEBUG;PX_DEBUG=1;PX_CHECKED=1;PX_NVTX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -25974,9 +26033,12 @@ index 241f533..0d88fd3 100644
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
      <ClCompile>
-@@ -153,7 +122,8 @@
+@@ -151,9 +120,10 @@
+       <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -26005,9 +26067,12 @@ index 241f533..0d88fd3 100644
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='checked|x64'">
      <ClCompile>
-@@ -194,7 +165,8 @@
+@@ -192,9 +163,10 @@
+       <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_CHECKED=1;PX_NVTX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>
@@ -26036,9 +26101,12 @@ index 241f533..0d88fd3 100644
    </PropertyGroup>
    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='profile|x64'">
      <ClCompile>
-@@ -234,7 +207,8 @@
+@@ -232,9 +205,10 @@
+       <PreprocessorDefinitions>WIN32;WIN64;_CRT_SECURE_NO_DEPRECATE;_CRT_NONSTDC_NO_DEPRECATE;_WINSOCK_DEPRECATED_NO_WARNINGS;NDEBUG;PX_PROFILE=1;PX_NVTX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+       <ExceptionHandling>false</ExceptionHandling>
        <WarningLevel>Level4</WarningLevel>
-       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
++      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
        <PrecompiledHeader>NotUsing</PrecompiledHeader>
 -      <PrecompiledHeaderFile></PrecompiledHeaderFile>
 +      <PrecompiledHeaderFile>

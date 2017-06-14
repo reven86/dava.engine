@@ -14,9 +14,19 @@ if( NOT DAVA_MEGASOLUTION AND NOT DISABLE_MEMORY_PROFILER )
     set ( DAVA_MEMORY_PROFILER 1 )
 endif()
 
+if (LINUX)
+    set ( DAVA_MEMORY_PROFILER 0 )
+endif()
+
 # Now unittests is core v2 only
 set (DAVA_COREV2 1)
 dava_add_definitions(-D__DAVAENGINE_COREV2__)
+
+if (LINUX)
+    dava_add_definitions(-DDISABLE_NATIVE_MOVIEVIEW)
+    dava_add_definitions(-DDISABLE_NATIVE_TEXTFIELD)
+    dava_add_definitions(-DDISABLE_NATIVE_WEBVIEW)
+endif()
 
 if ( WIN32 OR MACOS )
     find_package(DavaTools REQUIRED )
@@ -25,13 +35,31 @@ endif()
 # Enable LOCALIZATION_DEBUG in UnitTests to verify successful compilation
 dava_add_definitions(-DLOCALIZATION_DEBUG)
 
-set ( DAVA_COMPONENTS "Sound" DAVA_DISABLE_AUTOTESTS )
+if (NOT LINUX)
+    # Enable sound after fmod libraries
+    set ( DAVA_COMPONENTS "Sound" "NetworkCore" DAVA_DISABLE_AUTOTESTS )
+else()
+    set ( DAVA_COMPONENTS "NetworkCore" DAVA_DISABLE_AUTOTESTS )
+endif()
+
 if ( WIN32 AND NOT WINDOWS_UAP )
     list ( APPEND DAVA_COMPONENTS "CEFWebview" )
 endif ()
 
 if (NOT ANDROID)
     list ( APPEND DAVA_COMPONENTS "SampleModule" )
+endif()
+
+# add physics
+if(ANDROID AND ANDROID_ABI STREQUAL "x86" )
+    # we don't have physx for android x86, so skip this
+elseif (WINDOWS_UAP AND WINDOWS_UAP_PLATFORMS MATCHES "ARM")
+    # we don't have physx for win uap arm, so skip this
+elseif (LINUX)
+    # for now physx is not supported for linux
+else()
+    dava_add_definitions(-D__DAVAENGINE_PHYSICS_ENABLED__)
+    list ( APPEND DAVA_COMPONENTS "Physics" )
 endif()
 
 find_package( Steam REQUIRED )
@@ -72,8 +100,6 @@ set( ANDROID_ICO                ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-we
 
 set( ADDED_SRC                  ${IOS_ADD_SRC} )
 
-set( EXTERNAL_TEST_FOLDERS      ${DAVA_MODULES_DIR} ${DAVA_ENGINE_DIR} )
-
 #uncomment this 2 strings to link libjpeg as additional project.
 #set( LIBRARIES jpeg )
 #add_subdirectory ( "${CMAKE_CURRENT_LIST_DIR}/../../Libs/libjpeg" ${CMAKE_CURRENT_BINARY_DIR}/libjpeg )
@@ -88,6 +114,7 @@ if (ANDROID)
     set (ANDROID_BOOT_CLASSES "com.dava.unittests.UnitTests")
 endif()
 
+exctact_external_unittests()
 setup_main_executable()
 convert_graphics()
  
