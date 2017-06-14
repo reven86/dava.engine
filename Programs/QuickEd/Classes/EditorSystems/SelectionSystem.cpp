@@ -316,6 +316,20 @@ ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const DAVA::Vector2& point
     Vector<ControlNode*> nodesUnderPoint;
     GetNodesForSelection(nodesUnderPoint, point);
     SelectedNodes selection = documentDataWrapper.GetFieldValue(DocumentData::selectionPropertyName).Cast<SelectedNodes>(SelectedNodes());
+
+    //here we use only selected controls
+    for (auto iter = selection.begin(); iter != selection.end();)
+    {
+        if ((*iter)->GetControl() == nullptr)
+        {
+            iter = selection.erase(iter);
+        }
+        else
+        {
+            ++iter;
+        }
+    }
+
     //no selection. Search for the child of root under cursor
     if (nodesUnderPoint.empty())
     {
