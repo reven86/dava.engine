@@ -39,11 +39,29 @@ void SelectionSystem::ProcessInput(UIEvent* currentInput)
 {
     if (currentInput->phase == UIEvent::Phase::BEGAN)
     {
-        ControlNode* selectedNode = systemsManager->GetControlNodeAtPoint(currentInput->point, currentInput->tapCount > 1);
-        if (nullptr != selectedNode)
+        if (systemsManager->GetCurrentHUDArea().area != HUDAreaInfo::NO_AREA)
         {
-            SelectNode(selectedNode);
+            selectOnRelease = true;
+            pressedPoint = currentInput->point;
+            return;
         }
+    }
+    else if (currentInput->phase == UIEvent::Phase::ENDED)
+    {
+        if (selectOnRelease == false || currentInput->point != pressedPoint)
+        {
+            return;
+        }
+    }
+    else
+    {
+        return;
+    }
+
+    ControlNode* selectedNode = systemsManager->GetControlNodeAtPoint(currentInput->point, currentInput->tapCount > 1);
+    if (nullptr != selectedNode)
+    {
+        SelectNode(selectedNode);
     }
 }
 
@@ -290,8 +308,7 @@ bool SelectionSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
             || displayState == EditorSystemsManager::Preview)
     && dragState == EditorSystemsManager::NoDrag
     && currentInput->device == eInputDevices::MOUSE
-    && currentInput->mouseButton == DAVA::eMouseButtons::LEFT
-    && currentInput->phase == UIEvent::Phase::BEGAN;
+    && currentInput->mouseButton == DAVA::eMouseButtons::LEFT;
 }
 
 ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const DAVA::Vector2& point, bool canGoDeeper) const
