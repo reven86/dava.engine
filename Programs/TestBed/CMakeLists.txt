@@ -49,7 +49,7 @@ dava_add_definitions(-DLOCALIZATION_DEBUG)
 
 
 if( NOT WINDOWS_UAP AND ( MACOS OR WIN32 ) )
-    add_plugin( SamplePlugin "${DAVA_MODULES_DIR}/SamplePlugin" COMPONENTS  ${DAVA_COMPONENTS} )
+    #add_plugin( SamplePlugin "${DAVA_MODULES_DIR}/SamplePlugin" COMPONENTS  ${DAVA_COMPONENTS} )
 endif()
 
 
