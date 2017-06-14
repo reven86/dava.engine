@@ -11,6 +11,9 @@ DAVA_TESTCLASS (GPUFamilyTest)
         
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_WIN_UAP__)
         TEST_VERIFY(Texture::GetPrimaryGPUForLoading() == eGPUFamily::GPU_DX11);
+#elif defined(__DAVAENGINE_LINUX__)
+        // TODO: linux
+        TEST_VERIFY(Texture::GetPrimaryGPUForLoading() == eGPUFamily::GPU_ORIGIN);
 #elif defined(__DAVAENGINE_IPHONE__)
         TEST_VERIFY(Texture::GetPrimaryGPUForLoading() == eGPUFamily::GPU_POWERVR_IOS);
 #elif defined(__DAVAENGINE_ANDROID__)
