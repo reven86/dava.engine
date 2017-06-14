@@ -26,11 +26,9 @@ private:
                                     int32 delayInSeconds = 0,
                                     bool ghostNotification = false);
 
-    Windows::UI::Notifications::ToastNotifier ^ toastNotifier;
+    Windows::UI::Notifications::ToastNotifier ^ toastNotifier = nullptr;
     Windows::UI::Notifications::ToastNotification ^ notification;
     Platform::String ^ nativeNotificationId;
-
-    bool valid = true;
 };
 }
 

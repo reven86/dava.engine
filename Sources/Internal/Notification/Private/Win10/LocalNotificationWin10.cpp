@@ -51,14 +51,13 @@ LocalNotificationUAP::LocalNotificationUAP(const String& _id)
     // (https://blogs.windows.com/buildingapps/2014/05/23/understanding-and-resolving-app-crashes-and-failures-in-windows-store-apps-part-2-json-and-tiles/#aRFLBMqSo2IswEUh.97)
     //
     // CreateToastNotifier and other methods might throw an exception, e.g. with WPN_E_PLATFORM_UNAVAILABLE in case notification system is not initialized
-    // We want to handle that by catching exception and claiming notification object to be invalid, so that subsequent calls to it do not do anything
+    // We want to handle that by catching exception and claiming notification object to be invalid (via toastNotifier == nullptr check), so that subsequent calls to it do not do anything
     try
     {
         toastNotifier = ToastNotificationManager::CreateToastNotifier();
     }
     catch (Platform::Exception ^ e)
     {
-        valid = false;
         DVASSERT(false);
         Logger::Error("Exception occured when tried to create toast notifier: %s (hresult=0x%08X)", UTF8Utils::EncodeToUTF8(e->Message->Data()).c_str(), e->HResult);
     }
@@ -70,7 +69,7 @@ void LocalNotificationUAP::SetAction(const WideString& action)
 
 void LocalNotificationUAP::Hide()
 {
-    if (!valid)
+    if (toastNotifier == nullptr)
     {
         return;
     }
@@ -88,7 +87,7 @@ void LocalNotificationUAP::ShowText(const WideString& title, const WideString& t
 {
     using ::Windows::Data::Xml::Dom::XmlDocument;
 
-    if (!valid)
+    if (toastNotifier == nullptr)
     {
         return;
     }
@@ -105,7 +104,7 @@ void LocalNotificationUAP::ShowProgress(const WideString& title,
 {
     using ::Windows::Data::Xml::Dom::XmlDocument;
 
-    if (!valid)
+    if (toastNotifier == nullptr)
     {
         return;
     }
@@ -124,7 +123,7 @@ void LocalNotificationUAP::PostDelayedNotification(const WideString& title,
 {
     using ::Windows::Data::Xml::Dom::XmlDocument;
 
-    if (!valid)
+    if (toastNotifier == nullptr)
     {
         return;
     }
@@ -136,7 +135,7 @@ void LocalNotificationUAP::PostDelayedNotification(const WideString& title,
 
 void LocalNotificationUAP::RemoveAllDelayedNotifications()
 {
-    if (!valid)
+    if (toastNotifier == nullptr)
     {
         return;
     }
