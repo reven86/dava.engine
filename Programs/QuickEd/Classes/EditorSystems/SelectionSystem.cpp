@@ -88,7 +88,11 @@ void SelectionSystem::SelectAllControls()
     using namespace DAVA::TArc;
 
     DataContext* activeContext = accessor->GetActiveContext();
-    DVASSERT(activeContext != nullptr);
+    if (activeContext == nullptr)
+    {
+        return;
+    }
+
     DocumentData* documentData = activeContext->GetData<DocumentData>();
 
     SelectedNodes selected;
@@ -118,6 +122,11 @@ void SelectionSystem::FocusPreviousChild()
 
 void SelectionSystem::FocusToChild(bool next)
 {
+    if (accessor->GetActiveContext() == nullptr)
+    {
+        return;
+    }
+
     PackageBaseNode* startNode = nullptr;
     SelectedNodes selection = documentDataWrapper.GetFieldValue(DocumentData::selectionPropertyName).Cast<SelectedNodes>(SelectedNodes());
 
@@ -270,6 +279,11 @@ void SelectionSystem::GetNodesForSelection(Vector<ControlNode*>& nodesUnderPoint
 
 bool SelectionSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
 {
+    if (accessor->GetActiveContext() == nullptr)
+    {
+        return false;
+    }
+
     EditorSystemsManager::eDisplayState displayState = systemsManager->GetDisplayState();
     EditorSystemsManager::eDragState dragState = systemsManager->GetDragState();
     return (displayState == EditorSystemsManager::Edit

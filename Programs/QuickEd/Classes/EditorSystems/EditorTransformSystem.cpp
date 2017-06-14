@@ -264,6 +264,11 @@ EditorSystemsManager::eDragState EditorTransformSystem::RequireNewState(UIEvent*
 
 bool EditorTransformSystem::CanProcessInput(UIEvent* currentInput) const
 {
+    if (accessor->GetActiveContext() == nullptr)
+    {
+        return false;
+    }
+
     EditorSystemsManager::eDragState dragState = systemsManager->GetDragState();
     if (dragState == EditorSystemsManager::Transform || currentInput->device == eInputDevices::KEYBOARD)
     {
