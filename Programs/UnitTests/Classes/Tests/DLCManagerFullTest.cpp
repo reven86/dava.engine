@@ -1,5 +1,3 @@
-#ifdef ENABLE_FULL_DLC_MANAGER_TEST
-
 #include <fstream>
 
 #include <DLCManager/DLCManager.h>
@@ -12,6 +10,7 @@
 #include <EmbeddedWebServer.h>
 
 #include "UnitTests/UnitTests.h"
+#include <Platform/DeviceInfo.h>
 
 #ifndef __DAVAENGINE_WIN_UAP__
 
@@ -28,8 +27,8 @@ struct FSMTest02
     };
     State state = WaitInitializationFinished;
     DAVA::float32 time = 0.0f;
-    DAVA::float32 waitSecondConnect = 3.0f;
-    const DAVA::float32 timeout = 60.f;
+    DAVA::float32 waitSecondConnect = 10.0f;
+    const DAVA::float32 timeout = 120.f;
     DAVA::DLCManager::Progress progressAfterInit;
 
     void Cleanup(DAVA::DLCManager& dlcManager)
@@ -134,6 +133,11 @@ struct FSMTest02
 
         if (time > timeout)
         {
+            if (DAVA::DeviceInfo::GetPlatformString() == "iOS")
+            {
+                Cleanup(dlcManager);
+                return true;
+            }
             auto prog = dlcManager.GetProgress();
 
             DAVA::Logger::Error("timeout: total: %llu in_queue: %llu downloaded: %lld", prog.total, prog.inQueue, prog.alreadyDownloaded);
@@ -283,5 +287,3 @@ DAVA_TESTCLASS (DLCManagerFullTest)
 };
 
 #endif // __DAVAENGINE_WIN_UAP__
-
-#endif // ENABLE_FULL_DLC_MANAGER_TEST
