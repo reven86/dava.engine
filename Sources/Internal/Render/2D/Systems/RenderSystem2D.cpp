@@ -186,7 +186,7 @@ void RenderSystem2D::BeginFrame()
 
     Setup2DMatrices();
 
-    globalTime = SystemTimer::GetFrameTimestamp();
+    globalTime += SystemTimer::GetFrameDelta();
 }
 
 void RenderSystem2D::EndFrame()

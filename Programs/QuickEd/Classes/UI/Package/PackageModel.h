@@ -23,7 +23,7 @@ class StyleSheetsNode;
 class PackageControlsNode;
 class ControlsContainerNode;
 class ImportedPackagesNode;
-class QtModelPackageCommandExecutor;
+class CommandExecutor;
 
 class PackageModel : public QAbstractItemModel, PackageListener
 {

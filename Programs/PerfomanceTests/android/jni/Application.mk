@@ -16,9 +16,6 @@ APP_OPTIM := debug
 
 APP_CFLAGS += -Qunused-arguments
 
-# Now PerformanceTests core v2 only
-APP_CPPFLAGS += -D__DAVAENGINE_COREV2__
-
 APP_CFLAGS += -Wno-invalid-offsetof
 APP_LDLIBS := -fuse-ld=gold -fno-exceptions
 

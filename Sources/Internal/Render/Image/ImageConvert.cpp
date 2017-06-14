@@ -44,6 +44,7 @@ bool ConvertImage(const Image* srcImage, Image* dstImage)
     PixelFormat dstFormat = dstImage->format;
 
     Function<bool(const Image*, Image*)> decompressFn = nullptr;
+
     if (LibDdsHelper::CanDecompressFrom(srcFormat))
     {
         decompressFn = &LibDdsHelper::DecompressToRGBA;
