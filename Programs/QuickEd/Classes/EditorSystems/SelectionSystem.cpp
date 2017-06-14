@@ -39,11 +39,29 @@ void SelectionSystem::ProcessInput(UIEvent* currentInput)
 {
     if (currentInput->phase == UIEvent::Phase::BEGAN)
     {
-        ControlNode* selectedNode = systemsManager->GetControlNodeAtPoint(currentInput->point, currentInput->tapCount > 1);
-        if (nullptr != selectedNode)
+        if (systemsManager->GetCurrentHUDArea().area != HUDAreaInfo::NO_AREA)
         {
-            SelectNode(selectedNode);
+            selectOnRelease = true;
+            pressedPoint = currentInput->point;
+            return;
         }
+    }
+    else if (currentInput->phase == UIEvent::Phase::ENDED)
+    {
+        if (selectOnRelease == false || currentInput->point != pressedPoint)
+        {
+            return;
+        }
+    }
+    else
+    {
+        return;
+    }
+
+    ControlNode* selectedNode = systemsManager->GetControlNodeAtPoint(currentInput->point, currentInput->tapCount > 1);
+    if (nullptr != selectedNode)
+    {
+        SelectNode(selectedNode);
     }
 }
 
@@ -88,7 +106,11 @@ void SelectionSystem::SelectAllControls()
     using namespace DAVA::TArc;
 
     DataContext* activeContext = accessor->GetActiveContext();
-    DVASSERT(activeContext != nullptr);
+    if (activeContext == nullptr)
+    {
+        return;
+    }
+
     DocumentData* documentData = activeContext->GetData<DocumentData>();
 
     SelectedNodes selected;
@@ -118,6 +140,11 @@ void SelectionSystem::FocusPreviousChild()
 
 void SelectionSystem::FocusToChild(bool next)
 {
+    if (accessor->GetActiveContext() == nullptr)
+    {
+        return;
+    }
+
     PackageBaseNode* startNode = nullptr;
     SelectedNodes selection = documentDataWrapper.GetFieldValue(DocumentData::selectionPropertyName).Cast<SelectedNodes>(SelectedNodes());
 
@@ -270,14 +297,18 @@ void SelectionSystem::GetNodesForSelection(Vector<ControlNode*>& nodesUnderPoint
 
 bool SelectionSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
 {
+    if (accessor->GetActiveContext() == nullptr)
+    {
+        return false;
+    }
+
     EditorSystemsManager::eDisplayState displayState = systemsManager->GetDisplayState();
     EditorSystemsManager::eDragState dragState = systemsManager->GetDragState();
     return (displayState == EditorSystemsManager::Edit
             || displayState == EditorSystemsManager::Preview)
     && dragState == EditorSystemsManager::NoDrag
     && currentInput->device == eInputDevices::MOUSE
-    && currentInput->mouseButton == DAVA::eMouseButtons::LEFT
-    && currentInput->phase == UIEvent::Phase::BEGAN;
+    && currentInput->mouseButton == DAVA::eMouseButtons::LEFT;
 }
 
 ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const DAVA::Vector2& point, bool canGoDeeper) const
@@ -285,6 +316,20 @@ ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const DAVA::Vector2& point
     Vector<ControlNode*> nodesUnderPoint;
     GetNodesForSelection(nodesUnderPoint, point);
     SelectedNodes selection = documentDataWrapper.GetFieldValue(DocumentData::selectionPropertyName).Cast<SelectedNodes>(SelectedNodes());
+
+    //here we use only selected controls
+    for (auto iter = selection.begin(); iter != selection.end();)
+    {
+        if ((*iter)->GetControl() == nullptr)
+        {
+            iter = selection.erase(iter);
+        }
+        else
+        {
+            ++iter;
+        }
+    }
+
     //no selection. Search for the child of root under cursor
     if (nodesUnderPoint.empty())
     {

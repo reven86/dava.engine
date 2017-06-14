@@ -264,6 +264,11 @@ EditorSystemsManager::eDragState EditorTransformSystem::RequireNewState(UIEvent*
 
 bool EditorTransformSystem::CanProcessInput(UIEvent* currentInput) const
 {
+    if (accessor->GetActiveContext() == nullptr)
+    {
+        return false;
+    }
+
     EditorSystemsManager::eDragState dragState = systemsManager->GetDragState();
     if (dragState == EditorSystemsManager::Transform || currentInput->device == eInputDevices::KEYBOARD)
     {
@@ -461,7 +466,13 @@ void EditorTransformSystem::MoveAllSelectedControlsByMouse(Vector2 mouseDelta, b
                                      PackageBaseNode* target = nodeInfoPtr->node;
                                      return activeControlNodeHierarchy.find(target) != activeControlNodeHierarchy.end();
                                  });
-        DVASSERT(iter != nodesToMoveInfos.end());
+
+        //TODO: replace this if with an assert when currentArea will be synchronized with selection
+        //right now they have difference with one frame
+        if (iter == nodesToMoveInfos.end())
+        {
+            return;
+        }
 
         const MoveInfo* nodeInfo = iter->get();
 
