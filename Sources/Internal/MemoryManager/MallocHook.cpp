@@ -16,6 +16,9 @@
 #elif defined(__DAVAENGINE_APPLE__)
 #include <dlfcn.h>
 #include <malloc/malloc.h>
+#elif defined(__DAVAENGINE_LINUX__)
+#include <malloc.h>
+#include <dlfcn.h>
 #else
 #error "Unknown platform"
 #endif
@@ -107,6 +110,8 @@ size_t MallocHook::MallocSize(void* ptr)
     return malloc_size(ptr);
 #elif defined(__DAVAENGINE_ANDROID__)
     return RealMallocSize != nullptr ? RealMallocSize(ptr) : 0;
+#elif defined(__DAVAENGINE_LINUX__)
+    return malloc_usable_size(ptr);
 #else
 #error "Unknown platform"
 #endif
@@ -161,7 +166,7 @@ void MallocHook::Install()
     RealMalloc = &malloc;
     RealRealloc = &realloc;
     RealFree = &free;
-#elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_POSIX__)
     void* fptr = nullptr;
 
 // RTLD_DEFAULT tells to find the next occurrence of the desired symbol
@@ -214,7 +219,7 @@ void MallocHook::Install()
 
 } // namespace DAVA
 
-#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#if defined(__DAVAENGINE_POSIX__)
 
 void* malloc(size_t size)
 {
@@ -241,6 +246,6 @@ char* strdup(const char* src)
     return HookedStrdup(src);
 }
 
-#endif // defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#endif // defined(__DAVAENGINE_POSIX__)
 
 #endif // defined(DAVA_MEMORY_PROFILING_ENABLE)

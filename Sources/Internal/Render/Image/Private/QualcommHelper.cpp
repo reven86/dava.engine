@@ -60,6 +60,9 @@ bool DecompressAtcToRgba(const Image* srcImage, Image* dstImage)
     __DAVAENGINE_WIN_UAP_INCOMPLETE_IMPLEMENTATION__
     return false;
 
+#elif defined(__DAVAENGINE_LINUX__)
+    return false;
+
 #else
 #if defined(__DAVAENGINE_MACOS__)
     if (srcImage->format == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA)
@@ -119,6 +122,9 @@ bool CompressRgbaToAtc(const Image* srcImage, Image* dstImage)
 {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
     DVASSERT(false, "Qualcomm doesn't provide texture converter library for ios/android");
+    return false;
+
+#elif defined(__DAVAENGINE_LINUX__)
     return false;
 
 #elif defined(__DAVAENGINE_WIN_UAP__)

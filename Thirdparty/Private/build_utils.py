@@ -63,7 +63,7 @@ def unzip_inplace(path):
     extension = os.path.splitext(path)[1]
     if extension == '.zip':
         ref = zipfile.ZipFile(path, 'r')
-    elif extension == '.gz' or extension == '.tgz' or extension=='.bz2':
+    elif extension == '.gz' or extension == '.tgz' or extension=='.bz2' or extension=='.tar':
         ref = tarfile.open(path, 'r')
     ref.extractall(os.path.dirname(path))
     ref.close()
@@ -120,11 +120,40 @@ def build_xcode_alltargets(project, configuration):
         print "Failed with return code %s" % proc.returncode
         raise
 
+def build_make_target(output_folder_path, target):
+    print "Building target %s in %s ..." % (target, output_folder_path)
+    # make <target> -C <output_folder_path>
+    proc = subprocess.Popen(["make", target, '-C', output_folder_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    for line in proc.stdout:
+        print_verbose(line)
+    proc.wait()
+    if proc.returncode != 0:
+        print "Failed with return code %s" % proc.returncode
+        raise
 
 def copy_files(from_dir, to_dir, wildcard):
     print "Copying %s from %s to %s" % (wildcard, from_dir, to_dir)
+
+    # First create destination dir if it does not exist, else
+    # shutil.copy will copy all files into one with name 'to_dir'
+    if not os.path.exists(to_dir):
+        os.makedirs(to_dir)
+
     for file in glob.glob(from_dir+"/"+wildcard):
         shutil.copy(file, to_dir)
+
+def copy_files_by_name(from_dir, to_dir, filenames):
+    # First create destination dir if it does not exist, else
+    # shutil.copy will copy all files into one with name 'to_dir'
+    if not os.path.exists(to_dir):
+        os.makedirs(to_dir)
+
+    for file in filenames:
+        print "Copying %s from %s to %s" % (file, from_dir, to_dir)
+
+        src = os.path.join(from_dir, file)
+        dst = os.path.join(to_dir, file)
+        shutil.copy(src, dst)
 
 
 def clean_copy_includes(from_dir, to_dir):
@@ -185,6 +214,10 @@ def cmake_generate_build_vs(output_folder_path, src_folder_path, cmake_generator
 def cmake_generate_build_xcode(output_folder_path, src_folder_path, cmake_generator, project, target, cmake_additional_args = []):
     cmake_generate(output_folder_path, src_folder_path, cmake_generator, cmake_additional_args)
     build_xcode_target(os.path.join(output_folder_path, project), target, 'Release')
+
+def cmake_generate_build_make(output_folder_path, src_folder_path, cmake_generator, target, cmake_additional_args = []):
+    cmake_generate(output_folder_path, src_folder_path, cmake_generator, cmake_additional_args)
+    build_make_target(output_folder_path, target)
 
 
 def cmake_generate_build_ndk(output_folder_path, src_folder_path, toolchain_filepath, android_ndk_path, abi, cmake_additional_args = []):
@@ -386,6 +419,11 @@ def get_autotools_ios_env():
 
     return env
 
+def get_autotools_linux_env():
+    env = os.environ.copy()
+    env['CC'] = '/usr/local/bin/clang'
+    env['CXX'] = '/usr/local/bin/clang++'
+    return env
 
 def get_autotools_android_arm_env(root_project_path, enable_stl=False):
     android_ndk_folder_path = get_android_ndk_path(root_project_path)
@@ -631,19 +669,48 @@ def build_and_copy_libraries_android_cmake(
 
     return (build_android_x86_folder, build_android_armeabiv7a_folder)
 
+def build_and_copy_libraries_linux_cmake(
+        gen_folder_path,
+        source_folder_path,
+        root_project_path,
+        target,
+        lib_name,
+        cmake_additional_args = [],
+        target_lib_subdir=''):
 
-def build_with_autotools(source_folder_path, configure_args, install_dir, env=None, configure_exec_name='configure', make_exec_name='make', postclean=True):
+    build_folder = os.path.join(gen_folder_path, 'build_linux')
+    cmake_generate_build_make(build_folder, source_folder_path, build_config.get_cmake_generator_linux(), target, cmake_additional_args)
+
+    # Move built files into Libs/lib_CMake
+    # TODO: update pathes after switching to new folders structure
+    source_dir = os.path.join(build_folder, target_lib_subdir)
+    target_dir = os.path.join(root_project_path, 'Libs/lib_CMake/linux')
+
+    shutil.copyfile(os.path.join(source_dir, lib_name),
+                    os.path.join(target_dir, lib_name))
+    return build_folder
+
+def build_with_autotools(source_folder_path,
+                         configure_args,
+                         install_dir,
+                         env=None,
+                         configure_exec_name='configure',
+                         make_exec_name='make',
+                         make_targets=['all', 'install'],
+                         postclean=True):
     if isinstance(configure_exec_name, list):
         if sys.platform == 'win32':
             cmd = list(configure_exec_name)
         else:
             cmd = ['./{}'.format(configure_exec_name[0])]
             cmd.extend(configure_exec_name[1:])
+            cmd.insert(0, 'sh')
     else:
         if sys.platform == 'win32':
             cmd = [configure_exec_name]
         else:
             cmd = ['./{}'.format(configure_exec_name)]
+            cmd.insert(0, 'sh')
 
     cmd.extend(configure_args)
     if install_dir is not None:
@@ -655,16 +722,12 @@ def build_with_autotools(source_folder_path, configure_args, install_dir, env=No
 
     run_process(cmd, process_cwd=source_folder_path, environment=env, shell=enable_shell)
 
-    cmd = [make_exec_name, 'all']
-    run_process(cmd, process_cwd=source_folder_path, environment=env, shell=enable_shell)
+    if postclean:
+        make_targets.append('clean')
 
-    if install_dir is not None:
-        cmd = [make_exec_name, 'install']
+    for target in make_targets:
+        cmd = [make_exec_name, target]
         run_process(cmd, process_cwd=source_folder_path, environment=env, shell=enable_shell)
-
-        if postclean:
-            cmd = [make_exec_name, 'clean']
-            run_process(cmd, process_cwd=source_folder_path, environment=env, shell=enable_shell)
 
 
 def run_once(fn):

@@ -20,7 +20,7 @@
 
 #if defined(__DAVAENGINE_WINDOWS__)
 #include <io.h>
-#elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_POSIX__)
 #include <unistd.h>
 #endif
 
@@ -587,7 +587,7 @@ bool File::Truncate(uint64 size)
 #endif
 #if defined(__DAVAENGINE_WINDOWS__)
     return (0 == _chsize(_fileno(file), static_cast<long>(size)));
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_POSIX__)
     return (0 == ftruncate(fileno(file), size));
 #else
 #error No implementation for current platform
@@ -630,7 +630,7 @@ String File::GetModificationDate(const FilePath& filePathname)
     int32 ret = stat(realPathname.c_str(), &fileInfo);
     if (0 == ret)
     {
-#if defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_LINUX__)
         tm* utcTime = gmtime(&fileInfo.st_mtime);
 #elif defined(__DAVAENGINE_ANDROID__)
         time_t st_mtime = static_cast<time_t>(fileInfo.st_mtime);

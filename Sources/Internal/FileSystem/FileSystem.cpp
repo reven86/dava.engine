@@ -16,7 +16,7 @@
 #include "Core/Core.h"
 #include "Concurrency/LockGuard.h"
 
-#include "Engine/Engine.h"
+#include "Engine/Private/EngineBackend.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include <copyfile.h>
@@ -44,6 +44,10 @@
 #else
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
 #endif
+#include <unistd.h>
+#elif defined(__DAVAENGINE_LINUX__)
+#include <sys/types.h>
+#include <pwd.h>
 #include <unistd.h>
 #endif //PLATFORMS
 
@@ -118,7 +122,7 @@ FileSystem::eCreateDirectoryResult FileSystem::CreateExactDirectory(const FilePa
     WideString path = UTF8Utils::EncodeToWideString(filePath.GetAbsolutePathname());
     BOOL res = ::CreateDirectoryW(path.c_str(), 0);
     return (res == 0) ? DIRECTORY_CANT_CREATE : DIRECTORY_CREATED;
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_POSIX__)
     int res = mkdir(filePath.GetAbsolutePathname().c_str(), 0777);
     return (res == 0) ? (DIRECTORY_CREATED) : (DIRECTORY_CANT_CREATE);
 #endif //PLATFORMS
@@ -147,7 +151,8 @@ bool FileSystem::CopyFile(const FilePath& existingFile, const FilePath& newFile,
     };
     return ::CopyFile2(existingFilePath.c_str(), newFilePath.c_str(), &params) == S_OK;
 
-#elif defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_LINUX__)
+    // TODO: try sendfile for linux
 
     bool copied = false;
 
@@ -330,7 +335,7 @@ bool FileSystem::DeleteDirectory(const FilePath& path, bool isRecursive)
     int32 chmodres = _wchmod(sysPath.c_str(), _S_IWRITE); // change read-only file mode
     int32 res = _wrmdir(sysPath.c_str());
     return (res == 0);
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_POSIX__)
     int32 res = rmdir(path.GetAbsolutePathname().c_str());
     return (res == 0);
 #endif //PLATFORMS
@@ -426,15 +431,13 @@ const FilePath& FileSystem::GetCurrentWorkingDirectory()
 
     Array<wchar_t, MAX_PATH> tempDir;
     ::GetCurrentDirectoryW(MAX_PATH, tempDir.data());
-    String path = UTF8Utils::EncodeToUTF8(tempDir.data());
-    currentWorkingDirectory = FilePath(path);
+    currentWorkingDirectory = FilePath(UTF8Utils::EncodeToUTF8(tempDir.data()));
 
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_POSIX__)
 
     Array<char, PATH_MAX> tempDir;
     getcwd(tempDir.data(), PATH_MAX);
-    String path = tempDir.data();
-    currentWorkingDirectory = FilePath(std::move(path));
+    currentWorkingDirectory = FilePath(tempDir.data());
 
 #endif //PLATFORMS
 
@@ -458,7 +461,8 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
 #else
 
 #if defined(__DAVAENGINE_COREV2__)
-    const String& str = Engine::Instance()->GetCommandLine().at(0);
+    // dava.engine's internals can invoke GetCurrentExecutableDirectory before Engine instance is created
+    const String& str = Private::EngineBackend::Instance()->GetCommandLine().at(0);
 #else
     const String& str = Core::Instance()->GetCommandLine().at(0);
 #endif
@@ -493,12 +497,10 @@ bool FileSystem::SetCurrentWorkingDirectory(const FilePath& newWorkingDirectory)
     WideString path = UTF8Utils::EncodeToWideString(newWorkingDirectory.GetAbsolutePathname());
     BOOL res = ::SetCurrentDirectoryW(path.c_str());
     return (res != 0);
-#elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-
+#elif defined(__DAVAENGINE_POSIX__)
     return (chdir(newWorkingDirectory.GetAbsolutePathname().c_str()) == 0);
 #elif //PLATFORMS
-
-    return false;
+#error "Unknown platform"
 #endif
 }
 
@@ -789,9 +791,7 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 
 #endif
 }
-#endif //#if defined(__DAVAENGINE_WINDOWS__)
-
-#if defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_ANDROID__)
 const FilePath FileSystem::GetUserDocumentsPath()
 {
 #if defined(__DAVAENGINE_COREV2__)
@@ -811,7 +811,39 @@ const FilePath FileSystem::GetPublicDocumentsPath()
     return core->GetExternalStoragePathname();
 #endif
 }
-#endif //#if defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_LINUX__)
+const FilePath FileSystem::GetUserDocumentsPath()
+{
+    // TODO: linux
+
+    // Return HOME directory
+    struct passwd pwd
+    {
+    };
+    struct passwd* result = nullptr;
+
+    size_t bufsize = static_cast<size_t>(sysconf(_SC_GETPW_R_SIZE_MAX));
+    if (bufsize == size_t(-1))
+    {
+        // Like in sample in man for getpwuid_r: https://linux.die.net/man/3/getpwuid_r
+        bufsize = 16384;
+    }
+
+    Vector<char> buf(bufsize);
+    int r = getpwuid_r(getuid(), &pwd, buf.data(), bufsize, &result);
+    if (r == 0)
+    {
+        return FilePath(pwd.pw_dir).MakeDirectoryPathname();
+    }
+    return FilePath();
+}
+
+const FilePath FileSystem::GetPublicDocumentsPath()
+{
+    // TODO: linux
+    return GetUserDocumentsPath();
+}
+#endif
 
 String FileSystem::ReadFileContents(const FilePath& pathname)
 {
@@ -915,7 +947,7 @@ bool FileSystem::IsMounted(const FilePath& archiveName) const
 int32 FileSystem::Spawn(const String& command)
 {
     int32 retCode = 0;
-#if defined(__DAVAENGINE_MACOS__)
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_LINUX__)
     retCode = std::system(command.c_str());
 #elif defined(__DAVAENGINE_WINDOWS__)
 

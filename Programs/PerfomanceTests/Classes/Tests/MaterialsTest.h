@@ -42,7 +42,7 @@ private:
     static const uint32 FRAMES_PER_MATERIAL_TEST;
 
     int32 currentTestStartFrame;
-    float32 currentTestStartTime;
+    int64 currentTestStartTimeMs;
     uint32 currentMaterialIndex;
 
     Vector<Entity*> planes;

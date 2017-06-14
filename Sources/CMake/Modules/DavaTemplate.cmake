@@ -44,7 +44,7 @@ macro( exctact_external_unittests )
     foreach( TEST_FOLDER ${EXTERNAL_TEST_FOLDERS} )
     file( GLOB_RECURSE TEST_FILES "${TEST_FOLDER}/*.unittest"  )
 
-    if( ANDROID )#Fucking android
+    if( ANDROID OR LINUX )#Fucking android
         foreach( FILE ${TEST_FILES} )
             get_filename_component( FILE_NAME ${FILE} NAME )
             set( OUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/EXTERNAL_TEST/${FILE_NAME}.cpp )
@@ -856,6 +856,10 @@ endif()
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${DAVA_PREDEFINED_TARGETS_FOLDER} )
 
+if (LINUX)
+    # Reverse modules to link libDavaFramework.a first before other modules
+    list(REVERSE TARGET_MODULES_LIST )
+endif()
 target_link_libraries( ${PROJECT_NAME} ${LINK_WHOLE_ARCHIVE_FLAG} ${TARGET_LIBRARIES} ${TARGET_MODULES_LIST} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${LIBRARIES} ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}} )
 
 foreach ( FILE ${LIBRARIES_DEBUG} )

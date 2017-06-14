@@ -65,6 +65,30 @@ set( DAVA_STATIC_LIBRARIES_ANDROID  "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml.a
                                     "-lGLESv2"
                                     "-latomic" 
                                     )
+
+set( DAVA_STATIC_LIBRARIES_LINUX
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcurl.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libdxt.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfreetype.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libjpeg.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libmongodb.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libpng.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libsqlite3.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libtheora.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libunibreak.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libuv.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libvorbis.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libvorbisfile.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libwebp.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libyaml.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libogg.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcrypto.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libssl.a"
+                                    "-ldl"
+                                    "-lz"
+                                    )
                                     
 if( DEFINED ANDROID_NDK 
 	AND DEFINED ANDROID_STL_PREFIX 

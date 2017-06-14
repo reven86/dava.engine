@@ -6,8 +6,12 @@ import build_utils
 def get_supported_targets(platform):
     if platform == 'win32':
         return ['win32']
-    else:
+    elif platform == 'darwin':
         return ['macos']
+    elif platform == 'linux':
+        return ['linux']
+    else:
+        return []
 
 
 def get_dependencies_for_target(target):
@@ -19,6 +23,8 @@ def build_for_target(target, working_directory_path, root_project_path):
         _build_win32(working_directory_path, root_project_path)
     elif target == 'macos':
         _build_macos(working_directory_path, root_project_path)
+    elif target == 'linux':
+        _build_linux(working_directory_path, root_project_path)
 
 
 def get_download_info():
@@ -79,8 +85,22 @@ def _build_macos(working_directory_path, root_project_path):
     _copy_headers(source_folder_path, root_project_path)
 
 
+def _build_linux(working_directory_path, root_project_path):
+    source_folder_path = _download(working_directory_path)
+    _patch_sources(source_folder_path)
+
+    build_utils.build_and_copy_libraries_linux_cmake(
+        os.path.join(source_folder_path, '_build'),
+        source_folder_path,
+        root_project_path,
+        target='all',
+        lib_name='libgmock.a',
+        target_lib_subdir='googlemock')
+
+    _copy_headers(source_folder_path, root_project_path)
+
+
 def _copy_headers(source_folder_path, root_project_path):
-    os.path.join(root_project_path, 'Libs/include/libpng')
     gmock_from_dir = os.path.join(
         source_folder_path, 'googlemock/include/gmock')
     gmock_to_dir = os.path.join(
