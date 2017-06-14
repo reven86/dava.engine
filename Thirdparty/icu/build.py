@@ -5,8 +5,12 @@ import build_utils
 def get_supported_targets(platform):
     if platform == 'win32':
         return ['win32', 'win10']
-    else:
+    elif platform == 'darwin':
         return ['macos', 'ios', 'android']
+    elif platform == 'linux':
+        return ['android', 'linux']
+    else:
+        return []
 
 
 def get_dependencies_for_target(target):
@@ -24,6 +28,8 @@ def build_for_target(target, working_directory_path, root_project_path):
         _build_ios(working_directory_path, root_project_path)
     elif target == 'android':
         _build_android(working_directory_path, root_project_path)
+    elif target == 'linux':
+        _build_linux(working_directory_path, root_project_path)
 
 
 def get_download_info():
@@ -161,3 +167,17 @@ def _build_android(working_directory_path, root_project_path):
             root_project_path, enable_stl=True))
 
 # TODO: Add copying headers & libraries when switching to new directories structure
+
+def _build_linux(working_directory_path, root_project_path):
+    source_folder_path = _download_and_extract(working_directory_path, 'others', '_linux')
+
+    env = build_utils.get_autotools_linux_env()
+    install_dir = os.path.join(working_directory_path, 'gen/install_linux')
+
+    build_utils.build_with_autotools(
+        os.path.join(source_folder_path, 'source'),
+        ['--disable-shared', '--enable-static'],
+        install_dir,
+        env=env,
+        postclean=False)
+

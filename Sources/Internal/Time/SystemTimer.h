@@ -48,13 +48,6 @@ public:
     static int64 GetFrameTimestampMs();
 
     /**
-        Get current frame timestamp in seconds.
-
-        Frame timestamp is a result of `GetMs()` call at the beginning of a frame divided by 1000.
-    */
-    static float32 GetFrameTimestamp();
-
-    /**
         Get clamped time difference in seconds between current frame timestamp and previous frame timestamp.
 
         The difference is clamped to the range [0.001, 0.1].

@@ -1,7 +1,8 @@
 #include "UI/UIScreenManager.h"
-#include "Base/BaseObject.h"
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_LINUX__)
+
+#include "Base/BaseObject.h"
 
 namespace DAVA
 {
@@ -86,22 +87,6 @@ int32 UIScreenManager::GetScreenId()
 {
     return activeScreenId;
 }
-
-/*void ScreenManager::StopGLAnimation()
-{
-	Screen & glController = screens[glControllerId];
-	EAGLViewController * controller = (EAGLViewController *)glController.value;
-	EAGLView * view = (EAGLView *)controller.view;
-	[view stopAnimation];
 }
 
-void ScreenManager::StartGLAnimation()
-{
-	Screen & glController = screens[glControllerId];
-	EAGLViewController * controller = (EAGLViewController *)glController.value;
-	EAGLView * view = (EAGLView *)controller.view;
-	[view startAnimation];
-}*/
-}
-
-#endif // defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
+#endif // defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_LINUX__)
