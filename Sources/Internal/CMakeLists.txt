@@ -14,7 +14,10 @@ set( NAME_MODULE ${DAVA_LIBRARY} )
 set( MODULE_TYPE STATIC )#INLINE STATIC DYNAMIC 
 
 set( EXTERNAL_MODULES_WIN           ${DAVA_EXTERNAL_DIR}/cef )
-set( EXTERNAL_MODULES               ${DAVA_MODULES_DIR}/SampleModule ${DAVA_MODULES_DIR}/Physics )
+set( EXTERNAL_MODULES               ${DAVA_MODULES_DIR}/SampleModule
+                                    ${DAVA_MODULES_DIR}/NetworkCore
+                                    ${DAVA_MODULES_DIR}/Physics
+                                    )
 
 set( INCLUDES_PRIVATE               ${DAVA_ENGINE_DIR} 
                                     ${DAVA_THIRD_PARTY_INCLUDES_PATH}  )
@@ -79,6 +82,8 @@ set( DYNAMIC_LIBRARIES_WIN64        ${DAVA_DYNAMIC_LIBRARIES_WIN64} )
   
 set( DYNAMIC_LIBRARIES_ANDROID      ${DAVA_DYNAMIC_LIBRARIES_ANDROID} )
 
+set( STATIC_LIBRARIES_LINUX         ${DAVA_STATIC_LIBRARIES_LINUX} )
+
 set( SRC_FOLDERS                    "." )
  
 set( MODULE_MANAGER_TEMPLATE        ModuleManager/ModuleManager.in )
@@ -91,6 +96,7 @@ set( ERASE_FOLDERS_MACOS            "Metal" "DX9" "DX11" )
 set( ERASE_FOLDERS_ANDROID          "Metal" "DX9" "DX11" )
 set( ERASE_FOLDERS_WIN              "Metal" )
 set( ERASE_FOLDERS_WINUAP           "DX9" "GLES2" "Metal" )
+set( ERASE_FOLDERS_LINUX            "DX9" "DX11" "Metal" "GLES2" )
 
 
 set( UNITY_IGNORE_LIST              "Internal/Autotesting" 
@@ -121,6 +127,9 @@ set( DEFINITIONS_PRIVATE            -D_UNICODE
                                     -D_CRT_SECURE_NO_DEPRECATE 
                                     -D_CRT_NON_CONFORMING_SWPRINTFS
                                     -DCURL_STATICLIB  )
+
+# Define __STDC_FORMAT_MACROS for PRIdXX macros used in printf and friends
+set( DEFINITIONS_PRIVATE_LINUX      -D__STDC_FORMAT_MACROS=1)
 
 set( DEFINITIONS_PRIVATE_IOS        -DDDARWIN_NO_CARBON )
 set( DEFINITIONS_PRIVATE_MACOS      -D__DAVAENGINE_PTHREAD__ )

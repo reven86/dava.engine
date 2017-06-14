@@ -158,18 +158,32 @@ void FilePath::InitializeBundleName()
     }
 #endif
 }
-#endif //#if defined(__DAVAENGINE_WINDOWS__)
-
-
-#if defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_ANDROID__)
 void FilePath::InitializeBundleName()
 {
 #ifdef USE_LOCAL_RESOURCES
     SetBundleName(FilePath("/mnt/sdcard/DavaProject/Data/"));
 #endif
 }
+#elif defined(__DAVAENGINE_LINUX__)
+void FilePath::InitializeBundleName()
+{
+    // TODO: linux
+    FilePath execDirectory = FileSystem::Instance()->GetCurrentExecutableDirectory();
+    FilePath workingDirectory = FileSystem::Instance()->GetCurrentWorkingDirectory();
 
-#endif //#if defined(__DAVAENGINE_ANDROID__)
+    SetBundleName(execDirectory + "Data/");
+
+    if (workingDirectory != execDirectory)
+    {
+        FilePath dataDirPath(workingDirectory + "Data/");
+        if (FileSystem::Instance()->Exists(dataDirPath))
+        {
+            AddResourcesFolder(dataDirPath);
+        }
+    }
+}
+#endif
 
 FilePath FilePath::FilepathInDocuments(const char8* relativePathname)
 {

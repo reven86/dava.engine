@@ -144,4 +144,4 @@ DAVA_TESTCLASS (DLCManagerTest)
     }
 };
 
-#endif // __DAVAENGINE_WIN_UAP__
+#endif // !__DAVAENGINE_WIN_UAP__

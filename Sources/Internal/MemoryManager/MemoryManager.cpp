@@ -22,6 +22,8 @@
 #include <unwind.h>
 #include <dlfcn.h>
 #include <cxxabi.h>
+#elif defined(__DAVAENGINE_LINUX__)
+#include <malloc.h>
 #else
 #error "Unknown platform"
 #endif
@@ -526,11 +528,16 @@ uint32 MemoryManager::GetSystemMemoryUsage() const
         return static_cast<uint32>(info.resident_size);
     }
     return 0;
-#elif defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_LINUX__)
     // http://stackoverflow.com/questions/17109284/how-to-find-memory-usage-of-my-android-application-written-c-using-ndk
     // http://androidxref.com/source/xref/frameworks/base/core/jni/android_os_Debug.cpp (Jelly Bean 4.2)
-    struct mallinfo info = mallinfo();
+    // For linux: http://man7.org/linux/man-pages/man3/mallinfo.3.html
+    struct mallinfo info
+    {
+    };
     return static_cast<uint32>(info.uordblks);
+#else
+#error "Unknown platform"
 #endif
 }
 

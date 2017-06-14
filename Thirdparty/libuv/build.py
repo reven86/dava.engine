@@ -7,8 +7,12 @@ import build_config
 def get_supported_targets(platform):
     if platform == 'win32':
         return ['win32']
-    else:
+    elif platform == 'darwin':
         return ['macos', 'ios', 'android']
+    elif platform == 'linux':
+        return ['android', 'linux']
+    else:
+        return []
 
 
 def get_dependencies_for_target(target):
@@ -24,6 +28,8 @@ def build_for_target(target, working_directory_path, root_project_path):
         _build_ios(working_directory_path, root_project_path)
     elif target == 'android':
         _build_android(working_directory_path, root_project_path)
+    elif target == 'linux':
+        _build_linux(working_directory_path, root_project_path)
 
 
 def get_download_info():
@@ -214,6 +220,37 @@ def _build_android(working_directory_path, root_project_path):
 
     _copy_headers_from_install(install_dir_android_arm, root_project_path)
 
+def _build_linux(working_directory_path, root_project_path):
+    source_folder_path = _download_and_extract(working_directory_path)
+
+    # Clone gyp
+    build_utils.run_process(
+        ['git clone https://chromium.googlesource.com/external/gyp.git build/gyp'],
+        process_cwd=source_folder_path,
+        shell=True)
+
+    # Generate makefile using gyp
+    env = build_utils.get_autotools_linux_env()
+    build_utils.run_process(
+        ['./gyp_uv.py -f make'],
+        process_cwd=source_folder_path,
+        environment=env,
+        shell=True)
+    # Build release library: only libuv.a, skipping tests
+    build_utils.run_process(
+        ['BUILDTYPE=Release make libuv -C out'],
+        process_cwd=source_folder_path,
+        environment=env,
+        shell=True)
+
+    # Copy binary files to dava.engine's library folder
+    source_dir = os.path.join(source_folder_path, 'out/Release')
+    target_dir = os.path.join(root_project_path, 'Libs/lib_CMake/linux')
+    shutil.copyfile(os.path.join(source_dir, 'libuv.a'),
+                    os.path.join(target_dir, 'libuv.a'))
+
+    # Copy headers to dava.engine's include folder
+    _copy_headers_from_install(source_folder_path, root_project_path)
 
 def _copy_headers_from_install(install_folder_path, root_project_path):
     include_path = os.path.join(root_project_path, 'Libs/include/libuv')

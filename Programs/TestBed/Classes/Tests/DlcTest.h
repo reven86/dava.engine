@@ -1,5 +1,4 @@
-#ifndef __TEST_SCREEN_H__
-#define __TEST_SCREEN_H__
+#pragma once
 
 #include "DAVAEngine.h"
 #include "DLC/DLC.h"
@@ -95,5 +94,3 @@ protected:
     DLC* dlc = nullptr;
     DLCCrashTest crashTest;
 };
-
-#endif

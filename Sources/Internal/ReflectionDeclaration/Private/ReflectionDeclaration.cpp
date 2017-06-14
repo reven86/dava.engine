@@ -266,7 +266,7 @@ void RegisterPermanentNames()
     DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(PartilceEmitterLoadProxy, "ParticleEmitter3D");
 
 // UI controls
-#if !defined(__DAVAENGINE_ANDROID__)
+#if !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_LINUX__)
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(TheoraPlayer);
 #endif
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UI3DView);
