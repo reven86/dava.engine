@@ -465,6 +465,9 @@ void UIControlSystem::CancelInput(UIEvent* touch)
 void UIControlSystem::CancelAllInputs()
 {
     lastClickData.touchLocker = nullptr;
+    lastClickData.tapCount = 0;
+    lastClickData.lastClickEnded = false;
+
     inputSystem->CancelAllInputs();
 }
 
