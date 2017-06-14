@@ -739,8 +739,10 @@ void UIControlSystem::UnregisterVisibleControl(UIControl* control)
 {
     if (lastClickData.touchLocker == control)
     {
-        // Free reference to invisible control
+        // Free reference to invisible control and reset tap count
         lastClickData.touchLocker = nullptr;
+        lastClickData.tapCount = 0;
+        lastClickData.lastClickEnded = false;
     }
     for (auto& system : systems)
     {
