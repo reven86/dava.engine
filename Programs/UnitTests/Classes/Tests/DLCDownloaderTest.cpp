@@ -199,8 +199,6 @@ DAVA_TESTCLASS (DLCDownloaderTest)
             downloader->WaitTask(task);
         }
 
-        auto status = downloader->GetTaskStatus(task);
-
         finish = SystemTimer::GetMs();
 
         seconds = (finish - start) / 1000.0;
@@ -229,8 +227,6 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         task = downloader->ResumeTask(url, p);
 
         downloader->WaitTask(task);
-
-        status = downloader->GetTaskStatus(task);
 
         downloader->RemoveTask(task);
 
