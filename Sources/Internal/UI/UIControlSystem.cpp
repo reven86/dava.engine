@@ -120,7 +120,7 @@ UIControlSystem::~UIControlSystem()
         currentScreen = nullptr;
     }
 
-    DVASSERT(lastClickData.touchLocker == nullptr);
+    lastClickData.touchLocker = nullptr;
 
     soundSystem = nullptr;
     inputSystem = nullptr;
@@ -464,6 +464,7 @@ void UIControlSystem::CancelInput(UIEvent* touch)
 
 void UIControlSystem::CancelAllInputs()
 {
+    lastClickData.touchLocker = nullptr;
     inputSystem->CancelAllInputs();
 }
 
@@ -737,13 +738,6 @@ void UIControlSystem::RegisterVisibleControl(UIControl* control)
 
 void UIControlSystem::UnregisterVisibleControl(UIControl* control)
 {
-    if (lastClickData.touchLocker == control)
-    {
-        // Free reference to invisible control and reset tap count
-        lastClickData.touchLocker = nullptr;
-        lastClickData.tapCount = 0;
-        lastClickData.lastClickEnded = false;
-    }
     for (auto& system : systems)
     {
         system->OnControlInvisible(control);
