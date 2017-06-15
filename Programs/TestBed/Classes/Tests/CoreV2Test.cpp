@@ -38,6 +38,7 @@ void CoreV2Test::LoadResources()
     float32 gap = 10.0f;
     float32 y = 10.0f;
     buttonQuit = CreateUIButton(font, Rect(10, y, 200, h), "Quit", &CoreV2Test::OnQuit);
+    buttonTerminate = CreateUIButton(font, Rect(10, y += h + gap, 200, h), "Terminate", &CoreV2Test::OnTerminate);
     buttonCloseWindow = CreateUIButton(font, Rect(10, y += h + gap, 200, h), "Close window", &CoreV2Test::OnCloseWindow);
 
     buttonResize640x480 = CreateUIButton(font, Rect(10, y += h + gap, 200, h), "Resize 640x480", &CoreV2Test::OnResize);
@@ -74,6 +75,7 @@ void CoreV2Test::UnloadResources()
     engine.windowDestroyed.Disconnect(this);
 
     SafeRelease(buttonQuit);
+    SafeRelease(buttonTerminate);
     SafeRelease(buttonCloseWindow);
     SafeRelease(buttonResize640x480);
     SafeRelease(buttonResize1024x768);
@@ -100,6 +102,12 @@ void CoreV2Test::OnQuit(DAVA::BaseObject* obj, void* data, void* callerData)
 {
     Logger::Info("CoreV2Test: sending quit...");
     engine.QuitAsync(4);
+}
+
+void CoreV2Test::OnTerminate(DAVA::BaseObject* obj, void* data, void* callerData)
+{
+    Logger::Info("CoreV2Test: terminating...");
+    engine.Terminate();
 }
 
 void CoreV2Test::OnCloseWindow(DAVA::BaseObject* obj, void* data, void* callerData)

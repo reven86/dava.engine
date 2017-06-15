@@ -63,6 +63,7 @@ public:
     void Init(eEngineRunMode engineRunMode, const Vector<String>& modules, KeyedArchive* options_);
     int Run();
     void Quit(int32 exitCode_);
+    void Terminate(int exitCode);
 
     void SetCloseRequestHandler(const Function<bool(Window*)>& handler);
     void DispatchOnMainThread(const Function<void()>& task, bool blocking);
