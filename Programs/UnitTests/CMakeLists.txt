@@ -58,7 +58,6 @@ elseif (WINDOWS_UAP AND WINDOWS_UAP_PLATFORMS MATCHES "ARM")
 elseif (LINUX)
     # for now physx is not supported for linux
 else()
-    dava_add_definitions(-D__DAVAENGINE_PHYSICS_ENABLED__)
     list ( APPEND DAVA_COMPONENTS "Physics" )
 endif()
 

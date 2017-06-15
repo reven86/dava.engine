@@ -8,8 +8,7 @@ Subject: [PATCH] dava build fixes
 ---
  Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc12win32/PhysX.vcxproj | 18 +++++++++---------
  Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc12win64/PhysX.vcxproj | 16 ++++++++--------
- Thirdparty/output/physx/PhysX-3.4-master/PxShared/include/foundation/PxPreprocessor.h      |  2 ++
- 3 files changed, 19 insertions(+), 17 deletions(-)
+ 2 files changed, 17 insertions(+), 17 deletions(-)
 
 diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc12win32/PhysX.vcxproj b/Thirdparty/output/physx/PhysX-3.4-master/PhysX_3.4/Source/compiler/vc12win32/PhysX.vcxproj
 index 35a5b382..376e5d55 100644
@@ -113,19 +112,6 @@ index 070693d9..291966bc 100644
  			<OutputFile>$(OutDir)PhysX3_x64.dll</OutputFile>
  			<AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
  			<ProgramDatabaseFile>$(TargetDir)\$(TargetName).pdb</ProgramDatabaseFile>
-diff --git a/Thirdparty/output/physx/PhysX-3.4-master/PxShared/include/foundation/PxPreprocessor.h b/Thirdparty/output/physx/PhysX-3.4-master/PxShared/include/foundation/PxPreprocessor.h
-index 7921217d..6d0af986 100644
---- a/Thirdparty/output/physx/PhysX-3.4-master/PxShared/include/foundation/PxPreprocessor.h
-+++ b/Thirdparty/output/physx/PhysX-3.4-master/PxShared/include/foundation/PxPreprocessor.h
-@@ -30,6 +30,8 @@
- #ifndef PXFOUNDATION_PXPREPROCESSOR_H
- #define PXFOUNDATION_PXPREPROCESSOR_H
- 
-+#define DISABLE_CUDA_PHYSX
-+
- #include <stddef.h>
- #if !defined(PX_GENERATE_META_DATA)
- #include <ciso646>  
 -- 
 2.13.0.windows.1
 
