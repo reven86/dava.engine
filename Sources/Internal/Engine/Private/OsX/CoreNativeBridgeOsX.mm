@@ -94,6 +94,12 @@ CoreNativeBridge::CoreNativeBridge(PlatformCore* core)
 
     // Force init NSApplication
     [NSApplication sharedApplication];
+
+    // On macOS, AppKit will catch exceptions thrown on the main thread, preventing the application
+    // from crashing, but also preventing Crashlytics from reporting them.
+    // See more here: https://docs.fabric.io/apple/crashlytics/os-x.html
+    // Turn of feature to crash on uncaught objective-c exception.
+    [[NSUserDefaults standardUserDefaults] registerDefaults:@{ @"NSApplicationCrashOnExceptions" : @YES }];
 }
 
 CoreNativeBridge::~CoreNativeBridge()
