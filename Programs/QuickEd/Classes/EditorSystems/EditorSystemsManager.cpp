@@ -161,6 +161,11 @@ void EditorSystemsManager::SetEmulationMode(bool emulationMode)
 
 ControlNode* EditorSystemsManager::GetControlNodeAtPoint(const DAVA::Vector2& point, bool canGoDeeper) const
 {
+    if (accessor->GetActiveContext() == nullptr)
+    {
+        return nullptr;
+    }
+
     if (!KeyboardProxy::IsKeyPressed(KeyboardProxy::KEY_ALT))
     {
         return selectionSystemPtr->GetCommonNodeUnderPoint(point, canGoDeeper);
