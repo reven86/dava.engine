@@ -10,7 +10,7 @@ public class DavaLog
 
     static
     {
-        logger = Logger.getLogger("com.dava.engine.Log");
+        logger = Logger.getLogger("com.dava.engine.DavaLog");
         logger.setLevel(Level.FINEST);
     }
 
