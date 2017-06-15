@@ -159,7 +159,7 @@ final class DavaSurfaceView extends SurfaceView
     @Override
     public void surfaceCreated(SurfaceHolder holder)
     {
-        DavaLog.d(DavaActivity.LOG_TAG, "DavaSurface.surfaceCreated");
+        DavaLog.i(DavaActivity.LOG_TAG, "DavaSurface.surfaceCreated");
         nativeSurfaceViewOnSurfaceCreated(windowBackendPointer, this);
     }
 
@@ -188,14 +188,14 @@ final class DavaSurfaceView extends SurfaceView
         
         if (skip)
         {
-            DavaLog.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: skip w=%d, h=%d", w, h));
+            DavaLog.i(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: skip w=%d, h=%d", w, h));
             return;
         }
 
         int dpi = getDpi();
         isSurfaceReady = true;
 
-        DavaLog.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: w=%d, h=%d, surfW=%d, surfH=%d, dpi=%d", w, h, w, h, dpi));
+        DavaLog.i(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: w=%d, h=%d, surfW=%d, surfH=%d, dpi=%d", w, h, w, h, dpi));
         nativeSurfaceViewOnSurfaceChanged(windowBackendPointer, holder.getSurface(), w, h, w, h, dpi);
         
         if (!DavaActivity.isNativeThreadRunning())
@@ -209,7 +209,7 @@ final class DavaSurfaceView extends SurfaceView
     @Override
     public void surfaceDestroyed(SurfaceHolder holder)
     {
-        DavaLog.d(DavaActivity.LOG_TAG, "DavaSurface.surfaceDestroyed");
+        DavaLog.i(DavaActivity.LOG_TAG, "DavaSurface.surfaceDestroyed");
         
         DavaActivity.instance().handlePause();
         if (isSurfaceReady)
