@@ -339,13 +339,23 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
                 engineBackend->ResetRenderer(this->window, !this->IsWindowReadyForRender());
             }));
         }
+
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([this]() {
+            if (engineBackend->IsSuspended())
+            {
+                engineBackend->DrawSingleFrameWhileSuspended();
+            }
+        }));
     }
 }
 
 void WindowBackend::SurfaceDestroyed()
 {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([this]() {
+    // Android documentation says that after surfaceDestroyed call is finished no one should touch the surface
+    // So make a blocking call that resets native window pointer and renderer
+    mainDispatcher->SendEvent(MainDispatcherEvent::CreateFunctorEvent([this]() {
         ReplaceAndroidNativeWindow(nullptr);
+        engineBackend->ResetRenderer(this->window, true);
     }));
 }
 

@@ -397,13 +397,22 @@ int32 EngineBackend::OnFrame()
             rhi::InvalidateCache();
 #endif
             Update(frameDelta);
-            UpdateWindows(frameDelta);
+            UpdateAndDrawWindows(frameDelta, false);
         }
     }
     else
     {
+        // See comment to DrawSingleFrameWhileSuspended method
+        if (drawSingleFrameWhileSuspended)
+        {
+            Logger::Info("EngineBackend::OnFrame, rendering single frame while suspended");
+            ResumeRenderer();
+            UpdateAndDrawWindows(frameDelta, true);
+        }
         BackgroundUpdate(frameDelta);
     }
+
+    drawSingleFrameWhileSuspended = false;
 
     // Notify memory profiler about new frame
     DAVA_MEMORY_PROFILER_UPDATE();
@@ -433,11 +442,13 @@ void EngineBackend::Update(float32 frameDelta)
     context->localNotificationController->Update();
 }
 
-void EngineBackend::UpdateWindows(float32 frameDelta)
+void EngineBackend::UpdateAndDrawWindows(float32 frameDelta, bool drawOnly)
 {
     for (Window* w : aliveWindows)
     {
         BeginFrame();
+
+        if (!drawOnly)
         {
             DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_UPDATE_WINDOW);
             w->Update(frameDelta);
@@ -622,8 +633,7 @@ void EngineBackend::HandleAppSuspended(const MainDispatcherEvent& e)
         Logger::Info("EngineBackend::HandleAppSuspended: enter");
 
         appIsSuspended = true;
-        if (Renderer::IsInitialized())
-            rhi::SuspendRendering();
+        SuspendRenderer();
         rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
         engine->suspended.Emit();
 
@@ -638,8 +648,7 @@ void EngineBackend::HandleAppResumed(const MainDispatcherEvent& e)
         Logger::Info("EngineBackend::HandleAppResumed: enter");
 
         appIsSuspended = false;
-        if (Renderer::IsInitialized())
-            rhi::ResumeRendering();
+        ResumeRenderer();
         engine->resumed.Emit();
 
         Logger::Info("EngineBackend::HandleAppResumed: leave");
@@ -1056,6 +1065,29 @@ void EngineBackend::SetScreenTimeoutEnabled(bool enabled)
 bool EngineBackend::IsRunning() const
 {
     return isRunning;
+}
+
+void EngineBackend::SuspendRenderer()
+{
+    if (Renderer::IsInitialized() && !rendererSuspended)
+    {
+        rhi::SuspendRendering();
+        rendererSuspended = true;
+    }
+}
+
+void EngineBackend::ResumeRenderer()
+{
+    if (Renderer::IsInitialized() && rendererSuspended)
+    {
+        rhi::ResumeRendering();
+        rendererSuspended = false;
+    }
+}
+
+void EngineBackend::DrawSingleFrameWhileSuspended()
+{
+    drawSingleFrameWhileSuspended = true;
 }
 
 } // namespace Private
