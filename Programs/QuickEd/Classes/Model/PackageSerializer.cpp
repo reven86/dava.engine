@@ -144,7 +144,10 @@ void PackageSerializer::VisitPackage(PackageNode* node)
         EndArray();
     }
 
-    PutCustomData(node);
+    if (node->HasCustomData())
+    {
+        PutCustomData(node);
+    }
 }
 
 void PackageSerializer::VisitImportedPackages(ImportedPackagesNode* node)

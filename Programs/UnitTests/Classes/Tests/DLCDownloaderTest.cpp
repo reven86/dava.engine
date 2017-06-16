@@ -1,6 +1,6 @@
 #include "UnitTests/UnitTests.h"
 
-#ifndef __DAVAENGINE_WIN_UAP__
+#if !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_IOS__)
 #include <DLCManager/DLCDownloader.h>
 #include <DLCManager/Private/DLCManagerImpl.h>
 #include <Logger/Logger.h>
@@ -9,7 +9,6 @@
 #include <Time/SystemTimer.h>
 #include <Utils/CRC32.h>
 #include <EmbeddedWebServer.h>
-#include <Platform/DeviceInfo.h>
 #include <Engine/Engine.h>
 
 #include <iomanip>
@@ -186,25 +185,9 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         float64 seconds = 0.0;
         float64 sizeInGb = FULL_SIZE_ON_SERVER / (1024.0 * 1024.0 * 1024.0);
 
-        DownloadManager* dm = DownloadManager::Instance();
-
         FilePath pathOld("~doc:/big_tmp_file_from_server.old.remove.me");
         fs->DeleteFile(pathOld);
 
-        //////----first--------------------------------------------------------
-        start = SystemTimer::GetMs();
-
-        int numOfParts = 4;
-
-        uint32 id = dm->Download(url, pathOld, FULL);
-
-        dm->Wait(id);
-
-        finish = SystemTimer::GetMs();
-
-        seconds = (finish - start) / 1000.0;
-
-        Logger::Info("old downloader %f Gb parts(%d) download from in house server for: %f", sizeInGb, numOfParts, seconds);
         //// ----next-------------------------------------------------------
         {
             start = SystemTimer::GetMs();
@@ -242,6 +225,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         task = downloader->ResumeTask(url, p);
 
         downloader->WaitTask(task);
+
         downloader->RemoveTask(task);
 
         crcFromFile = CRC32::ForFile(p);
@@ -290,7 +274,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
 
         seconds = (finish - start) / 1000.0;
 
-        Logger::Info("1024 part of %f Gb download from in house server for: %f", sizeInGb, seconds);
+        Logger::Info("%d part of %f Gb download from in house server for: %f", static_cast<int>(numAll), sizeInGb, seconds);
 
         // free memory
         for (auto t : allTasks)

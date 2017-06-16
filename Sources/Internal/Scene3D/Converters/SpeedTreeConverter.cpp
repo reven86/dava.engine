@@ -276,15 +276,33 @@ void SpeedTreeConverter::ConvertPolygonGroupsPivot3(Entity* scene)
 
     ConvertingPathRecursive(scene);
 
-    Map<PolygonGroup*, PolygonGroup*> convertedPGs;
+    Map<PolygonGroup*, PolygonGroup*> pgCopy;
     for (PolygonGroup* dataSource : uniqPGs)
     {
         int32 vertexFormat = dataSource->GetFormat();
         int32 vxCount = dataSource->GetVertexCount();
         int32 indCount = dataSource->GetIndexCount();
+        int32 vertexSize = GetVertexSize(vertexFormat);
+
+        PolygonGroup* pg = new PolygonGroup();
+        pg->AllocateData(vertexFormat, vxCount, indCount);
+        memcpy(pg->meshData, dataSource->meshData, vertexSize * vxCount);
+        memcpy(pg->indexArray, dataSource->indexArray, indCount * sizeof(uint16));
+
+        pgCopy[dataSource] = pg;
+    }
+
+    for (PolygonGroup* pg : uniqPGs)
+    {
+        PolygonGroup* dataSource = pgCopy[pg];
+
+        int32 vertexFormat = dataSource->GetFormat();
+        int32 vxCount = dataSource->GetVertexCount();
+        int32 indCount = dataSource->GetIndexCount();
 
         int32 convertedFormat = (vertexFormat & ~EVF_PIVOT_DEPRECATED) | EVF_PIVOT4;
-        PolygonGroup* pg = new PolygonGroup();
+
+        pg->ReleaseGeometryData();
         pg->AllocateData(convertedFormat, vxCount, indCount);
 
         Memcpy(pg->indexArray, dataSource->indexArray, indCount * sizeof(int16));
@@ -312,8 +330,6 @@ void SpeedTreeConverter::ConvertPolygonGroupsPivot3(Entity* scene)
 
         pg->RecalcAABBox();
         pg->BuildBuffers();
-
-        convertedPGs[dataSource] = pg;
     }
 
     static const FastName FLAG_SPEED_TREE_LEAF("SPEED_TREE_LEAF");
@@ -335,16 +351,7 @@ void SpeedTreeConverter::ConvertPolygonGroupsPivot3(Entity* scene)
         }
     }
 
-    for (SpeedTreeObject* object : uniqTreeObjects)
-    {
-        for (uint32 ri = 0, rCount = object->GetRenderBatchCount(); ri < rCount; ++ri)
-        {
-            RenderBatch* batch = object->GetRenderBatch(ri);
-            batch->SetPolygonGroup(convertedPGs[batch->GetPolygonGroup()]);
-        }
-    }
-
-    for (auto& it : convertedPGs)
+    for (auto& it : pgCopy)
         SafeRelease(it.second);
 }
 };

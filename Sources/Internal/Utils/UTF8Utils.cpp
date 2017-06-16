@@ -31,8 +31,8 @@ void UTF8Utils::EncodeToWideString(const uint8* string, size_t size, WideString&
     catch (const utf8::exception& exception)
     {
         String msg = "UTF8->WideString Conversion error: " + String(exception.what());
-        Logger::Error(msg.c_str());
-        DAVA_THROW(DAVA::Exception, msg);
+        Logger::Warning(msg.c_str());
+        DAVA_THROW(Exception, msg);
     }
 };
 
@@ -52,8 +52,8 @@ String UTF8Utils::EncodeToUTF8(const WideString& wstring)
     catch (const utf8::exception& exception)
     {
         String msg = "WideString->UTF8 Conversion error: " + String(exception.what());
-        Logger::Error(msg.c_str());
-        DAVA_THROW(DAVA::Exception, msg);
+        Logger::Warning(msg.c_str());
+        DAVA_THROW(Exception, msg);
     }
 
     return result;

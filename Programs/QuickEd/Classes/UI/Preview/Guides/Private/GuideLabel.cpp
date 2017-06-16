@@ -14,6 +14,11 @@ void GuideLabel::SetValue(int arg)
     value = arg;
 }
 
+int GuideLabel::GetValue() const
+{
+    return value;
+}
+
 void GuideLabel::paintEvent(QPaintEvent*)
 {
     QPainter painter(this);

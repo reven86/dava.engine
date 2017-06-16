@@ -1,6 +1,7 @@
 #pragma once
 
 #include "EditorSystems/EditorSystemsManager.h"
+#include "EditorSystems/SelectionContainer.h"
 
 #include <TArc/DataProcessing/DataContext.h>
 

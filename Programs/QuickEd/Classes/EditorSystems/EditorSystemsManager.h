@@ -1,8 +1,7 @@
 #pragma once
 
-#include "EditorSystems/SelectionContainer.h"
-
 #include "Model/PackageHierarchy/PackageBaseNode.h"
+#include "Model/PackageHierarchy/ControlNode.h"
 
 #include <TArc/DataProcessing/DataWrapper.h>
 #include <TArc/DataProcessing/DataListener.h>
