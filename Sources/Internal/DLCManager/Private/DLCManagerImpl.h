@@ -148,7 +148,16 @@ public:
 
     void SetRequestingEnabled(bool value) override;
 
-    void Update(float frameDelta);
+    void Update(float frameDelta, bool inBackground);
+
+    void ForegroundUpdate(float frameDelta)
+    {
+        Update(frameDelta, false);
+    }
+    void BackgroundUpdate(float frameDelta)
+    {
+        Update(frameDelta, true);
+    }
 
     bool IsPackDownloaded(const String& packName) override;
 

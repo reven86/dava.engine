@@ -25,8 +25,76 @@ void RequestManager::Stop()
     }
 }
 
-void RequestManager::Update()
+void RequestManager::FireStartLoadingWhileInactiveSignals()
 {
+    if (!requestStartedWhileInactive.empty())
+    {
+        for (const String pack : requestStartedWhileInactive)
+        {
+            PackRequest* r = packManager.FindRequest(pack);
+            if (r)
+            {
+                packManager.requestStartLoading.Emit(*r);
+            }
+        }
+        requestStartedWhileInactive.clear();
+    }
+}
+
+void RequestManager::FireUpdateWhileInactiveSignals()
+{
+    if (!requestUpdatedWhileInactive.empty())
+    {
+        for (const String pack : requestUpdatedWhileInactive)
+        {
+            PackRequest* r = packManager.FindRequest(pack);
+            if (r)
+            {
+                packManager.requestStartLoading.Emit(*r);
+            }
+        }
+        requestUpdatedWhileInactive.clear();
+    }
+}
+
+void RequestManager::FireStartLoadingSignal(PackRequest& request, bool inBackground)
+{
+    if (inBackground)
+    {
+        const String& packName = request.GetRequestedPackName();
+        requestStartedWhileInactive.push_back(packName);
+    }
+    else
+    {
+        packManager.requestStartLoading.Emit(request);
+    }
+}
+
+void RequestManager::FireUpdateSignal(PackRequest& request, bool inBackground)
+{
+    if (inBackground)
+    {
+        const String& packName = request.GetRequestedPackName();
+        auto it = find(begin(requestUpdatedWhileInactive), end(requestUpdatedWhileInactive), packName);
+        // add only once for update signal
+        if (it != end(requestUpdatedWhileInactive))
+        {
+            requestUpdatedWhileInactive.push_back(packName);
+        }
+    }
+    else
+    {
+        packManager.requestUpdated.Emit(request);
+    }
+}
+
+void RequestManager::Update(bool inBackground)
+{
+    if (!inBackground)
+    {
+        FireStartLoadingWhileInactiveSignals();
+    }
+
     if (!Empty())
     {
         Vector<PackRequest*> nextDependentPacks;
@@ -39,7 +107,7 @@ void RequestManager::Update()
             if (callSignal == false && request->GetDownloadedSize() == 0)
             {
                 // empty pack, so we need inform signal
-                packManager.requestStartLoading.Emit(*request);
+                FireStartLoadingSignal(*request, inBackground);
             }
             callSignal = true; // we need to inform on empty pack too
             Pop();
@@ -69,10 +137,10 @@ void RequestManager::Update()
             // may be already be disabled, so we need check it out
             if (packManager.IsRequestingEnabled())
             {
-                packManager.requestUpdated.Emit(*request);
+                FireUpdateSignal(*request, inBackground);
                 for (PackRequest* r : nextDependentPacks)
                 {
-                    packManager.requestUpdated.Emit(*r);
+                    FireUpdateSignal(*r, inBackground);
                 }
             }
         }
