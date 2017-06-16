@@ -57,6 +57,8 @@ public:
     virtual void EndComponentPropertiesSection() = 0;
 
     virtual void ProcessProperty(const DAVA::ReflectedStructure::Field& field, const Any& value) = 0;
+
+    virtual void ProcessCustomData(const YamlNode* customDataNode);
 };
 }
 

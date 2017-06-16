@@ -15,10 +15,19 @@ include      ( CMake-common  )
 set (DAVA_COREV2 1)
 dava_add_definitions(-D__DAVAENGINE_COREV2__)
 
+if (LINUX)
+    dava_add_definitions(-DDISABLE_NATIVE_MOVIEVIEW)
+    dava_add_definitions(-DDISABLE_NATIVE_TEXTFIELD)
+    dava_add_definitions(-DDISABLE_NATIVE_WEBVIEW)
+endif()
+
 # Uncomment to use local resources for android
 # dava_add_definitions(-DUSE_LOCAL_RESOURCES)
 
-set ( DAVA_COMPONENTS "Sound" "SampleModule" "DAVA_DISABLE_AUTOTESTS" )
+set ( DAVA_COMPONENTS "SampleModule" "DAVA_DISABLE_AUTOTESTS" )
+if (NOT LINUX)
+    list ( APPEND DAVA_COMPONENTS "Sound" )
+endif()
 if ( WIN32 AND NOT WIN_UAP AND NOT DAVA_PLATFORM_QT)
     list ( APPEND DAVA_COMPONENTS "CEFWebview" )
 endif ()

@@ -27,6 +27,9 @@
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include <dirent.h>
 #include <sys/stat.h>
+#elif defined(__DAVAENGINE_LINUX__)
+#include <dirent.h>
+#include <sys/stat.h>
 #endif //PLATFORMS
 
 namespace DAVA
@@ -213,6 +216,57 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
             }
         }
     }
+#elif defined(__DAVAENGINE_LINUX__)
+    const String& dirPath = path.GetAbsolutePathname();
+
+    DIR* dir = opendir(dirPath.c_str());
+    if (nullptr != dir)
+    {
+        // print all the files and directories within directory
+        FileEntry entry;
+        for (struct dirent* ent = readdir(dir); nullptr != ent; ent = readdir(dir))
+        {
+            String fileOrDirName = ent->d_name;
+            if (fileOrDirName == "." || fileOrDirName == "..")
+            {
+                continue; // just skip. faster work less bugs
+            }
+            entry.name = fileOrDirName;
+            entry.path = path + entry.name;
+
+            if (ent->d_type != DT_DIR && ent->d_type != DT_REG)
+            {
+                Logger::Error("unsupported d_type in directory: %s", dirPath.c_str());
+                continue;
+            }
+
+            entry.isDirectory = (DT_DIR == ent->d_type);
+            entry.isHidden = (!entry.name.empty() && entry.name[0] == '.');
+            entry.size = 0;
+
+            if (!entry.isDirectory)
+            {
+                struct stat st;
+                String fullPath = dirPath + fileOrDirName;
+                if (stat(fullPath.c_str(), &st) == 0)
+                {
+                    entry.size = st.st_size;
+                }
+            }
+            else
+            {
+                entry.path.MakeDirectoryPathname();
+            }
+
+            if (!entry.isHidden || includeHidden)
+            {
+                fileList.push_back(entry);
+            }
+        }
+        closedir(dir);
+    }
+#else
+#error Unknown platform
 #endif //PLATFORMS
 
     directoryCount = 0;

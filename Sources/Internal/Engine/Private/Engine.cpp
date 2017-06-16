@@ -85,6 +85,11 @@ void Engine::QuitAsync(int exitCode)
     engineBackend->Quit(exitCode);
 }
 
+void Engine::Terminate(int exitCode)
+{
+    engineBackend->Terminate(exitCode);
+}
+
 void Engine::SetCloseRequestHandler(const Function<bool(Window*)>& handler)
 {
     engineBackend->SetCloseRequestHandler(handler);

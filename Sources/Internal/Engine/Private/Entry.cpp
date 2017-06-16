@@ -45,7 +45,7 @@ extern int DAVAMain(DAVA::Vector<DAVA::String> cmdline);
 
 // Defined in EntryApple.mm since it requies obj-c capabilities
 
-#elif defined(__DAVAENGINE_QT__ ) || (defined(__DAVAENGINE_WIN32__) && defined(CONSOLE))
+#elif defined(__DAVAENGINE_LINUX__) || defined(__DAVAENGINE_QT__ ) || (defined(__DAVAENGINE_WIN32__) && defined(CONSOLE))
 
 int main(int argc, char* argv[])
 {
@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
         return DAVAMain(std::move(cmdargs));
     } catch (const Exception& e) {
         StringStream ss;
-        ss << "!!! Unhandled DAVA::Exception at `" << e.file << "`: " << e.line << std::endl;
+        ss << "!!! Unhandled DAVA::Exception \"" << e.what() << "\" at `" << e.file << "`:" << e.line << std::endl;
         ss << Debug::GetBacktraceString(e.callstack) << std::endl;
         Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
         throw;
@@ -90,7 +90,7 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
         return DAVAMain(std::move(cmdargs));
     } catch (const Exception& e) {
         StringStream ss;
-        ss << "!!! Unhandled DAVA::Exception at `" << e.file << "`: " << e.line << std::endl;
+        ss << "!!! Unhandled DAVA::Exception \"" << e.what() << "\" at `" << e.file << "`: " << e.line << std::endl;
         ss << Debug::GetBacktraceString(e.callstack) << std::endl;
         Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
         throw;

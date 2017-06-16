@@ -6,7 +6,7 @@
 #include "Modules/LegacySupportModule/Private/Project.h"
 
 #include "UI/Properties/PropertiesTreeItemDelegate.h"
-#include "UI/QtModelPackageCommandExecutor.h"
+#include "UI/CommandExecutor.h"
 #include "Model/ControlProperties/ComponentPropertiesSection.h"
 #include "Model/ControlProperties/StyleSheetProperty.h"
 #include "Model/ControlProperties/StyleSheetSelectorProperty.h"
@@ -110,7 +110,7 @@ void PropertiesWidget::SetProject(const Project* project)
 
 void PropertiesWidget::OnAddComponent(QAction* action)
 {
-    QtModelPackageCommandExecutor executor(accessor, ui);
+    CommandExecutor executor(accessor, ui);
     DVASSERT(accessor->GetActiveContext() != nullptr);
     const RootProperty* rootProperty = DAVA::DynamicTypeCheck<const RootProperty*>(propertiesModel->GetRootProperty());
 
@@ -129,7 +129,7 @@ void PropertiesWidget::OnAddComponent(QAction* action)
 
 void PropertiesWidget::OnRemove()
 {
-    QtModelPackageCommandExecutor executor(accessor, ui);
+    CommandExecutor executor(accessor, ui);
     DVASSERT(accessor->GetActiveContext() != nullptr);
 
     QModelIndexList indices = treeView->selectionModel()->selectedIndexes();
@@ -172,7 +172,7 @@ void PropertiesWidget::OnRemove()
 
 void PropertiesWidget::OnAddStyleProperty(QAction* action)
 {
-    QtModelPackageCommandExecutor executor(accessor, ui);
+    CommandExecutor executor(accessor, ui);
     DVASSERT(accessor->GetActiveContext() != nullptr);
 
     uint32 propertyIndex = action->data().toUInt();
@@ -188,7 +188,7 @@ void PropertiesWidget::OnAddStyleProperty(QAction* action)
 
 void PropertiesWidget::OnAddStyleSelector()
 {
-    QtModelPackageCommandExecutor executor(accessor, ui);
+    CommandExecutor executor(accessor, ui);
     DVASSERT(accessor->GetActiveContext() != nullptr);
     executor.AddStyleSelector(DynamicTypeCheck<StyleSheetNode*>(selectedNode));
 }

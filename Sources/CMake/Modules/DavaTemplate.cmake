@@ -38,6 +38,32 @@
     cmake_policy(SET CMP0054 NEW)
 #endif()
 
+# You should call this macros before setup_main_executable to add external unittests into executable target
+macro( exctact_external_unittests )
+    load_property(PROPERTY_LIST EXTERNAL_TEST_FOLDERS)
+    foreach( TEST_FOLDER ${EXTERNAL_TEST_FOLDERS} )
+    file( GLOB_RECURSE TEST_FILES "${TEST_FOLDER}/*.unittest"  )
+
+    if( ANDROID OR LINUX )#Fucking android
+        foreach( FILE ${TEST_FILES} )
+            get_filename_component( FILE_NAME ${FILE} NAME )
+            set( OUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/EXTERNAL_TEST/${FILE_NAME}.cpp )
+            configure_file( ${FILE}  ${OUT_FILE} COPYONLY)
+            list( APPEND ADDED_SRC ${OUT_FILE} )
+        endforeach()
+    else()
+        list( APPEND ADDED_SRC ${TEST_FILES} )
+        source_group( "EXTERNAL_TEST" FILES ${TEST_FILES} )
+
+        set_source_files_properties(${TEST_FILES} PROPERTIES
+          HEADER_FILE_ONLY FALSE
+          KEEP_EXTENSION TRUE
+          LANGUAGE CXX
+        )
+    endif()
+endforeach()
+endmacro()
+
 macro( setup_main_executable )
 
 include      ( PlatformSettings )
@@ -375,28 +401,7 @@ if( DAVA_FOUND )
 endif()
 
 ###
-foreach( TEST_FOLDER ${EXTERNAL_TEST_FOLDERS} )
-    file( GLOB_RECURSE TEST_FILES "${TEST_FOLDER}/*.unittest"  )
 
-    if( ANDROID )#Fucking android
-        foreach( FILE ${TEST_FILES} )
-            get_filename_component( FILE_NAME ${FILE} NAME )
-            set( OUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/EXTERNAL_TEST/${FILE_NAME}.cpp )
-            configure_file( ${FILE}  ${OUT_FILE} COPYONLY)
-            list( APPEND PROJECT_SOURCE_FILES ${OUT_FILE} )
-        endforeach()
-    else()
-        list( APPEND PROJECT_SOURCE_FILES ${TEST_FILES} )
-        source_group( "EXTERNAL_TEST" FILES ${TEST_FILES} )
-
-        set_source_files_properties(${TEST_FILES} PROPERTIES
-          HEADER_FILE_ONLY FALSE
-          KEEP_EXTENSION TRUE
-          LANGUAGE CXX
-        )
-    endif()
-
-endforeach()
 
 ###
 
@@ -851,6 +856,10 @@ endif()
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${DAVA_PREDEFINED_TARGETS_FOLDER} )
 
+if (LINUX)
+    # Reverse modules to link libDavaFramework.a first before other modules
+    list(REVERSE TARGET_MODULES_LIST )
+endif()
 target_link_libraries( ${PROJECT_NAME} ${LINK_WHOLE_ARCHIVE_FLAG} ${TARGET_LIBRARIES} ${TARGET_MODULES_LIST} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${LIBRARIES} ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}} )
 
 foreach ( FILE ${LIBRARIES_DEBUG} )

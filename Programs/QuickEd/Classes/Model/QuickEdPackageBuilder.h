@@ -4,11 +4,11 @@
 #include "FileSystem/FilePath.h"
 #include "UI/Styles/UIStyleSheetStructs.h"
 #include "Model/ControlProperties/SectionProperty.h"
+#include "Model/PackageHierarchy/PackageNode.h"
 
 #include <Base/Result.h>
 #include <Engine/Engine.h>
 
-class PackageNode;
 class ControlNode;
 class StyleSheetNode;
 class ControlsContainerNode;
@@ -41,10 +41,14 @@ public:
 
     virtual void ProcessProperty(const DAVA::ReflectedStructure::Field& field, const DAVA::Any& value) override;
 
+    virtual void ProcessCustomData(const DAVA::YamlNode* customDataNode) override;
+    void ProcessGuides(const DAVA::YamlNode* guidesNode);
+
     DAVA::RefPtr<PackageNode> BuildPackage() const;
     const DAVA::Vector<ControlNode*>& GetRootControls() const;
     const DAVA::Vector<PackageNode*>& GetImportedPackages() const;
     const DAVA::Vector<StyleSheetNode*>& GetStyles() const;
+
     void AddImportedPackage(PackageNode* node);
 
     const DAVA::ResultList& GetResults() const;
@@ -74,6 +78,8 @@ private:
     DAVA::Vector<ControlNode*> prototypes;
     DAVA::Vector<StyleSheetNode*> styleSheets;
     DAVA::Vector<DAVA::FilePath> declinedPackages;
+
+    DAVA::Map<DAVA::String, PackageNode::Guides> allGuides;
 
     DAVA::BaseObject* currentObject;
     SectionProperty<IntrospectionProperty>* currentSection;

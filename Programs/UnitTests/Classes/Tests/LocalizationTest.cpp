@@ -79,6 +79,8 @@ DAVA_TESTCLASS (LocalizationTest)
         }
     }
 
+// TODO: linux
+#if !defined(__DAVAENGINE_LINUX__)
     DAVA_TEST (BiDiTest)
     {
         using namespace DAVA;
@@ -134,4 +136,5 @@ DAVA_TESTCLASS (LocalizationTest)
             TEST_VERIFY_WITH_MESSAGE(visual == visual_work, Format("YamlNode index: %d", k));
         }
     }
+#endif
 };

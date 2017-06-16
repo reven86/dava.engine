@@ -13,6 +13,7 @@
 #include "DAVAClassRegistrator.h"
 #include "Analytics/Analytics.h"
 #include "Analytics/LoggingBackend.h"
+#include "Animation/AnimationManager.h"
 #include "ReflectionDeclaration/ReflectionDeclaration.h"
 #include "Autotesting/AutotestingSystem.h"
 #include "Base/AllocatorFactory.h"
@@ -30,6 +31,7 @@
 #include "Engine/EngineSettings.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
+#include "FileSystem/LocalizationSystem.h"
 #include "Job/JobManager.h"
 #include "Input/InputSystem.h"
 #include "Logger/Logger.h"
@@ -42,6 +44,7 @@
 #include "Platform/DPIHelper.h"
 #include "Platform/Steam.h"
 #include "PluginManager/PluginManager.h"
+#include "Render/2D/FontManager.h"
 #include "Render/2D/FTFont.h"
 #include "Render/2D/TextBlock.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -57,11 +60,14 @@
 #include "UI/UIControlSystem.h"
 #include "Entity/ComponentManager.h"
 #include "Reflection/ReflectedTypeDB.h"
+#include "Utils/Random.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 #include "Engine/Private/Android/AndroidBridge.h"
 #endif
+
+#include <cstdlib>
 
 namespace DAVA
 {
@@ -256,6 +262,17 @@ void EngineBackend::Quit(int exitCode_)
     }
 }
 
+void EngineBackend::Terminate(int exitCode)
+{
+#if defined(_MSC_VER) && _MSC_VER < 1900
+    // msvc prior to 2015 does not support neither std::quick_exit nor std::_Exit
+    _exit(exitCode);
+#else
+    // Here we could call std::quick_exit but it seems that only msvc2015 supports it now
+    std::_Exit(exitCode);
+#endif
+}
+
 void EngineBackend::SetCloseRequestHandler(const Function<bool(Window*)>& handler)
 {
     closeRequestHandler = handler;
@@ -271,6 +288,18 @@ void EngineBackend::DispatchOnMainThread(const Function<void()>& task, bool bloc
 void EngineBackend::RunConsole()
 {
     OnGameLoopStarted();
+
+    // Check whether to init null renderer
+    if (options->IsKeyExists("renderer"))
+    {
+        rhi::Api renderer = static_cast<rhi::Api>(options->GetInt32("renderer", rhi::RHI_GLES2));
+        if (renderer == rhi::RHI_NULL_RENDERER)
+        {
+            rhi::InitParam params{};
+            Renderer::Initialize(rhi::RHI_NULL_RENDERER, params);
+        }
+    }
+
     while (!quitConsole)
     {
         OnFrameConsole();
@@ -295,7 +324,10 @@ void EngineBackend::OnGameLoopStopped()
     DVASSERT(justCreatedWindows.empty());
 
     engine->gameLoopStopped.Emit();
-    rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
+    if (!IsConsoleMode())
+    {
+        rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
+    }
 
     Logger::Info("EngineBackend::OnGameLoopStopped: leave");
 }
@@ -377,13 +409,22 @@ int32 EngineBackend::OnFrame()
             rhi::InvalidateCache();
 #endif
             Update(frameDelta);
-            UpdateWindows(frameDelta);
+            UpdateAndDrawWindows(frameDelta, false);
         }
     }
     else
     {
+        // See comment to DrawSingleFrameWhileSuspended method
+        if (drawSingleFrameWhileSuspended)
+        {
+            Logger::Info("EngineBackend::OnFrame, rendering single frame while suspended");
+            ResumeRenderer();
+            UpdateAndDrawWindows(frameDelta, true);
+        }
         BackgroundUpdate(frameDelta);
     }
+
+    drawSingleFrameWhileSuspended = false;
 
     // Notify memory profiler about new frame
     DAVA_MEMORY_PROFILER_UPDATE();
@@ -413,11 +454,13 @@ void EngineBackend::Update(float32 frameDelta)
     context->localNotificationController->Update();
 }
 
-void EngineBackend::UpdateWindows(float32 frameDelta)
+void EngineBackend::UpdateAndDrawWindows(float32 frameDelta, bool drawOnly)
 {
     for (Window* w : aliveWindows)
     {
         BeginFrame();
+
+        if (!drawOnly)
         {
             DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_UPDATE_WINDOW);
             w->Update(frameDelta);
@@ -602,8 +645,7 @@ void EngineBackend::HandleAppSuspended(const MainDispatcherEvent& e)
         Logger::Info("EngineBackend::HandleAppSuspended: enter");
 
         appIsSuspended = true;
-        if (Renderer::IsInitialized())
-            rhi::SuspendRendering();
+        SuspendRenderer();
         rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
         engine->suspended.Emit();
 
@@ -618,8 +660,7 @@ void EngineBackend::HandleAppResumed(const MainDispatcherEvent& e)
         Logger::Info("EngineBackend::HandleAppResumed: enter");
 
         appIsSuspended = false;
-        if (Renderer::IsInitialized())
-            rhi::ResumeRendering();
+        ResumeRenderer();
         engine->resumed.Emit();
 
         Logger::Info("EngineBackend::HandleAppResumed: leave");
@@ -965,6 +1006,29 @@ void EngineBackend::SetScreenTimeoutEnabled(bool enabled)
 bool EngineBackend::IsRunning() const
 {
     return isRunning;
+}
+
+void EngineBackend::SuspendRenderer()
+{
+    if (Renderer::IsInitialized() && !rendererSuspended)
+    {
+        rhi::SuspendRendering();
+        rendererSuspended = true;
+    }
+}
+
+void EngineBackend::ResumeRenderer()
+{
+    if (Renderer::IsInitialized() && rendererSuspended)
+    {
+        rhi::ResumeRendering();
+        rendererSuspended = false;
+    }
+}
+
+void EngineBackend::DrawSingleFrameWhileSuspended()
+{
+    drawSingleFrameWhileSuspended = true;
 }
 
 } // namespace Private

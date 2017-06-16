@@ -3,6 +3,9 @@
 
 using namespace DAVA;
 
+/*
+ DateTimeTest is an example how to not write unit tests
+*/
 DAVA_TESTCLASS (DateTimeTest)
 {
     DAVA_TEST (TestFunction)

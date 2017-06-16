@@ -3,6 +3,7 @@
 #include "PackageHierarchy/PackageNode.h"
 #include "PackageHierarchy/ImportedPackagesNode.h"
 #include "PackageHierarchy/PackageControlsNode.h"
+
 #include "Model/ControlProperties/ControlPropertiesSection.h"
 #include "Model/ControlProperties/ComponentPropertiesSection.h"
 #include "Model/ControlProperties/ValueProperty.h"
@@ -13,20 +14,29 @@
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Model/PackageHierarchy/StyleSheetsNode.h"
 
-#include "Base/ObjectFactory.h"
-#include "Entity/ComponentManager.h"
-#include "Reflection/ReflectedTypeDB.h"
-#include "UI/UIPackage.h"
-#include "UI/UIControl.h"
-#include "UI/UIControlPackageContext.h"
-#include "UI/Styles/UIStyleSheet.h"
-#include "UI/Styles/UIStyleSheetYamlLoader.h"
-#include "Utils/Utils.h"
+#include <Base/ObjectFactory.h>
+#include <Entity/ComponentManager.h>
+#include <FileSystem/YamlNode.h>
+#include <UI/UIPackage.h>
+#include <UI/UIControl.h>
+#include <UI/UIControlPackageContext.h>
+#include <UI/Styles/UIStyleSheet.h>
+#include <UI/Styles/UIStyleSheetYamlLoader.h>
+#include <Utils/Utils.h>
 
 using namespace DAVA;
 
+namespace QuickEdPackageBuilderDetails
+{
 const String EXCEPTION_CLASS_UI_TEXT_FIELD = "UITextField";
 const String EXCEPTION_CLASS_UI_LIST = "UIList";
+
+struct GuidesOrientation
+{
+    String type;
+    PackageNode::AxisGuides* values;
+};
+}
 
 QuickEdPackageBuilder::QuickEdPackageBuilder(const EngineContext* engineContext_)
     : currentObject(nullptr)
@@ -113,7 +123,7 @@ const ReflectedType* QuickEdPackageBuilder::BeginControlWithClass(const FastName
     RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
     if (control.Valid())
     {
-        if (className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST) //TODO: fix internal staticText for Win\Mac
+        if (className != QuickEdPackageBuilderDetails::EXCEPTION_CLASS_UI_TEXT_FIELD && className != QuickEdPackageBuilderDetails::EXCEPTION_CLASS_UI_LIST) //TODO: fix internal staticText for Win\Mac
         {
             control->RemoveAllControls();
         }
@@ -138,7 +148,7 @@ const ReflectedType* QuickEdPackageBuilder::BeginControlWithCustomClass(const Fa
 
     if (control.Valid())
     {
-        if (className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST) //TODO: fix internal staticText for Win\Mac
+        if (className != QuickEdPackageBuilderDetails::EXCEPTION_CLASS_UI_TEXT_FIELD && className != QuickEdPackageBuilderDetails::EXCEPTION_CLASS_UI_LIST) //TODO: fix internal staticText for Win\Mac
         {
             control->RemoveAllControls();
         }
@@ -358,6 +368,51 @@ void QuickEdPackageBuilder::ProcessProperty(const ReflectedStructure::Field& fie
     }
 }
 
+void QuickEdPackageBuilder::ProcessCustomData(const YamlNode* customDataNode)
+{
+    DVASSERT(customDataNode != nullptr);
+    DVASSERT(customDataNode->GetType() == YamlNode::TYPE_MAP);
+
+    const YamlNode* guidesNode = customDataNode->Get("Guides");
+    if (guidesNode != nullptr)
+    {
+        ProcessGuides(guidesNode);
+    }
+}
+
+void QuickEdPackageBuilder::ProcessGuides(const DAVA::YamlNode* guidesNode)
+{
+    const UnorderedMap<String, YamlNode*>& controlsMap = guidesNode->AsMap();
+    for (const auto& controlsMapItem : controlsMap)
+    {
+        const String& controlName = controlsMapItem.first;
+        YamlNode* allGuidesNode = controlsMapItem.second;
+        PackageNode::Guides& guides = allGuides[controlName];
+
+        Vector<QuickEdPackageBuilderDetails::GuidesOrientation> orientations = { { "Vertical", &guides[Vector2::AXIS_X] }, { "Horizontal", &guides[Vector2::AXIS_Y] } };
+        for (QuickEdPackageBuilderDetails::GuidesOrientation& orientation : orientations)
+        {
+            const YamlNode* guideValuesNode = allGuidesNode->Get(orientation.type);
+            if (guideValuesNode != nullptr)
+            {
+                const Vector<YamlNode*>& valuesNodes = guideValuesNode->AsVector();
+                PackageNode::AxisGuides* values = orientation.values;
+                if (values->empty() == false)
+                {
+                    results.AddResult(Result::RESULT_WARNING, Format("Guides for control %s already exists! They will be overwritten", controlName.c_str()));
+                    values->clear();
+                }
+                std::transform(valuesNodes.begin(),
+                               valuesNodes.end(),
+                               std::back_inserter(*values),
+                               [](YamlNode* node) {
+                                   return node->AsFloat();
+                               });
+            }
+        }
+    }
+}
+
 RefPtr<PackageNode> QuickEdPackageBuilder::BuildPackage() const
 {
     DVASSERT(!packagePath.IsEmpty());
@@ -412,6 +467,11 @@ RefPtr<PackageNode> QuickEdPackageBuilder::BuildPackage() const
         {
             package->GetPackageControlsNode()->Add(control);
         }
+    }
+
+    for (const auto& mapItem : allGuides)
+    {
+        package->SetGuides(mapItem.first, mapItem.second);
     }
 
     package->RefreshPackageStylesAndLayout();

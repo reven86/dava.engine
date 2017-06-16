@@ -1,5 +1,6 @@
 #include "UI/Components/UIComponent.h"
 #include "UI/UIControl.h"
+#include "UI/RichContent/UIRichContentAliasesComponent.h"
 
 #include "Reflection/ReflectionRegistrator.h"
 
@@ -52,7 +53,14 @@ RefPtr<UIComponent> UIComponent::SafeCreateByType(const Type* componentType)
 
 bool UIComponent::IsMultiple(const Type* componentType)
 {
-    return false;
+    if (componentType == Type::Instance<UIRichContentAliasesComponent>())
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 RefPtr<UIComponent> UIComponent::SafeClone() const

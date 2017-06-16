@@ -4,8 +4,14 @@
 #include "Concurrency/LockGuard.h"
 #include "Utils/StringUtils.h"
 
+#if defined(__DAVAENGINE_LINUX__)
+// TODO: linux
+#define DAVA_FRIBIDI 0
+#define DAVA_ICU 0
+#else
 #define DAVA_FRIBIDI 0
 #define DAVA_ICU 1
+#endif
 
 #if DAVA_FRIBIDI
 #include "fribidi/fribidi.h"
@@ -298,7 +304,7 @@ BiDiHelper::Direction BiDiWrapper::GetDirectionUTF8String(const String& utf8Stri
     }
 
 #else
-    return false;
+    return BiDiHelper::Direction::LTR;
 
 #endif
 }

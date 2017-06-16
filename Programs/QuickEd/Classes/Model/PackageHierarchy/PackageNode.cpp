@@ -195,6 +195,7 @@ void PackageNode::RemoveListener(PackageListener* listener)
 
 void PackageNode::SetControlProperty(ControlNode* node, AbstractProperty* property, const DAVA::Any& newValue)
 {
+    OnControlPropertyWillBeChanged(node, property, property->GetValue(), newValue);
     node->GetRootProperty()->SetProperty(property, newValue);
     RefreshProperty(node, property);
 }
@@ -203,6 +204,7 @@ void PackageNode::ResetControlProperty(ControlNode* node, AbstractProperty* prop
 {
     if (property->IsOverriddenLocally())
     {
+        OnControlPropertyWillBeChanged(node, property, property->GetValue(), property->GetDefaultValue());
         node->GetRootProperty()->ResetProperty(property);
         RefreshProperty(node, property);
     }
@@ -445,6 +447,51 @@ bool PackageNode::CanUpdateAll() const
     return canUpdateAll;
 }
 
+PackageNode::AxisGuides PackageNode::GetAxisGuides(const DAVA::String& name, DAVA::Vector2::eAxis orientation)
+{
+    auto iter = allGuides.find(name);
+    if (iter != allGuides.end())
+    {
+        return iter->second[orientation];
+    }
+    return AxisGuides();
+}
+
+void PackageNode::SetAxisGuides(const DAVA::String& name, DAVA::Vector2::eAxis orientation, const PackageNode::AxisGuides& guidesValues)
+{
+    DVASSERT(name.empty() == false);
+    Guides& guides = allGuides[name];
+    guides[orientation] = guidesValues;
+}
+
+PackageNode::Guides PackageNode::GetGuides(const DAVA::String& name) const
+{
+    auto iter = allGuides.find(name);
+    if (iter != allGuides.end())
+    {
+        return iter->second;
+    }
+    return Guides();
+}
+
+bool PackageNode::HasCustomData() const
+{
+    for (const auto& mapItem : allGuides)
+    {
+        const Guides& guides = mapItem.second;
+        if (guides[Vector2::AXIS_X].empty() == false || guides[Vector2::AXIS_Y].empty() == false)
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+void PackageNode::SetGuides(const DAVA::String& name, const PackageNode::Guides& guides)
+{
+    allGuides[name] = guides;
+}
+
 void PackageNode::RefreshPropertiesInInstances(ControlNode* node, AbstractProperty* property)
 {
     for (ControlNode* instance : node->GetInstances())
@@ -498,4 +545,50 @@ Vector<PackageNode::DepthPackageNode> PackageNode::CollectImportedPackagesRecurs
     }
 
     return result;
+}
+
+void PackageNode::OnControlPropertyWillBeChanged(ControlNode* node, AbstractProperty* property, const Any& oldValue, const Any& newValue)
+{
+    using namespace DAVA;
+    DVASSERT(node != nullptr);
+    DVASSERT(property != nullptr);
+
+    if (dynamic_cast<PackageControlsNode*>(node->GetParent()) != nullptr && property->GetName() == "Name")
+    {
+        String name = oldValue.Cast<String>(String());
+        Guides guides = GetGuides(name);
+
+        if (FindRootWithSameName(node, this) == false)
+        {
+            SetGuides(name, Guides());
+        }
+
+        String newName = newValue.Cast<String>(String());
+        //we don't support root controls without name
+        //all notification messages must be separate from this logic
+        if (newName.empty() == false)
+        {
+            SetGuides(newName, guides);
+        }
+    }
+}
+
+bool FindRootWithSameName(ControlNode* control, PackageNode* package)
+{
+    DVASSERT(dynamic_cast<PackageControlsNode*>(control->GetParent()) != nullptr);
+    String name = control->GetName();
+    Vector<PackageControlsNode*> rootControlsHolders = { package->GetPrototypes(), package->GetPackageControlsNode() };
+
+    for (PackageControlsNode* rootControlsHolder : rootControlsHolders)
+    {
+        for (int i = 0, count = rootControlsHolder->GetCount(); i < count; i++)
+        {
+            ControlNode* rootChild = rootControlsHolder->Get(i);
+            if (control != rootChild && control->GetName() == rootChild->GetName())
+            {
+                return true;
+            }
+        }
+    }
+    return false;
 }

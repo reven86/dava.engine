@@ -3,7 +3,7 @@
 #include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_COREV2__)
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_QT__)
+#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_QT__) || defined(__DAVAENGINE_LINUX__)
 
 namespace DAVA
 {
@@ -22,5 +22,5 @@ LocalNotificationListener::LocalNotificationListener(LocalNotificationController
 } // namespace Private
 } // namespace DAVA
 
-#endif // defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_QT__)
+#endif // defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_QT__) || defined(__DAVAENGINE_LINUX__)
 #endif // defined(__DAVAENGINE_COREV2__)

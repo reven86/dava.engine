@@ -2,7 +2,6 @@
 
 #include "EditorSystems/BaseEditorSystem.h"
 #include "EditorSystems/EditorSystemsManager.h"
-#include "SelectionContainer.h"
 #include "Utils/PackageListenerProxy.h"
 
 #include <TArc/DataProcessing/DataWrapper.h>

@@ -1,10 +1,9 @@
-#ifndef __DAVAENGINE_THREADLOCALPTR_H__
-#define __DAVAENGINE_THREADLOCALPTR_H__
+#pragma once
 
 #include <type_traits>
 #include <cassert>
 
-#include "Base/BaseTypes.h"
+#include "Base/Platform.h"
 
 namespace DAVA
 {
@@ -33,7 +32,7 @@ class ThreadLocalPtr final
 {
 #if defined(__DAVAENGINE_WINDOWS__)
     using KeyType = DWORD;
-#elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_POSIX__)
     using KeyType = pthread_key_t;
 #else
 #error "ThreadLocalPtr: platform is unknown"
@@ -145,7 +144,7 @@ void ThreadLocalPtr<T>::DefaultDeleter(T* ptr) DAVA_NOEXCEPT
     delete ptr;
 }
 
-// Win32 implementation
+// Windows implementation
 #if defined(__DAVAENGINE_WINDOWS__)
 
 template <typename T>
@@ -175,7 +174,7 @@ inline void* ThreadLocalPtr<T>::GetTlsValue() const DAVA_NOEXCEPT
 }
 
 // POSIX implementation
-#elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
+#elif defined(__DAVAENGINE_POSIX__)
 
 template <typename T>
 inline void ThreadLocalPtr<T>::CreateTlsKey() DAVA_NOEXCEPT
@@ -205,5 +204,3 @@ inline void* ThreadLocalPtr<T>::GetTlsValue() const DAVA_NOEXCEPT
 #endif
 
 } // namespace DAVA
-
-#endif // __DAVAENGINE_THREADLOCALPTR_H__

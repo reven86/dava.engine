@@ -63,6 +63,7 @@ public:
     void Init(eEngineRunMode engineRunMode, const Vector<String>& modules, KeyedArchive* options_);
     int Run();
     void Quit(int32 exitCode_);
+    void Terminate(int exitCode);
 
     void SetCloseRequestHandler(const Function<bool(Window*)>& handler);
     void DispatchOnMainThread(const Function<void()>& task, bool blocking);
@@ -92,6 +93,12 @@ public:
 
     bool IsRunning() const;
 
+    // This method sets the flag that indicates to draw a single frame while app is suspended (the flag is checked in the main loop)
+    // It's used only on Android for now, since we do not resume renderer until onResume is called,
+    // but it leads to a black screen if we have another non fullscreen activity on top and surface was destroyed while it's active
+    // This eliminates black screen and shows a correct image instead
+    void DrawSingleFrameWhileSuspended();
+
 private:
     void RunConsole();
 
@@ -101,7 +108,7 @@ private:
 
     void BeginFrame();
     void Update(float32 frameDelta);
-    void UpdateWindows(float32 frameDelta);
+    void UpdateAndDrawWindows(float32 frameDelta, bool drawOnly);
     void EndFrame();
     void BackgroundUpdate(float32 frameDelta);
 
@@ -116,6 +123,11 @@ private:
     void DestroySubsystems();
 
     void OnWindowVisibilityChanged(Window* window, bool visible);
+
+    // These two methods are used instead of rhi::SuspendRendering and rhi::ResumeRendering
+    // They check if we've already suspended or resumed the renderer and do nothing if we already have
+    void SuspendRenderer();
+    void ResumeRenderer();
 
     static void OnRenderingError(rhi::RenderingError err, void* param);
 
@@ -150,6 +162,9 @@ private:
 
     bool atLeastOneWindowIsVisible = false;
     bool screenTimeoutEnabled = true;
+
+    bool rendererSuspended = false;
+    bool drawSingleFrameWhileSuspended = false;
 
     static EngineBackend* instance;
 };

@@ -1,13 +1,14 @@
 
 #compiller flags
 
-append_property( DEFINITIONS_IOS  "-D__DAVAENGINE_APPLE__;-D__DAVAENGINE_IPHONE__" )
-append_property( DEFINITIONS_MACOS  "-D__DAVAENGINE_APPLE__;-D__DAVAENGINE_MACOS__" )
-append_property( DEFINITIONS_ANDROID  "-D__DAVAENGINE_ANDROID__" )
+append_property( DEFINITIONS_IOS  "-D__DAVAENGINE_APPLE__;-D__DAVAENGINE_IPHONE__;-D__DAVAENGINE_POSIX__" )
+append_property( DEFINITIONS_MACOS  "-D__DAVAENGINE_APPLE__;-D__DAVAENGINE_MACOS__;-D__DAVAENGINE_POSIX__" )
+append_property( DEFINITIONS_ANDROID  "-D__DAVAENGINE_ANDROID__;-D__DAVAENGINE_POSIX__" )
 append_property( DEFINITIONS_WIN "-D__DAVAENGINE_WINDOWS__;-D__DAVAENGINE_WIN32__;-DNOMINMAX;-D_UNICODE;-DUNICODE;-D_SCL_SECURE_NO_WARNINGS" )
 append_property( DEFINITIONS_WINUAP "-D__DAVAENGINE_WINDOWS__;-D__DAVAENGINE_WIN_UAP__;-DNOMINMAX;-D_UNICODE;-DUNICODE;-D_SCL_SECURE_NO_WARNINGS" )
+append_property( DEFINITIONS_LINUX "-D__DAVAENGINE_LINUX__;-D__DAVAENGINE_POSIX__" )
 
-	
+
 if( APPLE )
     set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo;AdHoc"  CACHE STRING
         "Semicolon separated list of supported configuration types [Debug|Release|AdHoc]"
@@ -32,13 +33,19 @@ else()
 endif()
 
 if     ( ANDROID )
-    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fno-standalone-debug" )
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -fno-standalone-debug -DNDEBUG" )
     set( CMAKE_C_FLAGS   "${CMAKE_C_FLAGS}   -mfloat-abi=softfp -mfpu=neon -frtti" )
     set( CMAKE_ECLIPSE_MAKE_ARGUMENTS -j8 )
     
     if ( ANDROID_STRIP_EXPORTS )
         set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden" )
     endif ()
+
+elseif ( LINUX )
+    set( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} --std=c++14 --stdlib=libc++ -pthread -frtti" )
+
+    set( CMAKE_CXX_FLAGS_DEBUG    "${CMAKE_CXX_FLAGS} -O0" )
+    set( CMAKE_CXX_FLAGS_RELEASE  "${CMAKE_CXX_FLAGS} -O3" )
 
 elseif ( IOS     )
     set( CMAKE_CXX_FLAGS_DEBUG    "${CMAKE_CXX_FLAGS} -O0" )
@@ -131,8 +138,11 @@ endif()
 
 if( NOT DISABLE_DEBUG )
     set( CMAKE_CXX_FLAGS_DEBUG     "${CMAKE_CXX_FLAGS_DEBUG} -D__DAVAENGINE_DEBUG__" )
-
 endif  ()
+
+set( CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG")
+set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNDEBUG")
+set( CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -DNDEBUG")
 
 ##
 if( WARNING_DISABLE)
@@ -280,6 +290,9 @@ elseif ( IOS     )
 
 elseif ( MACOS )
     set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/mac" )
+
+elseif (LINUX)
+    set ( DAVA_THIRD_PARTY_LIBRARIES_PATH  "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/linux" )
 
 elseif ( WIN32 )
 

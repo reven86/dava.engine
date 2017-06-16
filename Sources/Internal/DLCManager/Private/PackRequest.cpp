@@ -3,9 +3,7 @@
 #include "FileSystem/Private/PackMetaData.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
-#include "Utils/Utils.h"
 #include "Logger/Logger.h"
-#include "DLC/DLC.h"
 
 #include <numeric>
 
@@ -121,6 +119,7 @@ uint64 PackRequest::GetDownloadedSize() const
     });
     return requestsSize;
 }
+
 /** return true when all files loaded and ready */
 bool PackRequest::IsDownloaded() const
 {
@@ -131,7 +130,8 @@ bool PackRequest::IsDownloaded() const
 
     if (requests.size() != fileIndexes.size())
     {
-        return false; // not initialized yet
+        // not initialized yet
+        return false;
     }
 
     if (!packManagerImpl->IsInitialized())
@@ -151,7 +151,8 @@ bool PackRequest::IsDownloaded() const
     {
         if (!packManagerImpl->IsTop(this))
         {
-            return false; // wait for dependencies to download first
+            // wait for dependencies to download first
+            return false;
         }
     }
 
@@ -260,14 +261,14 @@ void PackRequest::DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest
     fileRequest.status = LoadingPackFile;
 }
 
-void PackRequest::DisableRequestingAndFireSignalNoSpaceLeft(FileRequest& fileRequest) const
+void PackRequest::DisableRequestingAndFireSignalIOError(FileRequest& fileRequest, int32 errVal) const
 {
-    int32 errnoValue = errno; // save in local variable if other error happen
-    packManagerImpl->GetLog() << "No space on device!!! errno(" << errnoValue << ") Can't create or write file: "
+    packManagerImpl->GetLog() << "device IO Error:(" << errVal << ")"
+                              << std::strerror(errVal) << " file: "
                               << fileRequest.localFile.GetAbsolutePathname()
                               << " disable DLCManager requesting" << std::endl;
     packManagerImpl->SetRequestingEnabled(false);
-    packManagerImpl->fileErrorOccured.Emit(fileRequest.localFile.GetAbsolutePathname().c_str(), errnoValue);
+    packManagerImpl->fileErrorOccured.Emit(fileRequest.localFile.GetAbsolutePathname().c_str(), errVal);
 }
 
 bool PackRequest::CheckLocalFileState(FileSystem* fs, FileRequest& fileRequest)
@@ -297,6 +298,11 @@ bool PackRequest::CheckLocalFileState(FileSystem* fs, FileRequest& fileRequest)
 
 bool PackRequest::CheckLoadingStatusOfFileRequest(FileRequest& fileRequest, DLCDownloader* dm, const String& dstPath)
 {
+    if (fileRequest.task == nullptr)
+    {
+        return false;
+    }
+
     DLCDownloader::TaskStatus status = dm->GetTaskStatus(fileRequest.task);
     {
         switch (status.state)
@@ -334,7 +340,7 @@ bool PackRequest::CheckLoadingStatusOfFileRequest(FileRequest& fileRequest, DLCD
             if (status.error.fileErrno != 0)
             {
                 out << " I/O error: " << status.error.errStr << std::endl;
-                DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
+                DisableRequestingAndFireSignalIOError(fileRequest, status.error.fileErrno);
                 return false;
             }
 
@@ -359,13 +365,13 @@ bool PackRequest::LoadingPackFileState(FileSystem* fs, FileRequest& fileRequest)
             FileSystem::eCreateDirectoryResult dirCreate = fs->CreateDirectory(dirPath, true);
             if (dirCreate == FileSystem::DIRECTORY_CANT_CREATE)
             {
-                DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
+                DisableRequestingAndFireSignalIOError(fileRequest, errno);
                 return false;
             }
             ScopedPtr<File> f(File::Create(fileRequest.localFile, File::CREATE | File::WRITE));
             if (!f)
             {
-                DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
+                DisableRequestingAndFireSignalIOError(fileRequest, errno);
                 return false;
             }
             f->Truncate(0);
@@ -402,16 +408,21 @@ bool PackRequest::CheckHaskState(FileRequest& fileRequest)
 
         {
             ScopedPtr<File> f(File::Create(fileRequest.localFile, File::WRITE | File::APPEND));
+            if (!f)
+            {
+                // not enough space
+                DisableRequestingAndFireSignalIOError(fileRequest, errno);
+                return false;
+            }
+
             uint32 written = f->Write(&footer, sizeof(footer));
             if (written != sizeof(footer))
             {
                 // not enough space
-                DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
+                DisableRequestingAndFireSignalIOError(fileRequest, errno);
                 return false;
             }
         }
-
-        DVASSERT(fileRequest.downloadedFileSize == footer.sizeCompressed);
 
         fileRequest.downloadedFileSize += sizeof(footer);
         fileRequest.status = Ready;

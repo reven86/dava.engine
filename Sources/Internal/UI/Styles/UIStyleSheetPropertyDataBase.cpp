@@ -2,6 +2,7 @@
 #include "UI/UIControl.h"
 #include "UI/UIStaticText.h"
 #include "UI/UITextField.h"
+#include "UI/UIParticles.h"
 #include "UI/UIControlBackground.h"
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutComponent.h"
@@ -19,6 +20,7 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
     , bgGroup("bg", Type::Instance<UIControlBackground>(), ReflectedTypeDB::Get<UIControlBackground>())
     , staticTextGroup("text", nullptr, ReflectedTypeDB::Get<UIStaticText>())
     , textFieldGroup("textField", nullptr, ReflectedTypeDB::Get<UITextField>())
+    , particleEffectGroup("particleEffect", nullptr, ReflectedTypeDB::Get<UIParticles>())
     , linearLayoutGroup("linearLayout", Type::Instance<UILinearLayoutComponent>(), ReflectedTypeDB::Get<UILinearLayoutComponent>())
     , flowLayoutGroup("flowLayout", Type::Instance<UIFlowLayoutComponent>(), ReflectedTypeDB::Get<UIFlowLayoutComponent>())
     , flowLayoutHintGroup("flowLayoutHint", Type::Instance<UIFlowLayoutHintComponent>(), ReflectedTypeDB::Get<UIFlowLayoutHintComponent>())
@@ -54,6 +56,10 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
                      UIStyleSheetPropertyDescriptor(&staticTextGroup, "shadowoffset", Vector2(0.0f, 0.0f)),
                      UIStyleSheetPropertyDescriptor(&staticTextGroup, "shadowcolor", Color::White),
                      UIStyleSheetPropertyDescriptor(&staticTextGroup, "textalign", ALIGN_HCENTER | ALIGN_VCENTER),
+
+                     UIStyleSheetPropertyDescriptor(&particleEffectGroup, "effectPath", FilePath()),
+                     UIStyleSheetPropertyDescriptor(&particleEffectGroup, "autoStart", false),
+                     UIStyleSheetPropertyDescriptor(&particleEffectGroup, "startDelay", 0.0f),
 
                      UIStyleSheetPropertyDescriptor(&linearLayoutGroup, "enabled", true),
                      UIStyleSheetPropertyDescriptor(&linearLayoutGroup, "orientation", UILinearLayoutComponent::LEFT_TO_RIGHT),

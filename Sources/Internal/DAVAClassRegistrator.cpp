@@ -1,7 +1,6 @@
 #include "DAVAEngine.h"
 #include "DAVAClassRegistrator.h"
 #include "Render/Highlevel/ShadowVolume.h"
-#include "Reflection/ReflectionRegistrator.h"
 #include "Engine/Engine.h"
 
 using namespace DAVA;

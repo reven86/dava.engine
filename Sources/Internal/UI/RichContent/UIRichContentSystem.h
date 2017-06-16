@@ -7,7 +7,9 @@
 namespace DAVA
 {
 class UIControl;
+class UIRichContentAliasesComponent;
 class UIRichContentComponent;
+struct RichLink;
 
 class UIRichContentSystem final : public UISystem
 {
@@ -26,22 +28,13 @@ public:
     void Process(float32 elapsedTime) override;
 
 private:
-    struct Link final
-    {
-        Link(UIRichContentComponent* c);
-
-        void AddItem(const RefPtr<UIControl>& item);
-        void RemoveItems();
-
-        UIRichContentComponent* component = nullptr;
-        Vector<RefPtr<UIControl>> richItems;
-    };
-
     void AddLink(UIRichContentComponent* component);
     void RemoveLink(UIRichContentComponent* component);
+    void AddAliases(UIControl* control, UIRichContentAliasesComponent* component);
+    void RemoveAliases(UIControl* control, UIRichContentAliasesComponent* component);
 
-    Vector<Link> links;
-    Vector<Link> appendLinks;
+    Vector<std::shared_ptr<RichLink>> links;
+    Vector<std::shared_ptr<RichLink>> appendLinks;
     bool isEditorMode = false;
 };
 

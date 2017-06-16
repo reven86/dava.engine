@@ -6,8 +6,12 @@ import build_utils
 def get_supported_targets(platform):
     if platform == 'win32':
         return ['win32', 'win10']
-    else:
+    elif platform == 'darwin':
         return ['macos', 'ios', 'android']
+    elif platform == 'linux':
+        return ['android', 'linux']
+    else:
+        return []
 
 
 def get_dependencies_for_target(target):
@@ -25,6 +29,8 @@ def build_for_target(target, working_directory_path, root_project_path):
         _build_ios(working_directory_path, root_project_path)
     elif target == 'android':
         _build_android(working_directory_path, root_project_path)
+    elif target == 'linux':
+        _build_linux(working_directory_path, root_project_path)
 
 
 def get_download_info():
@@ -256,6 +262,28 @@ def _build_android(working_directory_path, root_project_path):
         os.path.join(libraries_android_root, 'x86/libxml.a'))
 
     _copy_headers_from_install(install_dir_android_x86, root_project_path)
+
+
+def _build_linux(working_directory_path, root_project_path):
+    source_folder_path = _download_and_extract(working_directory_path)
+
+    env = build_utils.get_autotools_linux_env()
+
+    install_dir = os.path.join(working_directory_path, 'gen/install_linux')
+    build_utils.build_with_autotools(
+        source_folder_path,
+        # exclude python bindings as make install requires sudo
+        # also exclude lzma support as it requires lzma library
+        ['--disable-shared', '--enable-static', '--without-python', '--without-lzma'],
+        install_dir,
+        env=env) 
+
+    lib_path = os.path.join(install_dir, 'lib/libxml2.a')
+    shutil.copyfile(
+        lib_path,
+        os.path.join(root_project_path, 'Libs/lib_CMake/linux/libxml.a'))
+
+    _copy_headers_from_install(install_dir, root_project_path)
 
 
 def _compile_glob(env, output_file_path):
