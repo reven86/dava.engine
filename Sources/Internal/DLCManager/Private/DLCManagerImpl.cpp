@@ -1032,12 +1032,12 @@ void DLCManagerImpl::SetRequestPriority(const IRequest* request)
     }
 }
 
-void DLCManagerImpl::RemovePack(const String& requestedPackName, bool withDependentPacks)
+void DLCManagerImpl::RemovePack(const String& requestedPackName)
 {
     DVASSERT(Thread::IsMainThread());
 
     PackRequest* request = FindRequest(requestedPackName);
-    if (request != nullptr && withDependentPacks && IsInitialized())
+    if (request != nullptr && IsInitialized())
     {
         Vector<uint32> deps = request->GetDependencies();
         for (uint32 dependent : deps)
@@ -1047,7 +1047,7 @@ void DLCManagerImpl::RemovePack(const String& requestedPackName, bool withDepend
             if (nullptr != r)
             {
                 String packToRemove = r->GetRequestedPackName();
-                RemovePack(packToRemove, withDependentPacks);
+                RemovePack(packToRemove);
             }
         }
     }
