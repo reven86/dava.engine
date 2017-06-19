@@ -248,6 +248,15 @@ final class DavaSurfaceView extends SurfaceView
     @Override
     public boolean onKey(View v, int keyCode, KeyEvent event)
     {
+        // Bixby has a dedicated button on some Samsung devices,
+        // pressing it triggers a KeyEvent with code 1082.
+        // There is no need to handle it
+        final int KEYCODE_BIXBY = 1082;
+        if (keyCode == KEYCODE_BIXBY)
+        {
+            return false;
+        }
+
         int source = event.getSource();
         int action = event.getAction();
 
