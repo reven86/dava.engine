@@ -93,6 +93,7 @@ void RequestManager::Update(bool inBackground)
     if (!inBackground)
     {
         FireStartLoadingWhileInactiveSignals();
+        FireUpdateWhileInactiveSignals();
     }
 
     if (!Empty())
