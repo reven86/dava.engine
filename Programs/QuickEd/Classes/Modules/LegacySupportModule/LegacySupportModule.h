@@ -2,7 +2,6 @@
 
 #include "UI/Package/PackageWidget.h"
 #include "Modules/LegacySupportModule/Private/Project.h"
-#include "EditorSystems/SelectionContainer.h"
 
 #include <TArc/Core/ClientModule.h>
 #include <TArc/Utils/QtConnections.h>

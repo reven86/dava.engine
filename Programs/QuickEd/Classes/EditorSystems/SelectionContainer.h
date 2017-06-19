@@ -19,8 +19,6 @@ struct SelectionContainer
     template <typename ContainerOut>
     static void MergeSelectionToContainer(const SelectedNodes& selected, const SelectedNodes& deselected, ContainerOut& out);
 
-    bool IsSelected(SelectedNodes::value_type node) const;
-
     SelectedNodes selectedNodes;
 };
 
@@ -44,11 +42,6 @@ inline void SelectionContainer::MergeSelection(const SelectedNodes& selected, co
     {
         selectedNodes.insert(node);
     }
-}
-
-inline bool SelectionContainer::IsSelected(SelectedNodes::value_type node) const
-{
-    return selectedNodes.find(node) != selectedNodes.end();
 }
 
 template <typename ContainerOut>

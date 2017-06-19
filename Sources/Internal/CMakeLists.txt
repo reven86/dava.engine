@@ -17,6 +17,7 @@ set( EXTERNAL_MODULES_WIN           ${DAVA_EXTERNAL_DIR}/cef )
 set( EXTERNAL_MODULES               ${DAVA_MODULES_DIR}/SampleModule
                                     ${DAVA_MODULES_DIR}/NetworkCore
                                     ${DAVA_MODULES_DIR}/Physics
+                                    ${DAVA_MODULES_DIR}/PhysicsDebug
                                     )
 
 set( INCLUDES_PRIVATE               ${DAVA_ENGINE_DIR} 

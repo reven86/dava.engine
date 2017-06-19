@@ -47,6 +47,7 @@
 #include "Tests/OverdrawTest.h"
 #include "Tests/WindowTest.h"
 #include "Tests/RichTextTest.h"
+#include "Tests/PhysicsTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -384,6 +385,7 @@ void TestBed::RegisterTests()
 
     new WindowTest(*this);
     new RichTextTest(*this);
+    new PhysicsTest(*this);
     //$UNITTEST_CTOR
 }
 

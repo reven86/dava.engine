@@ -34,7 +34,7 @@ DAVA_TESTCLASS (Utf8Test)
         TEST_VERIFY(0 == emptyWide.size());
     }
 
-    DAVA_TEST (СonvertBrokenWideString_DavaExceptionRaised)
+    DAVA_TEST (ConvertBrokenWideString_DavaExceptionRaised)
     {
         Vector<WideString> brokenWideString
         {
@@ -55,7 +55,7 @@ DAVA_TESTCLASS (Utf8Test)
         }
     }
 
-    DAVA_TEST (СonvertBrokenUtf8String_DavaExceptionRaised)
+    DAVA_TEST (ConvertBrokenUtf8String_DavaExceptionRaised)
     {
         Vector<String> brokenString
         {

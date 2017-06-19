@@ -33,10 +33,12 @@ def __parser_args():
 
     arg_parser.add_argument( '--build_url' )
 
+    arg_parser.add_argument( '--abbreviated_build_name', default = 'false', choices=[ 'true', 'false' ] )
+    arg_parser.add_argument( '--reported_status', default = 'true', choices=[ 'true', 'false' ] )
 
     arg_parser.add_argument( '--root_build_id' )
 
-    arg_parser.add_argument( '--description', default = 'auto' )
+    arg_parser.add_argument( '--description' )
 
 
     return arg_parser.parse_args()
@@ -46,6 +48,8 @@ def main():
 
     args = __parser_args()
 
+    if args.reported_status == 'false':
+        return
 
     stash_api.init(     args.stash_url,
                         args.stash_api_version,
@@ -63,12 +67,12 @@ def main():
 
     commit = None
 
-    pull_requests_number = common_tool.get_pull_requests_number( args.branch )
-    if pull_requests_number != None:
-        branch_info = stash.get_pull_requests_info(pull_requests_number)
-        commit = branch_info['fromRef']['latestCommit']
-
-    if commit == None:
+    if args.commit == None:
+        pull_requests_number = common_tool.get_pull_requests_number( args.branch )
+        if pull_requests_number != None:
+            branch_info = stash.get_pull_requests_info(pull_requests_number)
+            commit = branch_info['fromRef']['latestCommit']
+    else:
         commit = args.commit
 
     if commit != None :
@@ -78,17 +82,29 @@ def main():
             build_status = teamcity.get_build_status(args.root_build_id)
             build_url = build_status['webUrl']
 
-
         assert (build_url != None ), "build_url == None"
 
         configuration_info = teamcity.configuration_info(args.configuration_name)
 
+
+        if args.description == None:
+            build_status = teamcity.get_build_status(args.root_build_id)
+            description = build_status['statusText']
+        else:
+            description = args.description
+
+        build_name = None
+        if args.abbreviated_build_name == None:
+            build_name = configuration_info['config_path']
+        else:
+            build_name = configuration_info['name']
+
         stash.report_build_status( args.status,
                                    args.configuration_name,
-                                   configuration_info['config_path'],
+                                   build_name,
                                    build_url,
                                    commit,
-                                   description=args.description )
+                                   description=description)
     else:
         common_tool.flush_print( 'Is not a pull requests [{}] or commit [{}]  '.format( args.branch, args.commit ) )
 

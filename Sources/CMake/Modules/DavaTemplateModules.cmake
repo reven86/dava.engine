@@ -110,9 +110,9 @@ RELEASE_POSTFIX
 )
 
 macro(apply_default_value VAR DEFAULT_VALUE)
-     if (NOT ${VAR})
-        set(${VAR} ${DEFAULT_VALUE} PARENT_SCOPE)
-     endif()
+    if (NOT ${VAR})
+       set(${VAR} ${DEFAULT_VALUE})
+    endif()
 endmacro()
 
 #
@@ -246,7 +246,7 @@ macro( generated_initialization_module_code )
             string(REGEX REPLACE ";" "" IMODULE_INCLUDES ${IMODULE_INCLUDES} )
         endif()
 
-        list( APPEND INIT_POINTERS "struct ModuleManager::PointersToModules\n{\n" )
+        list( APPEND CTOR_CODE "    Vector<IModule*> modules\;\n")
         foreach( ITEM ${MODULES_INITIALIZATION} )
             set( NAMESPACE_PREFIX )
             if( MODULE_INITIALIZATION_NAMESPACE_${ITEM} )
@@ -255,24 +255,19 @@ macro( generated_initialization_module_code )
             endif()
 
             if( ${MODULE_TYPE_${ITEM}} STREQUAL "INLINE" OR ${MODULE_TYPE_${ITEM}} STREQUAL "STATIC" )
-                list( APPEND INIT_POINTERS "    ${NAMESPACE_PREFIX}${ITEM}* _${ITEM}\;\n" )
-				list( APPEND GET_MODULE_CODE "template <>\n${NAMESPACE_PREFIX}${ITEM}* ModuleManager::GetModule<${NAMESPACE_PREFIX}${ITEM}>() const\n" )
-				list( APPEND GET_MODULE_CODE "{\n    return pointersToModules->_${ITEM}\;\n}\n" )
-				list( APPEND CTOR_CODE "    pointersToModules->_${ITEM} = new ${NAMESPACE_PREFIX}${ITEM}(engine)\;\n" )
-				list( APPEND CTOR_CODE "    modules.emplace_back(pointersToModules->_${ITEM})\;\n" )   
+				list( APPEND CTOR_CODE "    modules.emplace_back(new ${NAMESPACE_PREFIX}${ITEM}(engine))\;\n" )
             elseif( ${MODULE_TYPE_${ITEM}} STREQUAL "PLUGIN" )
             endif()
-              
         endforeach()
-        list( APPEND INIT_POINTERS "}\;\n" )
+        list( APPEND CTOR_CODE "    return modules\;")
 
-        foreach( TYPE_VALUE  INIT_POINTERS GET_MODULE_CODE CTOR_CODE )
+        foreach( TYPE_VALUE CTOR_CODE )
             foreach( ITEM ${${TYPE_VALUE}} )
                 set( IMODULE_${TYPE_VALUE} "${IMODULE_${TYPE_VALUE}}${ITEM}")
             endforeach()
         endforeach() 
 
-        set( IMODULE_CPP ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${MODULE_MANAGER_TEMPLATE_NAME_WE}.cpp )
+        set( IMODULE_CPP ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/${MODULE_MANAGER_TEMPLATE_NAME_WE}_generated.cpp)
         configure_file( ${MODULE_MANAGER_TEMPLATE}
                         ${IMODULE_CPP}  @ONLY ) 
         list( APPEND CPP_FILES ${IMODULE_CPP} )
@@ -757,12 +752,17 @@ macro( setup_main_module )
 
                 if( WIN32 )
                     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG" )
+                    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib /SAFESEH:NO" )
+
+                    # Generate debug info also in release builds
+                    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG /SUBSYSTEM:WINDOWS" )
+                    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/DEBUG /SUBSYSTEM:WINDOWS" )
                 endif()
 
                 apply_default_value(DEBUG_POSTFIX "Debug")
-                apply_default_value(CHECKED_POSTFIX "")
-                apply_default_value(PROFILE_POSTFIX "")
-                apply_default_value(RELEASE_POSTFIX "")
+                apply_default_value(CHECKED_POSTFIX " ")
+                apply_default_value(PROFILE_POSTFIX " ")
+                apply_default_value(RELEASE_POSTFIX " ")
 
                 set_target_properties( ${NAME_MODULE} PROPERTIES
                                                                  DEBUG_OUTPUT_NAME "${NAME_MODULE}" 
