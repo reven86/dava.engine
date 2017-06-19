@@ -120,21 +120,21 @@ void JavaClass::Initialize()
 {
     JNIEnv* env = JNI::GetEnv();
 
-    jclass jclass_JNIActivity = env->FindClass("com/dava/framework/JNIActivity");
+    LocalRef<jclass> jclass_JNIActivity = env->FindClass("com/dava/framework/JNIActivity");
     if (jclass_JNIActivity == nullptr)
     {
         DAVA_JNI_EXCEPTION_CHECK();
         abort();
     }
 
-    jclass jclass_Class = env->GetObjectClass(jclass_JNIActivity);
+    LocalRef<jclass> jclass_Class = env->GetObjectClass(jclass_JNIActivity);
     if (jclass_Class == nullptr)
     {
         DAVA_JNI_EXCEPTION_CHECK();
         abort();
     }
 
-    jclass jclass_ClassLoader = env->FindClass("java/lang/ClassLoader");
+    LocalRef<jclass> jclass_ClassLoader = env->FindClass("java/lang/ClassLoader");
     if (jclass_ClassLoader == nullptr)
     {
         DAVA_JNI_EXCEPTION_CHECK();
@@ -148,7 +148,7 @@ void JavaClass::Initialize()
         abort();
     }
 
-    jobject classLoader1 = env->CallObjectMethod(jclass_JNIActivity, jmethod_Class_getClassLoader);
+    LocalRef<jobject> classLoader1 = env->CallObjectMethod(jclass_JNIActivity, jmethod_Class_getClassLoader);
     if (classLoader1 == nullptr)
     {
         DAVA_JNI_EXCEPTION_CHECK();
