@@ -211,6 +211,7 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     }
 
     Thread::InitMainThread();
+    RegisterReflectionForBaseTypes();
     // For now only next subsystems/modules are created on demand:
     //  - LocalizationSystem
     //  - JobManager

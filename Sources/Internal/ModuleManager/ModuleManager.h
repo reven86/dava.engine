@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
+#include "Base/Vector.h"
+#include "Base/UnordererMap.h"
+#include "Base/Type.h"
+#include "Base/Any.h"
 
 namespace DAVA
 {
@@ -16,13 +19,22 @@ public:
     template <typename T>
     T* GetModule() const;
 
+    IModule* GetModule(const String& permanentName) const;
+
     void InitModules();
     void ShutdownModules();
 
 private:
-    struct PointersToModules;
-
     Vector<IModule*> modules;
-    std::unique_ptr<PointersToModules> pointersToModules;
+    UnorderedMap<const Type*, IModule*> searchIndex;
 };
+
+template <typename T>
+T* ModuleManager::GetModule() const
+{
+    const Type* requestType = Type::Instance<T>();
+    auto iter = searchIndex.find(requestType);
+    DVASSERT(iter != searchIndex.end());
+    return static_cast<T*>(iter->second);
+}
 }

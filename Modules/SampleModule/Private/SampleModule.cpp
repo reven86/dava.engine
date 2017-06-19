@@ -1,4 +1,6 @@
 #include "SampleModule.h"
+#include "Reflection/Reflection.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 #include <Engine/Engine.h>
 #include <Entity/ComponentManager.h>
@@ -34,5 +36,11 @@ void SampleModule::Init()
 void SampleModule::Shutdown()
 {
     statusList.emplace_back(eStatus::ES_SHUTDOWN);
+}
+
+DAVA_VIRTUAL_REFLECTION_IMPL(SampleModule)
+{
+    ReflectionRegistrator<SampleModule>::Begin()
+    .End();
 }
 }

@@ -32,6 +32,16 @@ if ( WIN32 AND NOT WIN_UAP AND NOT DAVA_PLATFORM_QT)
     list ( APPEND DAVA_COMPONENTS "CEFWebview" )
 endif ()
 
+# add physics
+if(ANDROID AND ANDROID_ABI STREQUAL "x86" )
+    # we don't have physx for android x86, so skip this
+elseif (WINDOWS_UAP AND WINDOWS_UAP_PLATFORMS MATCHES "ARM")
+    # we don't have physx for win uap arm, so skip this
+else()
+    list ( APPEND DAVA_COMPONENTS "Physics" )
+    list ( APPEND DAVA_COMPONENTS "PhysicsDebug" )
+endif()
+
 if (DAVA_PLATFORM_QT)
     list(APPEND DAVA_COMPONENTS DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME )
     dava_add_definitions(-D__DAVAENGINE_QT__)
@@ -47,9 +57,9 @@ endif()
 dava_add_definitions(-DLOCALIZATION_DEBUG)
 
 
-#if( NOT WINDOWS_UAP AND ( MACOS OR WIN32 ) )
-#    add_plugin( SamplePlugin "${DAVA_MODULES_DIR}/SamplePlugin" COMPONENTS  ${DAVA_COMPONENTS} )
-#endif()
+if( NOT WINDOWS_UAP AND ( MACOS OR WIN32 ) )
+    #add_plugin( SamplePlugin "${DAVA_MODULES_DIR}/SamplePlugin" COMPONENTS  ${DAVA_COMPONENTS} )
+endif()
 
 
 find_package( DavaFramework REQUIRED COMPONENTS ${DAVA_COMPONENTS} )

@@ -7,10 +7,14 @@ set(CPP_FILES_RECURSE Sources/*.cpp)
 
 set(PhysicsRootDir "${CMAKE_CURRENT_SOURCE_DIR}")
 
-set(INCLUDES "${PhysicsRootDir}/Sources" "${PhysicsRootDir}/Libs/include/")
-set(INCLUDES_PRIVATE ${DAVA_INCLUDE_DIR} "${PhysicsRootDir}/Libs/include/physx" "${PhysicsRootDir}/Libs/include/PxShared")
+set(INCLUDES "${PhysicsRootDir}/Sources"
+             "${PhysicsRootDir}/Libs/include/"
+             "${PhysicsRootDir}/Libs/include/physx"
+             "${PhysicsRootDir}/Libs/include/PxShared")
+set(INCLUDES_PRIVATE ${DAVA_INCLUDE_DIR})
 set( MODULE_INITIALIZATION_CODE Sources/Physics/PhysicsModule.h )
-set(DEFINITIONS_ANDROID "-D__STDC_LIMIT_MACROS" "-D__DAVAENGINE_PHYSICS_ENABLED__")
+set(DEFINITIONS "-D__DAVAENGINE_PHYSICS_ENABLED__")
+set(DEFINITIONS_ANDROID "-D__STDC_LIMIT_MACROS")
 
 set (LibsPath "${PhysicsRootDir}/Libs")
 
@@ -32,8 +36,7 @@ set(WIN32_STATIC_DEBUG_LIBS "${LibsPath}/Win32/x86/LowLevelDEBUG.lib"
                             "${LibsPath}/Win32/x86/SceneQueryDEBUG.lib"
                             "${LibsPath}/Win32/x86/SimulationControllerDEBUG.lib")
 
-set(WIN32_DYNAMIC_DEBUG_LIBS "${LibsPath}/Win32/x86/nvToolsExt32_1.dll"
-                             "${LibsPath}/Win32/x86/PhysX3DEBUG_x86.dll"
+set(WIN32_DYNAMIC_DEBUG_LIBS "${LibsPath}/Win32/x86/PhysX3DEBUG_x86.dll"
                              "${LibsPath}/Win32/x86/PhysX3CharacterKinematicDEBUG_x86.dll"
                              "${LibsPath}/Win32/x86/PhysX3CommonDEBUG_x86.dll"
                              "${LibsPath}/Win32/x86/PhysX3CookingDEBUG_x86.dll"
@@ -58,8 +61,7 @@ set(WIN32_STATIC_CHECKED_LIBS "${LibsPath}/Win32/x86/LowLevelCHECKED.lib"
                               "${LibsPath}/Win32/x86/SceneQueryCHECKED.lib"
                               "${LibsPath}/Win32/x86/SimulationControllerCHECKED.lib")
 
-set(WIN32_DYNAMIC_CHECKED_LIBS "${LibsPath}/Win32/x86/nvToolsExt32_1.dll"
-                               "${LibsPath}/Win32/x86/PhysX3CHECKED_x86.dll"
+set(WIN32_DYNAMIC_CHECKED_LIBS "${LibsPath}/Win32/x86/PhysX3CHECKED_x86.dll"
                                "${LibsPath}/Win32/x86/PhysX3CharacterKinematicCHECKED_x86.dll"
                                "${LibsPath}/Win32/x86/PhysX3CommonCHECKED_x86.dll"
                                "${LibsPath}/Win32/x86/PhysX3CookingCHECKED_x86.dll"
@@ -84,8 +86,7 @@ set(WIN32_STATIC_PROFILE_LIBS "${LibsPath}/Win32/x86/LowLevelPROFILE.lib"
                               "${LibsPath}/Win32/x86/SceneQueryPROFILE.lib"
                               "${LibsPath}/Win32/x86/SimulationControllerPROFILE.lib")
 
-set(WIN32_DYNAMIC_PROFILE_LIBS "${LibsPath}/Win32/x86/nvToolsExt32_1.dll"
-                               "${LibsPath}/Win32/x86/PhysX3PROFILE_x86.dll"
+set(WIN32_DYNAMIC_PROFILE_LIBS "${LibsPath}/Win32/x86/PhysX3PROFILE_x86.dll"
                                "${LibsPath}/Win32/x86/PhysX3CharacterKinematicPROFILE_x86.dll"
                                "${LibsPath}/Win32/x86/PhysX3CommonPROFILE_x86.dll"
                                "${LibsPath}/Win32/x86/PhysX3CookingPROFILE_x86.dll"
@@ -104,6 +105,7 @@ set(WIN32_STATIC_RELEASE_LIBS "${LibsPath}/Win32/x86/LowLevel.lib"
                               "${LibsPath}/Win32/x86/PhysX3Extensions.lib"
                               "${LibsPath}/Win32/x86/PhysX3Vehicle.lib"
                               "${LibsPath}/Win32/x86/PsFastXml_x86.lib"
+                              "${LibsPath}/Win32/x86/PxPvdSDK_x86.lib"
                               "${LibsPath}/Win32/x86/PxFoundation_x86.lib"
                               "${LibsPath}/Win32/x86/PxTask_x86.lib"
                               "${LibsPath}/Win32/x86/SceneQuery.lib"
@@ -133,8 +135,7 @@ set(WIN64_STATIC_DEBUG_LIBS "${LibsPath}/Win32/x64/LowLevelDEBUG.lib"
                             "${LibsPath}/Win32/x64/SceneQueryDEBUG.lib"
                             "${LibsPath}/Win32/x64/SimulationControllerDEBUG.lib")
 
-set(WIN64_DYNAMIC_DEBUG_LIBS "${LibsPath}/Win32/x64/nvToolsExt64_1.dll"
-                             "${LibsPath}/Win32/x64/PhysX3DEBUG_x64.dll"
+set(WIN64_DYNAMIC_DEBUG_LIBS "${LibsPath}/Win32/x64/PhysX3DEBUG_x64.dll"
                              "${LibsPath}/Win32/x64/PhysX3CharacterKinematicDEBUG_x64.dll"
                              "${LibsPath}/Win32/x64/PhysX3CommonDEBUG_x64.dll"
                              "${LibsPath}/Win32/x64/PhysX3CookingDEBUG_x64.dll"
@@ -159,8 +160,7 @@ set(WIN64_STATIC_CHECKED_LIBS "${LibsPath}/Win32/x64/LowLevelCHECKED.lib"
                               "${LibsPath}/Win32/x64/SceneQueryCHECKED.lib"
                               "${LibsPath}/Win32/x64/SimulationControllerCHECKED.lib")
 
-set(WIN64_DYNAMIC_CHECKED_LIBS "${LibsPath}/Win32/x64/nvToolsExt64_1.dll"
-                               "${LibsPath}/Win32/x64/PhysX3CHECKED_x64.dll"
+set(WIN64_DYNAMIC_CHECKED_LIBS "${LibsPath}/Win32/x64/PhysX3CHECKED_x64.dll"
                                "${LibsPath}/Win32/x64/PhysX3CharacterKinematicCHECKED_x64.dll"
                                "${LibsPath}/Win32/x64/PhysX3CommonCHECKED_x64.dll"
                                "${LibsPath}/Win32/x64/PhysX3CookingCHECKED_x64.dll"
@@ -185,8 +185,7 @@ set(WIN64_STATIC_PROFILE_LIBS "${LibsPath}/Win32/x64/LowLevelPROFILE.lib"
                               "${LibsPath}/Win32/x64/SceneQueryPROFILE.lib"
                               "${LibsPath}/Win32/x64/SimulationControllerPROFILE.lib")
 
-set(WIN64_DYNAMIC_PROFILE_LIBS "${LibsPath}/Win32/x64/nvToolsExt64_1.dll"
-                               "${LibsPath}/Win32/x64/PhysX3PROFILE_x64.dll"
+set(WIN64_DYNAMIC_PROFILE_LIBS "${LibsPath}/Win32/x64/PhysX3PROFILE_x64.dll"
                                "${LibsPath}/Win32/x64/PhysX3CharacterKinematicPROFILE_x64.dll"
                                "${LibsPath}/Win32/x64/PhysX3CommonPROFILE_x64.dll"
                                "${LibsPath}/Win32/x64/PhysX3CookingPROFILE_x64.dll"
@@ -205,6 +204,7 @@ set(WIN64_STATIC_RELEASE_LIBS "${LibsPath}/Win32/x64/LowLevel.lib"
                               "${LibsPath}/Win32/x64/PhysX3Extensions.lib"
                               "${LibsPath}/Win32/x64/PhysX3Vehicle.lib"
                               "${LibsPath}/Win32/x64/PsFastXml_x64.lib"
+                              "${LibsPath}/Win32/x64/PxPvdSDK_x64.lib"
                               "${LibsPath}/Win32/x64/PxFoundation_x64.lib"
                               "${LibsPath}/Win32/x64/PxTask_x64.lib"
                               "${LibsPath}/Win32/x64/SceneQuery.lib"
@@ -234,14 +234,12 @@ set(WIN_UAP_STATIC_DEBUG_LIBS "${LibsPath}/Win10/$(Platform)/Debug/LowLevelDEBUG
                               "${LibsPath}/Win10/$(Platform)/Debug/SceneQueryDEBUG.lib"
                               "${LibsPath}/Win10/$(Platform)/Debug/SimulationControllerDEBUG.lib")
 
-set(WIN_UAP_DYNAMIC_DEBUG_LIBS "${LibsPath}/Win10/Win32/Debug/nvToolsExt32_1.dll"
-                               "${LibsPath}/Win10/Win32/Debug/PhysX3DEBUG_x86.dll"
+set(WIN_UAP_DYNAMIC_DEBUG_LIBS "${LibsPath}/Win10/Win32/Debug/PhysX3DEBUG_x86.dll"
                                "${LibsPath}/Win10/Win32/Debug/PhysX3CharacterKinematicDEBUG_x86.dll"
                                "${LibsPath}/Win10/Win32/Debug/PhysX3CommonDEBUG_x86.dll"
                                "${LibsPath}/Win10/Win32/Debug/PhysX3CookingDEBUG_x86.dll"
                                "${LibsPath}/Win10/Win32/Debug/PxFoundationDEBUG_x86.dll"
                                "${LibsPath}/Win10/Win32/Debug/PxPvdSDKDEBUG_x86.dll"
-                               "${LibsPath}/Win10/x64/Debug/nvToolsExt64_1.dll"
                                "${LibsPath}/Win10/x64/Debug/PhysX3DEBUG_x64.dll"
                                "${LibsPath}/Win10/x64/Debug/PhysX3CharacterKinematicDEBUG_x64.dll"
                                "${LibsPath}/Win10/x64/Debug/PhysX3CommonDEBUG_x64.dll"
@@ -263,6 +261,7 @@ set(WIN_UAP_STATIC_RELEASE_LIBS "${LibsPath}/Win10/$(Platform)/Release/LowLevel.
                                 "${LibsPath}/Win10/$(Platform)/Release/PsFastXml_$(PlatformShortName).lib"
                                 "${LibsPath}/Win10/$(Platform)/Release/PxFoundation_$(PlatformShortName).lib"
                                 "${LibsPath}/Win10/$(Platform)/Release/PxTask_$(PlatformShortName).lib"
+                                "${LibsPath}/Win10/$(Platform)/Release/PxPvdSDK_$(PlatformShortName).lib"
                                 "${LibsPath}/Win10/$(Platform)/Release/SceneQuery.lib"
                                 "${LibsPath}/Win10/$(Platform)/Release/SimulationController.lib")
 
