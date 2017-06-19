@@ -150,15 +150,6 @@ public:
 
     void Update(float frameDelta, bool inBackground);
 
-    void ForegroundUpdate(float frameDelta)
-    {
-        Update(frameDelta, false);
-    }
-    void BackgroundUpdate(float frameDelta)
-    {
-        Update(frameDelta, true);
-    }
-
     bool IsPackDownloaded(const String& packName) override;
 
     const IRequest* RequestPack(const String& requestedPackName) override;

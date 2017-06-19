@@ -83,8 +83,14 @@ DLCManagerImpl::DLCManagerImpl(Engine* engine_)
     : engine(*engine_)
 {
     DVASSERT(Thread::IsMainThread());
-    engine.update.Connect(this, &DLCManagerImpl::ForegroundUpdate);
-    engine.backgroundUpdate.Connect(this, &DLCManagerImpl::BackgroundUpdate);
+    engine.update.Connect(this, [this](float32 frameDelta)
+                          {
+                              Update(frameDelta, false);
+                          });
+    engine.backgroundUpdate.Connect(this, [this](float32 frameDelta)
+                                    {
+                                        Update(frameDelta, true);
+                                    });
 }
 #endif
 
