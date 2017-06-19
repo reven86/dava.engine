@@ -32,5 +32,7 @@ public:
 
 private:
     Vector<eStatus> statusList;
+
+    DAVA_VIRTUAL_REFLECTION(SampleModule, IModule);
 };
 };

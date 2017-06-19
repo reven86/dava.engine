@@ -1,5 +1,7 @@
 #include "NetworkCore.h"
 
+#include <Reflection/ReflectionRegistrator.h>
+
 namespace DAVA
 {
 NetworkCore::NetworkCore(Engine* engine)
@@ -16,5 +18,11 @@ void NetworkCore::Init()
 void NetworkCore::Shutdown()
 {
     statusList.emplace_back(eStatus::ES_SHUTDOWN);
+}
+
+DAVA_VIRTUAL_REFLECTION_IMPL(NetworkCore)
+{
+    ReflectionRegistrator<NetworkCore>::Begin()
+    .End();
 }
 }

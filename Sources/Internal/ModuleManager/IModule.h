@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Reflection/Reflection.h"
 #include "Base/BaseTypes.h"
 
 namespace DAVA
@@ -10,7 +11,7 @@ class Engine;
 Interface for modules. 
 Module lifecycle is Ctor->Init->Shutdown->Dtor.
 */
-class IModule
+class IModule : public ReflectionBase
 {
 public:
     /** Create module. Called by ModuleManager for each module in unspecified order. */
