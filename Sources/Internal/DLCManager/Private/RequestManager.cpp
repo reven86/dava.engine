@@ -29,7 +29,7 @@ void RequestManager::FireStartLoadingWhileInactiveSignals()
 {
     if (!requestStartedWhileInactive.empty())
     {
-        for (const String pack : requestStartedWhileInactive)
+        for (const String& pack : requestStartedWhileInactive)
         {
             PackRequest* r = packManager.FindRequest(pack);
             if (r)
@@ -45,7 +45,7 @@ void RequestManager::FireUpdateWhileInactiveSignals()
 {
     if (!requestUpdatedWhileInactive.empty())
     {
-        for (const String pack : requestUpdatedWhileInactive)
+        for (const String& pack : requestUpdatedWhileInactive)
         {
             PackRequest* r = packManager.FindRequest(pack);
             if (r)
