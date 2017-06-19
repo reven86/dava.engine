@@ -385,17 +385,18 @@ void DLCManagerTest::OnIOErrorClicked(BaseObject*, void*, void*)
     GenerateIOErrorOnNextOperation(ioErr);
 }
 
-void DLCManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+void DLCManagerTest::OnClearDocsClicked(BaseObject* sender, void* data, void* callerData)
 {
     using namespace DAVA;
     DLCManager& dm = *engine.GetContext()->dlcManager;
 
-    FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks, true);
-
-    packNameLoading->SetText(L"done: unmount all dvpk's, and remove dir with downloaded dvpk's");
+    // TODO get name of downloaded pack
+    String packName = packInput->GetUtf8Text();
+    dm.RemovePack(packName);
+    packNameLoading->SetUtf8Text("done: remove dvpk:" + packName);
 }
 
-void DLCManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+void DLCManagerTest::OnListPacksClicked(BaseObject* sender, void* data, void* callerData)
 {
     using namespace DAVA;
     DLCManager& dm = *engine.GetContext()->dlcManager;
@@ -422,7 +423,7 @@ void DLCManagerTest::OnOffRequestingClicked(DAVA::BaseObject* sender, void* data
 void DLCManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     using namespace DAVA;
-    // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
+    // To visualize on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
 
     DLCManager& dm = *engine.GetContext()->dlcManager;
@@ -437,7 +438,8 @@ void DLCManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data
     {
         if (dm.IsInitialized())
         {
-            if (dm.IsPackDownloaded(packName))
+            const DLCManager::IRequest* p = dm.RequestPack(packName);
+            if (p != nullptr && p->IsDownloaded())
             {
                 packNameLoading->SetUtf8Text("already downloaded: " + packName);
                 return;
@@ -466,7 +468,8 @@ void DLCManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data
     {
         if (pm.IsInitialized())
         {
-            if (pm.IsPackDownloaded(packName))
+            const DLCManager::IRequest* p = pm.RequestPack(packName);
+            if (p != nullptr && p->IsDownloaded())
             {
                 packNameLoading->SetUtf8Text("already downloaded: " + packName);
                 return;
