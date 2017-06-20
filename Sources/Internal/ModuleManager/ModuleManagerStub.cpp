@@ -3,23 +3,8 @@
 
 namespace DAVA
 {
-struct ModuleManager::PointersToModules
+Vector<IModule*> CreateModuleInstances(Engine* engine)
 {
-};
-
-ModuleManager::ModuleManager(Engine* engine)
-{
-}
-
-ModuleManager::~ModuleManager()
-{
-}
-
-void ModuleManager::InitModules()
-{
-}
-
-void ModuleManager::ShutdownModules()
-{
+    return Vector<IModule*>();
 }
 }
