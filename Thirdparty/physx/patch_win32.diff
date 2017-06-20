@@ -1,4 +1,4 @@
-PATCHED: linkage with CUDA and PhysXGPU removed. define DISABLE_CUDA_PHYSX added into PxPreprocessor.h to disable CUDA
+PATCHED: linkage with CUDA and PhysXGPU removed.
 
 From 11c2fb83199cde98417b9deefb227d9be60061fc Mon Sep 17 00:00:00 2001
 From: y_rakhuba <y_rakhuba@wargaming.net>

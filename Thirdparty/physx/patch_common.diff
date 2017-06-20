@@ -1,3 +1,5 @@
+PATCHED: Define DISABLE_CUDA_PHYSX added into PxPreprocessor.h to disable CUDA. Enable __STDC_LIMIT_MACROS in PxSimpleTypes.h for Android
+
 From 7137f0ecc52fbdc790f3ef10cdec885559c0c5f1 Mon Sep 17 00:00:00 2001
 From: y_rakhuba <y_rakhuba@wargaming.net>
 Date: Tue, 13 Jun 2017 13:19:41 +0300

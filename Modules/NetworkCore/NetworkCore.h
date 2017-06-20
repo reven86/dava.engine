@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ModuleManager/IModule.h"
-#include "ModuleManager/ModuleManager.h"
+#include <ModuleManager/IModule.h>
+#include <ModuleManager/ModuleManager.h>
 
-#include "Base/Singleton.h"
-#include "Base/BaseTypes.h"
+#include <Reflection/Reflection.h>
+#include <Base/BaseTypes.h>
 
 namespace DAVA
 {
@@ -32,5 +32,7 @@ public:
 
 private:
     Vector<eStatus> statusList;
+
+    DAVA_VIRTUAL_REFLECTION(NetworkCore, IModule);
 };
 };
