@@ -359,12 +359,12 @@ void SpeedTreeConverter::ConvertPolygonGroupsPivot3(Entity* scene)
         SafeRelease(it.second);
 }
 
-void SpeedTreeConverter::ValidateSpeedTreeComponents(Entity* node)
+void SpeedTreeConverter::ValidateSpeedTreeComponentCount(Entity* node)
 {
     for (int32 c = 0; c < node->GetChildrenCount(); ++c)
     {
         Entity* childNode = node->GetChild(c);
-        ValidateSpeedTreeComponents(childNode);
+        ValidateSpeedTreeComponentCount(childNode);
     }
 
     while (node->GetComponentCount(Component::SPEEDTREE_COMPONENT) > 1u)

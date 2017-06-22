@@ -21,7 +21,7 @@ public:
 
     void ConvertTrees(Entity* scene);
     void ConvertPolygonGroupsPivot3(Entity* scene);
-    void ValidateSpeedTreeComponents(Entity* node);
+    void ValidateSpeedTreeComponentCount(Entity* node);
 
 private:
     static const FastName SPEED_TREE_MATERIAL_NAME_OLD;
