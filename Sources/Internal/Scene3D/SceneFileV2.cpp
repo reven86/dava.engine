@@ -1331,6 +1331,11 @@ void SceneFileV2::OptimizeScene(Entity* rootNode)
         covert.ConvertPolygonGroupsPivot3(rootNode);
     }
 
+    {
+        SpeedTreeConverter convert;
+        convert.ValidateSpeedTreeComponentCount(rootNode);
+    }
+
     QualitySettingsSystem::Instance()->UpdateEntityAfterLoad(rootNode);
 
     int32 nowCount = rootNode->GetChildrenCountRecursive();
