@@ -7,11 +7,18 @@
 
 namespace DAVA
 {
-struct FastNameDB
+class FastNameDB final
 {
+    friend class FastName;
+
+public:
     using MutexT = Spinlock;
     using CharT = char;
 
+    static FastNameDB* GetLocalDB();
+    void SetMasterDB(FastNameDB* masterDB);
+
+private:
     FastNameDB()
         : namesHash(8192 * 2)
     {
@@ -25,6 +32,8 @@ struct FastNameDB
             SafeDeleteArray(namesTable[i]);
         }
     }
+
+    static FastNameDB** GetLocalDBPtr();
 
     struct FastNameDBHash
     {
@@ -51,8 +60,6 @@ struct FastNameDB
 
 class FastName
 {
-    static FastNameDB* db;
-
 public:
     FastName();
     explicit FastName(const char* name);
@@ -146,8 +153,9 @@ inline bool FastName::IsValid() const
 
 inline const char* FastName::c_str() const
 {
-    DVASSERT(index >= -1 && index < static_cast<int>(db->namesTable.size()));
+    FastNameDB* db = FastNameDB::GetLocalDB();
 
+    DVASSERT(index >= -1 && index < static_cast<int>(db->namesTable.size()));
     if (index >= 0)
     {
         return db->namesTable[index];

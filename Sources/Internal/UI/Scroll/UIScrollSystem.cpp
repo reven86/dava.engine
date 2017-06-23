@@ -4,6 +4,7 @@
 #include "UI/UIScrollViewContainer.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/Components/UIComponent.h"
+#include "UI/Scroll/UIScrollComponent.h"
 
 namespace DAVA
 {
@@ -27,7 +28,7 @@ void UIScrollSystem::ScheduleScrollToControlWithAnimation(UIControl* control, fl
 
 void UIScrollSystem::RegisterControl(UIControl* control)
 {
-    if (control->GetComponent(UIComponent::SCROLL_COMPONENT))
+    if (control->GetComponent<UIScrollComponent>())
     {
         scrollViewContainers.push_back(DynamicTypeCheck<UIScrollViewContainer*>(control));
     }
@@ -35,7 +36,7 @@ void UIScrollSystem::RegisterControl(UIControl* control)
 
 void UIScrollSystem::UnregisterControl(UIControl* control)
 {
-    if (control->GetComponent(UIComponent::SCROLL_COMPONENT))
+    if (control->GetComponent<UIScrollComponent>())
     {
         auto it = std::find(scrollViewContainers.begin(), scrollViewContainers.end(), control);
         if (it != scrollViewContainers.end())
@@ -51,7 +52,7 @@ void UIScrollSystem::UnregisterControl(UIControl* control)
 
 void UIScrollSystem::RegisterComponent(UIControl* control, UIComponent* component)
 {
-    if (component->GetType() == UIComponent::SCROLL_COMPONENT)
+    if (component->GetType() == Type::Instance<UIScrollComponent>())
     {
         scrollViewContainers.push_back(DynamicTypeCheck<UIScrollViewContainer*>(control));
     }
@@ -59,7 +60,7 @@ void UIScrollSystem::RegisterComponent(UIControl* control, UIComponent* componen
 
 void UIScrollSystem::UnregisterComponent(UIControl* control, UIComponent* component)
 {
-    if (component->GetType() == UIComponent::SCROLL_COMPONENT)
+    if (component->GetType() == Type::Instance<UIScrollComponent>())
     {
         auto it = std::find(scrollViewContainers.begin(), scrollViewContainers.end(), control);
         if (it != scrollViewContainers.end())
@@ -102,7 +103,7 @@ void UIScrollSystem::PrepareForScreenshotImpl(UIControl* control)
     for (UIControl* c : control->GetChildren())
     {
         PrepareForScreenshotImpl(c);
-        if (c->GetComponent(UIComponent::SCROLL_COMPONENT) != nullptr)
+        if (c->GetComponent<UIScrollComponent>() != nullptr)
         {
             c->Update(0);
         }

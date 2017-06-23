@@ -13,6 +13,7 @@
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
+#include "Utils/QtDavaConvertion.h"
 
 #include <TArc/WindowSubSystem/UI.h>
 #include <TArc/Core/ContextAccessor.h>
@@ -20,6 +21,8 @@
 #include <UI/Components/UIComponent.h>
 #include <UI/UIControl.h>
 #include <UI/Styles/UIStyleSheetPropertyDataBase.h>
+#include <Engine/Engine.h>
+#include <Entity/ComponentManager.h>
 
 #include <QAbstractItemModel>
 #include <QItemEditorFactory>
@@ -111,20 +114,16 @@ void PropertiesWidget::OnAddComponent(QAction* action)
     DVASSERT(accessor->GetActiveContext() != nullptr);
     const RootProperty* rootProperty = DAVA::DynamicTypeCheck<const RootProperty*>(propertiesModel->GetRootProperty());
 
-    uint32 componentType = action->data().toUInt();
+    const Type* componentType = action->data().value<Any>().Cast<const Type*>();
     ComponentPropertiesSection* componentSection = rootProperty->FindComponentPropertiesSection(componentType, 0);
     if (componentSection != nullptr && !UIComponent::IsMultiple(componentType))
     {
         QModelIndex index = propertiesModel->indexByProperty(componentSection);
         OnComponentAdded(index);
     }
-    else if (componentType < UIComponent::COMPONENT_COUNT)
-    {
-        executor.AddComponent(DynamicTypeCheck<ControlNode*>(selectedNode), componentType);
-    }
     else
     {
-        DVASSERT(componentType < UIComponent::COMPONENT_COUNT);
+        executor.AddComponent(DynamicTypeCheck<ControlNode*>(selectedNode), componentType);
     }
 }
 
@@ -202,13 +201,14 @@ void PropertiesWidget::OnSelectionChanged(const QItemSelection& /*selected*/, co
 QAction* PropertiesWidget::CreateAddComponentAction()
 {
     QMenu* addComponentMenu = new QMenu(this);
-    for (int32 i = 0; i < UIComponent::COMPONENT_COUNT; i++)
+    const Vector<const Type*>& components = GetEngineContext()->componentManager->GetRegisteredComponents();
+    for (const Type* c : components)
     {
-        if (!ComponentPropertiesSection::IsHiddenComponent(static_cast<UIComponent::eType>(i)))
+        if (!ComponentPropertiesSection::IsHiddenComponent(c))
         {
-            const char* name = GlobalEnumMap<UIComponent::eType>::Instance()->ToString(i);
-            QAction* componentAction = new QAction(name, this); // TODO: Localize name
-            componentAction->setData(i);
+            const String& name = ReflectedTypeDB::GetByType(c)->GetPermanentName();
+            QAction* componentAction = new QAction(name.c_str(), this); // TODO: Localize name
+            componentAction->setData(QVariant::fromValue(Any(c)));
             addComponentMenu->addAction(componentAction);
         }
     }

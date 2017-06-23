@@ -1,5 +1,6 @@
 #include "UI/Find/PackageInformation/StaticPackageInformationBuilder.h"
 
+#include <Reflection/ReflectedTypeDB.h>
 #include <UI/UIControl.h>
 #include <Utils/Utils.h>
 #include <Utils/StringFormat.h>
@@ -240,15 +241,15 @@ void StaticPackageInformationBuilder::EndControlPropertiesSection()
     propertyProcessor = nullptr;
 }
 
-const ReflectedType* StaticPackageInformationBuilder::BeginComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex)
+const ReflectedType* StaticPackageInformationBuilder::BeginComponentPropertiesSection(const DAVA::Type* componentType, DAVA::uint32 componentIndex)
 {
     std::shared_ptr<StaticControlInformation> ptr = stack.back().controlInformation;
 
-    ptr->AddComponent(static_cast<UIComponent::eType>(componentType));
+    ptr->AddComponent(componentType);
 
     propertyProcessor = [ptr, componentType, componentIndex](const DAVA::ReflectedStructure::Field& member, const DAVA::Any& value)
     {
-        ptr->SetComponentProperty(static_cast<UIComponent::eType>(componentType), componentIndex, member, value);
+        ptr->SetComponentProperty(componentType, componentIndex, member, value);
     };
 
     RefPtr<UIComponent> component = UIComponent::SafeCreateByType(componentType); // this will be gone with new reflection system

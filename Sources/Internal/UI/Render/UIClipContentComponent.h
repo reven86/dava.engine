@@ -6,9 +6,10 @@
 
 namespace DAVA
 {
-class UIClipContentComponent : public UIBaseComponent<UIComponent::CLIP_CONTENT_COMPONENT>
+class UIClipContentComponent : public UIComponent
 {
-    DAVA_VIRTUAL_REFLECTION(UIDebugRenderComponent, UIBaseComponent<UIComponent::CLIP_CONTENT_COMPONENT>);
+    DAVA_VIRTUAL_REFLECTION(UIDebugRenderComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UIClipContentComponent);
 
 public:
     UIClipContentComponent();

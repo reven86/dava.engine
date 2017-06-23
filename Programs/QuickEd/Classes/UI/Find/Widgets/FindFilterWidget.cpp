@@ -7,11 +7,14 @@
 #include "UI/Find/Filters/HasErrorsFilter.h"
 #include "UI/Find/Filters/PackageVersionFilter.h"
 #include "UI/Find/Widgets/EmptyFindFilterEditor.h"
-#include "UI/Find/Widgets/EnumFindFilterEditor.h"
+#include "UI/Find/Widgets/ComboBoxFilterEditor.h"
 #include "UI/Find/Widgets/RegExpStringFindFilterEditor.h"
 #include "UI/Find/Widgets/StringFindFilterEditor.h"
 #include "UI/Find/Widgets/EnumAndStringFindFilterEditor.h"
-#include "Utils/Utils.h"
+#include <Engine/Engine.h>
+#include <Entity/ComponentManager.h>
+#include <Reflection/ReflectedTypeDB.h>
+#include <Utils/Utils.h>
 
 using namespace DAVA;
 
@@ -56,11 +59,23 @@ public:
 
     FindFilterEditor* CreateEditor(QWidget* parent) override
     {
-        return new EnumFindFilterEditor(parent,
-                                        GlobalEnumMap<UIComponent::eType>::Instance(),
-                                        [](const EnumFindFilterEditor* editor)
+        Vector<ComboBoxFilterEditor::ComboBoxData> data;
+
+        auto& components = GetEngineContext()->componentManager->GetRegisteredComponents();
+        int32 i = 0;
+        for (auto& c : components)
+        {
+            ComboBoxFilterEditor::ComboBoxData d;
+            d.description = ReflectedTypeDB::GetByType(c)->GetPermanentName();
+            d.userData = reinterpret_cast<uint64>(c);
+            data.push_back(d);
+        }
+
+        return new ComboBoxFilterEditor(parent,
+                                        data,
+                                        [](const ComboBoxFilterEditor* editor)
                                         {
-                                            return std::make_unique<HasComponentFilter>(static_cast<UIComponent::eType>(editor->GetValue()));
+                                            return std::make_unique<HasComponentFilter>(reinterpret_cast<const Type*>(editor->GetUserData()));
                                         });
     }
 };

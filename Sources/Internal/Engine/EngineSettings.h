@@ -5,7 +5,7 @@
 #include "Base/Any.h"
 #include "Debug/DVAssert.h"
 #include "Functional/Signal.h"
-#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/Reflection.h"
 
 #if !defined(__DAVAENGINE_COREV2__)
 #include "Base/Singleton.h"

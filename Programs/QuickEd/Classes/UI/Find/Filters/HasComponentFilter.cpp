@@ -4,7 +4,7 @@
 
 using namespace DAVA;
 
-HasComponentFilter::HasComponentFilter(UIComponent::eType componentType)
+HasComponentFilter::HasComponentFilter(const DAVA::Type* componentType)
     : requiredComponentType(componentType)
 {
 }

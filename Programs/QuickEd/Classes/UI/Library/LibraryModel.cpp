@@ -127,10 +127,11 @@ void LibraryModel::SetProjectLibraries(const DAVA::Map<DAVA::String, DAVA::Set<D
     }
     libraryPackages.clear();
 
+    const EngineContext* engineContext = GetEngineContext();
     int32 index = 0;
     for (const FilePath& path : libraryPackagePaths)
     {
-        QuickEdPackageBuilder builder;
+        QuickEdPackageBuilder builder(engineContext);
         PackageNode* package = nullptr;
         if (UIPackageLoader(prototypes).LoadPackage(path, &builder))
         {

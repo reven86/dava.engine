@@ -35,7 +35,7 @@ public:
     void BeginControlPropertiesSection(const String& name) override;
     void EndControlPropertiesSection() override;
 
-    const ReflectedType* BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex) override;
+    const ReflectedType* BeginComponentPropertiesSection(const Type* componentType, uint32 componentIndex) override;
     void EndComponentPropertiesSection() override;
 
     void ProcessProperty(const ReflectedStructure::Field& field, const Any& value) override;
@@ -57,7 +57,7 @@ private:
 
     UIPackagesCache* cache;
     ReflectedObject currentObject;
-    int32 currentComponentType = -1;
+    const Type* currentComponentType = nullptr;
 
     RefPtr<UIPackage> package;
     FilePath currentPackagePath;

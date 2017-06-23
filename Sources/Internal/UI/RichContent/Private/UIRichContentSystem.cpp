@@ -36,25 +36,31 @@ void UIRichContentSystem::RegisterComponent(UIControl* control, UIComponent* com
 {
     UISystem::RegisterComponent(control, component);
 
-    if (component->GetType() == UIRichContentComponent::C_TYPE)
+    UIRichContentComponent* richContent = CastIfEqual<UIRichContentComponent*>(component);
+    if (richContent != nullptr)
     {
-        AddLink(static_cast<UIRichContentComponent*>(component));
+        AddLink(richContent);
     }
-    else if (component->GetType() == UIRichContentAliasesComponent::C_TYPE)
+
+    UIRichContentAliasesComponent* richContentAliases = CastIfEqual<UIRichContentAliasesComponent*>(component);
+    if (richContentAliases != nullptr)
     {
-        AddAliases(control, static_cast<UIRichContentAliasesComponent*>(component));
+        AddAliases(control, richContentAliases);
     }
 }
 
 void UIRichContentSystem::UnregisterComponent(UIControl* control, UIComponent* component)
 {
-    if (component->GetType() == UIRichContentComponent::C_TYPE)
+    UIRichContentComponent* richContent = CastIfEqual<UIRichContentComponent*>(component);
+    if (richContent != nullptr)
     {
-        RemoveLink(static_cast<UIRichContentComponent*>(component));
+        RemoveLink(richContent);
     }
-    else if (component->GetType() == UIRichContentAliasesComponent::C_TYPE)
+
+    UIRichContentAliasesComponent* richContentAliases = CastIfEqual<UIRichContentAliasesComponent*>(component);
+    if (richContentAliases != nullptr)
     {
-        RemoveAliases(control, static_cast<UIRichContentAliasesComponent*>(component));
+        RemoveAliases(control, richContentAliases);
     }
 
     UISystem::UnregisterComponent(control, component);

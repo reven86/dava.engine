@@ -31,9 +31,10 @@ class UIControl;
         from name attribute. Attribute `path` and one of attributes `control` or
         `prototype` are required. Attribute `name` is optional.
 */
-class UIRichContentComponent : public UIBaseComponent<UIComponent::RICH_CONTENT_COMPONENT>
+class UIRichContentComponent : public UIComponent
 {
-    DAVA_VIRTUAL_REFLECTION(UIRichContentComponent, UIBaseComponent<UIComponent::RICH_CONTENT_COMPONENT>);
+    DAVA_VIRTUAL_REFLECTION(UIRichContentComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UIRichContentComponent);
 
 public:
     /** Default constructor. */

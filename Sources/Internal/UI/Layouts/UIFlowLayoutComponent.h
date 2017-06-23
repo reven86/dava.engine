@@ -7,9 +7,10 @@
 
 namespace DAVA
 {
-class UIFlowLayoutComponent : public UIBaseComponent<UIComponent::FLOW_LAYOUT_COMPONENT>
+class UIFlowLayoutComponent : public UIComponent
 {
-    DAVA_VIRTUAL_REFLECTION(UIFlowLayoutComponent, UIBaseComponent<UIComponent::FLOW_LAYOUT_COMPONENT>);
+    DAVA_VIRTUAL_REFLECTION(UIFlowLayoutComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UIFlowLayoutComponent);
 
 public:
     enum eOrientation

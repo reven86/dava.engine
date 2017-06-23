@@ -1,5 +1,6 @@
 #include "SizeMeasuringAlgorithm.h"
 
+#include "Reflection/ReflectionRegistrator.h"
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutHintComponent.h"

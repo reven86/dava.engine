@@ -63,38 +63,18 @@ void TypeInheritance::RegisterBases()
 template <typename T, typename B>
 bool TypeInheritance::AddBaseType()
 {
-    const Type* type = Type::Instance<T>();
-    const TypeInheritance* inheritance = type->GetInheritance();
+    TypeInheritance* inheritance = Type::Instance<T>()->EditInheritance();
+    inheritance->AddBaseType(Type::Instance<B>(), TypeInheritanceDetail::GetPtrDiff<T, B>());
 
-    if (nullptr == inheritance)
-    {
-        Type* editType = const_cast<Type*>(type);
-
-        inheritance = new TypeInheritance();
-        editType->inheritance.reset(inheritance);
-    }
-
-    const Type* base = Type::Instance<B>();
-    inheritance->baseTypesInfo.push_back({ base, TypeInheritanceDetail::GetPtrDiff<T, B>() });
     return true;
 }
 
 template <typename T, typename D>
 bool TypeInheritance::AddDerivedType()
 {
-    const Type* type = Type::Instance<T>();
-    const TypeInheritance* inheritance = type->GetInheritance();
+    TypeInheritance* inheritance = Type::Instance<T>()->EditInheritance();
+    inheritance->AddDerivedType(Type::Instance<D>(), TypeInheritanceDetail::GetPtrDiff<T, D>());
 
-    if (nullptr == inheritance)
-    {
-        Type* editType = const_cast<Type*>(type);
-
-        inheritance = new TypeInheritance();
-        editType->inheritance.reset(inheritance);
-    }
-
-    const Type* derived = Type::Instance<D>();
-    inheritance->derivedTypesInfo.push_back({ derived, TypeInheritanceDetail::GetPtrDiff<T, D>() });
     return true;
 }
 } // namespace DAVA

@@ -534,7 +534,7 @@ DAVA::RefPtr<PackageNode> DocumentsModule::CreatePackage(const QString& path)
     ProjectData* projectData = GetAccessor()->GetGlobalContext()->GetData<ProjectData>();
     DVASSERT(nullptr != projectData);
 
-    QuickEdPackageBuilder builder;
+    QuickEdPackageBuilder builder(GetAccessor()->GetEngineContext());
     UIPackageLoader packageLoader(projectData->GetPrototypes());
     bool packageLoaded = packageLoader.LoadPackage(davaPath, &builder);
 

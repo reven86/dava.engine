@@ -49,9 +49,9 @@ bool StaticControlInformation::HasErrors() const
     return results.HasErrors();
 }
 
-bool StaticControlInformation::HasComponent(UIComponent::eType componentType) const
+bool StaticControlInformation::HasComponent(const DAVA::Type* componentType) const
 {
-    const UnorderedMap<UIComponent::eType, int32>::const_iterator iter = componentCount.find(componentType);
+    const UnorderedMap<const DAVA::Type*, int32>::const_iterator iter = componentCount.find(componentType);
 
     if (iter != componentCount.end())
     {
@@ -123,7 +123,7 @@ std::shared_ptr<StaticControlInformation> StaticControlInformation::FindChildByN
     return std::shared_ptr<StaticControlInformation>();
 }
 
-void StaticControlInformation::AddComponent(UIComponent::eType componentType)
+void StaticControlInformation::AddComponent(const DAVA::Type* componentType)
 {
     ++componentCount[componentType];
 }
@@ -133,7 +133,7 @@ void StaticControlInformation::SetControlProperty(const DAVA::ReflectedStructure
     controlProperties[FastName(member.name)] = value;
 }
 
-void StaticControlInformation::SetComponentProperty(UIComponent::eType componentType, int32 componentIndex, const DAVA::ReflectedStructure::Field& member, const DAVA::Any& value)
+void StaticControlInformation::SetComponentProperty(const DAVA::Type* componentType, int32 componentIndex, const DAVA::ReflectedStructure::Field& member, const DAVA::Any& value)
 {
     const ComponentPropertyId id = std::make_tuple(componentType, componentIndex, FastName(member.name));
     componentProperties[id] = value;

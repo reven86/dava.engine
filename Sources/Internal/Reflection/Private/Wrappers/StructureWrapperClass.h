@@ -5,6 +5,7 @@
 #endif
 
 #include "Base/FastName.h"
+#include "Reflection/ReflectedStructure.h"
 #include "Reflection/Private/Wrappers/StructureWrapperDefault.h"
 
 namespace DAVA

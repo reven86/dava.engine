@@ -2,6 +2,7 @@
 
 #include <Base/BaseTypes.h>
 #include <Reflection/Reflection.h>
+#include <Reflection/ReflectedStructure.h>
 #include <Functional/Functional.h>
 #include <FileSystem/VariantType.h>
 #include <UI/Components/UIComponent.h>
@@ -16,7 +17,7 @@ public:
     virtual DAVA::String GetPrototypePackagePath() const = 0;
     virtual bool HasErrors() const = 0;
 
-    virtual bool HasComponent(DAVA::UIComponent::eType componentType) const = 0;
+    virtual bool HasComponent(const DAVA::Type* componentType) const = 0;
 
     virtual void VisitParent(const DAVA::Function<void(const ControlInformation*)>& visitor) const = 0;
     virtual void VisitChildren(const DAVA::Function<void(const ControlInformation*)>& visitor) const = 0;

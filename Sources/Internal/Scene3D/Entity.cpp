@@ -455,12 +455,12 @@ Entity* Entity::Clone(Entity* dstNode)
 
 void Entity::SetDebugFlags(uint32 debugFlags, bool isRecursive)
 {
-    DebugRenderComponent* debugComponent = cast_if_equal<DebugRenderComponent*>(GetComponent(Component::DEBUG_RENDER_COMPONENT));
+    DebugRenderComponent* debugComponent = CastIfEqual<DebugRenderComponent*>(GetComponent(Component::DEBUG_RENDER_COMPONENT));
 
     if (!debugComponent)
     {
         AddComponent(new DebugRenderComponent());
-        debugComponent = cast_if_equal<DebugRenderComponent*>(GetComponent(Component::DEBUG_RENDER_COMPONENT));
+        debugComponent = CastIfEqual<DebugRenderComponent*>(GetComponent(Component::DEBUG_RENDER_COMPONENT));
         debugComponent->SetDebugFlags(DebugRenderComponent::DEBUG_AUTOCREATED);
     }
 
@@ -484,7 +484,7 @@ void Entity::SetDebugFlags(uint32 debugFlags, bool isRecursive)
 
 uint32 Entity::GetDebugFlags() const
 {
-    DebugRenderComponent* debugComponent = cast_if_equal<DebugRenderComponent*>(GetComponent(Component::DEBUG_RENDER_COMPONENT));
+    DebugRenderComponent* debugComponent = CastIfEqual<DebugRenderComponent*>(GetComponent(Component::DEBUG_RENDER_COMPONENT));
     if (debugComponent)
     {
         return debugComponent->GetDebugFlags();
@@ -597,7 +597,7 @@ void Entity::Save(KeyedArchive* archive, SerializationContext* serializationCont
             //don't save empty custom properties
             if (Component::CUSTOM_PROPERTIES_COMPONENT == i)
             {
-                CustomPropertiesComponent* customProps = cast_if_equal<CustomPropertiesComponent*>(components[i]);
+                CustomPropertiesComponent* customProps = CastIfEqual<CustomPropertiesComponent*>(components[i]);
                 if (customProps && customProps->GetArchive()->Count() <= 0)
                 {
                     continue;

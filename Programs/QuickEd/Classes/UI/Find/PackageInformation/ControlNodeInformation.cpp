@@ -47,7 +47,7 @@ bool ControlNodeInformation::HasErrors() const
     return controlNode->HasErrors();
 }
 
-bool ControlNodeInformation::HasComponent(UIComponent::eType componentType) const
+bool ControlNodeInformation::HasComponent(const DAVA::Type* componentType) const
 {
     return controlNode->GetControl()->GetComponentCount(componentType) > 0;
 }

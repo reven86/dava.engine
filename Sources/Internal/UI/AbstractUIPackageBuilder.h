@@ -53,7 +53,7 @@ public:
     virtual void BeginControlPropertiesSection(const String& name) = 0;
     virtual void EndControlPropertiesSection() = 0;
 
-    virtual const ReflectedType* BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex) = 0;
+    virtual const ReflectedType* BeginComponentPropertiesSection(const Type* componentType, uint32 componentIndex) = 0;
     virtual void EndComponentPropertiesSection() = 0;
 
     virtual void ProcessProperty(const DAVA::ReflectedStructure::Field& field, const Any& value) = 0;

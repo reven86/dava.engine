@@ -1,4 +1,5 @@
-#include "UIFlowLayoutHintComponent.h"
+#include "UI/Layouts/UIFlowLayoutHintComponent.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 #include "UI/UIControl.h"
 #include "Math/Vector.h"

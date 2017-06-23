@@ -14,7 +14,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIRichContentAliasesComponent)
 }
 
 UIRichContentAliasesComponent::UIRichContentAliasesComponent(const UIRichContentAliasesComponent& src)
-    : UIBaseComponent(src)
+    : UIComponent(src)
     , aliases(src.aliases)
     , modified(true)
 {

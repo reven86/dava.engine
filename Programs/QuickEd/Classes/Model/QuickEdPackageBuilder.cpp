@@ -14,14 +14,15 @@
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Model/PackageHierarchy/StyleSheetsNode.h"
 
+#include <Base/ObjectFactory.h>
+#include <Entity/ComponentManager.h>
+#include <FileSystem/YamlNode.h>
 #include <UI/UIPackage.h>
 #include <UI/UIControl.h>
 #include <UI/UIControlPackageContext.h>
 #include <UI/Styles/UIStyleSheet.h>
 #include <UI/Styles/UIStyleSheetYamlLoader.h>
-#include <Base/ObjectFactory.h>
 #include <Utils/Utils.h>
-#include <FileSystem/YamlNode.h>
 
 using namespace DAVA;
 
@@ -37,9 +38,10 @@ struct GuidesOrientation
 };
 }
 
-QuickEdPackageBuilder::QuickEdPackageBuilder()
+QuickEdPackageBuilder::QuickEdPackageBuilder(const EngineContext* engineContext_)
     : currentObject(nullptr)
     , currentSection(nullptr)
+    , engineContext(engineContext_)
 {
 }
 
@@ -88,7 +90,7 @@ bool QuickEdPackageBuilder::ProcessImportedPackage(const String& packagePathStr,
         return false;
     }
 
-    QuickEdPackageBuilder builder;
+    QuickEdPackageBuilder builder(engineContext);
     builder.declinedPackages.insert(builder.declinedPackages.end(), declinedPackages.begin(), declinedPackages.end());
     builder.declinedPackages.push_back(packagePath);
 
@@ -270,14 +272,16 @@ void QuickEdPackageBuilder::EndControl(eControlPlace controlPlace)
     ControlNode* lastControl = SafeRetain(controlsStack.back().node);
 
     // the following code handles cases when component was created by control himself (UIParticles creates UIUpdateComponent for example)
-    for (uint32 componentType = 0; componentType < UIComponent::COMPONENT_COUNT; ++componentType)
+    ComponentManager* cm = engineContext->componentManager;
+    auto& components = cm->GetRegisteredComponents();
+    for (auto& c : components)
     {
-        const ComponentPropertiesSection* section = lastControl->GetRootProperty()->FindComponentPropertiesSection(componentType, 0);
+        const ComponentPropertiesSection* section = lastControl->GetRootProperty()->FindComponentPropertiesSection(c, 0);
 
-        if (section == nullptr && lastControl->GetControl()->GetComponentCount(componentType) > 0 &&
-            !ComponentPropertiesSection::IsHiddenComponent(static_cast<UIComponent::eType>(componentType)))
+        if (section == nullptr && lastControl->GetControl()->GetComponentCount(c) > 0 &&
+            !ComponentPropertiesSection::IsHiddenComponent(c))
         {
-            BeginComponentPropertiesSection(componentType, 0);
+            BeginComponentPropertiesSection(c, 0);
             EndComponentPropertiesSection();
         }
     }
@@ -327,7 +331,7 @@ void QuickEdPackageBuilder::EndControlPropertiesSection()
     currentObject = nullptr;
 }
 
-const ReflectedType* QuickEdPackageBuilder::BeginComponentPropertiesSection(uint32 componentType, DAVA::uint32 componentIndex)
+const ReflectedType* QuickEdPackageBuilder::BeginComponentPropertiesSection(const Type* componentType, DAVA::uint32 componentIndex)
 {
     ControlNode* node = controlsStack.back().node;
     ComponentPropertiesSection* section;

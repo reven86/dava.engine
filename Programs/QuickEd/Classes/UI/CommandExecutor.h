@@ -45,8 +45,8 @@ public:
     void ChangeProperty(ControlNode* node, AbstractProperty* property, const DAVA::Any& value);
     void ResetProperty(ControlNode* node, AbstractProperty* property);
 
-    void AddComponent(ControlNode* node, DAVA::uint32 componentType);
-    void RemoveComponent(ControlNode* node, DAVA::uint32 componentType, DAVA::uint32 componentIndex);
+    void AddComponent(ControlNode* node, const DAVA::Type* componentType);
+    void RemoveComponent(ControlNode* node, const DAVA::Type* componentType, DAVA::uint32 componentIndex);
 
     void ChangeProperty(StyleSheetNode* node, AbstractProperty* property, const DAVA::Any& value);
 
@@ -73,7 +73,7 @@ private:
     void InsertControlImpl(ControlNode* control, ControlsContainerNode* dest, DAVA::int32 destIndex);
     void RemoveControlImpl(ControlNode* node);
     bool MoveControlImpl(ControlNode* node, ControlsContainerNode* dest, DAVA::int32 destIndex);
-    void AddComponentImpl(ControlNode* node, DAVA::int32 type, DAVA::int32 index, ComponentPropertiesSection* prototypeSection);
+    void AddComponentImpl(ControlNode* node, const DAVA::Type* type, DAVA::int32 index, ComponentPropertiesSection* prototypeSection);
     void RemoveComponentImpl(ControlNode* node, ComponentPropertiesSection* section);
     bool IsNodeInHierarchy(const PackageBaseNode* node) const;
 

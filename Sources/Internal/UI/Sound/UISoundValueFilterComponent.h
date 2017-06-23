@@ -4,9 +4,10 @@
 
 namespace DAVA
 {
-class UISoundValueFilterComponent : public UIBaseComponent<UIComponent::SOUND_VALUE_FILTER_COMPONENT>
+class UISoundValueFilterComponent : public UIComponent
 {
-    DAVA_VIRTUAL_REFLECTION(UISoundValueFilterComponent, UIBaseComponent<UIComponent::SOUND_VALUE_FILTER_COMPONENT>);
+    DAVA_VIRTUAL_REFLECTION(UISoundValueFilterComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UISoundValueFilterComponent);
 
 public:
     UISoundValueFilterComponent();

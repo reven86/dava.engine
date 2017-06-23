@@ -40,15 +40,14 @@
 #include <TArc/Core/ContextAccessor.h>
 #include <TArc/WindowSubSystem/UI.h>
 
-#include <QtTools/ConsoleWidget/PointerSerializer.h>
-
-#include <Command/CommandStack.h>
 #include <UI/UIControl.h>
 #include <UI/UIPackageLoader.h>
 #include <UI/Styles/UIStyleSheetPropertyDataBase.h>
-
+#include <QtTools/ConsoleWidget/PointerSerializer.h>
 #include <Logger/Logger.h>
 #include <Utils/StringFormat.h>
+#include <Reflection/ReflectedTypeDB.h>
+#include <Command/CommandStack.h>
 
 using namespace DAVA;
 
@@ -83,11 +82,12 @@ void CommandExecutor::AddImportedPackagesIntoPackage(const DAVA::Vector<DAVA::Fi
 {
     Vector<PackageNode*> importedPackages;
     Result result;
+    const EngineContext* engineContext = GetEngineContext();
     for (const FilePath& path : packagePaths)
     {
         if (package->FindImportedPackage(path) == nullptr && package->GetPath().GetFrameworkPath() != path.GetFrameworkPath())
         {
-            QuickEdPackageBuilder builder;
+            QuickEdPackageBuilder builder(engineContext);
 
             ProjectData* projectData = GetProjectData();
             if (UIPackageLoader(projectData->GetPrototypes()).LoadPackage(path, &builder))
@@ -119,7 +119,7 @@ void CommandExecutor::AddImportedPackagesIntoPackage(const DAVA::Vector<DAVA::Fi
         }
         else
         {
-            result = Result(Result::RESULT_ERROR, "Can't import package into themself");
+            result = Result(Result::RESULT_ERROR, "Can't import package into themselves");
             break;
         }
     }
@@ -196,29 +196,29 @@ void CommandExecutor::ResetProperty(ControlNode* node, AbstractProperty* propert
     }
 }
 
-void CommandExecutor::AddComponent(ControlNode* node, uint32 componentType)
+void CommandExecutor::AddComponent(ControlNode* node, const Type* componentType)
 {
     if (node->GetRootProperty()->CanAddComponent(componentType))
     {
-        const char* componentName = GlobalEnumMap<UIComponent::eType>::Instance()->ToString(componentType);
+        const String& componentName = ReflectedTypeDB::GetByPointer(componentType)->GetPermanentName();
         DocumentData* data = GetDocumentData();
-        data->BeginBatch(Format("Add Component %s", componentName));
+        data->BeginBatch(Format("Add Component %s", componentName.c_str()));
         int32 index = node->GetControl()->GetComponentCount(componentType);
         AddComponentImpl(node, componentType, index, nullptr);
         data->EndBatch();
     }
 }
 
-void CommandExecutor::RemoveComponent(ControlNode* node, uint32 componentType, DAVA::uint32 componentIndex)
+void CommandExecutor::RemoveComponent(ControlNode* node, const Type* componentType, DAVA::uint32 componentIndex)
 {
     if (node->GetRootProperty()->CanRemoveComponent(componentType))
     {
         ComponentPropertiesSection* section = node->GetRootProperty()->FindComponentPropertiesSection(componentType, componentIndex);
         if (section)
         {
-            const char* componentName = GlobalEnumMap<UIComponent::eType>::Instance()->ToString(componentType);
+            const String& componentName = ReflectedTypeDB::GetByPointer(componentType)->GetPermanentName();
             DocumentData* data = GetDocumentData();
-            data->BeginBatch(Format("Remove Component %s", componentName));
+            data->BeginBatch(Format("Remove Component %s", componentName.c_str()));
             RemoveComponentImpl(node, section);
             data->EndBatch();
         }
@@ -571,7 +571,7 @@ SelectedNodes CommandExecutor::Paste(PackageNode* root, PackageBaseNode* dest, i
         return createdNodes;
     }
 
-    QuickEdPackageBuilder builder;
+    QuickEdPackageBuilder builder(GetEngineContext());
 
     builder.AddImportedPackage(root);
     for (int32 i = 0; i < root->GetImportedPackagesNode()->GetCount(); i++)
@@ -767,12 +767,11 @@ bool CommandExecutor::MoveControlImpl(ControlNode* node, ControlsContainerNode* 
     return result;
 }
 
-void CommandExecutor::AddComponentImpl(ControlNode* node, int32 typeIndex, int32 index, ComponentPropertiesSection* prototypeSection)
+void CommandExecutor::AddComponentImpl(ControlNode* node, const Type* type, int32 index, ComponentPropertiesSection* prototypeSection)
 {
     ComponentPropertiesSection* destSection = nullptr;
     DocumentData* data = GetDocumentData();
 
-    UIComponent::eType type = static_cast<UIComponent::eType>(typeIndex);
     if (!UIComponent::IsMultiple(type))
     {
         destSection = node->GetRootProperty()->FindComponentPropertiesSection(type, index);

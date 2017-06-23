@@ -11,22 +11,23 @@
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UIAnchorComponent.h"
 #include "UI/Sound/UISoundComponent.h"
+#include "Reflection/ReflectedTypeDB.h"
 
 namespace DAVA
 {
 UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
-    : controlGroup("", -1, ReflectedTypeDB::Get<UIControl>())
-    , bgGroup("bg", UIComponent::BACKGROUND_COMPONENT, ReflectedTypeDB::Get<UIControlBackground>())
-    , staticTextGroup("text", -1, ReflectedTypeDB::Get<UIStaticText>())
-    , textFieldGroup("textField", -1, ReflectedTypeDB::Get<UITextField>())
-    , particleEffectGroup("particleEffect", -1, ReflectedTypeDB::Get<UIParticles>())
-    , linearLayoutGroup("linearLayout", UIComponent::LINEAR_LAYOUT_COMPONENT, ReflectedTypeDB::Get<UILinearLayoutComponent>())
-    , flowLayoutGroup("flowLayout", UIComponent::FLOW_LAYOUT_COMPONENT, ReflectedTypeDB::Get<UIFlowLayoutComponent>())
-    , flowLayoutHintGroup("flowLayoutHint", UIComponent::FLOW_LAYOUT_HINT_COMPONENT, ReflectedTypeDB::Get<UIFlowLayoutHintComponent>())
-    , ignoreLayoutGroup("ignoreLayout", UIComponent::IGNORE_LAYOUT_COMPONENT, ReflectedTypeDB::Get<UIIgnoreLayoutComponent>())
-    , sizePolicyGroup("sizePolicy", UIComponent::SIZE_POLICY_COMPONENT, ReflectedTypeDB::Get<UISizePolicyComponent>())
-    , anchorGroup("anchor", UIComponent::ANCHOR_COMPONENT, ReflectedTypeDB::Get<UIAnchorComponent>())
-    , soundGroup("sound", UIComponent::SOUND_COMPONENT, ReflectedTypeDB::Get<UISoundComponent>())
+    : controlGroup("", nullptr, ReflectedTypeDB::Get<UIControl>())
+    , bgGroup("bg", Type::Instance<UIControlBackground>(), ReflectedTypeDB::Get<UIControlBackground>())
+    , staticTextGroup("text", nullptr, ReflectedTypeDB::Get<UIStaticText>())
+    , textFieldGroup("textField", nullptr, ReflectedTypeDB::Get<UITextField>())
+    , particleEffectGroup("particleEffect", nullptr, ReflectedTypeDB::Get<UIParticles>())
+    , linearLayoutGroup("linearLayout", Type::Instance<UILinearLayoutComponent>(), ReflectedTypeDB::Get<UILinearLayoutComponent>())
+    , flowLayoutGroup("flowLayout", Type::Instance<UIFlowLayoutComponent>(), ReflectedTypeDB::Get<UIFlowLayoutComponent>())
+    , flowLayoutHintGroup("flowLayoutHint", Type::Instance<UIFlowLayoutHintComponent>(), ReflectedTypeDB::Get<UIFlowLayoutHintComponent>())
+    , ignoreLayoutGroup("ignoreLayout", Type::Instance<UIIgnoreLayoutComponent>(), ReflectedTypeDB::Get<UIIgnoreLayoutComponent>())
+    , sizePolicyGroup("sizePolicy", Type::Instance<UISizePolicyComponent>(), ReflectedTypeDB::Get<UISizePolicyComponent>())
+    , anchorGroup("anchor", Type::Instance<UIAnchorComponent>(), ReflectedTypeDB::Get<UIAnchorComponent>())
+    , soundGroup("sound", Type::Instance<UISoundComponent>(), ReflectedTypeDB::Get<UISoundComponent>())
     , properties({ { UIStyleSheetPropertyDescriptor(&controlGroup, "angle", 0.0f),
                      UIStyleSheetPropertyDescriptor(&controlGroup, "scale", Vector2(1.0f, 1.0f)),
                      UIStyleSheetPropertyDescriptor(&controlGroup, "pivot", Vector2(0.0f, 0.0f)),
@@ -34,7 +35,7 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
                      UIStyleSheetPropertyDescriptor(&controlGroup, "noInput", false),
                      UIStyleSheetPropertyDescriptor(&controlGroup, "exclusiveInput", false),
 
-                     UIStyleSheetPropertyDescriptor(&bgGroup, "drawType", UIControlBackground::DRAW_ALIGNED),
+                     UIStyleSheetPropertyDescriptor(&bgGroup, "drawType", static_cast<int32>(UIControlBackground::DRAW_ALIGNED)),
                      UIStyleSheetPropertyDescriptor(&bgGroup, "sprite", FilePath()),
                      UIStyleSheetPropertyDescriptor(&bgGroup, "frame", 0),
                      UIStyleSheetPropertyDescriptor(&bgGroup, "mask", FilePath()),
@@ -53,7 +54,7 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
                      UIStyleSheetPropertyDescriptor(&staticTextGroup, "textColor", Color::White),
                      UIStyleSheetPropertyDescriptor(&staticTextGroup, "textcolorInheritType", UIControlBackground::COLOR_MULTIPLY_ON_PARENT),
                      UIStyleSheetPropertyDescriptor(&staticTextGroup, "shadowoffset", Vector2(0.0f, 0.0f)),
-                     UIStyleSheetPropertyDescriptor(&staticTextGroup, "shadowcolor", Color::Black),
+                     UIStyleSheetPropertyDescriptor(&staticTextGroup, "shadowcolor", Color::White),
                      UIStyleSheetPropertyDescriptor(&staticTextGroup, "textalign", ALIGN_HCENTER | ALIGN_VCENTER),
 
                      UIStyleSheetPropertyDescriptor(&particleEffectGroup, "effectPath", FilePath()),
@@ -181,7 +182,7 @@ const UIStyleSheetPropertyDescriptor& UIStyleSheetPropertyDataBase::GetStyleShee
     return properties[index];
 }
 
-int32 UIStyleSheetPropertyDataBase::FindStyleSheetProperty(int32 componentType, const FastName& name) const
+int32 UIStyleSheetPropertyDataBase::FindStyleSheetProperty(const Type* componentType, const FastName& name) const
 {
     for (size_t index = 0; index < properties.size(); index++)
     {

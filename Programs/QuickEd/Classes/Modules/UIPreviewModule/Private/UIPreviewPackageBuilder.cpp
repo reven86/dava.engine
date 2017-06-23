@@ -116,10 +116,10 @@ void UIPreviewPackageBuilder::EndControlPropertiesSection()
 {
 }
 
-const DAVA::ReflectedType* UIPreviewPackageBuilder::BeginComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex)
+const DAVA::ReflectedType* UIPreviewPackageBuilder::BeginComponentPropertiesSection(const DAVA::Type* componentType, DAVA::uint32 componentIndex)
 {
     using namespace DAVA;
-    if (UIComponent::BACKGROUND_COMPONENT == componentType)
+    if (Type::Instance<UIControlBackground>() == componentType)
     {
         return ReflectedTypeDB::Get<UIControlBackground>();
     }

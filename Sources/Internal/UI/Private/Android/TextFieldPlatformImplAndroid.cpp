@@ -14,6 +14,7 @@
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
 #include "UI/UIControlSystem.h"
+#include "UI/UIControlBackground.h"
 extern "C"
 {
 
@@ -259,7 +260,7 @@ void TextFieldPlatformImpl::SetText(const WideString& text)
 
             if (curText.empty())
             { // Immediately remove sprite image if new text is empty to get rid of some flickering
-                uiTextField->RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
+                uiTextField->RemoveComponent<UIControlBackground>();
             }
         }
     }
@@ -527,7 +528,7 @@ void TextFieldPlatformImpl::OnFocusChanged(bool hasFocus)
                 uiTextField->SetFocused();
             }
             uiTextField->StartEdit();
-            uiTextField->RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
+            uiTextField->RemoveComponent<UIControlBackground>();
         }
         else
         {

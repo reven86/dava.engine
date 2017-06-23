@@ -16,10 +16,10 @@ namespace DAVA
 struct UIStyleSheetPropertyGroup
 {
     String prefix;
-    uint32 componentType; // -1 for UIControl
+    const Type* componentType; // -1 for UIControl
     const ReflectedType* refType;
 
-    UIStyleSheetPropertyGroup(const String& prefix_, uint32 componentType_, const ReflectedType* refType_)
+    UIStyleSheetPropertyGroup(const String& prefix_, const Type* componentType_, const ReflectedType* refType_)
         : prefix(prefix_)
         , componentType(componentType_)
         , refType(refType_)
@@ -41,8 +41,8 @@ struct UIStyleSheetPropertyDescriptor
         , defaultValue(defaultValue_)
     {
         const ReflectedStructure* s = group->refType->GetStructure();
-        auto it = std::find_if(s->fields.begin(), s->fields.end(), [this](const std::unique_ptr<ReflectedStructure::Field>& field) {
-            return field->name == name;
+        auto it = std::find_if(s->fields.begin(), s->fields.end(), [&name_](const std::unique_ptr<ReflectedStructure::Field>& field) {
+            return field->name == FastName(name_);
         });
         if (it != s->fields.end())
         {

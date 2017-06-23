@@ -143,7 +143,7 @@ void SpeedTreeConverter::ConvertingPathRecursive(Entity* node)
         return;
     }
 
-    SpeedTreeObject* treeObject = cast_if_equal<SpeedTreeObject*>(ro);
+    SpeedTreeObject* treeObject = CastIfEqual<SpeedTreeObject*>(ro);
     if (nullptr == treeObject)
     {
         treeObject = new SpeedTreeObject();

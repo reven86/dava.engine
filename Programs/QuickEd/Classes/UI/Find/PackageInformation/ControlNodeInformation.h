@@ -14,7 +14,7 @@ public:
     DAVA::String GetPrototypePackagePath() const override;
     bool HasErrors() const override;
 
-    bool HasComponent(DAVA::UIComponent::eType componentType) const override;
+    bool HasComponent(const DAVA::Type* componentType) const override;
 
     void VisitParent(const DAVA::Function<void(const ControlInformation*)>& visitor) const override;
     void VisitChildren(const DAVA::Function<void(const ControlInformation*)>& visitor) const override;

@@ -7,6 +7,7 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 
 #include <Base/Result.h>
+#include <Engine/Engine.h>
 
 class ControlNode;
 class StyleSheetNode;
@@ -16,7 +17,7 @@ class IntrospectionProperty;
 class QuickEdPackageBuilder : public DAVA::AbstractUIPackageBuilder
 {
 public:
-    QuickEdPackageBuilder();
+    QuickEdPackageBuilder(const DAVA::EngineContext* engineContext);
     virtual ~QuickEdPackageBuilder();
 
     virtual void BeginPackage(const DAVA::FilePath& packagePath, DAVA::int32 version) override;
@@ -35,7 +36,7 @@ public:
     virtual void BeginControlPropertiesSection(const DAVA::String& name) override;
     virtual void EndControlPropertiesSection() override;
 
-    virtual const DAVA::ReflectedType* BeginComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex) override;
+    virtual const DAVA::ReflectedType* BeginComponentPropertiesSection(const DAVA::Type* componentType, DAVA::uint32 componentIndex) override;
     virtual void EndComponentPropertiesSection() override;
 
     virtual void ProcessProperty(const DAVA::ReflectedStructure::Field& field, const DAVA::Any& value) override;
@@ -82,6 +83,7 @@ private:
 
     DAVA::BaseObject* currentObject;
     SectionProperty<IntrospectionProperty>* currentSection;
+    const DAVA::EngineContext* engineContext;
 
     DAVA::ResultList results;
 };

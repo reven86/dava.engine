@@ -7,11 +7,11 @@
 class HasComponentFilter : public FindFilter
 {
 public:
-    HasComponentFilter(DAVA::UIComponent::eType componentType);
+    HasComponentFilter(const DAVA::Type* componentType);
 
     ePackageStatus AcceptPackage(const PackageInformation* package) const override;
     bool AcceptControl(const ControlInformation* control) const override;
 
 private:
-    DAVA::UIComponent::eType requiredComponentType;
+    const DAVA::Type* requiredComponentType;
 };

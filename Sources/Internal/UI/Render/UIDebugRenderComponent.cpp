@@ -30,7 +30,7 @@ UIDebugRenderComponent::UIDebugRenderComponent()
 }
 
 UIDebugRenderComponent::UIDebugRenderComponent(const UIDebugRenderComponent& src)
-    : UIBaseComponent(src)
+    : UIComponent(src)
     , enabled(src.enabled)
     , drawColor(src.drawColor)
     , pivotPointDrawMode(src.pivotPointDrawMode)

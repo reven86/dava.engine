@@ -309,18 +309,21 @@ bool IsPointerToExactClass(const O* pObject)
     return false;
 }
 
+/**
+Return specified 'object' casted to specified type 'C' if 'object' has type 'C'. Return nullptr otherwise. The behavior is undefined until 'C' is not a pointer.
+*/
 template <class C, class O>
-C cast_if_equal(O* pObject)
+C CastIfEqual(O* object)
 {
-    if (pObject)
+    if (object)
     {
-        static_assert(std::is_pointer<C>::value, "cast_if_equal operates on pointers");
-        if (typeid(*pObject) == typeid(typename PointerTraits<C>::PointerType))
+        static_assert(std::is_pointer<C>::value, "CastIfEqual operates on pointers");
+        if (typeid(*object) == typeid(typename PointerTraits<C>::PointerType))
         {
-            return static_cast<C>(pObject);
+            return static_cast<C>(object);
         }
     }
-    return 0;
+    return nullptr;
 }
 
 //ScopeGuard is borrowed from https://github.com/facebook/folly

@@ -1,4 +1,5 @@
-#include "UISizePolicyComponent.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 #include "UI/UIControl.h"
 #include "UI/Layouts/LayoutFormula.h"

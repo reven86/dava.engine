@@ -16,7 +16,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIRichContentComponent)
 }
 
 UIRichContentComponent::UIRichContentComponent(const UIRichContentComponent& src)
-    : UIBaseComponent(src)
+    : UIComponent(src)
     , text(src.text)
     , baseClasses(src.baseClasses)
     , classesInheritance(src.classesInheritance)

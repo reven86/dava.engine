@@ -87,9 +87,10 @@ private:
     Type* const* pointerType = nullptr;
 
     std::bitset<sizeof(int) * 8> flags;
-    std::unique_ptr<const TypeInheritance, void (*)(const TypeInheritance*)> inheritance;
+    std::unique_ptr<TypeInheritance, void (*)(TypeInheritance*)> inheritance;
 
     Type();
+    TypeInheritance* EditInheritance() const;
 
     template <typename T>
     static Type* Init();

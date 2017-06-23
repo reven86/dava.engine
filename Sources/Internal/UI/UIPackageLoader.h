@@ -41,7 +41,7 @@ private:
     struct ComponentNode
     {
         const YamlNode* node;
-        uint32 type;
+        const Type* type;
         uint32 index;
     };
 

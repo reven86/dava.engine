@@ -37,13 +37,13 @@ void UIUpdateSystem::UnregisterControl(UIControl* control)
 
 void UIUpdateSystem::RegisterComponent(UIControl* control, UIComponent* component)
 {
-    if (component->GetType() == UIComponent::UPDATE_COMPONENT)
+    if (component->GetType() == Type::Instance<UIUpdateComponent>())
     {
         UICustomUpdateDeltaComponent* customDeltaComponent = control->GetComponent<UICustomUpdateDeltaComponent>();
         binds.emplace_back(static_cast<UIUpdateComponent*>(component), customDeltaComponent);
         modified = true;
     }
-    else if (component->GetType() == UIComponent::CUSTOM_UPDATE_DELTA_COMPONENT)
+    else if (component->GetType() == Type::Instance<UICustomUpdateDeltaComponent>())
     {
         UIUpdateComponent* updateComponent = control->GetComponent<UIUpdateComponent>();
         if (updateComponent)
@@ -62,7 +62,7 @@ void UIUpdateSystem::RegisterComponent(UIControl* control, UIComponent* componen
 
 void UIUpdateSystem::UnregisterComponent(UIControl* control, UIComponent* component)
 {
-    if (component->GetType() == UIComponent::UPDATE_COMPONENT)
+    if (component->GetType() == Type::Instance<UIUpdateComponent>())
     {
         binds.erase(std::remove_if(binds.begin(), binds.end(), [component](const UpdateBind& b)
                                    {
@@ -70,7 +70,7 @@ void UIUpdateSystem::UnregisterComponent(UIControl* control, UIComponent* compon
                                    }));
         modified = true;
     }
-    else if (component->GetType() == UIComponent::CUSTOM_UPDATE_DELTA_COMPONENT)
+    else if (component->GetType() == Type::Instance<UICustomUpdateDeltaComponent>())
     {
         auto it = std::find_if(binds.begin(), binds.end(), [component](const UpdateBind& b) {
             return b.customDeltaComponent == component;
@@ -140,7 +140,7 @@ void UIUpdateSystem::Process(float32 elapsedTime)
 
 void UIUpdateSystem::ProcessControlHierarchy(float32 elapsedTime, UIControl* control)
 {
-    if ((control->GetAvailableComponentFlags() & MAKE_COMPONENT_MASK(UIComponent::UPDATE_COMPONENT)) != 0)
+    if (control->GetComponent(Type::Instance<UIUpdateComponent>()))
     {
         control->Update(elapsedTime);
     }

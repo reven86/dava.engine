@@ -6,9 +6,10 @@
 
 namespace DAVA
 {
-class UIRichContentObjectComponent : public UIBaseComponent<UIComponent::RICH_CONTENT_OBJECT_COMPONENT>
+class UIRichContentObjectComponent : public UIComponent
 {
-    DAVA_VIRTUAL_REFLECTION(UIRichContentObjectComponent, UIBaseComponent<UIComponent::RICH_CONTENT_OBJECT_COMPONENT>);
+    DAVA_VIRTUAL_REFLECTION(UIRichContentObjectComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UIRichContentObjectComponent);
 
 public:
     UIRichContentObjectComponent();

@@ -16,7 +16,7 @@ UIClipContentComponent::UIClipContentComponent()
 }
 
 UIClipContentComponent::UIClipContentComponent(const UIClipContentComponent& src)
-    : UIBaseComponent(src)
+    : UIComponent(src)
 {
 }
 

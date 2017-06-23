@@ -4,9 +4,10 @@
 
 namespace DAVA
 {
-class UISceneComponent final : public UIBaseComponent<UIComponent::SCENE_COMPONENT>
+class UISceneComponent final : public UIComponent
 {
-    DAVA_VIRTUAL_REFLECTION(UISceneComponent, UIBaseComponent<UIComponent::SCENE_COMPONENT>);
+    DAVA_VIRTUAL_REFLECTION(UISceneComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UISceneComponent);
 
 public:
     UISceneComponent();

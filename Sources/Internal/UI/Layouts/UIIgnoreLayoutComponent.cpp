@@ -1,4 +1,5 @@
-#include "UIIgnoreLayoutComponent.h"
+#include "UI/Layouts/UIIgnoreLayoutComponent.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 #include "Math/Vector.h"
 #include "UI/UIControl.h"

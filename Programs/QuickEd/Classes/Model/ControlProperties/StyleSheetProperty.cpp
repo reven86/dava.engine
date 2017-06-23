@@ -50,7 +50,7 @@ StyleSheetProperty::StyleSheetProperty(const DAVA::UIStyleSheetProperty& propert
     Vector<Reflection::Field> fields = ref.GetFields();
     for (const Reflection::Field& field : fields)
     {
-        RefPtr<IntrospectionProperty> inspProp(IntrospectionProperty::Create(property.Get(), -1, field.key.Get<FastName>().c_str(), field.ref, nullptr, CT_COPY));
+        RefPtr<IntrospectionProperty> inspProp(IntrospectionProperty::Create(property.Get(), nullptr, field.key.Get<FastName>().c_str(), field.ref, nullptr, CT_COPY));
         inspProp->SetValue(field.ref.GetValue());
         inspProp->SetParent(this);
         inspProp->DisableResetFeature();

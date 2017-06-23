@@ -6,6 +6,7 @@
 #include "UI/Layouts/Private/SizeMeasuringAlgorithm.h"
 #include "UI/Layouts/UIAnchorComponent.h"
 #include "UI/Layouts/UIFlowLayoutComponent.h"
+#include "UI/Layouts/UILayoutIsolationComponent.h"
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/UIControl.h"
@@ -52,7 +53,7 @@ void Layouter::CollectControlChildren(UIControl* control, int32 parentIndex, boo
 
     for (UIControl* child : children)
     {
-        if (child->GetComponentCount(UIComponent::LAYOUT_ISOLATION_COMPONENT) == 0)
+        if (child->GetComponentCount<UILayoutIsolationComponent>() == 0)
         {
             layoutData.emplace_back(ControlLayoutData(child));
             childrenCount++;
@@ -66,7 +67,7 @@ void Layouter::CollectControlChildren(UIControl* control, int32 parentIndex, boo
     {
         for (UIControl* child : children)
         {
-            if (child->GetComponentCount(UIComponent::LAYOUT_ISOLATION_COMPONENT) == 0)
+            if (child->GetComponentCount<UILayoutIsolationComponent>() == 0)
             {
                 CollectControlChildren(child, index, recursive);
                 index++;

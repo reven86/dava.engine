@@ -15,6 +15,7 @@
 #include "Styles/UIStyleSheetSystem.h"
 
 #include "Logger/Logger.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
@@ -322,7 +323,7 @@ void DefaultUIPackageBuilder::EndControl(eControlPlace controlPlace)
 
 void DefaultUIPackageBuilder::BeginControlPropertiesSection(const String& name)
 {
-    DVASSERT(currentComponentType == -1);
+    DVASSERT(currentComponentType == nullptr);
     currentObject = ReflectedObject(controlsStack.back()->control.Get());
 }
 
@@ -331,7 +332,7 @@ void DefaultUIPackageBuilder::EndControlPropertiesSection()
     currentObject = ReflectedObject();
 }
 
-const ReflectedType* DefaultUIPackageBuilder::BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex)
+const ReflectedType* DefaultUIPackageBuilder::BeginComponentPropertiesSection(const Type* componentType, uint32 componentIndex)
 {
     UIControl* control = controlsStack.back()->control.Get();
     UIComponent* component = control->GetComponent(componentType, componentIndex);
@@ -341,14 +342,15 @@ const ReflectedType* DefaultUIPackageBuilder::BeginComponentPropertiesSection(ui
         control->AddComponent(component);
         component->Release();
     }
+
     currentObject = ReflectedObject(component);
-    currentComponentType = int32(componentType);
+    currentComponentType = componentType;
     return ReflectedTypeDB::GetByPointer(component);
 }
 
 void DefaultUIPackageBuilder::EndComponentPropertiesSection()
 {
-    currentComponentType = -1;
+    currentComponentType = nullptr;
     currentObject = ReflectedObject();
 }
 

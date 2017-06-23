@@ -2,9 +2,18 @@
 
 #include "UI/UIControl.h"
 #include "Math/Vector.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(UILayoutSourceRectComponent)
+{
+    ReflectionRegistrator<UILayoutSourceRectComponent>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UILayoutSourceRectComponent* o) { o->Release(); })
+    .End();
+}
+
 UILayoutSourceRectComponent::UILayoutSourceRectComponent()
 {
 }

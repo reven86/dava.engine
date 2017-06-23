@@ -19,7 +19,7 @@ public:
     DAVA::String GetPrototypePackagePath() const override;
     bool HasErrors() const override;
 
-    bool HasComponent(DAVA::UIComponent::eType componentType) const override;
+    bool HasComponent(const DAVA::Type* componentType) const override;
 
     void VisitParent(const DAVA::Function<void(const ControlInformation*)>& visitor) const override;
     void VisitChildren(const DAVA::Function<void(const ControlInformation*)>& visitor) const override;
@@ -34,15 +34,15 @@ public:
     const DAVA::Vector<std::shared_ptr<StaticControlInformation>>& GetChildren() const;
     std::shared_ptr<StaticControlInformation> FindChildByName(const DAVA::FastName& name) const;
 
-    void AddComponent(DAVA::UIComponent::eType componentType);
+    void AddComponent(const DAVA::Type* componentType);
 
     void SetControlProperty(const DAVA::ReflectedStructure::Field& member, const DAVA::Any& value);
-    void SetComponentProperty(DAVA::UIComponent::eType componentType, DAVA::int32 componentIndex, const DAVA::ReflectedStructure::Field& member, const DAVA::Any& value);
+    void SetComponentProperty(const DAVA::Type* componentType, DAVA::int32 componentIndex, const DAVA::ReflectedStructure::Field& member, const DAVA::Any& value);
 
     void AddResult(const DAVA::Result& result);
 
 private:
-    using ComponentPropertyId = std::tuple<DAVA::UIComponent::eType, DAVA::int32, DAVA::FastName>;
+    using ComponentPropertyId = std::tuple<const DAVA::Type*, DAVA::int32, DAVA::FastName>;
 
     DAVA::FastName name;
     StaticControlInformation* parent = nullptr;
@@ -50,7 +50,7 @@ private:
     std::shared_ptr<StaticPackageInformation> prototypePackage;
     DAVA::FastName prototype;
 
-    DAVA::UnorderedMap<DAVA::UIComponent::eType, DAVA::int32> componentCount;
+    DAVA::UnorderedMap<const DAVA::Type*, DAVA::int32> componentCount;
 
     DAVA::Map<DAVA::FastName, DAVA::Any> controlProperties;
     DAVA::Map<ComponentPropertyId, DAVA::Any> componentProperties;

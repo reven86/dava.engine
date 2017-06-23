@@ -160,7 +160,7 @@ protected:
         TEST_VERIFY(fs->Exists(path) == false)
         CreateDocumentFile(path);
 
-        QuickEdPackageBuilder builder;
+        QuickEdPackageBuilder builder(accessor->GetEngineContext());
         UIPackageLoader packageLoader;
         TEST_VERIFY(packageLoader.LoadPackage(path, &builder));
 

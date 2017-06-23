@@ -3,15 +3,34 @@
 
 namespace DAVA
 {
-List<std::unique_ptr<ReflectedType>> ReflectedTypeDB::customReflectedTypes;
-UnorderedMap<const Type*, ReflectedType*> ReflectedTypeDB::typeToReflectedTypeMap;
-UnorderedMap<String, ReflectedType*> ReflectedTypeDB::typeNameToReflectedTypeMap;
-UnorderedMap<String, ReflectedType*> ReflectedTypeDB::permanentNameToReflectedTypeMap;
+ReflectedTypeDB* ReflectedTypeDB::GetLocalDB()
+{
+    return *GetLocalDBPtr();
+}
+
+ReflectedTypeDB** ReflectedTypeDB::GetLocalDBPtr()
+{
+    static ReflectedTypeDB db;
+    static ReflectedTypeDB* dbPtr = &db;
+    return &dbPtr;
+}
+
+void ReflectedTypeDB::SetMasterDB(ReflectedTypeDB* db)
+{
+    static bool hasMaster = false;
+
+    DVASSERT(!hasMaster);
+    hasMaster = true;
+
+    // Override db from local to master
+    ReflectedTypeDB** localDBPtr = GetLocalDBPtr();
+    *localDBPtr = db;
+}
 
 void ReflectedTypeDB::RegisterDBType(ReflectedType* r)
 {
-    typeToReflectedTypeMap[r->type] = r;
-    typeNameToReflectedTypeMap[String(r->type->GetName())] = r;
+    GetLocalDB()->typeToReflectedTypeMap[r->type] = r;
+    GetLocalDB()->typeNameToReflectedTypeMap[String(r->type->GetName())] = r;
 }
 
 const ReflectedType* ReflectedTypeDB::GetByPointer(const void* ptr, const Type* derefType)
@@ -35,8 +54,8 @@ const ReflectedType* ReflectedTypeDB::GetByType(const Type* type)
 {
     const ReflectedType* ret = nullptr;
 
-    auto it = typeToReflectedTypeMap.find(type);
-    if (it != typeToReflectedTypeMap.end())
+    auto it = GetLocalDB()->typeToReflectedTypeMap.find(type);
+    if (it != GetLocalDB()->typeToReflectedTypeMap.end())
     {
         ret = it->second;
     }
@@ -48,8 +67,8 @@ const ReflectedType* ReflectedTypeDB::GetByTypeName(const String& rttiName)
 {
     const ReflectedType* ret = nullptr;
 
-    auto it = typeNameToReflectedTypeMap.find(rttiName);
-    if (it != typeNameToReflectedTypeMap.end())
+    auto it = GetLocalDB()->typeNameToReflectedTypeMap.find(rttiName);
+    if (it != GetLocalDB()->typeNameToReflectedTypeMap.end())
     {
         ret = it->second;
     }
@@ -61,8 +80,8 @@ const ReflectedType* ReflectedTypeDB::GetByPermanentName(const String& permanent
 {
     const ReflectedType* ret = nullptr;
 
-    auto it = permanentNameToReflectedTypeMap.find(permanentName);
-    if (it != permanentNameToReflectedTypeMap.end())
+    auto it = GetLocalDB()->permanentNameToReflectedTypeMap.find(permanentName);
+    if (it != GetLocalDB()->permanentNameToReflectedTypeMap.end())
     {
         ret = it->second;
     }
@@ -72,16 +91,16 @@ const ReflectedType* ReflectedTypeDB::GetByPermanentName(const String& permanent
 
 ReflectedType* ReflectedTypeDB::CreateCustomType(const Type* type, const String& permanentName)
 {
-    customReflectedTypes.emplace_back(new ReflectedType(type));
-    ReflectedType* ret = customReflectedTypes.back().get();
+    GetLocalDB()->customReflectedTypes.emplace_back(new ReflectedType(type));
+    ReflectedType* ret = GetLocalDB()->customReflectedTypes.back().get();
 
     String rttiName(type->GetName());
 
-    DVASSERT(typeToReflectedTypeMap.count(type) == 0 && "ReflectedType with specified RttiType already exists");
-    DVASSERT(typeNameToReflectedTypeMap.count(rttiName) == 0 && "ReflectedType with specified RttiType::name already exists");
+    DVASSERT(GetLocalDB()->typeToReflectedTypeMap.count(type) == 0 && "ReflectedType with specified RttiType already exists");
+    DVASSERT(GetLocalDB()->typeNameToReflectedTypeMap.count(rttiName) == 0 && "ReflectedType with specified RttiType::name already exists");
 
-    typeToReflectedTypeMap[type] = ret;
-    typeNameToReflectedTypeMap[rttiName] = ret;
+    GetLocalDB()->typeToReflectedTypeMap[type] = ret;
+    GetLocalDB()->typeNameToReflectedTypeMap[rttiName] = ret;
 
     RegisterPermanentName(ret, permanentName);
 
@@ -94,20 +113,20 @@ void ReflectedTypeDB::RegisterPermanentName(const ReflectedType* reflectedType, 
 
     DVASSERT(rt != nullptr);
     DVASSERT(rt->permanentName.empty() && "Name is already set");
-    DVASSERT(permanentNameToReflectedTypeMap.count(permanentName) == 0 && "Permanent name alredy in use");
+    DVASSERT(GetLocalDB()->permanentNameToReflectedTypeMap.count(permanentName) == 0 && "Permanent name alredy in use");
 
     rt->permanentName = permanentName;
-    permanentNameToReflectedTypeMap[permanentName] = rt;
+    GetLocalDB()->permanentNameToReflectedTypeMap[permanentName] = rt;
 }
 
-ReflectedTypeDB::Stats ReflectedTypeDB::GetStats()
+ReflectedTypeDB::Stats ReflectedTypeDB::GetLocalDBStats()
 {
     ReflectedTypeDB::Stats stats;
 
-    stats.reflectedTypeCount = typeToReflectedTypeMap.size();
+    stats.reflectedTypeCount = GetLocalDB()->typeToReflectedTypeMap.size();
     stats.reflectedTypeMemory = stats.reflectedTypeCount * sizeof(ReflectedType);
 
-    for (auto& p : typeToReflectedTypeMap)
+    for (auto& p : GetLocalDB()->typeToReflectedTypeMap)
     {
         const ReflectedType* tr = p.second;
         if (tr->structure != nullptr)
@@ -150,15 +169,15 @@ ReflectedTypeDB::Stats ReflectedTypeDB::GetStats()
 
     stats.reflectedTypeDBMemory =
     sizeof(ReflectedTypeDB) +
-    sizeof(ReflectedTypeDB::typeToReflectedTypeMap) +
-    sizeof(ReflectedTypeDB::typeNameToReflectedTypeMap) +
-    sizeof(ReflectedTypeDB::permanentNameToReflectedTypeMap) +
-    ReflectedTypeDB::typeToReflectedTypeMap.size() * sizeof(decltype(ReflectedTypeDB::typeToReflectedTypeMap)::key_type) +
-    ReflectedTypeDB::typeToReflectedTypeMap.size() * sizeof(decltype(ReflectedTypeDB::typeToReflectedTypeMap)::mapped_type) +
-    ReflectedTypeDB::typeNameToReflectedTypeMap.size() * sizeof(decltype(ReflectedTypeDB::typeNameToReflectedTypeMap)::key_type) +
-    ReflectedTypeDB::typeNameToReflectedTypeMap.size() * sizeof(decltype(ReflectedTypeDB::typeNameToReflectedTypeMap)::mapped_type) +
-    ReflectedTypeDB::permanentNameToReflectedTypeMap.size() * sizeof(decltype(ReflectedTypeDB::permanentNameToReflectedTypeMap)::key_type) +
-    ReflectedTypeDB::permanentNameToReflectedTypeMap.size() * sizeof(decltype(ReflectedTypeDB::permanentNameToReflectedTypeMap)::mapped_type);
+    sizeof(decltype(typeToReflectedTypeMap)) +
+    sizeof(decltype(typeNameToReflectedTypeMap)) +
+    sizeof(decltype(permanentNameToReflectedTypeMap)) +
+    GetLocalDB()->typeToReflectedTypeMap.size() * sizeof(decltype(ReflectedTypeDB::typeToReflectedTypeMap)::key_type) +
+    GetLocalDB()->typeToReflectedTypeMap.size() * sizeof(decltype(ReflectedTypeDB::typeToReflectedTypeMap)::mapped_type) +
+    GetLocalDB()->typeNameToReflectedTypeMap.size() * sizeof(decltype(ReflectedTypeDB::typeNameToReflectedTypeMap)::key_type) +
+    GetLocalDB()->typeNameToReflectedTypeMap.size() * sizeof(decltype(ReflectedTypeDB::typeNameToReflectedTypeMap)::mapped_type) +
+    GetLocalDB()->permanentNameToReflectedTypeMap.size() * sizeof(decltype(ReflectedTypeDB::permanentNameToReflectedTypeMap)::key_type) +
+    GetLocalDB()->permanentNameToReflectedTypeMap.size() * sizeof(decltype(ReflectedTypeDB::permanentNameToReflectedTypeMap)::mapped_type);
 
     stats.reflectedStructMemory =
     stats.reflectedStructCount * sizeof(ReflectedStructure) +

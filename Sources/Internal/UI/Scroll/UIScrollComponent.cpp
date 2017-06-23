@@ -1,4 +1,5 @@
 #include "UIScrollComponent.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {

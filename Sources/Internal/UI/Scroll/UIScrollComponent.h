@@ -1,14 +1,15 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-
 #include "UI/Components/UIComponent.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
-class UIScrollComponent : public UIBaseComponent<UIComponent::SCROLL_COMPONENT>
+class UIScrollComponent : public UIComponent
 {
-    DAVA_VIRTUAL_REFLECTION(UIScrollComponent, UIBaseComponent<UIComponent::SCROLL_COMPONENT>);
+    DAVA_VIRTUAL_REFLECTION(UIScrollComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UIScrollComponent);
 
 public:
     UIScrollComponent();

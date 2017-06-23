@@ -62,7 +62,10 @@ public:
     static void RegisterBases();
     static void RegisterPermanentName(const ReflectedType* reflectedType, const String& permanentName);
 
-    static Stats GetStats();
+    static ReflectedTypeDB* GetLocalDB();
+    static Stats GetLocalDBStats();
+
+    void SetMasterDB(ReflectedTypeDB* masterDb);
 
 protected:
     template <typename T>
@@ -71,12 +74,14 @@ protected:
     template <typename T>
     static ReflectedType* Edit();
 
+    static ReflectedTypeDB** GetLocalDBPtr();
+
     static void RegisterDBType(ReflectedType* reflectedType);
 
-    static List<std::unique_ptr<ReflectedType>> customReflectedTypes;
-    static UnorderedMap<const Type*, ReflectedType*> typeToReflectedTypeMap;
-    static UnorderedMap<String, ReflectedType*> typeNameToReflectedTypeMap;
-    static UnorderedMap<String, ReflectedType*> permanentNameToReflectedTypeMap;
+    List<std::unique_ptr<ReflectedType>> customReflectedTypes;
+    UnorderedMap<const Type*, ReflectedType*> typeToReflectedTypeMap;
+    UnorderedMap<String, ReflectedType*> typeNameToReflectedTypeMap;
+    UnorderedMap<String, ReflectedType*> permanentNameToReflectedTypeMap;
 };
 } // namespace DAVA
 

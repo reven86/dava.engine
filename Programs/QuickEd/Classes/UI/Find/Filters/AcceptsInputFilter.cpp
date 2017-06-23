@@ -3,6 +3,7 @@
 #include "UI/Find/PackageInformation/PackageInformation.h"
 
 #include <UI/UIControl.h>
+#include <Reflection/ReflectedTypeDB.h>
 
 using namespace DAVA;
 

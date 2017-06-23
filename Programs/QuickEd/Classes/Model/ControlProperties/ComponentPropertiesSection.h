@@ -4,7 +4,7 @@
 #include "SectionProperty.h"
 #include "IntrospectionProperty.h"
 
-#include "UI/Components/UIComponent.h"
+#include <UI/Components/UIComponent.h>
 
 namespace DAVA
 {
@@ -14,16 +14,16 @@ class UIControl;
 class ComponentPropertiesSection : public SectionProperty<IntrospectionProperty>
 {
 public:
-    ComponentPropertiesSection(DAVA::UIControl* control, DAVA::UIComponent::eType type, DAVA::int32 index, const ComponentPropertiesSection* sourceSection, eCloneType copyType);
+    ComponentPropertiesSection(DAVA::UIControl* control, const DAVA::Type* type, DAVA::int32 index, const ComponentPropertiesSection* sourceSection, eCloneType copyType);
 
 protected:
     virtual ~ComponentPropertiesSection();
 
 public:
-    static bool IsHiddenComponent(DAVA::UIComponent::eType type);
+    static bool IsHiddenComponent(const DAVA::Type* type);
 
     DAVA::UIComponent* GetComponent() const;
-    DAVA::uint32 GetComponentType() const;
+    const DAVA::Type* GetComponentType() const;
 
     void AttachPrototypeSection(ComponentPropertiesSection* section);
     void DetachPrototypeSection(ComponentPropertiesSection* section);

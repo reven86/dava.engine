@@ -2,9 +2,12 @@
 
 #include "Animation/AnimationManager.h"
 #include "Animation/LinearAnimation.h"
+#include "Components/UIComponent.h"
+#include "Components/UIControlFamily.h"
 #include "Concurrency/LockGuard.h"
 #include "Debug/DVAssert.h"
 #include "Engine/Engine.h"
+#include "Entity/ComponentManager.h"
 #include "Input/InputSystem.h"
 #include "Input/MouseDevice.h"
 #include "Logger/Logger.h"
@@ -22,6 +25,7 @@
 #include "UI/Render/UIRenderSystem.h"
 #include "UI/Sound/UISoundSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
+#include "UI/Update/UIUpdateComponent.h"
 #include "UI/UIAnalitycs.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/UIControlPackageContext.h"
@@ -1913,7 +1917,7 @@ void UIControl::AddComponent(UIComponent* component)
     component->SetControl(this);
     components.push_back(SafeRetain(component));
     std::stable_sort(components.begin(), components.end(), [](const UIComponent* left, const UIComponent* right) {
-        return left->GetType() < right->GetType();
+        return left->GetRuntimeType() < right->GetRuntimeType();
     });
     UpdateFamily();
 
@@ -1927,7 +1931,7 @@ void UIControl::AddComponent(UIComponent* component)
 
 void UIControl::InsertComponentAt(UIComponent* component, uint32 index)
 {
-    uint32 count = family->GetComponentsCount(component->GetType());
+    uint32 count = family->GetComponentsCount(component->GetRuntimeType());
     if (count == 0 || index >= count)
     {
         AddComponent(component);
@@ -1937,7 +1941,7 @@ void UIControl::InsertComponentAt(UIComponent* component, uint32 index)
         DVASSERT(component->GetControl() == nullptr);
         component->SetControl(this);
 
-        uint32 insertIndex = family->GetComponentIndex(component->GetType(), index);
+        uint32 insertIndex = family->GetComponentIndex(component->GetRuntimeType(), index);
         components.insert(components.begin() + insertIndex, SafeRetain(component));
 
         UpdateFamily();
@@ -1952,20 +1956,26 @@ void UIControl::InsertComponentAt(UIComponent* component, uint32 index)
     }
 }
 
-UIComponent* UIControl::GetComponent(uint32 componentType, uint32 index) const
+UIComponent* UIControl::GetComponent(int32 runtimeType, uint32 index) const
 {
-    uint32 maxCount = family->GetComponentsCount(componentType);
+    uint32 maxCount = family->GetComponentsCount(runtimeType);
     if (index < maxCount)
     {
-        return components[family->GetComponentIndex(componentType, index)];
+        return components[family->GetComponentIndex(runtimeType, index)];
     }
     return nullptr;
 }
 
+UIComponent* UIControl::GetComponent(const Type* type, uint32 index /*= 0*/) const
+{
+    ComponentManager* cm = GetEngineContext()->componentManager;
+    return GetComponent(cm->GetRuntimeType(type), index);
+}
+
 int32 UIControl::GetComponentIndex(const UIComponent* component) const
 {
-    uint32 count = family->GetComponentsCount(component->GetType());
-    uint32 index = family->GetComponentIndex(component->GetType(), 0);
+    uint32 count = family->GetComponentsCount(component->GetRuntimeType());
+    uint32 index = family->GetComponentIndex(component->GetRuntimeType(), 0);
     for (uint32 i = 0; i < count; i++)
     {
         if (components[index + i] == component)
@@ -1974,13 +1984,14 @@ int32 UIControl::GetComponentIndex(const UIComponent* component) const
     return -1;
 }
 
-UIComponent* UIControl::GetOrCreateComponent(uint32 componentType, uint32 index)
+UIComponent* UIControl::GetOrCreateComponent(const Type* type, uint32 index)
 {
-    UIComponent* ret = GetComponent(componentType, index);
+    ComponentManager* cm = GetEngineContext()->componentManager;
+    UIComponent* ret = GetComponent(cm->GetRuntimeType(type), index);
     if (!ret)
     {
         DVASSERT(index == 0);
-        ret = UIComponent::CreateByType(componentType);
+        ret = UIComponent::CreateByType(type);
         if (ret)
         {
             AddComponent(ret);
@@ -2001,8 +2012,22 @@ void UIControl::RemoveAllComponents()
 {
     while (!components.empty())
     {
-        RemoveComponent(--components.end());
+        auto it = components.end() - 1;
+        UIComponent* component = *it;
+
+        if (viewState >= eViewState::ACTIVE)
+        {
+            UIControlSystem::Instance()->UnregisterComponent(this, component);
+        }
+
+        components.erase(it);
+
+        component->SetControl(nullptr);
+        SafeRelease(component);
     }
+    UpdateFamily();
+    SetStyleSheetDirty();
+    SetLayoutDirty();
 }
 
 void UIControl::RemoveComponent(const Vector<UIComponent*>::iterator& it)
@@ -2026,7 +2051,23 @@ void UIControl::RemoveComponent(const Vector<UIComponent*>::iterator& it)
     }
 }
 
-void UIControl::RemoveComponent(uint32 componentType, uint32 index)
+void UIControl::RemoveComponent(UIComponent* component)
+{
+    DVASSERT(component);
+    auto it = std::find(components.begin(), components.end(), component);
+    RemoveComponent(it);
+}
+
+void UIControl::RemoveComponent(int32 runtimeType, uint32 index /*= 0*/)
+{
+    UIComponent* c = GetComponent(runtimeType, index);
+    if (c)
+    {
+        RemoveComponent(c);
+    }
+}
+
+void UIControl::RemoveComponent(const Type* componentType, uint32 index)
 {
     UIComponent* c = GetComponent(componentType, index);
     if (c)
@@ -2035,26 +2076,20 @@ void UIControl::RemoveComponent(uint32 componentType, uint32 index)
     }
 }
 
-void UIControl::RemoveComponent(UIComponent* component)
-{
-    DVASSERT(component);
-    auto it = std::find(components.begin(), components.end(), component);
-    RemoveComponent(it);
-}
-
 uint32 UIControl::GetComponentCount() const
 {
     return static_cast<uint32>(components.size());
 }
 
-uint32 UIControl::GetComponentCount(uint32 componentType) const
+uint32 UIControl::GetComponentCount(int32 runtimeType) const
 {
-    return family->GetComponentsCount(componentType);
+    return family->GetComponentsCount(runtimeType);
 }
 
-uint64 UIControl::GetAvailableComponentFlags() const
+uint32 UIControl::GetComponentCount(const Type* type) const
 {
-    return family->GetComponentsFlags();
+    ComponentManager* cm = GetEngineContext()->componentManager;
+    return family->GetComponentsCount(cm->GetRuntimeType(type));
 }
 
 const Vector<UIComponent*>& UIControl::GetComponents()

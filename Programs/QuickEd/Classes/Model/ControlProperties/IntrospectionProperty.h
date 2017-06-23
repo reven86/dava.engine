@@ -12,13 +12,13 @@ class UILayoutSourceRectComponent;
 class IntrospectionProperty : public ValueProperty
 {
 public:
-    IntrospectionProperty(DAVA::BaseObject* object, DAVA::int32 componentType, const DAVA::String& name, const DAVA::Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType copyType);
+    IntrospectionProperty(DAVA::BaseObject* object, const DAVA::Type* componentType, const DAVA::String& name, const DAVA::Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType copyType);
 
 protected:
     virtual ~IntrospectionProperty();
 
 public:
-    static IntrospectionProperty* Create(DAVA::BaseObject* object, DAVA::uint32 componentType, const DAVA::String& name, const DAVA::Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType cloneType);
+    static IntrospectionProperty* Create(DAVA::BaseObject* object, const DAVA::Type* componentType, const DAVA::String& name, const DAVA::Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType cloneType);
 
     void Accept(PropertyVisitor* visitor) override;
 

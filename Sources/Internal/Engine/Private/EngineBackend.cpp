@@ -58,6 +58,8 @@
 #include "UI/UIEvent.h"
 #include "UI/UIScreenManager.h"
 #include "UI/UIControlSystem.h"
+#include "Entity/ComponentManager.h"
+#include "Reflection/ReflectedTypeDB.h"
 #include "Utils/Random.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
@@ -130,8 +132,11 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     // The following subsystems should be created earlier than other:
     //  - Logger, to log messages on startup
     //  - FileSystem, to load config files with init options
-    //  - DeviceManager, to check what hatdware is available
-    context->logger = new Logger();
+    //  - DeviceManager, to check what hardware is available
+    context->logger = new Logger;
+    context->componentManager = new ComponentManager();
+    RegisterDAVAClasses();
+    RegisterReflectionForBaseTypes();
     context->settings = new EngineSettings();
     context->fileSystem = new FileSystem;
     FilePath::InitializeBundleName();
@@ -206,7 +211,6 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     }
 
     Thread::InitMainThread();
-    RegisterReflectionForBaseTypes();
     // For now only next subsystems/modules are created on demand:
     //  - LocalizationSystem
     //  - JobManager
@@ -215,8 +219,6 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     //  - PackManager
     // Other subsystems are always created
     CreateSubsystems(modules);
-
-    RegisterDAVAClasses();
 
     isInitialized = true;
 }
@@ -351,12 +353,9 @@ void EngineBackend::OnEngineCleanup()
     if (Renderer::IsInitialized())
         Renderer::Uninitialize();
 
-    delete context;
-    delete dispatcher;
-    delete platformCore;
-    context = nullptr;
-    dispatcher = nullptr;
-    platformCore = nullptr;
+    SafeDelete(context);
+    SafeDelete(dispatcher);
+    SafeDelete(platformCore);
 
     DAVA_MEMORY_PROFILER_FINISH();
 
@@ -805,9 +804,14 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->performanceSettings = new PerformanceSettings();
     context->versionInfo = new VersionInfo();
     context->renderSystem2D = new RenderSystem2D();
+
     context->uiControlSystem = new UIControlSystem();
     context->animationManager = new AnimationManager();
     context->fontManager = new FontManager();
+
+    context->typeDB = TypeDB::GetLocalDB();
+    context->fastNameDB = FastNameDB::GetLocalDB();
+    context->reflectedTypeDB = ReflectedTypeDB::GetLocalDB();
 
 #if defined(__DAVAENGINE_ANDROID__)
     context->assetsManager = new AssetsManagerAndroid(AndroidBridge::GetApplicationPath());
@@ -904,16 +908,9 @@ void EngineBackend::DestroySubsystems()
 #endif
     }
 
-    if (context->analyticsCore != nullptr)
-    {
-        delete context->analyticsCore;
-        context->analyticsCore = nullptr;
-    }
-    if (context->settings != nullptr)
-    {
-        delete context->settings;
-        context->settings = nullptr;
-    }
+    SafeDelete(context->analyticsCore);
+    SafeDelete(context->settings);
+
     if (context->moduleManager != nullptr)
     {
         context->moduleManager->ShutdownModules();
@@ -924,6 +921,7 @@ void EngineBackend::DestroySubsystems()
     {
         context->pluginManager->UnloadPlugins();
         delete context->pluginManager;
+        context->pluginManager = nullptr;
     }
     if (context->jobManager != nullptr)
     {
@@ -932,111 +930,41 @@ void EngineBackend::DestroySubsystems()
         context->jobManager->WaitWorkerJobs();
         context->jobManager->WaitMainJobs();
     }
-    if (context->localNotificationController != nullptr)
-    {
-        context->localNotificationController->Release();
-        context->localNotificationController = nullptr;
-    }
-    if (context->uiScreenManager != nullptr)
-    {
-        context->uiScreenManager->Release();
-        context->uiScreenManager = nullptr;
-    }
-    if (context->uiControlSystem != nullptr)
-    {
-        context->uiControlSystem->Release();
-        context->uiControlSystem = nullptr;
-    }
-    if (context->fontManager != nullptr)
-    {
-        context->fontManager->Release();
-        context->fontManager = nullptr;
-    }
-    if (context->animationManager != nullptr)
-    {
-        context->animationManager->Release();
-        context->animationManager = nullptr;
-    }
-    if (context->renderSystem2D != nullptr)
-    {
-        context->renderSystem2D->Release();
-        context->renderSystem2D = nullptr;
-    }
-    if (context->performanceSettings != nullptr)
-    {
-        context->performanceSettings->Release();
-        context->performanceSettings = nullptr;
-    }
-    if (context->random != nullptr)
-    {
-        context->random->Release();
-        context->random = nullptr;
-    }
-    if (context->allocatorFactory != nullptr)
-    {
-        context->allocatorFactory->Release();
-        context->allocatorFactory = nullptr;
-    }
-    if (context->versionInfo != nullptr)
-    {
-        context->versionInfo->Release();
-        context->versionInfo = nullptr;
-    }
-    if (context->jobManager != nullptr)
-    {
-        context->jobManager->Release();
-        context->jobManager = nullptr;
-    }
-    if (context->localizationSystem != nullptr)
-    {
-        context->localizationSystem->Release();
-        context->localizationSystem = nullptr;
-    }
-    if (context->downloadManager != nullptr)
-    {
-        context->downloadManager->Release();
-        context->downloadManager = nullptr;
-    }
-    if (context->soundSystem != nullptr)
-    {
-        context->soundSystem->Release();
-        context->soundSystem = nullptr;
-    }
-    if (context->dlcManager != nullptr)
-    {
-        delete context->dlcManager;
-        context->dlcManager = nullptr;
-    }
+
+    SafeRelease(context->localNotificationController);
+    SafeRelease(context->uiScreenManager);
+    SafeRelease(context->uiControlSystem);
+    SafeRelease(context->fontManager);
+    SafeRelease(context->animationManager);
+    SafeRelease(context->renderSystem2D);
+    SafeRelease(context->performanceSettings);
+    SafeRelease(context->random);
+    SafeRelease(context->allocatorFactory);
+    SafeRelease(context->versionInfo);
+    SafeRelease(context->jobManager);
+    SafeRelease(context->localizationSystem);
+    SafeRelease(context->downloadManager);
+    SafeRelease(context->soundSystem);
+    SafeDelete(context->dlcManager);
     if (context->inputSystem != nullptr)
     {
         delete context->inputSystem;
         context->inputSystem = nullptr;
     }
 
-    if (context->netCore != nullptr)
-    {
-        context->netCore->Release();
-        context->netCore = nullptr;
-    }
+    SafeRelease(context->netCore);
 
 #if defined(__DAVAENGINE_ANDROID__)
-    if (context->assetsManager != nullptr)
-    {
-        context->assetsManager->Release();
-        context->assetsManager = nullptr;
-    }
+    SafeRelease(context->assetsManager);
 #endif
 
-    if (context->fileSystem != nullptr)
-    {
-        context->fileSystem->Release();
-        context->fileSystem = nullptr;
-    }
+    SafeRelease(context->fileSystem);
     if (context->deviceManager != nullptr)
     {
         delete context->deviceManager;
         context->deviceManager = nullptr;
     }
+    SafeDelete(context->componentManager);
 
     if (context->logger != nullptr)
     {

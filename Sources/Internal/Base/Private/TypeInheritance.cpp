@@ -42,14 +42,14 @@ bool TypeInheritance::TryCast(const Type* from, const Type* to, CastType castTyp
     const TypeInheritance* inheritance = from->GetInheritance();
     if (nullptr != inheritance)
     {
-        Vector<Info>* typesInfo = &inheritance->baseTypesInfo;
+        const Vector<Info>* typesInfo = &inheritance->baseTypesInfo;
 
         if (castType == CastType::UpCast)
         {
             typesInfo = &inheritance->derivedTypesInfo;
         }
 
-        for (Info& info : *typesInfo)
+        for (const Info& info : *typesInfo)
         {
             if (info.type == to)
             {
@@ -58,7 +58,7 @@ bool TypeInheritance::TryCast(const Type* from, const Type* to, CastType castTyp
             }
         }
 
-        for (Info& info : *typesInfo)
+        for (const Info& info : *typesInfo)
         {
             if (TryCast(info.type, to, castType, OffsetPointer<void*>(inPtr, info.ptrDiff), outPtr))
             {
@@ -88,6 +88,16 @@ bool TypeInheritance::Cast(const Type* from, const Type* to, void* inPtr, void**
     }
 
     return false;
+}
+
+void TypeInheritance::AddBaseType(const Type* baseType, std::ptrdiff_t baseDiff)
+{
+    baseTypesInfo.emplace_back(Info{ baseType, baseDiff });
+}
+
+void TypeInheritance::AddDerivedType(const Type* derivedType, std::ptrdiff_t derivedDiff)
+{
+    derivedTypesInfo.emplace_back(Info{ derivedType, derivedDiff });
 }
 
 } // namespace DAVA

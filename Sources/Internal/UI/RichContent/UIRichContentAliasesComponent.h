@@ -24,9 +24,10 @@ namespace DAVA
     In this case tag `h1` with its attributes will be raplaced by tag `p` with
     attributes `class="header"`.
 */
-class UIRichContentAliasesComponent : public UIBaseComponent<UIComponent::RICH_CONTENT_ALIASES_COMPONENT>
+class UIRichContentAliasesComponent : public UIComponent
 {
-    DAVA_VIRTUAL_REFLECTION(UIRichContentAliasesComponent, UIBaseComponent<UIComponent::RICH_CONTENT_ALIASES_COMPONENT>);
+    DAVA_VIRTUAL_REFLECTION(UIRichContentAliasesComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UIRichContentAliasesComponent);
 
 public:
     /** Default constructor. */

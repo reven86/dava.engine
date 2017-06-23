@@ -1,4 +1,5 @@
-#include "UIFocusComponent.h"
+#include "UI/Focus/UIFocusComponent.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
