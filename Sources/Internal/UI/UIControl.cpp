@@ -2025,8 +2025,9 @@ void UIControl::RemoveAllComponents()
         component->SetControl(nullptr);
         SafeRelease(component);
     }
-    SetLayoutDirty();
     UpdateFamily();
+    SetStyleSheetDirty();
+    SetLayoutDirty();
 }
 
 void UIControl::RemoveComponent(const Vector<UIComponent*>::iterator& it)

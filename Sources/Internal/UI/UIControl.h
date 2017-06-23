@@ -70,7 +70,6 @@ class UIControl : public AnimatedObject
 
     DAVA_VIRTUAL_REFLECTION(UIControl, AnimatedObject);
     // Need for isIteratorCorrupted. See UILayoutSystem::UpdateControl.
-    friend class UILayoutSystem;
     friend class UIRenderSystem;
 
 public:

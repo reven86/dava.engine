@@ -423,7 +423,8 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
         }
         else
         {
-            const char* componentName = descr.group->componentType->GetName();
+            const ReflectedType* rt = ReflectedTypeDB::GetByType(descr.group->componentType);
+            const char* componentName = rt->GetPermanentName().c_str();
             const char* controlName = control->GetName().c_str();
             Logger::Error("Style sheet can not find component \'%s\' in control \'%s\'", componentName, controlName);
         }
