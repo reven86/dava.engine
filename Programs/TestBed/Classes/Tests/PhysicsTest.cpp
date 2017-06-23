@@ -1,6 +1,7 @@
 #include "Tests/PhysicsTest.h"
-#include "TestBed.h"
+#include "Infrastructure/TestBed.h"
 
+#if defined(__DAVAENGINE_PHYSICS_ENABLED__)
 #include <Physics/PhysicsModule.h>
 #include <Physics/Private/PhysicsMath.h>
 #include <Physics/PhysicsConfigs.h>
@@ -68,3 +69,4 @@ void PhysicsTest::Update(DAVA::float32 timeElapsed)
         client->updateCamera("PhysicsTestCamera", physx::PxVec3(10.0f, 10.0f, 10.0f), physx::PxVec3(0.0f, 0.0f, 1.0f), physx::PxVec3(0.0f, 0.0f, 0.0f));
     }
 }
+#endif
