@@ -142,6 +142,7 @@ void SpeedTreeConverter::ConvertingPathRecursive(Entity* node)
     {
         return;
     }
+
     SpeedTreeObject* treeObject = cast_if_equal<SpeedTreeObject*>(ro);
     if (nullptr == treeObject)
     {
@@ -151,7 +152,10 @@ void SpeedTreeConverter::ConvertingPathRecursive(Entity* node)
         treeObject->Release();
     }
 
-    node->AddComponent(new SpeedTreeComponent());
+    if (GetSpeedTreeComponent(node) == nullptr)
+    {
+        node->AddComponent(new SpeedTreeComponent());
+    }
 
     uniqTreeObjects.insert(treeObject);
 
@@ -353,5 +357,19 @@ void SpeedTreeConverter::ConvertPolygonGroupsPivot3(Entity* scene)
 
     for (auto& it : pgCopy)
         SafeRelease(it.second);
+}
+
+void SpeedTreeConverter::ValidateSpeedTreeComponentCount(Entity* node)
+{
+    for (int32 c = 0; c < node->GetChildrenCount(); ++c)
+    {
+        Entity* childNode = node->GetChild(c);
+        ValidateSpeedTreeComponentCount(childNode);
+    }
+
+    while (node->GetComponentCount(Component::SPEEDTREE_COMPONENT) > 1u)
+    {
+        node->RemoveComponent(Component::SPEEDTREE_COMPONENT, 1u);
+    };
 }
 };
