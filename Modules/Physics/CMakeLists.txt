@@ -115,7 +115,8 @@ set(WIN32_DYNAMIC_RELEASE_LIBS "${LibsPath}/Win32/x86/PhysX3_x86.dll"
                                "${LibsPath}/Win32/x86/PhysX3CharacterKinematic_x86.dll"
                                "${LibsPath}/Win32/x86/PhysX3Common_x86.dll"
                                "${LibsPath}/Win32/x86/PhysX3Cooking_x86.dll"
-                               "${LibsPath}/Win32/x86/PxFoundation_x86.dll")
+                               "${LibsPath}/Win32/x86/PxFoundation_x86.dll"
+                               "${LibsPath}/Win32/x86/PxPvdSDK_x86.dll")
 
 set(WIN64_STATIC_DEBUG_LIBS "${LibsPath}/Win32/x64/LowLevelDEBUG.lib"
                             "${LibsPath}/Win32/x64/LowLevelAABBDEBUG.lib"
@@ -214,7 +215,8 @@ set(WIN64_DYNAMIC_RELEASE_LIBS "${LibsPath}/Win32/x64/PhysX3_x64.dll"
                                "${LibsPath}/Win32/x64/PhysX3CharacterKinematic_x64.dll"
                                "${LibsPath}/Win32/x64/PhysX3Common_x64.dll"
                                "${LibsPath}/Win32/x64/PhysX3Cooking_x64.dll"
-                               "${LibsPath}/Win32/x64/PxFoundation_x64.dll")
+                               "${LibsPath}/Win32/x64/PxFoundation_x64.dll"
+                               "${LibsPath}/Win32/x64/PxPvdSDK_x64.dll")
 
 set(WIN_UAP_STATIC_DEBUG_LIBS "${LibsPath}/Win10/$(Platform)/Debug/LowLevelDEBUG.lib"
                               "${LibsPath}/Win10/$(Platform)/Debug/LowLevelAABBDEBUG.lib"
@@ -270,11 +272,13 @@ set(WIN_UAP_DYNAMIC_RELEASE_LIBS "${LibsPath}/Win10/Win32/Release/PhysX3_x86.dll
                                  "${LibsPath}/Win10/Win32/Release/PhysX3Common_x86.dll"
                                  "${LibsPath}/Win10/Win32/Release/PhysX3Cooking_x86.dll"
                                  "${LibsPath}/Win10/Win32/Release/PxFoundation_x86.dll"
+                                 "${LibsPath}/Win10/Win32/Release/PxPvdSDK_x86.dll"
                                  "${LibsPath}/Win10/x64/Release/PhysX3_x64.dll"
                                  "${LibsPath}/Win10/x64/Release/PhysX3CharacterKinematic_x64.dll"
                                  "${LibsPath}/Win10/x64/Release/PhysX3Common_x64.dll"
                                  "${LibsPath}/Win10/x64/Release/PhysX3Cooking_x64.dll"
-                                 "${LibsPath}/Win10/x64/Release/PxFoundation_x64.dll")
+                                 "${LibsPath}/Win10/x64/Release/PxFoundation_x64.dll"
+                                 "${LibsPath}/Win10/x64/Release/PxPvdSDK_x64.dll")
 
 set(MACOS_STATIC_DEBUG_LIBS "${LibsPath}/MacOS/libLowLevelDEBUG.a"
                             "${LibsPath}/MacOS/libLowLevelAABBDEBUG.a"
