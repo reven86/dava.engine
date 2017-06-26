@@ -83,8 +83,14 @@ DLCManagerImpl::DLCManagerImpl(Engine* engine_)
     : engine(*engine_)
 {
     DVASSERT(Thread::IsMainThread());
-    engine.update.Connect(this, &DLCManagerImpl::Update);
-    engine.backgroundUpdate.Connect(this, &DLCManagerImpl::Update);
+    engine.update.Connect(this, [this](float32 frameDelta)
+                          {
+                              Update(frameDelta, false);
+                          });
+    engine.backgroundUpdate.Connect(this, [this](float32 frameDelta)
+                                    {
+                                        Update(frameDelta, true);
+                                    });
 }
 #endif
 
@@ -314,7 +320,7 @@ void DLCManagerImpl::RetryInit()
 
 // end Initialization ////////////////////////////////////////
 
-void DLCManagerImpl::Update(float frameDelta)
+void DLCManagerImpl::Update(float frameDelta, bool inBackground)
 {
     DVASSERT(Thread::IsMainThread());
 
@@ -330,7 +336,7 @@ void DLCManagerImpl::Update(float frameDelta)
             {
                 if (requestManager)
                 {
-                    requestManager->Update();
+                    requestManager->Update(inBackground);
                 }
             }
         }
