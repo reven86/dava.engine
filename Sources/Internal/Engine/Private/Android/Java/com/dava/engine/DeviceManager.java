@@ -8,10 +8,7 @@ import java.util.Iterator;
 import java.util.Scanner;
 
 import android.os.Build;
-// import android.support.annotation.RequiresApi;
-import android.util.Log;
 import android.view.Display;
-import android.view.Surface;
 import android.content.Context;
 import android.util.DisplayMetrics;
 import android.hardware.display.DisplayManager;
@@ -233,7 +230,7 @@ public final class DeviceManager
             }
             else
             {
-                Log.e(DavaActivity.LOG_TAG, "Could not retrieve CPU temperature from file: " + filepath + ": file format is wrong");
+                DavaLog.e(DavaActivity.LOG_TAG, "Could not retrieve CPU temperature from file: " + filepath + ": file format is wrong");
             }
             scanner.close();
         }
@@ -241,7 +238,7 @@ public final class DeviceManager
         {
             if (firstTimeCpuTempException)
             {
-                Log.e(DavaActivity.LOG_TAG, "Could not retrieve CPU temperature from file: " + filepath + ", exception: " + e.getMessage());
+                DavaLog.e(DavaActivity.LOG_TAG, "Could not retrieve CPU temperature from file: " + filepath + ", exception: " + e.getMessage());
                 firstTimeCpuTempException = false;
             }
         }

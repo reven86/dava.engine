@@ -1,17 +1,8 @@
 package com.dava.engine;
 
 import android.graphics.Rect;
-import android.graphics.PixelFormat;
-import android.os.Build;
-import android.view.Gravity;
-import android.view.View;
-import android.view.ViewTreeObserver;
-import android.view.WindowManager;
-import android.widget.FrameLayout;
 import java.util.LinkedList;
 import java.util.List;
-
-import android.util.Log;
 
 class DavaKeyboardState extends DavaActivity.ActivityListenerImpl
                         implements DavaGlobalLayoutState.GlobalLayoutListener

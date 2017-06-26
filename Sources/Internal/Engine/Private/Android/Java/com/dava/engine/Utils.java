@@ -3,8 +3,6 @@ package com.dava.engine;
 import java.util.UUID;
 
 import android.net.Uri;
-import android.util.Log;
-import android.app.Activity;
 import android.view.WindowManager;
 import android.content.Intent;
 import android.content.ActivityNotFoundException;
@@ -57,14 +55,14 @@ public class Utils
                         return;
                     }
 
-                    Log.i(DavaActivity.LOG_TAG, "[OpenURL] " + url);
+                    DavaLog.i(DavaActivity.LOG_TAG, "[OpenURL] " + url);
 
                     Intent exWeb = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     activity.startActivity(exWeb);
                 }
                 catch(ActivityNotFoundException e)
                 {
-                    Log.e(DavaActivity.LOG_TAG, "[OpenURL] failed with exeption: " + e.toString());
+                    DavaLog.e(DavaActivity.LOG_TAG, "[OpenURL] failed with exeption: " + e.toString());
                 }
             }
         });

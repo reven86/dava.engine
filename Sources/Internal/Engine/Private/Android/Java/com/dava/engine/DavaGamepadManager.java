@@ -1,6 +1,5 @@
 package com.dava.engine;
 
-import android.util.Log;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 
