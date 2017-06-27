@@ -25,7 +25,7 @@ class MessageBox extends DialogFragment
 
     public static int messageBox(String title, String content, String[] buttons)
     {
-        if (!DavaActivity.instance().isFinishing())
+        if (!DavaActivity.instance().isFinishing() && !DavaActivity.instance().isPaused())
         {
             final boolean inUIThread = DavaActivity.isUIThread();
             if (!inUIThread)
