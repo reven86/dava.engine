@@ -96,7 +96,7 @@ bool SaveExportedObjects(const DAVA::FilePath& linkPathname, const DAVA::Vector<
     }
 }
 
-std::pair<bool, DAVA::int32> ReadInt(File* file)
+std::pair<bool, DAVA::int32> ReadInt(DAVA::File* file)
 {
     using namespace DAVA;
 

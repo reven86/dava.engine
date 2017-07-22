@@ -203,10 +203,10 @@ void SoundComponent::Deserialize(KeyedArchive* archive, SerializationContext* se
         uint32 eventsCount = archive->GetUInt32("sc.eventCount");
         for (uint32 i = 0; i < eventsCount; ++i)
         {
-            KeyedArchive* eventArchive = archive->GetArchive(KeyedArchive::GenKeyFromIndex(i));
-            SoundEvent* sEvent = SoundSystem::Instance()->DeserializeEvent(eventArchive);
-            AddSoundEvent(sEvent, eventArchive->GetUInt32("sce.flags"), eventArchive->GetVector3("sce.localDirection", Vector3(1.f, 0.f, 0.f)));
-            SafeRelease(sEvent);
+            //KeyedArchive* eventArchive = archive->GetArchive(KeyedArchive::GenKeyFromIndex(i));
+            //SoundEvent* sEvent = SoundSystem::Instance()->DeserializeEvent(eventArchive);
+            //AddSoundEvent(sEvent, eventArchive->GetUInt32("sce.flags"), eventArchive->GetVector3("sce.localDirection", Vector3(1.f, 0.f, 0.f)));
+            //SafeRelease(sEvent);
         }
     }
 

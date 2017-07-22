@@ -61,6 +61,8 @@ void SoundUpdateSystem::ImmediateEvent(Component* component, uint32 event)
 
 void SoundUpdateSystem::Process(float32 timeElapsed)
 {
+    return;
+
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_SOUND_UPDATE_SYSTEM);
 
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
