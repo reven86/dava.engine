@@ -96,6 +96,12 @@ void RenderSystem::RemoveRenderObject(RenderObject* renderObject)
     renderObject->SetRenderSystem(0);
 }
 
+void RenderSystem::PrebuildMaterial(NMaterial* material)
+{
+    //pre-build for all passes
+    material->PreBuildMaterial(PASS_FORWARD);
+}
+
 void RenderSystem::RegisterBatch(RenderBatch* batch)
 {
     RegisterMaterial(batch->GetMaterial());
@@ -108,19 +114,17 @@ void RenderSystem::UnregisterBatch(RenderBatch* batch)
 
 void RenderSystem::RegisterMaterial(NMaterial* material)
 {
-    NMaterial* topParent = nullptr;
-
-    while (nullptr != material)
-    {
-        topParent = material;
-        material = material->GetParent();
-    }
+    if (material == nullptr)
+        return;
 
     // set globalMaterial to be parent for top material
-    if (nullptr != topParent && topParent != globalMaterial)
+    NMaterial* topParent = material->GetTopLevelParent();
+    if (topParent != globalMaterial)
     {
         topParent->SetParent(globalMaterial);
     }
+
+    PrebuildMaterial(material);
 }
 
 void RenderSystem::UnregisterMaterial(NMaterial* material)
@@ -152,11 +156,14 @@ void RenderSystem::SetGlobalMaterial(NMaterial* newGlobalMaterial)
         NMaterial* batchMaterial = dynamic_cast<NMaterial*>(dataNode);
         if (batchMaterial)
         {
-            while (batchMaterial->GetParent() && batchMaterial->GetParent() != globalMaterial && batchMaterial->GetParent() != newGlobalMaterial)
+            NMaterial* topMaterial = batchMaterial;
+            while (topMaterial->GetParent() && topMaterial->GetParent() != globalMaterial && topMaterial->GetParent() != newGlobalMaterial)
             {
-                batchMaterial = batchMaterial->GetParent();
+                topMaterial = topMaterial->GetParent();
             }
-            batchMaterial->SetParent(newGlobalMaterial);
+            topMaterial->SetParent(newGlobalMaterial);
+
+            PrebuildMaterial(batchMaterial);
         }
     }
 

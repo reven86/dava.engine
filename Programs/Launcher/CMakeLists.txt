@@ -9,15 +9,10 @@ include               ( CMake-common )
 find_package          ( QT5 REQUIRED  COMPONENTS Network )
 find_package          ( QtHelpers  REQUIRED )
 
-add_subdirectory      ( "${CMAKE_CURRENT_LIST_DIR}/ThirdParty/yaml" ${CMAKE_CURRENT_BINARY_DIR}/yaml )
-
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
 
 include_directories   (.)             
 include_directories   ( "Classes" )
-include_directories   ( "ThirdParty/yaml/include" )
-
-link_directories      ("ThirdParty" )
 
 if ( WIN32 )
     set( LIB_RELEASE  "msvcrt.lib" )
@@ -43,7 +38,6 @@ set( MACOS_ICO            ${CMAKE_CURRENT_LIST_DIR}/icon.icns  )
 
 set( ADDED_SRC            ${UI_APP_HDRS} ${RCC_APP_SRCS}  Launcher.rc )
 
-set( LIBRARIES            yaml-cpp  )
 set( LIBRARIES_RELEASE    ${LIB_RELEASE} )
 set( LIBRARIES_DEBUG      ${LIB_DEBUG} )
 ASSERT(QT_ACTUAL_PATH "Qt path was not resolved")

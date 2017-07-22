@@ -6,8 +6,12 @@ import build_config
 def get_supported_targets(platform):
     if platform == 'win32':
         return ['win32', 'win10']
-    else:
+    elif platform == 'darwin':
         return ['macos', 'ios']
+    elif platform == 'linux':
+        return ['linux']
+    else:
+        return []
 
 
 def get_dependencies_for_target(target):
@@ -23,7 +27,8 @@ def build_for_target(target, working_directory_path, root_project_path):
         _build_macos(working_directory_path, root_project_path)
     elif target == 'ios':
         _build_ios(working_directory_path, root_project_path)
-
+    elif target == 'linux':
+        _build_linux(working_directory_path, root_project_path)
 
 def get_download_info():
     return 'http://downloads.xiph.org/releases/theora/libtheora-1.1.1.tar.bz2'
@@ -268,6 +273,30 @@ def _build_ios(working_directory_path, root_project_path):
 
     _copy_headers_from_installation(install_dir_ios, root_project_path)
 
+def _build_linux(working_directory_path, root_project_path):
+    source_folder_path = _download_and_extract(working_directory_path)
+
+    env = build_utils.get_autotools_linux_env()
+    ogg_install_dir = os.path.join(working_directory_path, '../libogg/gen/install_linux')
+    install_dir = os.path.join(working_directory_path, 'gen/install_linux')
+
+    # --disable-asm since it won't compile for x64 otherwise
+    # do not postclean since binaries may be used for cross compiling
+    build_utils.build_with_autotools(
+        source_folder_path,
+        ['--with-ogg=' + ogg_install_dir,
+         '--disable-asm',
+         '--disable-examples',
+         '--disable-shared',
+         '--enable-static'],
+        install_dir,
+        env=env,
+        postclean=False)
+
+    shutil.copyfile(os.path.join(install_dir, 'lib/libtheora.a'),
+                    os.path.join(root_project_path, 'Libs/lib_CMake/linux/libtheora.a'))
+
+    _copy_headers_from_installation(install_dir, root_project_path)
 
 def _copy_headers(source_folder_path, root_project_path):
     include_path = os.path.join(root_project_path, 'Libs/include/theora')

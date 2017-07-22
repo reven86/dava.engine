@@ -2,7 +2,7 @@
 #define __EDITOR_FONT_SYSTEM__
 
 #include "Base/BaseTypes.h"
-#include "Render/2d/Font.h"
+#include "Render/2D/Font.h"
 #include "FileSystem/FilePath.h"
 #include <QObject>
 #include <QStringList>

@@ -9,6 +9,16 @@ namespace DAVA
 {
 namespace TArc
 {
+const WindowKey mainWindowKey(DAVA::FastName("MainWindow"));
+
+namespace MenuItems
+{
+const QString menuFile("File");
+const QString menuEdit("Edit");
+const QString menuView("View");
+const QString menuHelp("Help");
+}
+
 WindowKey::WindowKey(const FastName& appID_)
     : appID(appID_)
 {
@@ -30,7 +40,7 @@ bool WindowKey::operator!=(const WindowKey& other) const
 }
 
 DockPanelInfo::DockPanelInfo()
-    : actionPlacementInfo(CreateMenuPoint(QList<QString>() << "View"
+    : actionPlacementInfo(CreateMenuPoint(QList<QString>() << MenuItems::menuView
                                                            << "Dock"))
 {
 }

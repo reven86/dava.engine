@@ -584,16 +584,6 @@ void ProgGLES2::InvalidateAllConstBufferInstances()
 
 //------------------------------------------------------------------------------
 
-static unsigned
-gles2_ConstBuffer_ConstCount(Handle cb)
-{
-    const ProgGLES2::ConstBuf* self = ConstBufGLES2Pool::Get(cb);
-
-    return self->ConstCount();
-}
-
-//------------------------------------------------------------------------------
-
 static bool
 gles2_ConstBuffer_SetConst(Handle cb, unsigned const_i, unsigned const_count, const float* data)
 {
@@ -638,7 +628,6 @@ void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_ConstBuffer_SetConst = &gles2_ConstBuffer_SetConst;
     dispatch->impl_ConstBuffer_SetConst1fv = &gles2_ConstBuffer_SetConst1;
-    dispatch->impl_ConstBuffer_ConstCount = &gles2_ConstBuffer_ConstCount;
     dispatch->impl_ConstBuffer_Delete = &gles2_ConstBuffer_Delete;
 }
 

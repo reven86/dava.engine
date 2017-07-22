@@ -1,7 +1,7 @@
-#ifndef __RULER_WIDGET__H__
-#define __RULER_WIDGET__H__
+#pragma once
 
-#include "RulerSettings.h"
+#include "UI/Preview/Ruler/RulerSettings.h"
+#include "UI/Preview/Guides/IRulerListener.h"
 
 #include <QWidget>
 #include <QPixmap>
@@ -9,25 +9,19 @@
 
 class LazyUpdater;
 
-class RulerWidget : public QWidget
+class RulerWidget final : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit RulerWidget(QWidget* parent = 0);
+    explicit RulerWidget(IRulerListener* listener, QWidget* parent = 0);
     ~RulerWidget() = default;
 
     //Set ruler orientation
     void SetRulerOrientation(Qt::Orientation orientation);
 
-    // Set the initial Ruler Settings.
-    void SetRulerSettings(const RulerSettings& rulerSettings);
-
-    void paintEvent(QPaintEvent* event) override;
-
-    QSize minimumSizeHint() const override;
-
-    void resizeEvent(QResizeEvent* event) override;
+signals:
+    void GeometryChanged();
 
 public slots:
     // Ruler Settings are changed.
@@ -36,15 +30,32 @@ public slots:
     // Marker Position is changed.
     void OnMarkerPositionChanged(int position);
 
-protected:
+private slots:
+    void ShowContextMenu(const QPoint& point);
+
+private:
+    void paintEvent(QPaintEvent* paintEvent) override;
+
+    QSize minimumSizeHint() const override;
+
+    void resizeEvent(QResizeEvent* resizeEvent) override;
+    void moveEvent(QMoveEvent* moveEvent) override;
+
     // We are using double buffering to avoid flicker and excessive updates.
     void UpdateDoubleBufferImage();
 
     // Draw different types of scales.
     void DrawScale(QPainter& painter, int tickStep, int tickStartPos, int tickEndPos,
-                   bool drawValues, bool isHorizontal);
+                   bool drawValues);
 
-private:
+    void mouseMoveEvent(QMouseEvent* mouseEvent) override;
+    void leaveEvent(QEvent* event) override;
+
+    void mousePressEvent(QMouseEvent* mouseEvent) override;
+    void mouseReleaseEvent(QMouseEvent* mouseEvent) override;
+
+    DAVA::float32 GetMousePos(const QPoint& pos) const;
+
     // Ruler orientation.
     Qt::Orientation orientation = Qt::Horizontal;
 
@@ -58,6 +69,6 @@ private:
     int markerPosition = 0;
 
     LazyUpdater* lazyUpdater = nullptr;
-};
 
-#endif /* defined(__RULER_WIDGET__H__) */
+    IRulerListener* listener = nullptr;
+};

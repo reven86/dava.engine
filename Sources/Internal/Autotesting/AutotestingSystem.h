@@ -157,7 +157,7 @@ private:
 
 public:
     static const String RecordScriptFileName;
-    float32 startTime = 0.f;
+    int64 startTime = 0;
 
     bool isInit;
     bool isRunning;

@@ -1,4 +1,4 @@
-#include "HeightMapValidator.h"
+#include "HeightmapValidator.h"
 #include "Utils/StringFormat.h"
 #include <QMessageBox>
 

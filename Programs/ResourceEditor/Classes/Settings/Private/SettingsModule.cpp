@@ -60,7 +60,7 @@ void SettingsModule::PostInit()
     QtAction* settingsAction = new QtAction(GetAccessor(), QIcon(":/QtIcons/settings.png"), QString("Settings"));
 
     ActionPlacementInfo menuPlacement(CreateMenuPoint("Tools"));
-    GetUI()->AddAction(REGlobal::MainWindowKey, menuPlacement, settingsAction);
+    GetUI()->AddAction(DAVA::TArc::mainWindowKey, menuPlacement, settingsAction);
 
     connections.AddConnection(settingsAction, &QAction::triggered, DAVA::MakeFunction(this, &SettingsModule::ShowSettings));
 
@@ -72,7 +72,7 @@ void SettingsModule::PostInit()
 void SettingsModule::ShowSettings()
 {
     { //show and edit settings
-        SettingsDialog dlg(GetUI()->GetWindow(REGlobal::MainWindowKey));
+        SettingsDialog dlg(GetUI()->GetWindow(DAVA::TArc::mainWindowKey));
         dlg.exec();
     }
 

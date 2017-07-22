@@ -4,7 +4,7 @@ project ( RHI-Cube )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include      ( CMake-common )
 
-find_package( DavaFramework REQUIRED COMPONENTS ALL DAVA_DISABLE_AUTOTESTS )
+find_package( DavaFramework REQUIRED COMPONENTS DAVA_DISABLE_AUTOTESTS )
 
 include_directories   ( "Classes" )
 

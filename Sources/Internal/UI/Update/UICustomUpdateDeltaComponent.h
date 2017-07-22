@@ -7,15 +7,18 @@
 namespace DAVA
 {
 /**
-Component for UIUpdateSystem that defines which frameDelta will be send to UIControl.
-Temporary component for backward compatibility with existing code.
-**WILL BE CHANGED** after design replays/custom speed logic.
-*/
-class UICustomUpdateDeltaComponent : public UIBaseComponent<UIComponent::CUSTOM_UPDATE_DELTA_COMPONENT>
+ Component for UIUpdateSystem that defines which frameDelta will be send to UIControl.
+ Temporary component for backward compatibility with existing code.
+ **WILL BE CHANGED** after design replays/custom speed logic.
+ */
+class UICustomUpdateDeltaComponent : public UIComponent
 {
+    DAVA_VIRTUAL_REFLECTION(UICustomUpdateDeltaComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UICustomUpdateDeltaComponent);
+
 public:
-    UICustomUpdateDeltaComponent() = default;
-    UICustomUpdateDeltaComponent(const UICustomUpdateDeltaComponent& src) = default;
+    UICustomUpdateDeltaComponent();
+    UICustomUpdateDeltaComponent(const UICustomUpdateDeltaComponent& src);
     UIComponent* Clone() const override;
 
     void SetDelta(float32 delta);
@@ -26,10 +29,6 @@ protected:
 
 private:
     float32 customDelta = 0.f;
-
-public:
-    INTROSPECTION_EXTEND(UICustomUpdateDeltaComponent, UIComponent,
-                         PROPERTY("delta", "Delta", GetDelta, SetDelta, I_SAVE | I_VIEW | I_EDIT))
 };
 
 inline float32 UICustomUpdateDeltaComponent::GetDelta() const

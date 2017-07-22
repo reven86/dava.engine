@@ -1,52 +1,9 @@
+set( NAME_MODULE_STUB  Sound )
 
-set( NAME_MODULE Sound )
+set( CPP_FILES         Private/SoundSystem.cpp ) 
+set( CPP_FILES_STUB    Private/*Stub.cpp )#only stub mode
+set( CPP_FILES_IMPL    Private/*Impl.cpp )#only impl mode
 
-set( MODULE_TYPE INLINE )#INLINE STATIC DYNAMIC 
-
-set( HPP_FILES                       *.h *.hpp            )
-set( CPP_FILES                       *.cpp                )
-
-set( HPP_FILES_IOS                   iOS/*.h              )
-set( CPP_FILES_IOS                   iOS/*.mm  iOS/*.cpp  )
-
-set( ERASE_FILES_IOS                 SoundSystemEmpty.cpp )
-
-set( DEFINITIONS                     -DDAVA_FMOD          )
-
-set( STATIC_LIBRARIES_IOS            ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodevent_iphoneos.a 
-                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodex_iphoneos.a )
-
-set( STATIC_LIBRARIES_WIN32_RELEASE  ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/fmod_event.lib 
-                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/fmodex_vc.lib )
-
-set( STATIC_LIBRARIES_WIN32_DEBUG    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/fmod_event.lib 
-                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/fmodex_vc.lib )
-
-set( STATIC_LIBRARIES_WIN64_RELEASE  ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/fmod_event64.lib 
-                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/fmodex64_vc.lib )
-
-set( STATIC_LIBRARIES_WIN64_DEBUG    ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/fmod_event64.lib 
-                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Debug/fmodex64_vc.lib )
-
-set( DYNAMIC_LIBRARIES_ANDROID       ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodevent.so 
-                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodex.so )
-
-set( DYNAMIC_LIBRARIES_WIN32         ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/fmodex.dll 
-                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/fmod_event.dll )
-
-set( DYNAMIC_LIBRARIES_WIN64         ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/fmodex64.dll 
-                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/Release/fmod_event64.dll )
-
-set( DYNAMIC_LIBRARIES_MACOS         ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodevent.dylib
-                                     ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodex.dylib )
+set( IMPL_MODULE       ${DAVA_ROOT_DIR}/Modules/Sound )
 
 setup_main_module()
-
-
-
-
-
-
-
-
-

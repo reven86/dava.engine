@@ -2,6 +2,7 @@
 #include "QtTools/Utils/Utils.h"
 #include <Base/Introspection.h>
 #include <Reflection/ReflectedMeta.h>
+#include <Reflection/ReflectedTypeDB.h>
 #include <Utils/StringFormat.h>
 #include <Utils/UTF8Utils.h>
 #include <QString>

@@ -122,20 +122,21 @@ void LocalNotificationImpl::RequestPermissions()
 // available 8.0 and later
     
 #if defined(__IPHONE_8_0)
-    static bool registred = false;
-
-    if (!registred)
+    NSString* version = [[UIDevice currentDevice] systemVersion];
+    if ([version compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending)
     {
-        NSString* version = [[UIDevice currentDevice] systemVersion];
-        if ([version compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending)
+        UIApplication* app = [UIApplication sharedApplication];
+        UIUserNotificationSettings* currentSettings = [app currentUserNotificationSettings];
+        UIUserNotificationType notifications = (UIUserNotificationTypeAlert | UIUserNotificationTypeBadge | UIUserNotificationTypeSound);
+
+        if (currentSettings.types != notifications)
         {
             if ([UIApplication instancesRespondToSelector:@selector(registerUserNotificationSettings:)])
             {
-                [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeBadge | UIUserNotificationTypeSound categories:nil]];
+                UIUserNotificationSettings* newSettings = [UIUserNotificationSettings settingsForTypes:notifications categories:nil];
+                [app registerUserNotificationSettings:newSettings];
             }
         }
-
-        registred = true;
     }
 #endif
 }

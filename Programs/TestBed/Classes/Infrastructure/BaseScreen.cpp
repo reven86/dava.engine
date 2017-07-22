@@ -2,6 +2,7 @@
 #include "Infrastructure/TestBed.h"
 
 #include <UI/Layouts/UIAnchorComponent.h>
+#include <UI/Render/UIDebugRenderComponent.h>
 
 DAVA::int32 BaseScreen::globalScreenId = 1;
 
@@ -41,7 +42,7 @@ void BaseScreen::LoadResources()
     exitButton->SetStateFontColor(0xFF, Color::White);
     exitButton->SetStateText(0xFF, L"Exit From Screen");
 
-    exitButton->SetDebugDraw(true);
+    exitButton->GetOrCreateComponent<UIDebugRenderComponent>();
     exitButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &BaseScreen::OnExitButton));
 
     {

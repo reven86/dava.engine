@@ -16,7 +16,7 @@ class UIControl;
 class VariantTypeProperty : public ValueProperty
 {
 public:
-    VariantTypeProperty(const DAVA::String& name, DAVA::Any& variantType, const ReflectedStructure::Field* field);
+    VariantTypeProperty(const DAVA::String& name, DAVA::Any& variantType, const DAVA::ReflectedStructure::Field* field);
 
 protected:
     virtual ~VariantTypeProperty();

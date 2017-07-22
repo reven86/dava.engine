@@ -1,5 +1,4 @@
-#ifndef __ASSET_CACHE_CLIENT_H__
-#define __ASSET_CACHE_CLIENT_H__
+#pragma once
 
 #include "AssetCache.h"
 #include "Base/Introspection.h"
@@ -42,9 +41,8 @@ public:
 
 private:
     AssetCache::Error WaitRequest(uint64 requestTimeoutMs);
-
     AssetCache::Error CheckStatusSynchronously();
-    void PollNetworkIfSuitable();
+    void ProcessNetwork();
 
     //ClientNetProxyListener
     void OnAddedToCache(const AssetCache::CacheItemKey& key, bool added) override;
@@ -91,6 +89,7 @@ private:
         bool processingRequest = false;
     };
 
+    Dispatcher<Function<void()>> dispatcher;
     AssetCache::ClientNetProxy client;
 
     uint64 lightRequestTimeoutMs = 60u * 1000u;
@@ -110,5 +109,3 @@ inline uint64 AssetCacheClient::GetTimeoutMs() const
 }
 
 } //END of DAVA
-
-#endif //__ASSET_CACHE_CLIENT_H__

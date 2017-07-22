@@ -107,7 +107,7 @@ void MitsubaExporter::PostInit()
                                                return value.CanCast<SceneData::TSceneType>();
                                            });
 
-    GetUI()->AddAction(REGlobal::MainWindowKey, CreateMenuPoint("DebugFunctions"), exportAction);
+    GetUI()->AddAction(DAVA::TArc::mainWindowKey, CreateMenuPoint("DebugFunctions"), exportAction);
     connections.AddConnection(exportAction, &QAction::triggered, DAVA::MakeFunction(this, &MitsubaExporter::Export));
 }
 
@@ -118,7 +118,7 @@ void MitsubaExporter::Export()
     FileDialogParams parameters;
     parameters.title = "Export to";
     parameters.filters = "XML Files (*.xml)";
-    QString exportFolder = GetUI()->GetSaveFileName(REGlobal::MainWindowKey, parameters);
+    QString exportFolder = GetUI()->GetSaveFileName(DAVA::TArc::mainWindowKey, parameters);
     if (!exportFolder.isEmpty())
     {
         DAVA::FilePath exportFile(exportFolder.toUtf8().toStdString());
@@ -241,7 +241,7 @@ void MitsubaExporterDetail::Exporter::ExportBatch(const DAVA::String& name, cons
             return;
         }
 
-        bool hasPivot = (vertexFormat & DAVA::EVF_PIVOT) == DAVA::EVF_PIVOT;
+        bool hasPivot = (vertexFormat & DAVA::EVF_PIVOT4) == DAVA::EVF_PIVOT4;
         if (hasPivot)
         {
             DAVA::Logger::Error("%s data contains pivot point, which are not supported", name.c_str());
@@ -270,7 +270,7 @@ void MitsubaExporterDetail::Exporter::ExportBatch(const DAVA::String& name, cons
 
         fOut << std::endl
              << DAVA::Format("g group_%llu_%llu", poly->GetNodeID(), reinterpret_cast<DAVA::uint64>(poly)) << std::endl;
-        for (DAVA::int32 ti = 0, te = poly->GetIndexCount() / 3; ti < te; ++ti)
+        for (DAVA::int32 ti = 0, te = poly->GetPrimitiveCount(); ti < te; ++ti)
         {
             DAVA::int32 tri[3] = {};
             poly->GetIndex(3 * ti + 0, tri[0]);

@@ -56,10 +56,10 @@ public:
         ~Edge();
         Edge(const Edge&);
 
-        Waypoint* destination;
+        Waypoint* destination = nullptr;
 
     private:
-        KeyedArchive* properties;
+        KeyedArchive* properties = nullptr;
 
         //For property panel
         void SetDestinationName(const FastName& name);
@@ -92,7 +92,9 @@ public:
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
     void AddPoint(Waypoint* point);
+    void InsertPoint(Waypoint* point, uint32 beforeIndex);
     void RemovePoint(Waypoint* point);
+    void ExtractPoint(Waypoint* point);
 
     Waypoint* GetWaypoint(const FastName& name);
     const Vector<Waypoint*>& GetPoints() const;
@@ -140,6 +142,10 @@ inline const Vector<PathComponent::Waypoint*>& PathComponent::GetPoints() const
 inline void PathComponent::SetName(const FastName& _name)
 {
     name = _name;
+    for (Waypoint* wp : waypoints)
+    {
+        wp->name = name;
+    }
 }
 
 inline const FastName& PathComponent::GetName() const

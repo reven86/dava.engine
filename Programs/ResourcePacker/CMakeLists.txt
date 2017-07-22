@@ -12,7 +12,7 @@ dava_add_definitions  ( -D__DAVAENGINE_COREV2__ )
 find_package          ( DavaTools REQUIRED )
 
 dava_add_definitions  ( -DCONSOLE )
-find_package          ( DavaFramework REQUIRED COMPONENTS ALL DAVA_DISABLE_AUTOTESTS )
+find_package          ( DavaFramework REQUIRED COMPONENTS DAVA_DISABLE_AUTOTESTS )
 
 include_directories   ( "Classes" )
 

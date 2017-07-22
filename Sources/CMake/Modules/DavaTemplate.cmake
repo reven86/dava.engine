@@ -38,6 +38,32 @@
     cmake_policy(SET CMP0054 NEW)
 #endif()
 
+# You should call this macros before setup_main_executable to add external unittests into executable target
+macro( exctact_external_unittests )
+    load_property(PROPERTY_LIST EXTERNAL_TEST_FOLDERS)
+    foreach( TEST_FOLDER ${EXTERNAL_TEST_FOLDERS} )
+    file( GLOB_RECURSE TEST_FILES "${TEST_FOLDER}/*.unittest"  )
+
+    if( ANDROID OR LINUX )#Fucking android
+        foreach( FILE ${TEST_FILES} )
+            get_filename_component( FILE_NAME ${FILE} NAME )
+            set( OUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/EXTERNAL_TEST/${FILE_NAME}.cpp )
+            configure_file( ${FILE}  ${OUT_FILE} COPYONLY)
+            list( APPEND ADDED_SRC ${OUT_FILE} )
+        endforeach()
+    else()
+        list( APPEND ADDED_SRC ${TEST_FILES} )
+        source_group( "EXTERNAL_TEST" FILES ${TEST_FILES} )
+
+        set_source_files_properties(${TEST_FILES} PROPERTIES
+          HEADER_FILE_ONLY FALSE
+          KEEP_EXTENSION TRUE
+          LANGUAGE CXX
+        )
+    endif()
+endforeach()
+endmacro()
+
 macro( setup_main_executable )
 
 include      ( PlatformSettings )
@@ -50,6 +76,7 @@ save_property( PROPERTY_LIST
 load_property( PROPERTY_LIST 
         DEFINITIONS                
         DEFINITIONS_${DAVA_PLATFORM_CURENT}
+        CPP_FILES_EXECUTE
         GLOBAL_DEFINITIONS
         TARGET_MODULES_LIST 
         BINARY_WIN32_DIR_RELEASE
@@ -64,9 +91,15 @@ load_property( PROPERTY_LIST
         DEPLOY_TO_BIN
         DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}
         DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}
+        DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE
+        DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG
+        MODULE_DYNAMIC_LIBRARIES_DIR
+        MODULE_DYNAMIC_LIBRARIES_DIR_RELEASE
+        MODULE_DYNAMIC_LIBRARIES_DIR_DEBUG
         INCLUDES
         INCLUDES_${DAVA_PLATFORM_CURENT}
-
+        JAR_FOLDERS_ANDROID
+        JAVA_FOLDERS_ANDROID
         PLUGIN_LIST
     )
         
@@ -106,7 +139,7 @@ endif()
 if( WIN32 )
     GET_PROPERTY(DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_WIN GLOBAL PROPERTY DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_WIN)
     list ( APPEND ADDITIONAL_DLL_FILES ${DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_WIN} )
-    list ( APPEND ADDITIONAL_DLL_FILES ${DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}} )
+    list ( APPEND ADDITIONAL_DLL_FILES ${DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}} ${DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE} )
 elseif( MACOS )
     GET_PROPERTY(DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_MAC GLOBAL PROPERTY DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_MAC)
     list ( APPEND MACOS_DYLIB  ${DAVA_ADDITIONAL_DYNAMIC_LIBRARIES_MAC} )
@@ -200,7 +233,7 @@ elseif( MACOS )
     list( APPEND RESOURCES_LIST  ${MACOS_XIB} )
     list( APPEND RESOURCES_LIST  ${MACOS_ICO} )
 
-    if( NOT DEPLOY_DIR_LIBS )
+    if( NOT DEPLOY_DIR_LIBS OR NOT DEPLOY )
         list( APPEND RESOURCES_LIST  ${DYLIB_FILES} )
     endif()
 
@@ -266,6 +299,10 @@ elseif ( WINDOWS_UAP )
 
     #add dll's to project and package
     add_dynamic_libs_win_uap ( ${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON} DAVA_DLL_LIST )
+
+
+    list( APPEND DAVA_DLL_LIST_RELEASE  ${DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE} )
+    list( APPEND DAVA_DLL_LIST_DEBUG    ${DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG} )
 
     #add found dll's to project and mark them as deployment content
     if ( DAVA_DLL_LIST_DEBUG )
@@ -364,32 +401,15 @@ if( DAVA_FOUND )
 endif()
 
 ###
-foreach( TEST_FOLDER ${EXTERNAL_TEST_FOLDERS} )
-    file( GLOB_RECURSE TEST_FILES "${TEST_FOLDER}/*.unittest"  )
 
-    if( ANDROID )#Fucking android
-        foreach( FILE ${TEST_FILES} )
-            get_filename_component( FILE_NAME ${FILE} NAME )
-            set( OUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/EXTERNAL_TEST/${FILE_NAME}.cpp )
-            configure_file( ${FILE}  ${OUT_FILE} COPYONLY)
-            list( APPEND PROJECT_SOURCE_FILES ${OUT_FILE} )
-        endforeach()
-    else()
-        list( APPEND PROJECT_SOURCE_FILES ${TEST_FILES} )
-        source_group( "EXTERNAL_TEST" FILES ${TEST_FILES} )
-
-        set_source_files_properties(${TEST_FILES} PROPERTIES
-          HEADER_FILE_ONLY FALSE
-          KEEP_EXTENSION TRUE
-          LANGUAGE CXX
-        )
-    endif()
-
-endforeach()
 
 ###
 
-list( APPEND PROJECT_SOURCE_FILES ${ADDED_SRC} ${PLATFORM_ADDED_SRC} )
+if( CPP_FILES_EXECUTE )
+    source_group( "INIT_MODULE" FILES ${CPP_FILES_EXECUTE} )          
+endif()
+
+list( APPEND PROJECT_SOURCE_FILES ${ADDED_SRC} ${PLATFORM_ADDED_SRC} ${CPP_FILES_EXECUTE} )
 generated_unity_sources( PROJECT_SOURCE_FILES   IGNORE_LIST ${UNIFIED_IGNORE_LIST} 
                                                 IGNORE_LIST_WIN32 ${UNIFIED_IGNORE_LIST_WIN32} 
                                                 IGNORE_LIST_APPLE ${UNIFIED_IGNORE_LIST_APPLE}
@@ -479,6 +499,7 @@ if ( STEAM_SDK_FOUND AND WIN32 )
     )
 endif ()
 
+processing_mix_data_dependencies( ${PROJECT_NAME} )
 
 if (QT5_FOUND)
     link_with_qt5(${PROJECT_NAME})
@@ -556,14 +577,16 @@ if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/AntProperties.in
                     ${CMAKE_CURRENT_BINARY_DIR}/ant.properties )
 
-    if( ANDROID_JAVA_SRC )
-        foreach ( ITEM ${ANDROID_JAVA_SRC} )
-            execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ITEM} ${CMAKE_BINARY_DIR}/src )
-        endforeach ()
-    endif()
+    foreach ( ITEM ${ANDROID_JAVA_SRC} ${JAVA_FOLDERS_ANDROID} )
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ITEM} ${CMAKE_BINARY_DIR}/src )
+    endforeach ()
 
     if( ANDROID_JAVA_LIBS )
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ANDROID_JAVA_LIBS} ${CMAKE_BINARY_DIR}/libs )
+    endif()
+
+    if( JAR_FOLDERS_ANDROID )
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${JAR_FOLDERS_ANDROID} ${CMAKE_BINARY_DIR}/libs )
     endif()
 
     if( ANDROID_JAVA_RES )
@@ -675,12 +698,13 @@ elseif ( WIN32 )
         set ( DAVA_VCPROJ_USER_TEMPLATE "DavaVcxprojUserTemplate.in" )
     endif ()
 
-    set( DAVA_BINARY_WIN32_DIR_RELEASE    ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN32_DIR_RELEASE} ) 
-    set( DAVA_BINARY_WIN32_DIR_DEBUG      ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN32_DIR_DEBUG}   ) 
-    set( DAVA_BINARY_WIN32_DIR_RELWITHDEB ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN32_DIR_RELWITHDEB}   ) 
-    set( DAVA_BINARY_WIN64_DIR_RELEASE    ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN64_DIR_RELEASE} ) 
-    set( DAVA_BINARY_WIN64_DIR_DEBUG      ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN64_DIR_DEBUG}   ) 
-    set( DAVA_BINARY_WIN64_DIR_RELWITHDEB ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN64_DIR_RELWITHDEB}   ) 
+
+    set( DAVA_BINARY_WIN32_DIR_RELEASE    ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN32_DIR_RELEASE}      ${MODULE_DYNAMIC_LIBRARIES_DIR} ${MODULE_DYNAMIC_LIBRARIES_DIR_RELEASE} ) 
+    set( DAVA_BINARY_WIN32_DIR_DEBUG      ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN32_DIR_DEBUG}        ${MODULE_DYNAMIC_LIBRARIES_DIR} ${MODULE_DYNAMIC_LIBRARIES_DIR_DEBUG} ) 
+    set( DAVA_BINARY_WIN32_DIR_RELWITHDEB ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN32_DIR_RELWITHDEB}   ${MODULE_DYNAMIC_LIBRARIES_DIR} ${MODULE_DYNAMIC_LIBRARIES_DIR_RELEASE} ) 
+    set( DAVA_BINARY_WIN64_DIR_RELEASE    ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN64_DIR_RELEASE}      ${MODULE_DYNAMIC_LIBRARIES_DIR} ${MODULE_DYNAMIC_LIBRARIES_DIR_RELEASE} ) 
+    set( DAVA_BINARY_WIN64_DIR_DEBUG      ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN64_DIR_DEBUG}        ${MODULE_DYNAMIC_LIBRARIES_DIR} ${MODULE_DYNAMIC_LIBRARIES_DIR_DEBUG} ) 
+    set( DAVA_BINARY_WIN64_DIR_RELWITHDEB ${DAVA_BINARY_WIN32_DIR}  ${BINARY_WIN64_DIR_RELWITHDEB}   ${MODULE_DYNAMIC_LIBRARIES_DIR} ${MODULE_DYNAMIC_LIBRARIES_DIR_RELEASE} ) 
 
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/${DAVA_VCPROJ_USER_TEMPLATE}
                     ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user @ONLY )
@@ -832,6 +856,10 @@ endif()
 set_property( GLOBAL PROPERTY USE_FOLDERS ON )
 set_property( GLOBAL PROPERTY PREDEFINED_TARGETS_FOLDER ${DAVA_PREDEFINED_TARGETS_FOLDER} )
 
+if (LINUX)
+    # Reverse modules to link libDavaFramework.a first before other modules
+    list(REVERSE TARGET_MODULES_LIST )
+endif()
 target_link_libraries( ${PROJECT_NAME} ${LINK_WHOLE_ARCHIVE_FLAG} ${TARGET_LIBRARIES} ${TARGET_MODULES_LIST} ${NO_LINK_WHOLE_ARCHIVE_FLAG} ${LIBRARIES} ${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}} )
 
 foreach ( FILE ${LIBRARIES_DEBUG} )

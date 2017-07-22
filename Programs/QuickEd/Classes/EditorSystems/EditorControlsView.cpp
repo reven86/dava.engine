@@ -1,7 +1,3 @@
-#include "Base/Introspection.h"
-#include "UI/UIControl.h"
-#include "Base/BaseTypes.h"
-
 #include "EditorControlsView.h"
 #include "EditorSystems/EditorSystemsManager.h"
 
@@ -12,8 +8,18 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/ControlProperties/RootProperty.h"
 
+#include "Modules/DocumentsModule/DocumentData.h"
+
+#include <TArc/Core/FieldBinder.h>
+
 #include <Render/2D/Sprite.h>
 #include <Render/2D/Systems/RenderSystem2D.h>
+#include <Base/Introspection.h>
+#include <UI/UIControl.h>
+#include <UI/Layouts/UILayoutIsolationComponent.h>
+#include <UI/UIControlSystem.h>
+#include <UI/Layouts/UILayoutSystem.h>
+#include <Base/BaseTypes.h>
 
 using namespace DAVA;
 
@@ -189,10 +195,10 @@ class BackgroundController final
 {
 public:
     BackgroundController(UIControl* nestedControl);
-    ~BackgroundController() = default;
+    ~BackgroundController();
     UIControl* GetGridControl() const;
     bool IsNestedControl(const UIControl* control) const;
-    void RecalculateBackgroundProperties(ControlNode* node);
+    void RecalculateBackgroundProperties(DAVA::UIControl* control);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from);
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* /*destination*/, int /*index*/);
     void UpdateCounterpoise();
@@ -204,7 +210,7 @@ public:
 
 private:
     void CalculateTotalRect(Rect& totalRect, Vector2& rootControlPosition) const;
-    void FitGridIfParentIsNested(PackageBaseNode* node);
+    void FitGridIfParentIsNested(DAVA::UIControl* control);
     RefPtr<UIControl> gridControl;
     RefPtr<UIControl> counterpoiseControl;
     RefPtr<UIControl> positionHolderControl;
@@ -226,6 +232,12 @@ BackgroundController::BackgroundController(UIControl* nestedControl_)
     gridControl->AddControl(positionHolderControl.Get());
     positionHolderControl->AddControl(counterpoiseControl.Get());
     counterpoiseControl->AddControl(nestedControl);
+    nestedControl->GetOrCreateComponent<UILayoutIsolationComponent>();
+}
+
+BackgroundController::~BackgroundController()
+{
+    nestedControl->RemoveComponent<UILayoutIsolationComponent>();
 }
 
 UIControl* BackgroundController::GetGridControl() const
@@ -238,20 +250,20 @@ bool BackgroundController::IsNestedControl(const UIControl* control) const
     return control == nestedControl;
 }
 
-void BackgroundController::RecalculateBackgroundProperties(ControlNode* node)
+void BackgroundController::RecalculateBackgroundProperties(DAVA::UIControl* control)
 {
-    if (node->GetControl() == nestedControl)
+    if (control == nestedControl)
     {
         UpdateCounterpoise();
     }
-    FitGridIfParentIsNested(node);
+    FitGridIfParentIsNested(control);
 }
 
 namespace
 {
 void CalculateTotalRectImpl(UIControl* control, Rect& totalRect, Vector2& rootControlPosition, const UIGeometricData& gd)
 {
-    if (!control->GetVisibilityFlag())
+    if (!control->GetVisibilityFlag() || control->IsHiddenForDebug())
     {
         return;
     }
@@ -329,12 +341,12 @@ void BackgroundController::ControlWasRemoved(ControlNode* node, ControlsContaine
     {
         return;
     }
-    FitGridIfParentIsNested(from);
+    FitGridIfParentIsNested(from->GetControl());
 }
 
 void BackgroundController::ControlWasAdded(ControlNode* /*node*/, ControlsContainerNode* destination, int /*index*/)
 {
-    FitGridIfParentIsNested(destination);
+    FitGridIfParentIsNested(destination->GetControl());
 }
 
 void BackgroundController::UpdateCounterpoise()
@@ -355,12 +367,12 @@ void BackgroundController::UpdateCounterpoise()
     counterpoiseControl->SetPosition(-angeledPosition + gd.pivotPoint);
 }
 
-void BackgroundController::FitGridIfParentIsNested(PackageBaseNode* node)
+void BackgroundController::FitGridIfParentIsNested(UIControl* control)
 {
-    PackageBaseNode* parent = node;
-    while (nullptr != parent)
+    UIControl* parent = control;
+    while (parent != nullptr)
     {
-        if (parent->GetControl() == nestedControl) //we change child in the nested control
+        if (parent == nestedControl) //we change child in the nested control
         {
             AdjustToNestedControl();
             contentSizeChanged.Emit();
@@ -378,34 +390,37 @@ bool BackgroundController::IsPropertyAffectBackground(AbstractProperty* property
     return std::find(std::begin(matchedNames), std::end(matchedNames), name) != std::end(matchedNames);
 }
 
-EditorControlsView::EditorControlsView(UIControl* canvasParent_, EditorSystemsManager* parent)
-    : BaseEditorSystem(parent)
+EditorControlsView::EditorControlsView(UIControl* canvasParent_, EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor)
+    : BaseEditorSystem(parent, accessor)
     , controlsCanvas(new UIControl())
     , canvasParent(canvasParent_)
+    , packageListenerProxy(this, accessor)
 {
     canvasParent->AddControl(controlsCanvas.Get());
     controlsCanvas->SetName(FastName("controls canvas"));
 
-    systemsManager->editingRootControlsChanged.Connect(this, &EditorControlsView::OnRootContolsChanged);
-    systemsManager->packageChanged.Connect(this, &EditorControlsView::OnPackageChanged);
+    InitFieldBinder();
+
+    UIControlSystem::Instance()->GetLayoutSystem()->AddListener(this);
 }
 
 EditorControlsView::~EditorControlsView()
 {
     canvasParent->RemoveControl(controlsCanvas.Get());
+
+    UIControlSystem::Instance()->GetLayoutSystem()->RemoveListener(this);
 }
 
-void EditorControlsView::OnPackageChanged(PackageNode* package_)
+void EditorControlsView::InitFieldBinder()
 {
-    if (nullptr != package)
-    {
-        package->RemoveListener(this);
-    }
-    package = package_;
-    if (nullptr != package)
-    {
-        package->AddListener(this);
-    }
+    using namespace DAVA;
+    using namespace DAVA::TArc;
+
+    fieldBinder.reset(new FieldBinder(accessor));
+    FieldDescriptor fieldDescr;
+    fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
+    fieldDescr.fieldName = FastName(DocumentData::displayedRootControlsPropertyName);
+    fieldBinder->BindField(fieldDescr, MakeFunction(this, &EditorControlsView::OnRootContolsChanged));
 }
 
 void EditorControlsView::OnDragStateChanged(EditorSystemsManager::eDragState /*currentState*/, EditorSystemsManager::eDragState previousState)
@@ -462,8 +477,25 @@ void EditorControlsView::ControlPropertyWasChanged(ControlNode* node, AbstractPr
         {
             for (auto& iter : gridControls)
             {
-                iter->RecalculateBackgroundProperties(node);
+                iter->RecalculateBackgroundProperties(node->GetControl());
             }
+        }
+    }
+}
+
+void EditorControlsView::OnControlLayouted(UIControl* control)
+{
+    if (controlsCanvas->GetParent() == nullptr) //detached canvas
+    {
+        DVASSERT(false);
+        return;
+    }
+
+    if (systemsManager->GetDragState() != EditorSystemsManager::Transform)
+    {
+        for (std::unique_ptr<BackgroundController>& bc : gridControls)
+        {
+            bc->RecalculateBackgroundProperties(control);
         }
     }
 }
@@ -540,11 +572,12 @@ void EditorControlsView::Layout()
     systemsManager->contentSizeChanged.Emit(size);
 }
 
-void EditorControlsView::OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls_)
+void EditorControlsView::OnRootContolsChanged(const Any& newRootControlsValue)
 {
-    Set<PackageBaseNode*> sortedRootControls(rootControls_.begin(), rootControls_.end());
-    Set<PackageBaseNode*> newNodes;
-    Set<PackageBaseNode*> deletedNodes;
+    SortedControlNodeSet newRootControls = newRootControlsValue.Cast<SortedControlNodeSet>(SortedControlNodeSet());
+    Set<ControlNode*> sortedRootControls(newRootControls.begin(), newRootControls.end());
+    Set<ControlNode*> newNodes;
+    Set<ControlNode*> deletedNodes;
     if (!rootControls.empty())
     {
         std::set_difference(rootControls.begin(), rootControls.end(), sortedRootControls.begin(), sortedRootControls.end(), std::inserter(deletedNodes, deletedNodes.end()));
@@ -566,10 +599,10 @@ void EditorControlsView::OnRootContolsChanged(const SortedPackageBaseNodeSet& ro
         controlsCanvas->RemoveControl(findIt->get()->GetGridControl());
         gridControls.erase(findIt);
     }
-    DVASSERT(rootControls_.size() == rootControls.size());
-    for (auto iter = rootControls_.begin(); iter != rootControls_.end(); ++iter)
+    DVASSERT(newRootControls.size() == rootControls.size());
+    for (auto iter = newRootControls.begin(); iter != newRootControls.end(); ++iter)
     {
-        PackageBaseNode* node = *iter;
+        ControlNode* node = *iter;
         if (newNodes.find(node) == newNodes.end())
         {
             continue;
@@ -579,7 +612,7 @@ void EditorControlsView::OnRootContolsChanged(const SortedPackageBaseNodeSet& ro
                      return gridIter->IsNestedControl(control);
                  }) == gridControls.end());
         BackgroundController* backgroundController = CreateControlBackground(node);
-        AddBackgroundControllerToCanvas(backgroundController, std::distance(rootControls_.begin(), iter));
+        AddBackgroundControllerToCanvas(backgroundController, std::distance(newRootControls.begin(), iter));
     }
     Layout();
 }

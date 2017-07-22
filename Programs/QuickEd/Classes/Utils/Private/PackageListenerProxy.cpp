@@ -8,11 +8,21 @@
 
 #include <Reflection/ReflectedTypeDB.h>
 
-PackageListenerProxy::PackageListenerProxy(PackageListener* listener_, DAVA::TArc::ContextAccessor* accessor)
-    : listener(listener_)
+PackageListenerProxy::PackageListenerProxy() = default;
+
+PackageListenerProxy::PackageListenerProxy(PackageListener* listener, DAVA::TArc::ContextAccessor* accessor)
+{
+    Init(listener, accessor);
+}
+
+PackageListenerProxy::~PackageListenerProxy() = default;
+
+void PackageListenerProxy::Init(PackageListener* listener_, DAVA::TArc::ContextAccessor* accessor)
 {
     using namespace DAVA;
     using namespace DAVA::TArc;
+
+    listener = listener_;
 
     fieldBinder.reset(new FieldBinder(accessor));
     FieldDescriptor fieldDescr;
@@ -20,8 +30,6 @@ PackageListenerProxy::PackageListenerProxy(PackageListener* listener_, DAVA::TAr
     fieldDescr.fieldName = FastName(DocumentData::packagePropertyName);
     fieldBinder->BindField(fieldDescr, MakeFunction(this, &PackageListenerProxy::OnPackageChanged));
 }
-
-PackageListenerProxy::~PackageListenerProxy() = default;
 
 void PackageListenerProxy::OnPackageChanged(const DAVA::Any& packageValue)
 {

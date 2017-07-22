@@ -1,10 +1,12 @@
-#ifndef __UI_EDITOR_PACKAGE_NODE_H__
-#define __UI_EDITOR_PACKAGE_NODE_H__
+#pragma once
 
 #include "PackageBaseNode.h"
 
-#include "FileSystem/FilePath.h"
-#include "Base/Any.h"
+#include <Base/BaseTypes.h>
+#include <FileSystem/FilePath.h>
+#include <Base/Any.h>
+#include <Base/Result.h>
+#include <Math/Vector.h>
 
 class ImportedPackagesNode;
 class PackageControlsNode;
@@ -91,6 +93,16 @@ public:
     void SetCanUpdateAll(bool canUpdate);
     bool CanUpdateAll() const;
 
+    using AxisGuides = DAVA::List<DAVA::float32>;
+    AxisGuides GetAxisGuides(const DAVA::String& name, DAVA::Vector2::eAxis orientation);
+    void SetAxisGuides(const DAVA::String& name, DAVA::Vector2::eAxis orientation, const AxisGuides& guides);
+
+    using Guides = std::array<AxisGuides, DAVA::Vector2::AXIS_COUNT>;
+    Guides GetGuides(const DAVA::String& name) const;
+    void SetGuides(const DAVA::String& name, const Guides& guides);
+
+    bool HasCustomData() const;
+
 private:
     struct DepthPackageNode
     {
@@ -106,12 +118,9 @@ private:
 
     void RefreshPropertiesInInstances(ControlNode* node, AbstractProperty* property);
 
-    void RefreshControlStylesAndLayout(ControlNode* node, bool canUpdateAll = true);
-    void RefreshStyles(ControlNode* node);
-    void CollectRootControlsToRefreshLayout(ControlNode* node, DAVA::Vector<ControlNode*>& roots);
-    void RestoreProperties(ControlNode* control);
     void NotifyPropertyChanged(ControlNode* control);
     DAVA::Vector<DepthPackageNode> CollectImportedPackagesRecursively();
+    void OnControlPropertyWillBeChanged(ControlNode* node, AbstractProperty* property, const DAVA::Any& oldValue, const DAVA::Any& newValue);
 
     enum eSection
     {
@@ -131,7 +140,13 @@ private:
     StyleSheetsNode* styleSheets = nullptr;
     DAVA::UIControlPackageContext* packageContext = nullptr;
     DAVA::Vector<PackageListener*> listeners;
+
+    DAVA::Map<DAVA::String, Guides> allGuides;
+
     bool canUpdateAll = true;
+
+    DAVA::ResultList results;
 };
 
-#endif // __UI_EDITOR_PACKAGE_NODE_H__
+//helper function for guides
+bool FindRootWithSameName(ControlNode* control, PackageNode* package);

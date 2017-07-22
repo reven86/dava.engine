@@ -122,17 +122,34 @@ void ServerLogics::OnStatusRequested(DAVA::Net::IChannel* channel)
 
 void ServerLogics::OnChannelClosed(DAVA::Net::IChannel* channel, const DAVA::char8*)
 {
-    if (waitedRequests.size())
-    {
-        auto iter = std::find_if(waitedRequests.begin(), waitedRequests.end(), [&channel](const RequestDescription& description) -> bool
-                                 {
-                                     return (description.clientChannel == channel);
-                                 });
+    waitedRequests.remove_if([&channel](const RequestDescription& description) -> bool
+                             {
+                                 return (description.clientChannel == channel);
+                             });
+}
 
-        if (iter != waitedRequests.end())
+void ServerLogics::OnRemoteDisconnecting()
+{
+    if (serverProxy)
+    {
+        for (const RequestDescription& descr : waitedRequests)
         {
-            waitedRequests.erase(iter);
+            if (descr.request == DAVA::AssetCache::PACKET_GET_REQUEST)
+            {
+                serverProxy->SendData(descr.clientChannel, descr.key, DAVA::AssetCache::CachedItemValue());
+            }
         }
+    }
+    waitedRequests.clear();
+    serverTasks.clear();
+}
+
+void ServerLogics::OnClientProxyStateChanged()
+{
+    DVASSERT(clientProxy);
+    if (!clientProxy->ChannelIsOpened())
+    {
+        OnRemoteDisconnecting();
     }
 }
 

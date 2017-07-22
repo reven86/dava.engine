@@ -239,7 +239,6 @@ public:
 
     void Input(UIEvent* currentInput) override;
 
-    void SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground) override; // Internal method used by ControlSystem
     void Draw(const UIGeometricData& geometricData) override;
 
     void SetParentColor(const Color& parentColor) override;

@@ -19,7 +19,6 @@ class DataContext;
 
 namespace REGlobal
 {
-extern DAVA::TArc::WindowKey MainWindowKey;
 void InitTArcCore(DAVA::TArc::Core* core);
 
 DAVA::TArc::DataContext* GetGlobalContext();

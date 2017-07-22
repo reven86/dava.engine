@@ -7,6 +7,7 @@
 
 #include "TArc/WindowSubSystem/Private/UIManager.h"
 #include "TArc/DataProcessing/DataNode.h"
+#include "UI/Render/UIRenderSystem.h"
 
 #include <QPointer>
 
@@ -55,7 +56,7 @@ void REModule::PostInit()
     const DAVA::EngineContext* engineContext = accessor->GetEngineContext();
     engineContext->localizationSystem->InitWithDirectory("~res:/Strings/");
     engineContext->localizationSystem->SetCurrentLocale("en");
-    engineContext->uiControlSystem->SetClearColor(DAVA::Color(.3f, .3f, .3f, 1.f));
+    engineContext->uiControlSystem->GetRenderSystem()->SetClearColor(DAVA::Color(.3f, .3f, .3f, 1.f));
 
     using TData = REModuleDetail::REGlobalData;
     DAVA::TArc::DataContext* globalContext = accessor->GetGlobalContext();
@@ -63,7 +64,7 @@ void REModule::PostInit()
     TData* globalData = globalContext->GetData<TData>();
 
     DAVA::TArc::UI* ui = GetUI();
-    ui->InjectWindow(REGlobal::MainWindowKey, globalData->mainWindow);
+    ui->InjectWindow(DAVA::TArc::mainWindowKey, globalData->mainWindow);
     globalData->mainWindow->AfterInjectInit();
     globalData->mainWindow->EnableGlobalTimeout(true);
 

@@ -7,9 +7,10 @@
 
 namespace DAVA
 {
-class UISoundComponent : public UIBaseComponent<UIComponent::SOUND_COMPONENT>
+class UISoundComponent : public UIComponent
 {
-    DAVA_VIRTUAL_REFLECTION(UISoundComponent, UIBaseComponent<UIComponent::SOUND_COMPONENT>);
+    DAVA_VIRTUAL_REFLECTION(UISoundComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UISoundComponent);
 
 public:
     UISoundComponent();

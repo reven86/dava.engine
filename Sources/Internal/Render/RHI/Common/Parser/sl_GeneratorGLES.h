@@ -73,6 +73,7 @@ private:
     char sinCosFunction[64];
 
     bool hasError;
+    bool mrtUsed;
 
     char reservedWord[NumReservedWords][64];
 };

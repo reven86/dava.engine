@@ -80,8 +80,8 @@ private:
     QPoint mousePressPos;
     QPoint mousePressScrollPos;
 
-    QGraphicsRectItem* textureBorder;
-    QGraphicsProxyWidget* waitBar;
+    QGraphicsRectItem* textureBorder = nullptr;
+    QGraphicsProxyWidget* waitBar = nullptr;
 
     QImage currentTextureImage;
 
@@ -89,19 +89,19 @@ private:
     int compositeImagesFlags;
     QPixmap cubeDrawPixmap;
 
-    QGraphicsScene* textureScene;
-    QGraphicsPixmapItem* texturePixmap;
+    QGraphicsScene* textureScene = nullptr;
+    QGraphicsPixmapItem* texturePixmap = nullptr;
     float zoomFactor;
 
     bool tiledBgDoDraw;
     QPixmap tiledBgPixmap;
 
     bool noImageVisible;
-    QLabel* noImageLabel;
-    QGraphicsProxyWidget* noImageProxy;
+    QLabel* noImageLabel = nullptr;
+    QGraphicsProxyWidget* noImageProxy = nullptr;
 
-    QLabel* warningLabel;
-    QGraphicsProxyWidget* warningProxy;
+    QLabel* warningLabel = nullptr;
+    QGraphicsProxyWidget* warningProxy = nullptr;
 
     void sutupCustomTiledBg();
 

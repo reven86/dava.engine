@@ -20,7 +20,7 @@ using namespace DAVA;
 Vector<String> LoadMaterialQualities(FilePath fxPath)
 {
     Vector<String> qualities;
-    YamlParser* parser = YamlParser::Create(fxPath);
+    ScopedPtr<YamlParser> parser(YamlParser::Create(fxPath));
     if (parser)
     {
         YamlNode* rootNode = parser->GetRootNode();

@@ -19,8 +19,6 @@ DAVA::TArc::UI* GetUI()
 }
 }
 
-DAVA::TArc::WindowKey MainWindowKey(DAVA::FastName("ResourceEditor"));
-
 DAVA::TArc::DataContext* GetGlobalContext()
 {
     DAVA::TArc::CoreInterface* coreInterface = REGlobalDetails::GetCoreInterface();
@@ -63,7 +61,7 @@ DAVA::TArc::ModalMessageParams::Button ShowModalMessage(const DAVA::TArc::ModalM
     {
         return DAVA::TArc::ModalMessageParams::NoButton;
     }
-    return ui->ShowModalMessage(MainWindowKey, params);
+    return ui->ShowModalMessage(DAVA::TArc::mainWindowKey, params);
 }
 
 void InitTArcCore(DAVA::TArc::Core* core)

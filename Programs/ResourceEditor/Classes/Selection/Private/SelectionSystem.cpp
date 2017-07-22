@@ -9,6 +9,7 @@
 #include "Scene/System/HoodSystem.h"
 #include "Scene/SceneSignals.h"
 #include "Commands2/Base/RECommandNotificationObject.h"
+#include "Scene3D/Components/SingleComponents/TransformSingleComponent.h"
 
 ENUM_DECLARE(SelectionSystemDrawMode)
 {
@@ -30,8 +31,6 @@ SelectionSystem::SelectionSystem(DAVA::Scene* scene)
     DVASSERT(hoodSystem != nullptr);
     DVASSERT(modificationSystem != nullptr);
     scene->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::SWITCH_CHANGED);
-    scene->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED);
-    scene->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::TRANSFORM_PARENT_CHANGED);
 
     wasLockedInActiveMode = IsLocked();
 }
@@ -49,8 +48,6 @@ void SelectionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint32 ev
     switch (event)
     {
     case DAVA::EventSystem::SWITCH_CHANGED:
-    case DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED:
-    case DAVA::EventSystem::TRANSFORM_PARENT_CHANGED:
     {
         if (currentSelection.ContainsObject(component->GetEntity()))
         {
@@ -117,6 +114,24 @@ void SelectionSystem::Process(DAVA::float32 timeElapsed)
     if (IsLocked())
     {
         return;
+    }
+
+    DAVA::TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+    for (DAVA::Entity* entity : tsc->localTransformChanged)
+    {
+        if (currentSelection.ContainsObject(entity))
+        {
+            invalidSelectionBoxes = true;
+            break;
+        }
+    }
+    for (DAVA::Entity* entity : tsc->transformParentChanged)
+    {
+        if (currentSelection.ContainsObject(entity))
+        {
+            invalidSelectionBoxes = true;
+            break;
+        }
     }
 
     if (!entitiesForSelection.empty())
@@ -211,7 +226,7 @@ void SelectionSystem::ProcessSelectedGroup(const SelectableGroup::CollectionType
     }
     else if (excludeSelection && (firstEntity != nullptr))
     {
-        ExcludeEntityFromSelection(firstEntity);
+        ExcludeEntityFromSelection(firstEntity, false);
     }
     else
     {
@@ -384,7 +399,7 @@ void SelectionSystem::RemoveEntity(DAVA::Entity* entity)
     SelectionSystemDetails::EnumerateSelectableObjects(entity, potentiallySelectedObjects);
     for (Selectable::Object* object : potentiallySelectedObjects)
     {
-        ExcludeEntityFromSelection(object);
+        ExcludeEntityFromSelection(object, true);
     }
 
     invalidSelectionBoxes = true;
@@ -611,9 +626,9 @@ void SelectionSystem::ExcludeSingleItem(Selectable::Object* entity)
     SetSelection(newSelection);
 }
 
-void SelectionSystem::ExcludeEntityFromSelection(Selectable::Object* entity)
+void SelectionSystem::ExcludeEntityFromSelection(Selectable::Object* entity, bool forceRemove)
 {
-    if (!IsLocked())
+    if (!IsLocked() || forceRemove == true)
     {
         ExcludeSingleItem(entity);
         invalidSelectionBoxes = true;

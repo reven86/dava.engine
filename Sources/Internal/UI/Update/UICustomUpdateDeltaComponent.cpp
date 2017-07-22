@@ -1,8 +1,22 @@
 #include "UICustomUpdateDeltaComponent.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
-UICustomUpdateDeltaComponent::~UICustomUpdateDeltaComponent()
+DAVA_VIRTUAL_REFLECTION_IMPL(UICustomUpdateDeltaComponent)
+{
+    ReflectionRegistrator<UICustomUpdateDeltaComponent>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UICustomUpdateDeltaComponent* c) { SafeRelease(c); })
+    .Field("delta", &UICustomUpdateDeltaComponent::GetDelta, &UICustomUpdateDeltaComponent::SetDelta)
+    .End();
+}
+
+UICustomUpdateDeltaComponent::UICustomUpdateDeltaComponent() = default;
+UICustomUpdateDeltaComponent::~UICustomUpdateDeltaComponent() = default;
+
+UICustomUpdateDeltaComponent::UICustomUpdateDeltaComponent(const UICustomUpdateDeltaComponent& src)
+    : customDelta(src.customDelta)
 {
 }
 

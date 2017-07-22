@@ -7,15 +7,18 @@
 namespace DAVA
 {
 /**
-Component-marker for UIUpdateSystem.
-Temporary component for backward compatibility with existing code.
-**WILL BE REMOVED** after refactoring all `UIControl::Update` logic.
-*/
-class UIUpdateComponent : public UIBaseComponent<UIComponent::UPDATE_COMPONENT>
+ Component-marker for UIUpdateSystem.
+ Temporary component for backward compatibility with existing code.
+ **WILL BE REMOVED** after refactoring all `UIControl::Update` logic.
+ */
+class UIUpdateComponent : public UIComponent
 {
+    DAVA_VIRTUAL_REFLECTION(UIUpdateComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UIUpdateComponent);
+
 public:
-    UIUpdateComponent() = default;
-    UIUpdateComponent(const UIUpdateComponent& src) = default;
+    UIUpdateComponent();
+    UIUpdateComponent(const UIUpdateComponent& src);
     UIComponent* Clone() const override;
 
     // Notificate what control with this component should
@@ -30,9 +33,6 @@ protected:
 
 private:
     bool updateInvisible = false;
-
-public:
-    INTROSPECTION_EXTEND(UIUpdateComponent, UIComponent, nullptr)
 };
 
 inline void UIUpdateComponent::SetUpdateInvisible(bool value)

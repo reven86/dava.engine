@@ -22,6 +22,8 @@ namespace DAVA
  */
 class YamlNode;
 
+VariantType PrepareValueForKeyedArchive(const Any& v, VariantType::eVariantType resultType);
+
 class KeyedArchive : public BaseObject
 {
 protected:
@@ -289,7 +291,13 @@ public:
 	 */
     void SetVariant(const String& key, const VariantType& value);
     /**
-        \brief Function to set another keyed archive as kye for this archive.
+        /brief Function to set variable in archive. Existing key isn't deleting, but replacing.
+        Used in property panel.
+        TODO : This method should be removed after KeyedArchive starts store VariantType by value
+    */
+    void SetVariantWithoutRealloc(const String& key, const VariantType& value);
+    /**
+        \brief Function to set another keyed archive as key for this archive.
         \param[in] key string key
         \param[in] value we want to set for this key
 	 */
@@ -466,6 +474,7 @@ public:
     static const char* GenKeyFromIndex(uint32 index);
 
 private:
+    friend class KeyedArchiveStructureWrapper;
     UnderlyingMap objectMap;
 
 public:

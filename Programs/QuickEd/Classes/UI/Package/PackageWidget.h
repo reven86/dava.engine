@@ -4,6 +4,8 @@
 
 #include "EditorSystems/SelectionContainer.h"
 
+#include <TArc/DataProcessing/DataWrapper.h>
+
 #include <Base/BaseTypes.h>
 
 #include <QWidget>
@@ -18,19 +20,19 @@ class Any;
 namespace TArc
 {
 class ContextAccessor;
+class UI;
 }
 }
 
 struct PackageContext;
 class ControlNode;
 class StyleSheetNode;
-class PackageNode;
 class PackageBaseNode;
 class FilteredPackageModel;
 class PackageModel;
 class PackageNode;
 class QItemSelection;
-class QtModelPackageCommandExecutor;
+class CommandExecutor;
 
 class PackageWidget : public QDockWidget, public Ui::PackageWidget
 {
@@ -40,6 +42,7 @@ public:
     ~PackageWidget();
 
     void SetAccessor(DAVA::TArc::ContextAccessor* accessor);
+    void SetUI(DAVA::TArc::UI* ui);
 
     PackageModel* GetPackageModel() const;
     using ExpandedIndexes = QModelIndexList;
@@ -49,16 +52,15 @@ public:
 
 signals:
     void SelectedNodesChanged(const SelectedNodes& selection);
-    void CurrentIndexChanged(PackageBaseNode* package);
 
 public slots:
     void OnCopy();
     void OnPaste();
     void OnCut();
     void OnDelete();
+    void OnDuplicate();
     void OnImport();
 
-private slots:
     void OnSelectionChangedFromView(const QItemSelection& proxySelected, const QItemSelection& proxyDeselected);
     void OnFilterTextChanged(const QString&);
     void OnRename();
@@ -70,7 +72,6 @@ private slots:
     void OnMoveRight();
     void OnBeforeProcessNodes(const SelectedNodes& nodes);
     void OnAfterProcessNodes(const SelectedNodes& nodes);
-    void OnCurrentIndexChanged(const QModelIndex& index, const QModelIndex& previous);
 
 private:
     void SetSelectedNodes(const SelectedNodes& selection);
@@ -83,6 +84,7 @@ private:
     void RefreshActions();
     void LoadContext();
     void SaveContext();
+    void Paste(PackageBaseNode* target, int index);
 
     void DeselectNodeImpl(PackageBaseNode* node);
     void SelectNodeImpl(PackageBaseNode* node);
@@ -99,6 +101,8 @@ private:
     QAction* pasteAction = nullptr;
     QAction* cutAction = nullptr;
     QAction* delAction = nullptr;
+    QAction* duplicateControlsAction = nullptr;
+
     QAction* renameAction = nullptr;
     QAction* addStyleAction = nullptr;
     QAction* copyControlPathAction = nullptr;
@@ -114,11 +118,12 @@ private:
     SelectionContainer selectionContainer;
     SelectedNodes expandedNodes;
     //source indexes
-    std::list<QPersistentModelIndex> currentIndexes;
     bool lastFilterTextEmpty = true;
     PackageContext* currentContext = nullptr;
 
     DAVA::TArc::ContextAccessor* accessor = nullptr;
+    DAVA::TArc::UI* ui = nullptr;
+    DAVA::TArc::DataWrapper dataWrapper;
 };
 
 struct PackageContext

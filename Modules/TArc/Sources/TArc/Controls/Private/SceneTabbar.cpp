@@ -30,6 +30,9 @@ SceneTabbar::SceneTabbar(ContextAccessor* accessor_, Reflection model_, QWidget*
 
 void SceneTabbar::OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& fields)
 {
+    static FastName fastname_contextsFieldName(ContextsFieldName);
+    static FastName fastname_activeContextFieldName(ActiveContextFieldName);
+
     if (wrapper == modelWrapper)
     {
         DVASSERT(wrapper.HasData());
@@ -37,15 +40,15 @@ void SceneTabbar::OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& f
         bool activeTabPropertyChanged = fields.empty();
         for (const Any& fieldName : fields)
         {
-            if (fieldName.CanCast<String>())
+            if (fieldName.CanCast<FastName>())
             {
-                String name = fieldName.Cast<String>();
-                if (name == ContextsFieldName)
+                FastName name = fieldName.Cast<FastName>();
+                if (name == fastname_contextsFieldName)
                 {
                     tabsPropertyChanged = true;
                 }
 
-                if (name == ActiveContextFieldName)
+                if (name == fastname_activeContextFieldName)
                 {
                     activeTabPropertyChanged = true;
                 }

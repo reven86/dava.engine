@@ -6,7 +6,7 @@
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Project/ProjectManagerData.h"
 
-#include "ui_cubemapeditordialog.h"
+#include "ui_CubemapEditorDialog.h"
 
 #include "Tools/PathDescriptor/PathDescriptor.h"
 #include "ImageTools/ImageTools.h"

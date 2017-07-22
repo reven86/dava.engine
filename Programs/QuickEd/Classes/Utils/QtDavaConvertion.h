@@ -4,6 +4,7 @@
 #include <Base/BaseMath.h>
 #include <FileSystem/VariantType.h>
 #include <Base/Any.h>
+#include <Base/IntrospectionBase.h>
 #include <Reflection/ReflectedStructure.h>
 
 #include <QMetaType>

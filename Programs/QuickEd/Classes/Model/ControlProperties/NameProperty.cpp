@@ -50,11 +50,6 @@ NameProperty::ePropertyType NameProperty::GetType() const
     return TYPE_VARIANT;
 }
 
-DAVA::uint32 NameProperty::GetFlags() const
-{
-    return EF_AFFECTS_STYLES;
-}
-
 Any NameProperty::GetValue() const
 {
     return Any(controlNode->GetName());

@@ -3,7 +3,7 @@
 #include "UI/UIControlSystem.h"
 #include "UI/ScrollHelper.h"
 #include "Reflection/ReflectionRegistrator.h"
-#include "UI/Update/UIUpdateComponent.h"
+#include "UI/Scroll/UIScrollComponent.h"
 
 namespace DAVA
 {
@@ -32,7 +32,7 @@ UIScrollViewContainer::UIScrollViewContainer(const Rect& rect)
 {
     this->SetInputEnabled(true);
     this->SetMultiInput(true);
-    GetOrCreateComponent<UIUpdateComponent>();
+    GetOrCreateComponent<UIScrollComponent>();
 }
 
 UIScrollViewContainer::~UIScrollViewContainer()
@@ -77,7 +77,7 @@ void UIScrollViewContainer::ApplySizeChanges()
         enableScroll[Vector2::AXIS_X] = enableHorizontalScroll;
         enableScroll[Vector2::AXIS_Y] = enableVerticalScroll;
 
-        UIScrollView* scrollView = cast_if_equal<UIScrollView*>(parent);
+        UIScrollView* scrollView = CastIfEqual<UIScrollView*>(parent);
         if (scrollView != nullptr)
         {
             scrollView->OnScrollViewContainerSizeChanged();
@@ -243,7 +243,7 @@ bool UIScrollViewContainer::SystemInput(UIEvent* currentTouch)
 
 void UIScrollViewContainer::Update(float32 timeElapsed)
 {
-    UIScrollView* scrollView = cast_if_equal<UIScrollView*>(this->GetParent());
+    UIScrollView* scrollView = CastIfEqual<UIScrollView*>(this->GetParent());
     if (scrollView)
     {
         const float32 accuracyDelta = 0.1f;

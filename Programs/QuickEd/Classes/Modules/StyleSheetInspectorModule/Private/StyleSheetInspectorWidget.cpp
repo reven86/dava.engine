@@ -25,7 +25,7 @@ StyleSheetInspectorWidget::StyleSheetInspectorWidget(DAVA::TArc::ContextAccessor
 {
     updater.SetUpdater(DAVA::MakeFunction(this, &StyleSheetInspectorWidget::Update));
     updater.SetStopper([this]() {
-        return currentControl.Valid();
+        return currentControl.Valid() == false;
     });
 
     InitFieldBinder();

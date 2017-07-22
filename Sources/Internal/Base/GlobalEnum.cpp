@@ -21,6 +21,7 @@
 #include "UI/UIWebView.h"
 #include "Render/RHI/rhi_Type.h"
 #include "Render/Highlevel/BillboardRenderObject.h"
+#include "Utils/BiDiHelper.h"
 
 using namespace DAVA;
 
@@ -137,6 +138,7 @@ ENUM_DECLARE(DeviceInfo::ePlatform)
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_WIN32, "Win32");
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_DESKTOP_WIN_UAP, "Windows Desktop UAP");
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_PHONE_WIN_UAP, "Windows Phone UAP");
+    ENUM_ADD_DESCR(DeviceInfo::PLATFORM_LINUX, "Linux");
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_UNKNOWN_VALUE, "Unknown");
 }
 
@@ -240,6 +242,14 @@ ENUM_DECLARE(TextBlock::eUseRtlAlign)
     ENUM_ADD_DESCR(TextBlock::RTL_USE_BY_SYSTEM, "USE_BY_SYSTEM");
 };
 
+ENUM_DECLARE(BiDiHelper::Direction)
+{
+    ENUM_ADD_DESCR(BiDiHelper::RTL, "RTL");
+    ENUM_ADD_DESCR(BiDiHelper::LTR, "LTR");
+    ENUM_ADD_DESCR(BiDiHelper::NEUTRAL, "NEUTRAL");
+    ENUM_ADD_DESCR(BiDiHelper::MIXED, "MIXED");
+};
+
 ENUM_DECLARE(UIList::eListOrientation)
 {
     ENUM_ADD_DESCR(UIList::ORIENTATION_VERTICAL, "ORIENTATION_VERTICAL");
@@ -321,29 +331,6 @@ ENUM_DECLARE(UITextField::eStopEditPolicy)
     ENUM_ADD_DESCR(UITextField::STOP_EDIT_BY_USER_REQUEST, "ByUserRequest");
 };
 
-ENUM_DECLARE(UIComponent::eType)
-{
-    ENUM_ADD_DESCR(UIComponent::BACKGROUND_COMPONENT, "Background");
-    ENUM_ADD_DESCR(UIComponent::LINEAR_LAYOUT_COMPONENT, "LinearLayout");
-    ENUM_ADD_DESCR(UIComponent::FLOW_LAYOUT_COMPONENT, "FlowLayout");
-    ENUM_ADD_DESCR(UIComponent::FLOW_LAYOUT_HINT_COMPONENT, "FlowLayoutHint");
-    ENUM_ADD_DESCR(UIComponent::IGNORE_LAYOUT_COMPONENT, "IgnoreLayout");
-    ENUM_ADD_DESCR(UIComponent::SIZE_POLICY_COMPONENT, "SizePolicy");
-    ENUM_ADD_DESCR(UIComponent::ANCHOR_COMPONENT, "Anchor");
-    ENUM_ADD_DESCR(UIComponent::MODAL_INPUT_COMPONENT, "ModalInput");
-    ENUM_ADD_DESCR(UIComponent::FOCUS_COMPONENT, "Focus");
-    ENUM_ADD_DESCR(UIComponent::FOCUS_GROUP_COMPONENT, "FocusGroup");
-    ENUM_ADD_DESCR(UIComponent::NAVIGATION_COMPONENT, "Navigation");
-    ENUM_ADD_DESCR(UIComponent::TAB_ORDER_COMPONENT, "TabOrder");
-    ENUM_ADD_DESCR(UIComponent::ACTION_COMPONENT, "Action");
-    ENUM_ADD_DESCR(UIComponent::ACTION_BINDING_COMPONENT, "ActionBinding");
-    ENUM_ADD_DESCR(UIComponent::SCROLL_BAR_DELEGATE_COMPONENT, "ScrollBarDelegate");
-    ENUM_ADD_DESCR(UIComponent::SOUND_COMPONENT, "Sound");
-    ENUM_ADD_DESCR(UIComponent::SOUND_VALUE_FILTER_COMPONENT, "SoundValueFilter");
-    ENUM_ADD_DESCR(UIComponent::UPDATE_COMPONENT, "Update");
-    ENUM_ADD_DESCR(UIComponent::CUSTOM_UPDATE_DELTA_COMPONENT, "CustomDeltaUpdate");
-};
-
 ENUM_DECLARE(UISizePolicyComponent::eSizePolicy)
 {
     ENUM_ADD_DESCR(UISizePolicyComponent::IGNORE_SIZE, "Ignore");
@@ -354,6 +341,7 @@ ENUM_DECLARE(UISizePolicyComponent::eSizePolicy)
     ENUM_ADD_DESCR(UISizePolicyComponent::PERCENT_OF_LAST_CHILD, "PercentOfLastChild");
     ENUM_ADD_DESCR(UISizePolicyComponent::PERCENT_OF_CONTENT, "PercentOfContent");
     ENUM_ADD_DESCR(UISizePolicyComponent::PERCENT_OF_PARENT, "PercentOfParent");
+    ENUM_ADD_DESCR(UISizePolicyComponent::FORMULA, "Formula");
 };
 
 ENUM_DECLARE(UILinearLayoutComponent::eOrientation)

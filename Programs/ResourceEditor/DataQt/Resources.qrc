@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/">
+        <file>icons/appIcon.ico</file>
         <file>QtIconsTextureDialog/convertallgpu.png</file>
         <file>QtIcons/pivot_mote_to_center.png</file>
         <file>QtIcons/pivot_move_to_zero.png</file>

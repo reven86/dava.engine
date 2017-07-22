@@ -7,7 +7,6 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.DialogInterface;
 import android.os.Bundle;
-import android.util.Log;
 import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
@@ -26,7 +25,7 @@ class MessageBox extends DialogFragment
 
     public static int messageBox(String title, String content, String[] buttons)
     {
-        if (!DavaActivity.instance().isFinishing())
+        if (!DavaActivity.instance().isFinishing() && !DavaActivity.instance().isPaused())
         {
             final boolean inUIThread = DavaActivity.isUIThread();
             if (!inUIThread)
@@ -169,7 +168,7 @@ class MessageBox extends DialogFragment
         // native thread is blocked waiting MessageBox completion.
         if (originatedFromMainThread)
         {
-            Log.d(DavaActivity.LOG_TAG, "Force MessageBox dismissal as onPause has come");
+            DavaLog.d(DavaActivity.LOG_TAG, "Force MessageBox dismissal as onPause has come");
             synchronized(syncObject)
             {
                 selection = -1;

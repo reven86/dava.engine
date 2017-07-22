@@ -90,10 +90,10 @@ void SelectionModule::CreateModuleActions(DAVA::TArc::UI* ui)
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&SelectionModule::SelectionByMouseChanged, this));
 
         ActionPlacementInfo placementInfo;
-        placementInfo.AddPlacementPoint(CreateMenuPoint("Edit", { InsertionParams::eInsertionMethod::AfterItem, "actionModifySnapToLandscape" }));
+        placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuEdit, { InsertionParams::eInsertionMethod::AfterItem, "actionModifySnapToLandscape" }));
         placementInfo.AddPlacementPoint(CreateStatusbarPoint(true, 0, { InsertionParams::eInsertionMethod::AfterItem, "actionShowStaticOcclusion" }));
 
-        ui->AddAction(REGlobal::MainWindowKey, placementInfo, action);
+        ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, action);
     }
 }
 

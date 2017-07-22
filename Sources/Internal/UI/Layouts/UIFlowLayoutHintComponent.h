@@ -3,15 +3,17 @@
 
 #include "UI/Components/UIComponent.h"
 #include "Reflection/Reflection.h"
+#include "Utils/BiDiHelper.h"
 #include <bitset>
 
 namespace DAVA
 {
 class UIControl;
 
-class UIFlowLayoutHintComponent : public UIBaseComponent<UIComponent::FLOW_LAYOUT_HINT_COMPONENT>
+class UIFlowLayoutHintComponent : public UIComponent
 {
-    DAVA_VIRTUAL_REFLECTION(UIFlowLayoutHintComponent, UIBaseComponent<UIComponent::FLOW_LAYOUT_HINT_COMPONENT>);
+    DAVA_VIRTUAL_REFLECTION(UIFlowLayoutHintComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UIFlowLayoutHintComponent);
 
 public:
     UIFlowLayoutHintComponent();
@@ -32,6 +34,9 @@ public:
     bool IsNewLineAfterThis() const;
     void SetNewLineAfterThis(bool flag);
 
+    BiDiHelper::Direction GetContentDirection() const;
+    void SetContentDirection(BiDiHelper::Direction direction);
+
 private:
     void SetLayoutDirty();
 
@@ -44,6 +49,7 @@ private:
     };
 
     std::bitset<eFlags::FLAG_COUNT> flags;
+    BiDiHelper::Direction contentDirection = BiDiHelper::Direction::NEUTRAL;
 };
 }
 

@@ -25,8 +25,77 @@ void RequestManager::Stop()
     }
 }
 
-void RequestManager::Update()
+void RequestManager::FireStartLoadingWhileInactiveSignals()
 {
+    if (!requestStartedWhileInactive.empty())
+    {
+        for (const String& pack : requestStartedWhileInactive)
+        {
+            PackRequest* r = packManager.FindRequest(pack);
+            if (r)
+            {
+                packManager.requestStartLoading.Emit(*r);
+            }
+        }
+        requestStartedWhileInactive.clear();
+    }
+}
+
+void RequestManager::FireUpdateWhileInactiveSignals()
+{
+    if (!requestUpdatedWhileInactive.empty())
+    {
+        for (const String& pack : requestUpdatedWhileInactive)
+        {
+            PackRequest* r = packManager.FindRequest(pack);
+            if (r)
+            {
+                packManager.requestStartLoading.Emit(*r);
+            }
+        }
+        requestUpdatedWhileInactive.clear();
+    }
+}
+
+void RequestManager::FireStartLoadingSignal(PackRequest& request, bool inBackground)
+{
+    if (inBackground)
+    {
+        const String& packName = request.GetRequestedPackName();
+        requestStartedWhileInactive.push_back(packName);
+    }
+    else
+    {
+        packManager.requestStartLoading.Emit(request);
+    }
+}
+
+void RequestManager::FireUpdateSignal(PackRequest& request, bool inBackground)
+{
+    if (inBackground)
+    {
+        const String& packName = request.GetRequestedPackName();
+        auto it = find(begin(requestUpdatedWhileInactive), end(requestUpdatedWhileInactive), packName);
+        // add only once for update signal
+        if (it != end(requestUpdatedWhileInactive))
+        {
+            requestUpdatedWhileInactive.push_back(packName);
+        }
+    }
+    else
+    {
+        packManager.requestUpdated.Emit(request);
+    }
+}
+
+void RequestManager::Update(bool inBackground)
+{
+    if (!inBackground)
+    {
+        FireStartLoadingWhileInactiveSignals();
+        FireUpdateWhileInactiveSignals();
+    }
+
     if (!Empty())
     {
         Vector<PackRequest*> nextDependentPacks;
@@ -36,6 +105,12 @@ void RequestManager::Update()
 
         if (request->IsDownloaded())
         {
+            if (callSignal == false && request->GetDownloadedSize() == 0)
+            {
+                // empty pack, so we need inform signal
+                FireStartLoadingSignal(*request, inBackground);
+            }
+            callSignal = true; // we need to inform on empty pack too
             Pop();
             if (!Empty())
             {
@@ -59,10 +134,15 @@ void RequestManager::Update()
 
         if (callSignal)
         {
-            packManager.requestUpdated.Emit(*request);
-            for (PackRequest* r : nextDependentPacks)
+            // if error happened and no space on device, requesting
+            // may be already be disabled, so we need check it out
+            if (packManager.IsRequestingEnabled())
             {
-                packManager.requestUpdated.Emit(*r);
+                FireUpdateSignal(*request, inBackground);
+                for (PackRequest* r : nextDependentPacks)
+                {
+                    FireUpdateSignal(*r, inBackground);
+                }
             }
         }
     }

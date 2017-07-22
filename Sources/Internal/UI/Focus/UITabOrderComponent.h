@@ -8,9 +8,10 @@
 
 namespace DAVA
 {
-class UITabOrderComponent : public UIBaseComponent<UIComponent::TAB_ORDER_COMPONENT>
+class UITabOrderComponent : public UIComponent
 {
-    DAVA_VIRTUAL_REFLECTION(UITabOrderComponent, UIBaseComponent<UIComponent::TAB_ORDER_COMPONENT>);
+    DAVA_VIRTUAL_REFLECTION(UITabOrderComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UITabOrderComponent);
 
 public:
     enum Direction

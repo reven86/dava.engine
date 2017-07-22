@@ -44,6 +44,7 @@ public:
 
     const EngineContext* GetContext() const;
     Window* GetPrimaryWindow() const;
+    const Vector<Window*>& GetWindows() const;
     uint32 GetGlobalFrameIndex() const;
     int32 GetExitCode() const;
     const Vector<String>& GetCommandLine() const;
@@ -62,6 +63,7 @@ public:
     void Init(eEngineRunMode engineRunMode, const Vector<String>& modules, KeyedArchive* options_);
     int Run();
     void Quit(int32 exitCode_);
+    void Terminate(int exitCode);
 
     void SetCloseRequestHandler(const Function<bool(Window*)>& handler);
     void DispatchOnMainThread(const Function<void()>& task, bool blocking);
@@ -86,6 +88,17 @@ public:
     // Proxy method that calls SystemTimer::Adjust to prevent many friends to SystemTimer
     static void AdjustSystemTimer(int64 adjustMicro);
 
+    void SetScreenTimeoutEnabled(bool enabled);
+    bool IsScreenTimeoutEnabled() const;
+
+    bool IsRunning() const;
+
+    // This method sets the flag that indicates to draw a single frame while app is suspended (the flag is checked in the main loop)
+    // It's used only on Android for now, since we do not resume renderer until onResume is called,
+    // but it leads to a black screen if we have another non fullscreen activity on top and surface was destroyed while it's active
+    // This eliminates black screen and shows a correct image instead
+    void DrawSingleFrameWhileSuspended();
+
 private:
     void RunConsole();
 
@@ -95,7 +108,7 @@ private:
 
     void BeginFrame();
     void Update(float32 frameDelta);
-    void UpdateWindows(float32 frameDelta);
+    void UpdateAndDrawWindows(float32 frameDelta, bool drawOnly);
     void EndFrame();
     void BackgroundUpdate(float32 frameDelta);
 
@@ -109,6 +122,13 @@ private:
     void CreateSubsystems(const Vector<String>& modules);
     void DestroySubsystems();
 
+    void OnWindowVisibilityChanged(Window* window, bool visible);
+
+    // These two methods are used instead of rhi::SuspendRendering and rhi::ResumeRendering
+    // They check if we've already suspended or resumed the renderer and do nothing if we already have
+    void SuspendRenderer();
+    void ResumeRenderer();
+
     static void OnRenderingError(rhi::RenderingError err, void* param);
 
     // TODO: replace raw pointers with std::unique_ptr after work is done
@@ -121,7 +141,7 @@ private:
 
     Window* primaryWindow = nullptr;
     Set<Window*> justCreatedWindows; // Just created Window instances which do not have native windows yet
-    Set<Window*> aliveWindows; // Windows which have native windows and take part in update cycle
+    Vector<Window*> aliveWindows; // Windows which have native windows and take part in update cycle
     Set<Window*> dyingWindows; // Windows which will be deleted soon; native window may be already destroyed
 
     // Application-supplied functor which is invoked when user is trying to close window or application
@@ -137,6 +157,14 @@ private:
 
     RefPtr<KeyedArchive> options;
     uint32 globalFrameIndex = 1;
+
+    bool isRunning = false;
+
+    bool atLeastOneWindowIsVisible = false;
+    bool screenTimeoutEnabled = true;
+
+    bool rendererSuspended = false;
+    bool drawSingleFrameWhileSuspended = false;
 
     static EngineBackend* instance;
 };
@@ -171,6 +199,11 @@ inline Window* EngineBackend::GetPrimaryWindow() const
     return primaryWindow;
 }
 
+inline const Vector<Window*>& EngineBackend::GetWindows() const
+{
+    return aliveWindows;
+}
+
 inline uint32 EngineBackend::GetGlobalFrameIndex() const
 {
     return globalFrameIndex;
@@ -199,6 +232,11 @@ inline MainDispatcher* EngineBackend::GetDispatcher() const
 inline PlatformCore* EngineBackend::GetPlatformCore() const
 {
     return platformCore;
+}
+
+inline bool EngineBackend::IsScreenTimeoutEnabled() const
+{
+    return screenTimeoutEnabled;
 }
 
 } // namespace Private

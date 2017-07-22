@@ -3,13 +3,19 @@
 #include "IntrospectionProperty.h"
 #include "PropertyVisitor.h"
 
-#include "UI/UIControl.h"
-
-#include "Utils/StringFormat.h"
+#include <UI/UIControl.h>
+#include <UI/Layouts/UILayoutIsolationComponent.h>
+#include <UI/Layouts/UILayoutSourceRectComponent.h>
+#include <UI/Render/UISceneComponent.h>
+#include <UI/RichContent/UIRichContentObjectComponent.h>
+#include <UI/Scroll/UIScrollComponent.h>
+#include <Utils/StringFormat.h>
+#include <Reflection/ReflectedMeta.h>
+#include <Reflection/ReflectedTypeDB.h>
 
 using namespace DAVA;
 
-ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl* control_, DAVA::UIComponent::eType type_, int32 index_, const ComponentPropertiesSection* sourceSection, eCloneType cloneType)
+ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl* control_, const DAVA::Type* type_, int32 index_, const ComponentPropertiesSection* sourceSection, eCloneType cloneType)
     : SectionProperty("")
     , control(SafeRetain(control_))
     , component(nullptr)
@@ -39,11 +45,11 @@ ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl* control_
     Vector<Reflection::Field> fields = componentRef.GetFields();
     for (const Reflection::Field& field : fields)
     {
-        if (!(field.ref.IsReadonly() || field.ref.HasMeta<DAVA::M::ReadOnly>()))
+        if (!field.ref.IsReadonly() && nullptr == field.ref.GetMeta<DAVA::M::ReadOnly>())
         {
-            String name = field.key.Get<String>();
+            String name = field.key.Get<FastName>().c_str();
             const IntrospectionProperty* sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindChildPropertyByName(name);
-            IntrospectionProperty* prop = new IntrospectionProperty(component, type_, name, field.ref, sourceProp, cloneType);
+            IntrospectionProperty* prop = IntrospectionProperty::Create(component, type_, name.c_str(), field.ref, sourceProp, cloneType);
             AddProperty(prop);
             SafeRelease(prop);
         }
@@ -57,12 +63,21 @@ ComponentPropertiesSection::~ComponentPropertiesSection()
     prototypeSection = nullptr; // weak
 }
 
+bool ComponentPropertiesSection::IsHiddenComponent(const Type* type)
+{
+    return (type == Type::Instance<UILayoutIsolationComponent>() ||
+            type == Type::Instance<UILayoutSourceRectComponent>() ||
+            type == Type::Instance<UIScrollComponent>() ||
+            type == Type::Instance<UIRichContentObjectComponent>() ||
+            type == Type::Instance<UISceneComponent>());
+}
+
 UIComponent* ComponentPropertiesSection::GetComponent() const
 {
     return component;
 }
 
-DAVA::uint32 ComponentPropertiesSection::GetComponentType() const
+const DAVA::Type* ComponentPropertiesSection::GetComponentType() const
 {
     return component->GetType();
 }
@@ -81,7 +96,14 @@ void ComponentPropertiesSection::AttachPrototypeSection(ComponentPropertiesSecti
             String name = field.key.Cast<String>();
             ValueProperty* value = FindChildPropertyByName(name);
             ValueProperty* prototypeValue = prototypeSection->FindChildPropertyByName(name);
-            value->AttachPrototypeProperty(prototypeValue);
+            if (value != nullptr && prototypeValue != nullptr)
+            {
+                value->AttachPrototypeProperty(prototypeValue);
+            }
+            else
+            {
+                DVASSERT(value == nullptr && prototypeValue == nullptr);
+            }
         }
     }
     else
@@ -184,7 +206,7 @@ void ComponentPropertiesSection::Accept(PropertyVisitor* visitor)
 
 String ComponentPropertiesSection::GetComponentName() const
 {
-    return GlobalEnumMap<UIComponent::eType>::Instance()->ToString(component->GetType());
+    return ReflectedTypeDB::GetByType(component->GetType())->GetPermanentName();
 }
 
 void ComponentPropertiesSection::RefreshName()

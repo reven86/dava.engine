@@ -84,6 +84,7 @@ void FileSystemWidget::InitUI()
 {
     QVBoxLayout* verticalLayout = new QVBoxLayout(this);
     verticalLayout->setSpacing(5);
+    verticalLayout->setContentsMargins(0, 0, 0, 0);
 
     filterLine = new QLineEdit(this);
     verticalLayout->addWidget(filterLine);
@@ -414,7 +415,7 @@ void FileSystemWidget::OnProjectPathChanged(const DAVA::Any& projectPath)
     DataContext* globalContext = accessor->GetGlobalContext();
     ProjectData* projectData = globalContext->GetData<ProjectData>();
 
-    layout()->setEnabled(projectData != nullptr);
+    setEnabled(projectData != nullptr);
 
     if (projectData == nullptr)
     {

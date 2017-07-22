@@ -14,7 +14,6 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.View;
 import android.view.Gravity;
@@ -474,7 +473,7 @@ final class DavaTextField implements TextWatcher,
 
     void setKeyboardAppearanceType(int value)
     {
-        Log.w(DavaActivity.LOG_TAG, "TextField: setKeyboardAppearanceType is not supported");
+        DavaLog.w(DavaActivity.LOG_TAG, "TextField: setKeyboardAppearanceType is not supported");
     }
 
     void setKeyboardType(int value)
@@ -493,7 +492,7 @@ final class DavaTextField implements TextWatcher,
 
     void setEnableReturnKeyAutomatically(boolean value)
     {
-        Log.w(DavaActivity.LOG_TAG, "TextField: setEnableReturnKeyAutomatically is not supported");
+        DavaLog.w(DavaActivity.LOG_TAG, "TextField: setEnableReturnKeyAutomatically is not supported");
     }
 
     int getCursorPos()
@@ -620,7 +619,11 @@ final class DavaTextField implements TextWatcher,
         if (nativeTextField != null)
         {
             DavaActivity.instance().keyboardState.removeKeyboardStateListener(this);
-            nativeTextField.clearFocus();
+            setNativeVisible(false);
+            // Force onscreen keyboard hiding as on some phones keyboard stays on screen
+            // allowing input which leads to null pointer access in nativeOnKeyPressed
+            // called from InputFilter instance
+            setNativeInputEnabled(false);
             surfaceView.removeControl(nativeTextField);
             nativeTextField = null;
         }
@@ -659,10 +662,10 @@ final class DavaTextField implements TextWatcher,
                 if (keyboardState.isKeyboardOpen())
                 {
                     Rect keyboardRect = keyboardState.keyboardRect();
-                    nativeOnKeyboardShown(textfieldBackendPointer, keyboardRect.left, keyboardRect.top, keyboardRect.width(), keyboardRect.height());
+                        nativeOnKeyboardShown(textfieldBackendPointer, keyboardRect.left, keyboardRect.top, keyboardRect.width(), keyboardRect.height());
+                    }
                 }
             }
-        }
         else
         {
             if (!pendingKeyboardClose)
@@ -699,7 +702,7 @@ final class DavaTextField implements TextWatcher,
             }
         }
 
-        nativeOnFocusChange(textfieldBackendPointer, hasFocus);
+            nativeOnFocusChange(textfieldBackendPointer, hasFocus);
 
         if (!multiline)
         {
@@ -721,7 +724,7 @@ final class DavaTextField implements TextWatcher,
     @Override
     public void afterTextChanged(Editable s)
     {
-        nativeOnTextChanged(textfieldBackendPointer, s.toString(), programmaticTextChange);
+            nativeOnTextChanged(textfieldBackendPointer, s.toString(), programmaticTextChange);
         programmaticTextChange = false;
     }
 

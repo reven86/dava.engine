@@ -160,7 +160,7 @@ void SafeRelease(C*& c)
         }
 #endif
         c->Release();
-        c = 0;
+        c = nullptr;
     }
 }
 

@@ -6,9 +6,15 @@
 
 #include "PropertyVisitor.h"
 #include "SubValueProperty.h"
-#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
+
 #include <Base/BaseMath.h>
+#include <Reflection/ReflectedMeta.h>
+#include <UI/Layouts/UILayoutSourceRectComponent.h>
+#include <UI/Styles/UIStyleSheetPropertyDataBase.h>
 #include <UI/UIControl.h>
+#include <UI/UIScrollViewContainer.h>
+#include <UI/UISlider.h>
+#include <UI/UISwitch.h>
 
 using namespace DAVA;
 
@@ -22,7 +28,7 @@ const String INTROSPECTION_PROPERTY_NAME_CLASSES("classes");
 const String INTROSPECTION_PROPERTY_NAME_VISIBLE("visible");
 }
 
-IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, DAVA::int32 componentType, const String& name, const DAVA::Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType copyType)
+IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const DAVA::Type* componentType, const String& name, const DAVA::Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType copyType)
     : ValueProperty(name, ref.GetValueType())
     , object(SafeRetain(anObject))
     , reflection(ref)
@@ -50,12 +56,51 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, DAVA::i
         SetDefaultValue(reflection.GetValue());
     }
 
-    if (sourceProperty != nullptr)
-        sourceValue = sourceProperty->sourceValue;
-    else
-        sourceValue = reflection.GetValue();
-
     GenerateBuiltInSubProperties();
+
+    if (name == INTROSPECTION_PROPERTY_NAME_SIZE || name == INTROSPECTION_PROPERTY_NAME_POSITION)
+    {
+        UIControl* control = DynamicTypeCheck<UIControl*>(anObject);
+        bool shouldAddSourceRectComponent = true;
+
+        if (dynamic_cast<UIScrollViewContainer*>(control) != nullptr)
+        {
+            shouldAddSourceRectComponent = false;
+        }
+        else
+        {
+            if (control->GetName() == UISlider::THUMB_SPRITE_CONTROL_NAME ||
+                control->GetName() == UISlider::MIN_SPRITE_CONTROL_NAME ||
+                control->GetName() == UISlider::MAX_SPRITE_CONTROL_NAME ||
+                control->GetName() == UISwitch::BUTTON_LEFT_NAME ||
+                control->GetName() == UISwitch::BUTTON_RIGHT_NAME ||
+                control->GetName() == UISwitch::BUTTON_TOGGLE_NAME)
+            {
+                shouldAddSourceRectComponent = false;
+            }
+        }
+
+        if (shouldAddSourceRectComponent)
+        {
+            sourceRectComponent = control->GetOrCreateComponent<UILayoutSourceRectComponent>();
+
+            if (sourceProperty != nullptr && sourceProperty->sourceRectComponent)
+            {
+                if (name == INTROSPECTION_PROPERTY_NAME_SIZE)
+                {
+                    sourceRectComponent->SetSize(sourceProperty->sourceRectComponent->GetSize());
+                }
+                else
+                {
+                    sourceRectComponent->SetPosition(sourceProperty->sourceRectComponent->GetPosition());
+                }
+            }
+            else
+            {
+                SetLayoutSourceRectValue(reflection.GetValue());
+            }
+        }
+    }
 }
 
 IntrospectionProperty::~IntrospectionProperty()
@@ -63,41 +108,24 @@ IntrospectionProperty::~IntrospectionProperty()
     SafeRelease(object);
 }
 
-IntrospectionProperty* IntrospectionProperty::Create(UIControl* control, const String& name, const Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType cloneType)
+IntrospectionProperty* IntrospectionProperty::Create(BaseObject* object, const DAVA::Type* componentType, const String& name, const Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType cloneType)
 {
     if (name == INTROSPECTION_PROPERTY_NAME_TEXT)
     {
-        return new LocalizedTextValueProperty(control, name, ref, sourceProperty, cloneType);
+        return new LocalizedTextValueProperty(object, name, ref, sourceProperty, cloneType);
     }
     else if (name == INTROSPECTION_PROPERTY_NAME_FONT)
     {
-        return new FontValueProperty(control, name, ref, sourceProperty, cloneType);
+        return new FontValueProperty(object, name, ref, sourceProperty, cloneType);
     }
     else if (name == INTROSPECTION_PROPERTY_NAME_VISIBLE)
     {
-        return new VisibleValueProperty(control, name, ref, sourceProperty, cloneType);
+        return new VisibleValueProperty(object, name, ref, sourceProperty, cloneType);
     }
     else
     {
-        IntrospectionProperty* result = new IntrospectionProperty(control, -1, name, ref, sourceProperty, cloneType);
-        if (name == INTROSPECTION_PROPERTY_NAME_SIZE || name == INTROSPECTION_PROPERTY_NAME_POSITION)
-        {
-            result->flags |= EF_DEPENDS_ON_LAYOUTS;
-        }
-        if (name == INTROSPECTION_PROPERTY_NAME_CLASSES)
-        {
-            result->flags |= EF_AFFECTS_STYLES;
-        }
-        return result;
+        return new IntrospectionProperty(object, componentType, name, ref, sourceProperty, cloneType);
     }
-}
-
-void IntrospectionProperty::Refresh(DAVA::int32 refreshFlags)
-{
-    ValueProperty::Refresh(refreshFlags);
-
-    if ((refreshFlags & REFRESH_DEPENDED_ON_LAYOUT_PROPERTIES) != 0 && (GetFlags() & EF_DEPENDS_ON_LAYOUTS) != 0)
-        ApplyValue(sourceValue);
 }
 
 void IntrospectionProperty::Accept(PropertyVisitor* visitor)
@@ -159,6 +187,29 @@ void IntrospectionProperty::DisableResetFeature()
 
 void IntrospectionProperty::ApplyValue(const DAVA::Any& value)
 {
-    sourceValue = value;
     reflection.SetValueWithCast(value);
+
+    if (sourceRectComponent.Valid())
+    {
+        SetLayoutSourceRectValue(value);
+    }
+}
+
+void IntrospectionProperty::SetLayoutSourceRectValue(const DAVA::Any& value)
+{
+    DVASSERT(sourceRectComponent.Valid());
+    if (GetName() == INTROSPECTION_PROPERTY_NAME_SIZE)
+    {
+        sourceRectComponent->SetSize(value.Get<Vector2>());
+    }
+    else if (GetName() == INTROSPECTION_PROPERTY_NAME_POSITION)
+    {
+        UIControl* control = DynamicTypeCheck<UIControl*>(object);
+        Vector2 p = value.Get<Vector2>();
+        sourceRectComponent->SetPosition(p);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
 }

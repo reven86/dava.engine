@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Debug/DVAssert.h>
+
 namespace DAVA
 {
 class Entity;
@@ -9,16 +11,43 @@ class AABBox3;
 class EntityModificationSystemDelegate
 {
 public:
-    virtual void WillClone(DAVA::Entity* originalEntity) = 0;
-    virtual void DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEntity) = 0;
+    virtual bool HasCustomClonedAddading(DAVA::Entity* entityToClone) const
+    {
+        return false;
+    }
+
+    virtual void PerformAdding(DAVA::Entity* sourceEntity, DAVA::Entity* clonedEntity)
+    {
+        DVASSERT(false, "You should override this method in pair with HasCustomClonedAddading");
+    }
+    virtual void WillClone(DAVA::Entity* originalEntity)
+    {
+    }
+    virtual void DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEntity)
+    {
+    }
 };
 
 class SelectableGroup;
 class StructureSystemDelegate
 {
 public:
-    virtual void WillRemove(DAVA::Entity* removedEntity) = 0;
-    virtual void DidRemoved(DAVA::Entity* removedEntity) = 0;
+    virtual bool HasCustomRemovingForEntity(DAVA::Entity* entityToRemove) const
+    {
+        return false;
+    }
+
+    virtual void PerformRemoving(DAVA::Entity* entityToRemove)
+    {
+        DVASSERT(false, "You should override this method in pair with HasCustomRemovingForEntity");
+    }
+
+    virtual void WillRemove(DAVA::Entity* removedEntity)
+    {
+    }
+    virtual void DidRemoved(DAVA::Entity* removedEntity)
+    {
+    }
 };
 
 class SelectionSystemDelegate

@@ -527,7 +527,7 @@
   <customwidget>
    <class>ImageArea</class>
    <extends>QLabel</extends>
-   <header>classes/Qt/ImageSplitterDialog/ImageArea.h</header>
+   <header>Classes/Qt/ImageSplitterDialog/ImageArea.h</header>
   </customwidget>
   <customwidget>
    <class>FilePathBrowser</class>

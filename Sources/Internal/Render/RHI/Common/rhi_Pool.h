@@ -12,6 +12,25 @@
 #include "Debug/Backtrace.h"
 #endif
 
+#ifdef __DAVAENGINE_WIN_UAP__
+
+#include "Logger/Logger.h"
+
+#define RHI_POOL_ASSERT(expr, ...) \
+{ \
+    if (!(expr)) \
+    { \
+        DVASSERT(expr, ##__VA_ARGS__); \
+        DAVA::Logger::Error(##__VA_ARGS__); \
+    } \
+}
+
+#else
+
+#define RHI_POOL_ASSERT(expr, ...) DVASSERT(expr, ##__VA_ARGS__)
+
+#endif
+
 namespace rhi
 {
 enum
@@ -189,7 +208,7 @@ inline Handle ResourcePool<T, RT, DT, nr>::Alloc()
     }
 
     Entry* e = Object + HeadIndex;
-    DVASSERT(!e->allocated);
+    RHI_POOL_ASSERT(!e->allocated, DAVA::Format("[RHIPool] Failed to allocate handle: pool is empty | Pool<%d>", RT).c_str());
     HeadIndex = e->nextObjectIndex;
 
     e->allocated = true;
@@ -209,16 +228,18 @@ inline Handle ResourcePool<T, RT, DT, nr>::Alloc()
 
 //------------------------------------------------------------------------------
 
+#define HANDLE_DECOMPOSE(h) ((h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT), ((h & HANDLE_INDEX_MASK) >> HANDLE_INDEX_SHIFT), ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT)
+
 template <class T, ResourceType RT, typename DT, bool nr>
 inline void ResourcePool<T, RT, DT, nr>::Free(Handle h)
 {
     uint32 index = (h & HANDLE_INDEX_MASK) >> HANDLE_INDEX_SHIFT;
     uint32 type = (h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT;
-    DVASSERT(type == RT);
-    DVASSERT(index < ObjectCount);
+    RHI_POOL_ASSERT(type == RT, DAVA::Format("[RHIPool] Failed to free handle: mismatch resource type | Pool<%d>, handle(type: %d, index: %d, generation: %d)", RT, HANDLE_DECOMPOSE(h)).c_str());
+    RHI_POOL_ASSERT(index < ObjectCount, DAVA::Format("[RHIPool] Failed to free handle: index out of bounds | Pool<%d>, handle(type: %d, index: %d, generation: %d)", RT, HANDLE_DECOMPOSE(h)).c_str());
 
     Entry* e = Object + index;
-    DVASSERT(e->allocated);
+    RHI_POOL_ASSERT(e->allocated, DAVA::Format("[RHIPool] Failed to free handle: handle already freed | Pool<%d>", RT).c_str());
 
     ObjectSync.Lock();
     e->nextObjectIndex = HeadIndex;
@@ -228,18 +249,17 @@ inline void ResourcePool<T, RT, DT, nr>::Free(Handle h)
 }
 
 //------------------------------------------------------------------------------
-#define HANDLE_DECOMPOSE(h) ((h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT), ((h & HANDLE_INDEX_MASK) >> HANDLE_INDEX_SHIFT), ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT)
 
 template <class T, ResourceType RT, typename DT, bool nr>
 inline T* ResourcePool<T, RT, DT, nr>::Get(Handle h)
 {
-    DVASSERT(h != InvalidHandle, DAVA::Format("Pool<%d>::Get - InvalidHandle", RT).c_str());
-    DVASSERT(((h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT) == RT, DAVA::Format("Pool<%d>::Get - Invalid Resource Type h(type: %d, index: %d, generation: %d)", RT, HANDLE_DECOMPOSE(h)).c_str());
+    RHI_POOL_ASSERT(h != InvalidHandle, DAVA::Format("[RHIPool] Failed to get resource by handle: handle is InvalidHandle | Pool<%d>", RT).c_str());
+    RHI_POOL_ASSERT(((h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT) == RT, DAVA::Format("[RHIPool] Failed to get resource by handle: invalid resource type | Pool<%d>, handle(type: %d, index: %d, generation: %d)", RT, HANDLE_DECOMPOSE(h)).c_str());
     uint32 index = (h & HANDLE_INDEX_MASK) >> HANDLE_INDEX_SHIFT;
-    DVASSERT(index < ObjectCount, DAVA::Format("Pool<%d>::Get - Index out of bounds h(type: %d, index: %d, generation: %d)", RT, HANDLE_DECOMPOSE(h)).c_str());
+    RHI_POOL_ASSERT(index < ObjectCount, DAVA::Format("[RHIPool] Failed to get resource by handle: index out of bounds | Pool<%d>, handle(type: %d, index: %d, generation: %d)", RT, HANDLE_DECOMPOSE(h)).c_str());
     Entry* e = Object + index;
-    DVASSERT(e->allocated, DAVA::Format("Pool<%d>::Get - not alocated h(type: %d, index: %d, generation: %d) last valid generation was %d", RT, HANDLE_DECOMPOSE(h), e->generation).c_str());
-    DVASSERT(e->generation == ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT), DAVA::Format("Pool<%d>::Get - requested generation mismatch h(type: %d, index: %d, generation: %d) current valid generation is %d", int32(RT), HANDLE_DECOMPOSE(h), e->generation).c_str());
+    RHI_POOL_ASSERT(e->allocated, DAVA::Format("[RHIPool] Failed to get resource by handle: not allocated | Pool<%d>, handle(type: %d, index: %d, generation: %d), last valid generation was %d", RT, HANDLE_DECOMPOSE(h), e->generation).c_str());
+    RHI_POOL_ASSERT(e->generation == ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT), DAVA::Format("[RHIPool] Failed to get resource by handle: requested generation mismatch | Pool<%d>, handle(type: %d, index: %d, generation: %d), current valid generation is %d", RT, HANDLE_DECOMPOSE(h), e->generation).c_str());
 
     return &(e->object);
 }
@@ -249,10 +269,10 @@ inline T* ResourcePool<T, RT, DT, nr>::Get(Handle h)
 template <class T, ResourceType RT, typename DT, bool nr>
 inline bool ResourcePool<T, RT, DT, nr>::IsAlive(Handle h)
 {
-    DVASSERT(h != InvalidHandle);
-    DVASSERT(((h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT) == RT);
+    RHI_POOL_ASSERT(h != InvalidHandle, DAVA::Format("[RHIPool] Failed to check (is alive) resource by handle: handle is InvalidHandle | Pool<%d>", RT).c_str());
+    RHI_POOL_ASSERT(((h & HANDLE_TYPE_MASK) >> HANDLE_TYPE_SHIFT) == RT, DAVA::Format("[RHIPool] Failed to check (is alive) resource by handle: invalid resource type | Pool<%d>, handle(type: %d, index: %d, generation: %d)", RT, HANDLE_DECOMPOSE(h)).c_str());
     uint32 index = (h & HANDLE_INDEX_MASK) >> HANDLE_INDEX_SHIFT;
-    DVASSERT(index < ObjectCount);
+    RHI_POOL_ASSERT(index < ObjectCount, DAVA::Format("[RHIPool] Failed to check (is alive) resource by handle: index out of bounds | Pool<%d>, handle(type: %d, index: %d, generation: %d)", RT, HANDLE_DECOMPOSE(h)).c_str());
 
     Entry* e = Object + index;
     return e->allocated && (e->generation == ((h & HANDLE_GENERATION_MASK) >> HANDLE_GENERATION_SHIFT));

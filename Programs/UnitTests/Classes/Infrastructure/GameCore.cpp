@@ -33,9 +33,20 @@ String runOnlyTheseTestClasses = "";
 
 // List of names specifying which test classes shouldn't run. This list takes precedence over runOnlyTheseTests.
 // Names should be separated with ' ' or ',' or ';'
-String disableTheseTestClasses = "";
+#if !defined(__DAVAENGINE_LINUX__)
+String disableTheseTestClasses = "ScriptTest";
+#else
+// TODO: linux
+String disableTheseTestClasses =
+"UILayoutSystemTest "
+"UIControlHelpersTest "
+"UIControlHierarhyTest "
+"UIControlTest "
+"UIRichContentTest "
+;
+#endif
 
-bool teamcityOutputEnabled = true; // Flag whether to enable TeamCity output
+bool teamcityOutputEnabled = false; // Flag whether to enable TeamCity output
 bool teamcityCaptureStdout = false; // Flag whether to set TeamCity option 'captureStandardOutput=true'
 
 const String testCoverageFileName = "Tests.cover";
@@ -76,7 +87,12 @@ int DAVAMain(Vector<String> cmdline)
     };
 
     Engine e;
+#if defined(__DAVAENGINE_LINUX__)
+    appOptions->SetInt32("renderer", rhi::RHI_NULL_RENDERER);
+    e.Init(eEngineRunMode::CONSOLE_MODE, modules, appOptions);
+#else
     e.Init(eEngineRunMode::GUI_STANDALONE, modules, appOptions);
+#endif
 
     GameCore g(e);
     e.Run();
@@ -92,7 +108,10 @@ GameCore::GameCore(DAVA::Engine& e)
     engine.gameLoopStarted.Connect(this, &GameCore::OnAppStarted);
     engine.gameLoopStopped.Connect(this, &GameCore::OnAppFinished);
     engine.update.Connect(this, &GameCore::Update);
-    engine.windowCreated.Connect(this, &GameCore::OnWindowCreated);
+    if (engine.GetRunMode() != eEngineRunMode::CONSOLE_MODE)
+    {
+        engine.windowCreated.Connect(this, &GameCore::OnWindowCreated);
+    }
 }
 
 void GameCore::Update(float32 timeElapsed)
@@ -114,14 +133,9 @@ void GameCore::ProcessCommandLine()
     {
         disableTheseTestClasses = cmdline->GetCommandParam("-disable_test");
     }
-    if (cmdline->CommandIsFound("-noteamcity"))
-    {
-        teamcityOutputEnabled = false;
-    }
-    if (cmdline->CommandIsFound("-teamcity_capture_stdout"))
-    {
-        teamcityCaptureStdout = true;
-    }
+
+    teamcityOutputEnabled = cmdline->CommandIsFound("-teamcity");
+    teamcityCaptureStdout = cmdline->CommandIsFound("-teamcity_capture_stdout");
 }
 
 void GameCore::OnAppStarted()
@@ -165,6 +179,12 @@ void GameCore::OnAppStarted()
         TEST_VERIFY(covergeFile);
         covergeFile->Flush();
 #endif // __DAVAENGINE_MACOS__
+    }
+
+    if (engine.GetRunMode() == eEngineRunMode::CONSOLE_MODE)
+    {
+        // Register at least one resource size as some tests directly on indirectly access virtual coordinate system
+        GetEngineContext()->uiControlSystem->vcs->RegisterAvailableResourceSize(1024, 768, "Gfx");
     }
 }
 
@@ -222,8 +242,6 @@ void GameCore::OnTestFinished(const DAVA::String& testClassName, const DAVA::Str
 
 void GameCore::OnTestFailed(const String& testClassName, const String& testName, const String& condition, const char* filename, int lineno, const String& userMessage)
 {
-    OnError();
-
     String errorString;
     if (userMessage.empty())
     {
@@ -234,6 +252,12 @@ void GameCore::OnTestFailed(const String& testClassName, const String& testName,
         errorString = Format("%s:%d: %s (%s)", filename, lineno, testName.c_str(), userMessage.c_str());
     }
     Logger::Error("%s", TeamcityTestsOutput::FormatTestFailed(testClassName, testName, condition, errorString).c_str());
+
+    if (teamcityOutputEnabled == false)
+    {
+        // Call OnError here to log failed test condition
+        OnError();
+    }
 }
 
 void GameCore::ProcessTestCoverage()

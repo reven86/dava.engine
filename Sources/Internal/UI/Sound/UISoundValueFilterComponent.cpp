@@ -1,9 +1,20 @@
 #include "UISoundValueFilterComponent.h"
 
+#include "Reflection/ReflectionRegistrator.h"
 #include "UI/UIControl.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(UISoundValueFilterComponent)
+{
+    ReflectionRegistrator<UISoundValueFilterComponent>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UISoundValueFilterComponent* c) { SafeRelease(c); })
+    .Field("step", &UISoundValueFilterComponent::GetStep, &UISoundValueFilterComponent::SetStep)
+    .Field("deadZone", &UISoundValueFilterComponent::GetDeadZone, &UISoundValueFilterComponent::SetDeadZone)
+    .End();
+}
+
 UISoundValueFilterComponent::UISoundValueFilterComponent()
 {
 }

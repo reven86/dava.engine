@@ -29,7 +29,7 @@ fragment_in
         float2 varDecalTileTexCoord : TEXCOORD2;
     #endif
     #if MATERIAL_DETAIL
-        half2 varDetailTexCoord : TEXCOORD2;
+        float2 varDetailTexCoord : TEXCOORD2;
     #endif
 
     #if VERTEX_LIT
@@ -111,6 +111,10 @@ fragment_out
 
 #if MATERIAL_TEXTURE && ALPHATEST && ALPHATESTVALUE
     [material][a] property float alphatestThreshold           = 0.0;
+#endif
+
+#if MATERIAL_TEXTURE && ALPHASTEPVALUE && ALPHABLEND
+    [material][a] property float alphaStepValue               = 0.5;
 #endif
 
 #if PIXEL_LIT
@@ -244,6 +248,12 @@ fragment_out fp_main( fragment_in input )
                 if( alpha < 0.5 ) discard;
             #endif
         #endif
+        
+        #if ALPHASTEPVALUE && ALPHABLEND
+            textureColor0.a = half(step(alphaStepValue, float(textureColor0.a)));
+        #endif
+        #endif
+        
     #endif
 
     
@@ -504,26 +514,26 @@ fragment_out fp_main( fragment_in input )
         
         #if MATERIAL_DECAL || MATERIAL_LIGHTMAP
             
-            float3 color = float3(0.0,0.0,0.0);
+            half3 color = half3(0.0,0.0,0.0);
 
             #if VIEW_ALBEDO
-                color = float3(textureColor0.rgb);
+                color = half3(textureColor0.rgb);
             #else
-                color = float3(1.0,1.0,1.0);
+                color = half3(1.0,1.0,1.0);
             #endif
 
             #if VIEW_DIFFUSE
                 #if VIEW_ALBEDO
-                    color *= float3(textureColor1.rgb * 2.0);
+                    color *= half3(textureColor1.rgb * 2.0);
                 #else
                     //do not scale lightmap in view diffuse only case. artist request
-                    color *= float3(textureColor1.rgb); 
+                    color *= half3(textureColor1.rgb); 
                 #endif              
             #endif
 
         #elif MATERIAL_TEXTURE
 
-            float3 color = float3(textureColor0.rgb);
+            half3 color = half3(textureColor0.rgb);
         
         #elif MATERIAL_SKYBOX
             
@@ -531,7 +541,7 @@ fragment_out fp_main( fragment_in input )
         
         #else
             
-            float3 color = float3(1.0,1.0,1.0);
+            half3 color = half3(1.0,1.0,1.0);
         
         #endif
         
@@ -551,15 +561,15 @@ fragment_out fp_main( fragment_in input )
 
 
     #if ALPHABLEND && MATERIAL_TEXTURE
-        output.color = float4( color, textureColor0.a );
+        output.color = float4( float3(color.rgb), textureColor0.a );
     #elif MATERIAL_SKYBOX
-        output.color = color;
+        output.color = float4( color );
     #else
         output.color = float4( color.r, color.g, color.b, 1.0 );
     #endif
 
     
-    #if VERTEX_COLOR || SPEED_TREE_LEAF || SPHERICAL_LIT
+    #if VERTEX_COLOR || SPEED_TREE_OBJECT || SPHERICAL_LIT
         output.color *= float4(input.varVertexColor);
     #endif
         

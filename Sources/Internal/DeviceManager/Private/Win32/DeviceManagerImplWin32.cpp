@@ -59,7 +59,7 @@ size_t DeviceManagerImpl::GetDisplays(DisplayInfoRange* range)
         HDC screen = ::GetDC(nullptr);
         float32 dpiX = static_cast<float32>(::GetDeviceCaps(screen, LOGPIXELSX));
         float32 dpiY = static_cast<float32>(::GetDeviceCaps(screen, LOGPIXELSY));
-        ::ReleaseDC(NULL, nullptr);
+        ::ReleaseDC(NULL, screen);
 
         for (size_t i = 0; i < count; ++i)
         {
@@ -101,6 +101,11 @@ BOOL CALLBACK DeviceManagerImpl::DisplayEnumProc(HMONITOR hmonitor, HDC hdc, LPR
         return TRUE;
     }
     return FALSE;
+}
+
+float32 DeviceManagerImpl::GetCpuTemperature() const
+{
+    return 0.0f;
 }
 
 } // namespace Private

@@ -20,17 +20,19 @@ DAVA_VIRTUAL_REFLECTION_IMPL(StaticOcclusionComponent)
 {
     ReflectionRegistrator<StaticOcclusionComponent>::Begin()
     .ConstructorByPointer()
-    .Field("bbox", &StaticOcclusionComponent::GetBoundingBox, &StaticOcclusionComponent::SetSubdivisionsX)[M::DisplayName("Bounding Box")]
-    .Field("subdivX", &StaticOcclusionComponent::GetSubdivisionsX, &StaticOcclusionComponent::SetSubdivisionsY)[M::DisplayName("Subdivisions X")]
-    .Field("subdivY", &StaticOcclusionComponent::GetSubdivisionsY, &StaticOcclusionComponent::SetSubdivisionsZ)[M::DisplayName("Subdivisions Y")]
-    .Field("subdivZ", &StaticOcclusionComponent::GetSubdivisionsZ, &StaticOcclusionComponent::SetSubdivisionsZ)[M::DisplayName("Subdivisions Z")]
+    .Field("bbox", &StaticOcclusionComponent::GetBoundingBox, &StaticOcclusionComponent::SetBoundingBox)[M::DisplayName("Bounding Box")]
+    .Field("subdivX", &StaticOcclusionComponent::GetSubdivisionsX, &StaticOcclusionComponent::SetSubdivisionsX)[M::DisplayName("Subdivisions X"), M::Range(1, Any(), 1)]
+    .Field("subdivY", &StaticOcclusionComponent::GetSubdivisionsY, &StaticOcclusionComponent::SetSubdivisionsY)[M::DisplayName("Subdivisions Y"), M::Range(1, Any(), 1)]
+    .Field("subdivZ", &StaticOcclusionComponent::GetSubdivisionsZ, &StaticOcclusionComponent::SetSubdivisionsZ)[M::DisplayName("Subdivisions Z"), M::Range(1, Any(), 1)]
     .Field("placeOnLandScape", &StaticOcclusionComponent::GetPlaceOnLandscape, &StaticOcclusionComponent::SetPlaceOnLandscape)[M::DisplayName("Place on Landscape")]
+    .Field("occlusionPixelThreshold", &StaticOcclusionComponent::GetOcclusionPixelThreshold, &StaticOcclusionComponent::SetOcclusionPixelThreshold)[M::DisplayName("Occlusion Pixel Threshold")]
+    .Field("occlusionPixelThresholdForSpeedtree", &StaticOcclusionComponent::GetOcclusionPixelThresholdForSpeedtree, &StaticOcclusionComponent::SetOcclusionPixelThresholdForSpeedtree)[M::DisplayName("Occlusion Pixel Threshold For Speedtree")]
     .End();
 }
 
 DAVA_VIRTUAL_REFLECTION_IMPL(StaticOcclusionDebugDrawComponent)
 {
-    ReflectionRegistrator<StaticOcclusionDebugDrawComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    ReflectionRegistrator<StaticOcclusionDebugDrawComponent>::Begin()[M::CantBeCreatedManualyComponent(), M::CantBeDeletedManualyComponent()]
     .ConstructorByPointer()
     .End();
 }

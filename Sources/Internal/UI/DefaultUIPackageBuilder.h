@@ -19,26 +19,26 @@ public:
     UIPackage* GetPackage() const;
     UIPackage* FindInCache(const String& packagePath) const;
 
-    void BeginPackage(const FilePath& packagePath) override;
+    void BeginPackage(const FilePath& packagePath, int32 version) override;
     void EndPackage() override;
 
     bool ProcessImportedPackage(const String& packagePath, AbstractUIPackageLoader* loader) override;
     void ProcessStyleSheet(const Vector<UIStyleSheetSelectorChain>& selectorChains, const Vector<UIStyleSheetProperty>& properties) override;
 
-    UIControl* BeginControlWithClass(const FastName& controlName, const String& className) override;
-    UIControl* BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className) override;
-    UIControl* BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader) override;
-    UIControl* BeginControlWithPath(const String& pathName) override;
-    UIControl* BeginUnknownControl(const FastName& controlName, const YamlNode* node) override;
+    const ReflectedType* BeginControlWithClass(const FastName& controlName, const String& className) override;
+    const ReflectedType* BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className) override;
+    const ReflectedType* BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader) override;
+    const ReflectedType* BeginControlWithPath(const String& pathName) override;
+    const ReflectedType* BeginUnknownControl(const FastName& controlName, const YamlNode* node) override;
     void EndControl(eControlPlace controlPlace) override;
 
     void BeginControlPropertiesSection(const String& name) override;
     void EndControlPropertiesSection() override;
 
-    UIComponent* BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex) override;
+    const ReflectedType* BeginComponentPropertiesSection(const Type* componentType, uint32 componentIndex) override;
     void EndComponentPropertiesSection() override;
 
-    void ProcessProperty(const Reflection::Field& field, const Any& value) override;
+    void ProcessProperty(const ReflectedStructure::Field& field, const Any& value) override;
 
 protected:
     virtual RefPtr<UIControl> CreateControlByName(const String& customClassName, const String& className);
@@ -56,8 +56,8 @@ private:
     Vector<ControlDescr*> controlsStack;
 
     UIPackagesCache* cache;
-    BaseObject* currentObject;
-    int32 currentComponentType = -1;
+    ReflectedObject currentObject;
+    const Type* currentComponentType = nullptr;
 
     RefPtr<UIPackage> package;
     FilePath currentPackagePath;

@@ -201,7 +201,6 @@ private slots:
     void UnmodalDialogFinished(int);
 
     void DebugVersionInfo();
-    void DebugDeviceList();
     void OnConsoleItemClicked(const QString& data);
 
     void UpdateUndoActionText(const DAVA::String& text);
@@ -246,7 +245,6 @@ private:
     QPointer<DeveloperTools> developerTools;
     QPointer<VersionInfoWidget> versionInfoWidget;
 
-    QPointer<DeviceListController> deviceListController;
     std::shared_ptr<GlobalOperations> globalOperations;
     ErrorDialogOutput* errorLoggerOutput = nullptr;
 

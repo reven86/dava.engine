@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_ASSET_CACHE_CLIENT_H__
-#define __DAVAENGINE_ASSET_CACHE_CLIENT_H__
+#pragma once
 
 #include "Tools/AssetCache/Connection.h"
 #include "Tools/AssetCache/CacheItemKey.h"
@@ -38,14 +37,15 @@ public:
 class ClientNetProxy : public DAVA::Net::IChannelListener
 {
 public:
-    ClientNetProxy();
+    ClientNetProxy(Dispatcher<Function<void()>>*);
     ~ClientNetProxy();
 
     void AddListener(ClientNetProxyListener*);
     void RemoveListener(ClientNetProxyListener*);
 
-    bool Connect(const String& ip, uint16 port);
+    void Connect(const String& ip, uint16 port);
     void Disconnect();
+    void DisconnectBlocked();
 
     bool ChannelIsOpened() const;
 
@@ -76,8 +76,9 @@ public:
     void StateChanged();
 
 private:
-    Net::AddressResolver addressResolver;
-    std::unique_ptr<Connection> netClient;
+    Dispatcher<Function<void()>>* dispatcher = nullptr;
+    std::shared_ptr<Net::AddressResolver> addressResolver;
+    std::shared_ptr<Connection> netClient;
     DAVA::Net::IChannel* openedChannel = nullptr;
 
     Set<ClientNetProxyListener*> listeners;
@@ -95,5 +96,3 @@ inline Connection* ClientNetProxy::GetConnection() const
 
 }; // end of namespace AssetCache
 }; // end of namespace DAVA
-
-#endif // __DAVAENGINE_ASSET_CACHE_CLIENT_H__

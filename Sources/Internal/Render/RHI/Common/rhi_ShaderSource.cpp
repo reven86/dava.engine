@@ -1629,6 +1629,12 @@ ShaderSource::GetSourceCode(Api targetApi) const
                 src->clear();
         }
         break;
+
+        case RHI_NULL_RENDERER:
+        {
+            *src = "NullRender shader source";
+        }
+        break;
         default:
             break; // to shut up goddamn warning
         }

@@ -57,6 +57,7 @@ int Process(Engine& e)
     launcherListener.Init([](LauncherListener::eMessage message) {
         if (message == LauncherListener::eMessage::QUIT)
         {
+            Logger::Info("Got quit message from launcher listener");
             qApp->quit();
             return LauncherListener::eReply::ACCEPT;
         }
@@ -73,8 +74,12 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdLine)
       "JobManager",
       "NetCore"
     };
+
+    KeyedArchive* options = new KeyedArchive; // options will be placed into RefPtr inside of Engine
+    options->SetBool("separate_net_thread", true);
+
     Engine e;
-    e.Init(eEngineRunMode::CONSOLE_MODE, modules, nullptr);
+    e.Init(eEngineRunMode::CONSOLE_MODE, modules, options);
 
     e.update.Connect([&e](float32)
                      {

@@ -9,9 +9,18 @@ namespace DAVA
 class StructureWrapperDefault : public StructureWrapper
 {
 public:
+    void Update() override
+    {
+    }
+
     bool HasFields(const ReflectedObject& object, const ValueWrapper* vw) const override
     {
         return false;
+    }
+
+    size_t GetFieldsCount(const ReflectedObject& object, const ValueWrapper* vw) const override
+    {
+        return 0;
     }
 
     Reflection GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
@@ -20,6 +29,11 @@ public:
     }
 
     Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const ValueWrapper* vw) const override
+    {
+        return Vector<Reflection::Field>();
+    }
+
+    Vector<Reflection::Field> GetFields(const ReflectedObject& object, const ValueWrapper* vw, size_t first, size_t count) const override
     {
         return Vector<Reflection::Field>();
     }

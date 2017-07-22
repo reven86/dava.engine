@@ -35,7 +35,7 @@ bool ClipboardImplOsx::HasText() const
     NSPasteboard* pasteboard = [NSPasteboard generalPasteboard];
     if (pasteboard != nil)
     {
-        NSArray* classes = [[NSArray alloc] initWithObjects:[NSString class], nil];
+        NSArray* classes = [[[NSArray alloc] initWithObjects:[NSString class], nil] autorelease];
         BOOL ok = [pasteboard canReadObjectForClasses:classes options:nil];
         return ok == YES;
     }

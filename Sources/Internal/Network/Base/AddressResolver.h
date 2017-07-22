@@ -1,10 +1,10 @@
-#ifndef __DAVAENGINE_ADDRESS_RESOLVER_H__
-#define __DAVAENGINE_ADDRESS_RESOLVER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/Platform.h"
 #include "Functional/Function.h"
 #include "Network/Base/Endpoint.h"
+#include "Network/NetCore.h"
 #include <libuv/uv.h>
 
 namespace DAVA
@@ -22,19 +22,22 @@ public:
     explicit AddressResolver(IOLoop* loop);
     ~AddressResolver();
 
-    bool AsyncResolve(const char8* address, uint16 port, ResolverCallbackFn cbk);
+    void AsyncResolve(const char8* address, uint16 port, ResolverCallbackFn cbk);
     void Cancel();
+    bool IsActive() const;
 
 private:
+    void DoAsyncResolve(const char8* address, uint16 port, ResolverCallbackFn cbk);
+    static void DoCancel(uv_getaddrinfo_t* handle);
     static void GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, addrinfo* response);
+
     void GotAddrInfo(int status, addrinfo* response);
 
 private:
     IOLoop* loop = nullptr;
+    Mutex handleMutex;
     uv_getaddrinfo_t* handle = nullptr;
     ResolverCallbackFn resolverCallbackFn = nullptr;
 };
 }
 }
-
-#endif //__DAVAENGINE_ADDRESS_RESOLVER_H__

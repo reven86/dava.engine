@@ -231,4 +231,14 @@ void VisibilityCheckComponent::Deserialize(DAVA::KeyedArchive* archive, DAVA::Se
     shouldRebuildPointSet = true;
     Invalidate();
 }
+
+bool VisibilityCheckComponent::GetDebugDrawEnabled() const
+{
+    return debugDrawEnabled;
+}
+
+void VisibilityCheckComponent::SetDebugDrawEnabled(bool value)
+{
+    debugDrawEnabled = value;
+}
 }

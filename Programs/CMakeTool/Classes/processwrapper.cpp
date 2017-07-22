@@ -134,8 +134,11 @@ void ProcessWrapper::OnReadyReadStandardOutput()
 
 void ProcessWrapper::OnReadyReadStandardError()
 {
-    currentProcessDetails.hasErrors = true;
     QString text = process.readAllStandardError();
+    if (text.contains("cmake error", Qt::CaseInsensitive))
+    {
+        currentProcessDetails.hasErrors = true;
+    }
     emit processStandardError(text);
 }
 

@@ -37,7 +37,7 @@ void LogWidgetModule::PostInit()
     panelInfo.title = title;
     panelInfo.area = Qt::BottomDockWidgetArea;
     DAVA::TArc::PanelKey panelKey(title, panelInfo);
-    GetUI()->AddView(QEGlobal::windowKey, panelKey, logWidget);
+    GetUI()->AddView(DAVA::TArc::mainWindowKey, panelKey, logWidget);
 }
 
 void LogWidgetModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)

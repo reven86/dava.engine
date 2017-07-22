@@ -38,9 +38,9 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 	{
         Entity * entity = entities[i];
         
-        DebugRenderComponent * debugRenderComponent = cast_if_equal<DebugRenderComponent*>(entity->GetComponent(Component::DEBUG_RENDER_COMPONENT));
-        TransformComponent * transformComponent = cast_if_equal<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT));
-        //RenderComponent * renderComponent = cast_if_equal<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT));
+        DebugRenderComponent * debugRenderComponent = CastIfEqual<DebugRenderComponent*>(entity->GetComponent(Component::DEBUG_RENDER_COMPONENT));
+        TransformComponent * transformComponent = CastIfEqual<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT));
+        //RenderComponent * renderComponent = CastIfEqual<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT));
         
         //Matrix4 worldTransform = camera->GetMatrix();
         Renderer::GetDynamicBindings().SetDynamicParam(PARAM_VIEW, &camera->GetMatrix(), DynamicBindings::UPDATE_SEMANTIC_ALWAYS);

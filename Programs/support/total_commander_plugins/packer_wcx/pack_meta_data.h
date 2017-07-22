@@ -16,6 +16,7 @@ public:
     uint32_t get_num_packs() const;
     uint32_t get_pack_index_for_file(const uint32_t file_index) const;
     const std::tuple<std::string, std::string>& get_pack_info(const uint32_t packIndex) const;
+    const std::vector<uint32_t>& get_children(const uint32_t pack_index) const;
 
     std::vector<uint8_t> serialize() const;
     void deserialize(const void* ptr, size_t size);
@@ -28,4 +29,6 @@ private:
     // table 2.
     // packIndex(0-NUM_PACKS) -> packName, dependencies
     std::vector<std::tuple<std::string, std::string>> table_packs;
+
+    std::vector<std::vector<uint32_t>> table_childs;
 };

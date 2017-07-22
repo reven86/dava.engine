@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "DLCManager/DLCManager.h"
+#include "DLCManager/DLCDownloader.h"
 #include "DLCManager/Private/RequestManager.h"
 #include "FileSystem/Private/PackFormatSpec.h"
 #include "FileSystem/Private/PackMetaData.h"
@@ -15,6 +16,69 @@
 
 namespace DAVA
 {
+class MemoryBufferWriter final : public DLCDownloader::IWriter
+{
+public:
+    MemoryBufferWriter(void* buff, size_t size)
+    {
+        DVASSERT(buff != nullptr);
+        DVASSERT(size > 0);
+
+        start = static_cast<char*>(buff);
+        current = start;
+        end = start + size;
+    }
+
+    uint64 Save(const void* ptr, uint64 size) override
+    {
+        uint64 space = SpaceLeft();
+
+        if (size > space)
+        {
+            memcpy(current, ptr, static_cast<size_t>(space));
+            current += space;
+            return space;
+        }
+
+        memcpy(current, ptr, static_cast<size_t>(size));
+        current += size;
+        return size;
+    }
+
+    uint64 GetSeekPos() override
+    {
+        return current - start;
+    }
+
+    bool Truncate() override
+    {
+        current = start;
+        return true;
+    }
+
+    void Close() override
+    {
+        start = nullptr;
+        current = nullptr;
+        end = nullptr;
+    }
+
+    bool IsClosed() const override
+    {
+        return current == nullptr;
+    }
+
+    uint64 SpaceLeft() const
+    {
+        return end - current;
+    }
+
+private:
+    char* start = nullptr;
+    char* current = nullptr;
+    char* end = nullptr;
+};
+
 class DLCManagerImpl final : public DLCManager
 {
 public:
@@ -84,7 +148,7 @@ public:
 
     void SetRequestingEnabled(bool value) override;
 
-    void Update(float frameDelta);
+    void Update(float frameDelta, bool inBackground);
 
     bool IsPackDownloaded(const String& packName) override;
 
@@ -125,6 +189,11 @@ public:
 
     std::ostream& GetLog() const;
 
+    DLCDownloader* GetDownloader() const
+    {
+        return downloader.get();
+    }
+
 private:
     // initialization state functions
     void AskFooter();
@@ -143,6 +212,7 @@ private:
     // helper functions
     void DeleteLocalMetaFiles();
     void ContinueInitialization(float frameDelta);
+    void ReadContentAndExtractFileNames();
 
     void SwapRequestAndUpdatePointers(PackRequest* request, PackRequest* newRequest);
     void SwapPointers(PackRequest* userRequestObject, PackRequest* newRequestObject);
@@ -157,12 +227,13 @@ private:
         Starting,
         Done
     };
+
     // info to scan local pack files
     struct LocalFileInfo
     {
         String relativeName;
-        uint32 compressedSize = 0;
-        uint32 crc32Hash = 0;
+        uint32 compressedSize = std::numeric_limits<uint32>::max(); // file size can be 0 so use max value default
+        uint32 crc32Hash = std::numeric_limits<uint32>::max();
     };
     // fill during scan local pack files, empty after finish scan
     Vector<LocalFileInfo> localFiles;
@@ -188,25 +259,56 @@ private:
     std::unique_ptr<RequestManager> requestManager;
     std::unique_ptr<PackMetaData> meta;
 
+    struct PreloadedPack : IRequest
+    {
+        explicit PreloadedPack(const String& pack)
+            : packName(pack)
+        {
+        }
+        const String& GetRequestedPackName() const override
+        {
+            return packName;
+        }
+        uint64 GetSize() const override
+        {
+            return 0;
+        };
+        uint64 GetDownloadedSize() const override
+        {
+            return 0;
+        }
+        bool IsDownloaded() const override
+        {
+            return true;
+        }
+
+        String packName;
+    };
+
+    Map<String, PreloadedPack> preloadedPacks;
     Vector<PackRequest*> requests; // not forget to delete in destructor
     Vector<PackRequest*> delayedRequests; // move to requests after initialization finished
 
     String initErrorMsg;
     InitState initState = InitState::Starting;
     InitError initError = InitError::AllGood;
+    std::unique_ptr<MemoryBufferWriter> memBufWriter;
     PackFormat::PackFile::FooterBlock initFooterOnServer; // temp superpack info for every new pack request or during initialization
     PackFormat::PackFile usedPackFile; // current superpack info
     Vector<uint8> buffer; // temp buff
     String uncompressedFileNames;
     UnorderedMap<String, const PackFormat::FileTableEntry*> mapFileData;
     Vector<uint32> startFileNameIndexesInUncompressedNames;
-    uint32 downloadTaskId = 0;
+    DLCDownloader::Task* downloadTaskId = nullptr;
     uint64 fullSizeServerData = 0;
+    mutable Progress lastProgress;
 
     Hints hints{};
 
     float32 timeWaitingNextInitializationAttempt = 0;
     uint32 retryCount = 0; // count every initialization error during session
+
+    std::unique_ptr<DLCDownloader> downloader;
 };
 
 inline uint32 DLCManagerImpl::GetServerFooterCrc32() const

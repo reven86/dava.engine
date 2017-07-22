@@ -533,7 +533,7 @@
   <customwidget>
    <class>ClickableQLabel</class>
    <extends>QLabel</extends>
-   <header>clickableqlabel.h</header>
+   <header>ClickableQLabel.h</header>
   </customwidget>
  </customwidgets>
  <resources>

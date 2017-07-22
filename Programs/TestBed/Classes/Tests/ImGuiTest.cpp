@@ -5,6 +5,7 @@
 #include <Engine/EngineSettings.h>
 #include <Debug/Private/ImGui.h>
 #include <UI/Update/UIUpdateComponent.h>
+#include <Reflection/ReflectionRegistrator.h>
 
 ImGuiTest::ImGuiTest(TestBed& app)
     : BaseScreen(app, "ImGuiTest")

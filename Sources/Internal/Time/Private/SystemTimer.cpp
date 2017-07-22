@@ -16,6 +16,8 @@
 #ifndef CLOCK_BOOTTIME
 #define CLOCK_BOOTTIME 7
 #endif
+#elif defined(__DAVAENGINE_LINUX__)
+#include <sys/sysinfo.h>
 #endif
 
 namespace DAVA
@@ -117,6 +119,12 @@ int64 SystemTimer::GetSystemUptimeUs()
     timespec bootTime;
     clock_gettime(CLOCK_BOOTTIME, &bootTime);
     return bootTime.tv_sec * 1000000ll + bootTime.tv_nsec / 1000ll;
+#elif defined(__DAVAENGINE_LINUX__)
+    struct sysinfo info
+    {
+    };
+    sysinfo(&info);
+    return info.uptime * 1000000ll;
 #else
 #error "SystemTimer: unknown platform"
 #endif
@@ -125,11 +133,6 @@ int64 SystemTimer::GetSystemUptimeUs()
 int64 SystemTimer::GetFrameTimestampMs()
 {
     return frameTimestamp;
-}
-
-float32 SystemTimer::GetFrameTimestamp()
-{
-    return static_cast<float32>(frameTimestamp / 1000.);
 }
 
 float32 SystemTimer::GetFrameDelta()

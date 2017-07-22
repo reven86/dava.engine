@@ -1,11 +1,9 @@
 #include "mainwindow.h"
 #include <Tools/Version.h>
 #include "Classes/Qt/BeastDialog/BeastDialog.h"
-#include "Classes/Qt/CubemapEditor/CubemapTextureBrowser.h"
+#include "Classes/Qt/CubemapEditor/CubeMapTextureBrowser.h"
 #include "Classes/Qt/CubemapEditor/CubemapUtils.h"
 #include "Classes/Qt/DebugTools/VersionInfoWidget/VersionInfoWidget.h"
-#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListController.h"
-#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListWidget.h"
 #include "Classes/Qt/ImageSplitterDialog/ImageSplitterDialog.h"
 #include "Classes/Qt/Main/QtUtils.h"
 #include "Classes/Qt/MaterialEditor/MaterialEditor.h"
@@ -52,13 +50,13 @@
 #include "Commands2/Base/RECommandBatch.h"
 #include "Commands2/Base/RECommandNotificationObject.h"
 #include "Commands2/AddComponentCommand.h"
-#include "Commands2/ConvertPathCommands.h"
 #include "Commands2/CustomColorsCommands2.h"
 #include "Commands2/EntityAddCommand.h"
 #include "Commands2/HeightmapEditorCommands2.h"
 #include "Commands2/RemoveComponentCommand.h"
 #include "Commands2/TilemaskEditorCommands.h"
 #include "Commands2/LandscapeToolsToggleCommand.h"
+#include "Commands2/WayEditCommands.h"
 
 #include "Beast/BeastRunner.h"
 
@@ -233,7 +231,10 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     PathDescriptor::InitializePathDescriptors();
 
     ui->setupUi(this);
+    setObjectName("ResourceEditor"); //we need to support old names to save settings
+
     SetupWidget();
+    SetupTitle(DAVA::String());
 
     qApp->installEventFilter(this);
 
@@ -302,24 +303,6 @@ void QtMainWindow::AfterInjectInit()
     SetupStatusBar();
 }
 
-QString GetSaveFolderForEmitters()
-{
-    const DAVA::FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastEmitterDir).AsFilePath();
-    QString particlesPath;
-    if (defaultPath.IsEmpty())
-    {
-        ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
-        DVASSERT(data != nullptr);
-        particlesPath = QString::fromStdString(data->GetParticlesConfigPath().GetAbsolutePathname());
-    }
-    else
-    {
-        particlesPath = QString::fromStdString(defaultPath.GetAbsolutePathname());
-    }
-
-    return particlesPath;
-}
-
 void QtMainWindow::SetupWidget()
 {
     ui->sceneTree->Init(globalOperations);
@@ -335,7 +318,7 @@ void QtMainWindow::WaitStart(const QString& title, const QString& message, int m
     params.min = min;
     params.max = max;
     params.needProgressBar = min != max;
-    waitDialog = tarcUI->ShowWaitDialog(REGlobal::MainWindowKey, params);
+    waitDialog = tarcUI->ShowWaitDialog(DAVA::TArc::mainWindowKey, params);
 }
 
 void QtMainWindow::WaitSetMessage(const QString& messsage)
@@ -436,12 +419,12 @@ void QtMainWindow::SetupToolBars()
     QAction* actionModifToolBar = ui->modificationToolBar->toggleViewAction();
     QAction* actionLandscapeToolbar = ui->landscapeToolBar->toggleViewAction();
 
-    ui->menuToolbars->addAction(actionMainToolBar);
-    ui->menuToolbars->addAction(actionModifToolBar);
-    ui->menuToolbars->addAction(actionLandscapeToolbar);
-    ui->menuToolbars->addAction(ui->sceneToolBar->toggleViewAction());
-    ui->menuToolbars->addAction(ui->testingToolBar->toggleViewAction());
-    ui->menuToolbars->addAction(ui->cameraToolBar->toggleViewAction());
+    ui->Toolbars->addAction(actionMainToolBar);
+    ui->Toolbars->addAction(actionModifToolBar);
+    ui->Toolbars->addAction(actionLandscapeToolbar);
+    ui->Toolbars->addAction(ui->sceneToolBar->toggleViewAction());
+    ui->Toolbars->addAction(ui->testingToolBar->toggleViewAction());
+    ui->Toolbars->addAction(ui->cameraToolBar->toggleViewAction());
 
     // modification widget
     modificationWidget = new ModificationWidget(nullptr);
@@ -511,12 +494,12 @@ void QtMainWindow::SetupStatusBar()
     insertParams.method = DAVA::TArc::InsertionParams::eInsertionMethod::BeforeItem;
     DAVA::TArc::ActionPlacementInfo placementInfo(DAVA::TArc::CreateStatusbarPoint(true, 0, insertParams));
 
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionShowEditorGizmo);
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionLightmapCanvas);
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionShowStaticOcclusion);
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionEnableVisibilitySystem);
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionEnableDisableShadows);
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionEnableSounds);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionShowEditorGizmo);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionLightmapCanvas);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionShowStaticOcclusion);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionEnableVisibilitySystem);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionEnableDisableShadows);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionEnableSounds);
 }
 
 void QtMainWindow::SetupDocks()
@@ -686,7 +669,6 @@ void QtMainWindow::SetupActions()
         DAVA::Sprite::DumpSprites();
     });
 
-    connect(ui->actionDeviceList, &QAction::triggered, this, &QtMainWindow::DebugDeviceList);
     connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
 
     ui->actionObjectTypesOff->setData(ResourceEditor::ESOT_NONE);
@@ -1968,22 +1950,22 @@ void QtMainWindow::OnWayEditor()
         return;
     }
 
-    bool toEnable = !sceneEditor->pathSystem->IsPathEditEnabled();
-    DVASSERT(toEnable == ui->actionWayEditor->isChecked());
-
-    DAVA::int32 toolsEnabled = sceneEditor->GetEnabledTools();
-    if (toEnable && toolsEnabled)
+    if (sceneEditor->pathSystem->IsPathEditEnabled())
     {
-        DAVA::Logger::Error("Landscape tools should be disabled prior to enabling WayEditor");
-        ui->actionWayEditor->setChecked(false);
-        return;
+        sceneEditor->Exec(std::make_unique<DisableWayEditCommand>(sceneEditor.Get()));
     }
-
-    bool wasLocked = Selection::Lock();
-    sceneEditor->pathSystem->EnablePathEdit(toEnable);
-    if (wasLocked == false)
+    else
     {
-        Selection::Unlock();
+        DAVA::int32 toolsEnabled = sceneEditor->GetEnabledTools();
+        if (toolsEnabled)
+        {
+            DAVA::Logger::Error("Landscape tools should be disabled prior to enabling WayEditor");
+            ui->actionWayEditor->setChecked(false);
+        }
+        else
+        {
+            sceneEditor->Exec(std::make_unique<EnableWayEditCommand>(sceneEditor.Get()));
+        }
     }
 }
 
@@ -2210,7 +2192,7 @@ void QtMainWindow::OnAddPathEntity()
 
     DAVA::ScopedPtr<DAVA::Entity> pathEntity(new DAVA::Entity());
     pathEntity->SetName(ResourceEditor::PATH_NODE_NAME);
-    DAVA::PathComponent* pc = scene->pathSystem->CreatePathComponent();
+    DAVA::PathComponent* pc = new DAVA::PathComponent();
 
     pathEntity->AddComponent(pc);
     scene->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(pathEntity, scene.Get())));
@@ -2268,21 +2250,6 @@ void QtMainWindow::DebugVersionInfo()
     }
 
     versionInfoWidget->show();
-}
-
-void QtMainWindow::DebugDeviceList()
-{
-    // Create controller and window if they are not exist
-    // Pointer deviceListController automatically becomes nullptr on window destruction
-    if (nullptr == deviceListController)
-    {
-        DeviceListWidget* w = new DeviceListWidget(this);
-        w->setAttribute(Qt::WA_DeleteOnClose);
-
-        deviceListController = new DeviceListController(w);
-        deviceListController->SetView(w);
-    }
-    deviceListController->ShowView();
 }
 
 void QtMainWindow::OnConsoleItemClicked(const QString& data)

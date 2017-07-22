@@ -1,5 +1,5 @@
 #include "LicenceDialog.h"
-#include "ui_licencedialog.h"
+#include "ui_LicenceDialog.h"
 
 #include "Settings/SettingsManager.h"
 

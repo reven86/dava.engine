@@ -15,10 +15,6 @@ namespace rhi
 class PerfQueryDX9_t
 {
 public:
-    struct Desc
-    {
-    };
-
     IDirect3DQuery9* query = nullptr;
     uint64 timestamp = 0;
     uint64 freq = 0;
@@ -42,8 +38,8 @@ PerfQueryFrameDX9* NextPerfQueryFrame();
 }
 //==============================================================================
 
-typedef ResourcePool<PerfQueryDX9_t, RESOURCE_PERFQUERY, PerfQueryDX9_t::Desc, false> PerfQueryDX9Pool;
-RHI_IMPL_POOL(PerfQueryDX9_t, RESOURCE_PERFQUERY, PerfQueryDX9_t::Desc, false);
+typedef ResourcePool<PerfQueryDX9_t, RESOURCE_PERFQUERY, PerfQuery::Descriptor, false> PerfQueryDX9Pool;
+RHI_IMPL_POOL(PerfQueryDX9_t, RESOURCE_PERFQUERY, PerfQuery::Descriptor, false);
 
 DAVA::Mutex perfQueryFramePoolSyncDX9;
 DAVA::List<PerfQueryDX9::PerfQueryFrameDX9*> pendingPerfQueryFrameDX9;

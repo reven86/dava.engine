@@ -36,7 +36,16 @@
     <property name="spacing">
      <number>0</number>
     </property>
-    <property name="margin">
+    <property name="leftMargin">
+     <number>0</number>
+    </property>
+    <property name="topMargin">
+     <number>0</number>
+    </property>
+    <property name="rightMargin">
+     <number>0</number>
+    </property>
+    <property name="bottomMargin">
      <number>0</number>
     </property>
    </layout>
@@ -69,7 +78,16 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -96,7 +114,16 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
        </layout>
@@ -114,7 +141,16 @@
         <property name="spacing">
          <number>1</number>
         </property>
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -174,7 +210,7 @@
      <x>0</x>
      <y>0</y>
      <width>1205</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
    <property name="path" stdset="0">
@@ -242,7 +278,7 @@
       <string>Theme</string>
      </property>
     </widget>
-    <widget class="QMenu" name="menuToolbars">
+    <widget class="QMenu" name="Toolbars">
      <property name="title">
       <string>Toolbars</string>
      </property>
@@ -264,7 +300,7 @@
     <addaction name="menuLightView"/>
     <addaction name="separator"/>
     <addaction name="menuTheme"/>
-    <addaction name="menuToolbars"/>
+    <addaction name="Toolbars"/>
     <addaction name="Dock"/>
     <addaction name="separator"/>
     <addaction name="actionShowEditorGizmo"/>
@@ -385,7 +421,6 @@
     <addaction name="actionGridCopy"/>
     <addaction name="actionBatchProcess"/>
     <addaction name="actionCreateTestSkinnedObject"/>
-    <addaction name="actionDeviceList"/>
     <addaction name="actionImageSplitterForNormals"/>
     <addaction name="actionReplaceTextureMipmap"/>
     <addaction name="menuDump"/>
@@ -480,7 +515,16 @@
      <property name="spacing">
       <number>3</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -532,7 +576,16 @@
      <property name="spacing">
       <number>2</number>
      </property>
-     <property name="margin">
+     <property name="leftMargin">
+      <number>1</number>
+     </property>
+     <property name="topMargin">
+      <number>1</number>
+     </property>
+     <property name="rightMargin">
+      <number>1</number>
+     </property>
+     <property name="bottomMargin">
       <number>1</number>
      </property>
      <item>
@@ -564,7 +617,16 @@
         <property name="spacing">
          <number>3</number>
         </property>
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -619,7 +681,16 @@
    </attribute>
    <widget class="QWidget" name="dockLODEditorContent">
     <layout class="QVBoxLayout" name="verticalLayout_2">
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -633,7 +704,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>76</height>
+          <height>71</height>
          </rect>
         </property>
        </widget>
@@ -729,7 +800,16 @@
    </attribute>
    <widget class="QWidget" name="dockLandscapeEditorControlsContent">
     <layout class="QVBoxLayout" name="verticalLayout_3">
-     <property name="margin">
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="topMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>0</number>
+     </property>
+     <property name="bottomMargin">
       <number>0</number>
      </property>
      <item>
@@ -743,7 +823,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>76</height>
+          <height>72</height>
          </rect>
         </property>
        </widget>
@@ -1714,11 +1794,6 @@
     <string>Create Test Skinned Object</string>
    </property>
   </action>
-  <action name="actionDeviceList">
-   <property name="text">
-    <string>Device List</string>
-   </property>
-  </action>
   <action name="actionWayEditor">
    <property name="checkable">
     <bool>true</bool>
@@ -1939,12 +2014,12 @@
   <customwidget>
    <class>ParticleEditorWidget</class>
    <extends>QWidget</extends>
-   <header>DockParticleEditor/particleeditorwidget.h</header>
+   <header>DockParticleEditor/ParticleEditorWidget.h</header>
   </customwidget>
   <customwidget>
    <class>ParticleTimeLineWidget</class>
    <extends>QWidget</extends>
-   <header>DockParticleEditor/particletimelinewidget.h</header>
+   <header>DockParticleEditor/ParticleTimeLineWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

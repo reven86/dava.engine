@@ -54,7 +54,6 @@ public:
     void SetCurrentLanguage(const QString& newLanguageCode);
 
     const QStringList& GetDefaultPresetNames() const;
-    const FileSystemCache* GetFileSystemCache() const;
 
     EditorFontSystem* GetEditorFontSystem() const;
 

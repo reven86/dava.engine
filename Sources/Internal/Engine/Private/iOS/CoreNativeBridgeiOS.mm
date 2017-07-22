@@ -292,6 +292,11 @@ BOOL CoreNativeBridge::OpenURL(UIApplication* app, NSURL* url, NSString* sourceA
     return NotifyListeners(ON_OPEN_URL, app, url, sourceApplication, annotation);
 }
 
+BOOL CoreNativeBridge::ContinueUserActivity(UIApplication* app, NSUserActivity* userActivity, id restorationHandler)
+{
+    return NotifyListeners(ON_CONTINUE_USER_ACTIVITY, app, userActivity, nil, restorationHandler);
+}
+
 void CoreNativeBridge::GameControllerDidConnected()
 {
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateGamepadAddedEvent(0));
@@ -434,6 +439,12 @@ BOOL CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
             if ([listener respondsToSelector:@selector(application:openURL:sourceApplication:annotation:)])
             {
                 ret |= [listener application:static_cast<UIApplication*>(arg1) openURL:static_cast<NSURL*>(arg2) sourceApplication:static_cast<NSString*>(arg3) annotation:arg4];
+            }
+            break;
+        case ON_CONTINUE_USER_ACTIVITY:
+            if ([listener respondsToSelector:@selector(application:continueUserActivity:restorationHandler:)])
+            {
+                ret |= [listener application:static_cast<UIApplication*>(arg1) continueUserActivity:static_cast<NSUserActivity*>(arg2) restorationHandler:arg4];
             }
             break;
 

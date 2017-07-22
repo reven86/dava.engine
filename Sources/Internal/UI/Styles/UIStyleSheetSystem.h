@@ -18,6 +18,19 @@ class UIStyleSheet;
 struct UIStyleSheetSelector;
 class VariantType;
 
+class UIStyleSheetSystemListener
+{
+public:
+    UIStyleSheetSystemListener()
+    {
+    }
+    virtual ~UIStyleSheetSystemListener()
+    {
+    }
+
+    virtual void OnStylePropertyChanged(UIControl* control, UIComponent* component, uint32 propertyIndex) = 0;
+};
+
 struct UIStyleSheetProcessDebugData
 {
     UIStyleSheetProcessDebugData()
@@ -25,8 +38,8 @@ struct UIStyleSheetProcessDebugData
         std::fill(propertySources.begin(), propertySources.end(), nullptr);
     }
 
-    DAVA::Vector<UIPriorityStyleSheet> styleSheets;
-    DAVA::Array<const UIStyleSheet*, UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT> propertySources;
+    Vector<UIPriorityStyleSheet> styleSheets;
+    Array<const UIStyleSheet*, UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT> propertySources;
     UIStyleSheetPropertySet appliedProperties;
 };
 
@@ -37,14 +50,10 @@ public:
     UIStyleSheetSystem();
     ~UIStyleSheetSystem() override;
 
-    void Process(DAVA::float32 elapsedTime) override;
-
     void SetCurrentScreen(const RefPtr<UIScreen>& screen);
     void SetCurrentScreenTransition(const RefPtr<UIScreenTransition>& screenTransition);
     void SetPopupContainer(const RefPtr<UIControl>& popupContainer);
-
-    void ProcessControl(UIControl* control, bool styleSheetListChanged = false);
-    void DebugControl(UIControl* control, UIStyleSheetProcessDebugData* debugData);
+    void SetListener(UIStyleSheetSystemListener* listener);
 
     void AddGlobalClass(const FastName& clazz);
     void RemoveGlobalClass(const FastName& clazz);
@@ -57,13 +66,18 @@ public:
     void ClearStats();
     void DumpStats();
 
-    void Update(UIControl* root);
     void SetDirty();
     void CheckDirty();
 
+    void DebugControl(UIControl* control, UIStyleSheetProcessDebugData* debugData);
+    void ProcessControl(UIControl* control, bool styleSheetListChanged = false); //DON'T USE IT!
+
 private:
-    void ProcessControl(UIControl* control, int32 distanceFromDirty, bool styleSheetListChanged, bool recursively, bool dryRun, UIStyleSheetProcessDebugData* debugData);
-    void UpdateControl(UIControl* root);
+    void Process(float32 elapsedTime) override;
+    void ForceProcessControl(float32 elapsedTime, UIControl* control) override;
+
+    void ProcessControlImpl(UIControl* control, int32 distanceFromDirty, bool styleSheetListChanged, bool recursively, bool dryRun, UIStyleSheetProcessDebugData* debugData);
+    void ProcessControlHierarhy(UIControl* root);
 
     bool StyleSheetMatchesControl(const UIStyleSheet* styleSheet, const UIControl* control);
     bool SelectorMatchesControl(const UIStyleSheetSelector& selector, const UIControl* control);
@@ -82,6 +96,8 @@ private:
     RefPtr<UIScreen> currentScreen;
     RefPtr<UIControl> popupContainer;
     RefPtr<UIScreenTransition> currentScreenTransition;
+
+    UIStyleSheetSystemListener* listener = nullptr;
 };
 
 inline void UIStyleSheetSystem::SetDirty()

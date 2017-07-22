@@ -4,6 +4,7 @@
 #include "Base/BaseObject.h"
 
 #include <functional>
+#include <Base/Result.h>
 
 namespace DAVA
 {
@@ -52,8 +53,14 @@ public:
     virtual bool CanCopy() const;
     virtual bool IsReadOnly() const;
 
+    void AddResult(const DAVA::Result& r);
+    const DAVA::ResultList& GetResults() const;
+    bool HasErrors() const;
+
 private:
     PackageBaseNode* parent;
+
+    DAVA::ResultList results;
 };
 
 //comparator to sort nodes by their hierarchy
@@ -61,5 +68,6 @@ bool CompareByLCA(const PackageBaseNode* left, const PackageBaseNode* right);
 
 //automatically sort all nodes by their hierarchy using CompareByLCA function
 using SortedPackageBaseNodeSet = DAVA::Set<PackageBaseNode*, std::function<bool(const PackageBaseNode*, const PackageBaseNode*)>>;
+using SortedControlNodeSet = DAVA::Set<ControlNode*, std::function<bool(const PackageBaseNode*, const PackageBaseNode*)>>;
 
 #endif // __UI_EDITOR_UI_PACKAGE_MODEL_NODE__

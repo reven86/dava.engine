@@ -14,25 +14,25 @@ namespace TArc
 namespace SubPropertiesEditorDetail
 {
 template <typename TControl, typename TAccessor>
-TControl* CreateControl(typename TControl::Fields role, const String& fieldName, TAccessor* accessor, const Reflection& model)
+TControl* CreateControl(typename TControl::Fields role, const SubPropertiesEditor::BaseParams& controlParams, const String& fieldName, TAccessor* accessor, const Reflection& model)
 {
-    ControlDescriptorBuilder<typename TControl::Fields> descr;
-    descr[role] = fieldName;
-    TControl* control = new TControl(descr, accessor, model);
+    typename TControl::Params params(controlParams.accessor, controlParams.ui, controlParams.wndKey);
+    params.fields[role] = fieldName;
+    TControl* control = new TControl(params, accessor, model);
     return control;
 }
 }
 
-SubPropertiesEditor::SubPropertiesEditor(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QWidget>(fields, wrappersProcessor, model, parent)
+SubPropertiesEditor::SubPropertiesEditor(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
+    : ControlProxyImpl<QWidget>(params, params.fields, wrappersProcessor, model, parent)
 {
     SetupControl(wrappersProcessor);
     copyModelWrapper = wrappersProcessor->CreateWrapper(MakeFunction(this, &SubPropertiesEditor::GetCopyModel), nullptr);
     copyModelWrapper.SetListener(this);
 }
 
-SubPropertiesEditor::SubPropertiesEditor(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QWidget>(fields, accessor, model, parent)
+SubPropertiesEditor::SubPropertiesEditor(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent)
+    : ControlProxyImpl<QWidget>(params, params.fields, accessor, model, parent)
 {
     SetupControl(accessor);
     copyModelWrapper = accessor->CreateWrapper(MakeFunction(this, &SubPropertiesEditor::GetCopyModel));
@@ -85,7 +85,7 @@ void DAVA::TArc::SubPropertiesEditor::SetupControl(T* accessor)
     Vector<Reflection::Field> subFields = copyModel.GetFields();
     for (Reflection::Field& field : subFields)
     {
-        if (field.ref.HasMeta<M::SubProperty>())
+        if (nullptr != field.ref.GetMeta<M::SubProperty>())
         {
             String subFieldName = field.key.Cast<String>();
             QtHBoxLayout* subPropertyLayout = new QtHBoxLayout();
@@ -101,19 +101,19 @@ void DAVA::TArc::SubPropertiesEditor::SetupControl(T* accessor)
             Any subPropertyValue = field.ref.GetValue();
             if (subPropertyValue.CanGet<float32>() || subPropertyValue.CanGet<float64>())
             {
-                DoubleSpinBox* control = CreateControl<DoubleSpinBox>(DoubleSpinBox::Fields::Value, subFieldName, accessor, copyModel);
+                DoubleSpinBox* control = CreateControl<DoubleSpinBox>(DoubleSpinBox::Fields::Value, controlParams, subFieldName, accessor, copyModel);
                 editorWidget = control->ToWidgetCast();
                 subPropertyLayout->AddControl(control);
             }
             else if (subPropertyValue.CanCast<int32>())
             {
-                IntSpinBox* control = CreateControl<IntSpinBox>(IntSpinBox::Fields::Value, subFieldName, accessor, copyModel);
+                IntSpinBox* control = CreateControl<IntSpinBox>(IntSpinBox::Fields::Value, controlParams, subFieldName, accessor, copyModel);
                 editorWidget = control->ToWidgetCast();
                 subPropertyLayout->AddControl(control);
             }
             else if (subPropertyValue.CanCast<String>())
             {
-                LineEdit* control = CreateControl<LineEdit>(LineEdit::Fields::Text, subFieldName, accessor, copyModel);
+                LineEdit* control = CreateControl<LineEdit>(LineEdit::Fields::Text, controlParams, subFieldName, accessor, copyModel);
                 editorWidget = control->ToWidgetCast();
                 subPropertyLayout->AddControl(control);
             }

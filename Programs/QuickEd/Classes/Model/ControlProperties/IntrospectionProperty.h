@@ -6,20 +6,20 @@
 namespace DAVA
 {
 class UIControl;
+class UILayoutSourceRectComponent;
 }
 
 class IntrospectionProperty : public ValueProperty
 {
 public:
-    IntrospectionProperty(DAVA::BaseObject* object, DAVA::int32 componentType, const DAVA::String& name, const DAVA::Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType copyType);
+    IntrospectionProperty(DAVA::BaseObject* object, const DAVA::Type* componentType, const DAVA::String& name, const DAVA::Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType copyType);
 
 protected:
     virtual ~IntrospectionProperty();
 
 public:
-    static IntrospectionProperty* Create(DAVA::UIControl* control, const DAVA::String& name, const DAVA::Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType cloneType);
+    static IntrospectionProperty* Create(DAVA::BaseObject* object, const DAVA::Type* componentType, const DAVA::String& name, const DAVA::Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType cloneType);
 
-    void Refresh(DAVA::int32 refreshFlags) override;
     void Accept(PropertyVisitor* visitor) override;
 
     DAVA::uint32 GetFlags() const override;
@@ -45,7 +45,8 @@ protected:
     DAVA::int32 flags;
 
 private:
-    DAVA::Any sourceValue;
+    void SetLayoutSourceRectValue(const DAVA::Any& value);
+    DAVA::RefPtr<DAVA::UILayoutSourceRectComponent> sourceRectComponent;
 };
 
 #endif //__UI_EDITOR_INTROSPECTION_PROPERTY__

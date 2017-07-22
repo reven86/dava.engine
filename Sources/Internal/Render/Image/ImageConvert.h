@@ -276,10 +276,11 @@ struct ConvertRGB565toRGBA8888
 {
     inline void operator()(const uint16* input, uint32* output)
     {
+        //r-channel in least significant bits
         uint16 pixel = *input;
-        uint32 r = (((pixel >> 11) & 0x01F) << 3);
+        uint32 b = (((pixel >> 11) & 0x01F) << 3);
         uint32 g = (((pixel >> 5) & 0x03F) << 2);
-        uint32 b = (((pixel >> 0) & 0x01F) << 3);
+        uint32 r = (((pixel >> 0) & 0x01F) << 3);
         uint32 a = 0xFF;
 
         *output = (r) | (g << 8) | (b << 16) | (a << 24);
@@ -814,6 +815,12 @@ class ConvertDownscaleTwiceBillinear
 public:
     void operator()(const void* inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
                     void* outData, uint32 outWidth, uint32 outHeight, uint32 outPitch)
+#if defined(__DAVAENGINE_IPHONE__) && __clang_major__ == 7 && __clang_minor__ == 3
+    // Clang 7.3 incorrectly optimizes nested loops below using ARM's vld2.32 instruction,
+    // reading memory outside of input image's data bounds, which leads to EXC_BAD_ACCESS.
+    // So, just disable any optimizations for this function on this specific clang version.
+    __attribute__((optnone))
+#endif
     {
         UNPACK_FUNC unpackFunc;
         PACK_FUNC packFunc;

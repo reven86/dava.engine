@@ -11,8 +11,7 @@ public:
     FileSystemCacheData(const QStringList& extensions);
     ~FileSystemCacheData() override;
 
-    //TODO: remove this public getter; Move FindWidget to TArc and create here public const method GetFiles(const String &extension);
-    const FileSystemCache* GetFileSystemCache() const;
+    QStringList GetFiles(const QString& extension) const;
 
 private:
     friend class FileSystemCacheModule;

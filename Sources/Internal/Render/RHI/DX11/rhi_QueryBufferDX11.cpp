@@ -124,7 +124,7 @@ static bool dx11_QueryBuffer_ObjectIsReady(Handle handle, uint32 objectIndex)
     return ready;
 }
 
-static int dx11_QueryBuffer_Value(Handle handle, uint32 objectIndex)
+static int32 dx11_QueryBuffer_Value(Handle handle, uint32 objectIndex)
 {
     QueryBufferDX11_t* buf = QueryBufferDX11Pool::Get(handle);
     DVASSERT(buf);

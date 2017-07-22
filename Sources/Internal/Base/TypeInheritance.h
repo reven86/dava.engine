@@ -35,9 +35,6 @@ private:
         DownCast //!< from class to base class
     };
 
-    mutable Vector<Info> baseTypesInfo;
-    mutable Vector<Info> derivedTypesInfo;
-
     static bool TryCast(const Type* from, const Type* to, CastType castType, void* inPtr, void** outPtr);
 
     template <typename T, typename B>
@@ -45,6 +42,12 @@ private:
 
     template <typename T, typename D>
     static bool AddDerivedType();
+
+    void AddBaseType(const Type* baseType, std::ptrdiff_t baseDiff);
+    void AddDerivedType(const Type* derivedType, std::ptrdiff_t derivedDiff);
+
+    Vector<Info> baseTypesInfo;
+    Vector<Info> derivedTypesInfo;
 };
 } // namespace DAVA
 

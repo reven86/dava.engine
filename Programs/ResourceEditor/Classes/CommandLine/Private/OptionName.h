@@ -7,8 +7,6 @@
 class OptionName
 {
 public:
-    static const DAVA::String deprecated_Export;
-
     static const DAVA::String Output;
     static const DAVA::String OutFile;
     static const DAVA::String OutDir;
@@ -62,6 +60,7 @@ public:
     static const DAVA::String Camera;
 
     static const DAVA::String Validate;
+    static const DAVA::String Count;
 
     static const DAVA::String MakeNameForGPU(DAVA::eGPUFamily gpuFamily);
 };

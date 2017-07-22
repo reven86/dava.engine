@@ -1,5 +1,5 @@
-#include "UIActionBindingComponent.h"
-
+#include "UI/Input/UIActionBindingComponent.h"
+#include "Reflection/ReflectionRegistrator.h"
 #include "Utils/Utils.h"
 #include "Utils/StringUtils.h"
 

@@ -16,10 +16,6 @@ class ControlsContainerNode;
 namespace DAVA
 {
 class Vector2;
-namespace TArc
-{
-class ContextAccessor;
-}
 }
 
 class SelectionSystem : public BaseEditorSystem, public DAVA::InspBase
@@ -36,27 +32,24 @@ public:
     void SelectNode(ControlNode* node);
 
     ControlNode* GetNearestNodeUnderPoint(const DAVA::Vector2& point) const;
-    ControlNode* GetCommonNodeUnderPoint(const DAVA::Vector2& point) const;
+    ControlNode* GetCommonNodeUnderPoint(const DAVA::Vector2& point, bool canGoDeeper) const;
 
 private:
     bool CanProcessInput(DAVA::UIEvent* currentInput) const override;
+    void ProcessInput(DAVA::UIEvent* currentInput) override;
 
     void GetNodesForSelection(DAVA::Vector<ControlNode*>& nodesUnderPoint, const DAVA::Vector2& point) const;
-    void ProcessInput(DAVA::UIEvent* currentInput) override;
     void OnSelectByRect(const DAVA::Rect& rect);
 
     void FocusToChild(bool next);
     void SelectNodes(const SelectedNodes& selection);
-    void OnSelectionChanged(const SelectedNodes& selection);
 
     ControlNode* FindSmallNodeUnderNode(const DAVA::Vector<ControlNode*>& nodesUnderPoint) const;
 
-    SelectionContainer selectionContainer;
     bool canFindCommonForSelection = true;
 
     bool selectOnRelease = false;
     DAVA::Vector2 pressedPoint = DAVA::Vector2(-1.0f, -1.0f);
-    DAVA::TArc::ContextAccessor* accessor = nullptr;
 
     DAVA::TArc::DataWrapper documentDataWrapper;
 

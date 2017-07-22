@@ -2,8 +2,8 @@
 #include "ui_BaseAddEntityDialog.h"
 #include "Qt/Main/QtUtils.h"
 #include <QSizePolicy>
-#include <Qlabel>
-#include "QScrollBar.h"
+#include <QLabel>
+#include <QScrollBar>
 #include "Scene/System/BeastSystem.h"
 
 

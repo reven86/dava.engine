@@ -16,7 +16,7 @@ namespace DAVA
 class DataNode : public BaseObject
 {
 public:
-    static const int32 INVALID_ID = 0;
+    static const uint64 INVALID_ID = 0;
 
 public:
     DataNode();

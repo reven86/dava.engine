@@ -165,6 +165,11 @@ NSString* ScreenNameForDisplay(NSNumber* screen_id)
     return displayname;
 }
 
+float32 DeviceManagerImpl::GetCpuTemperature() const
+{
+    return 0.0f;
+}
+
 } // namespace Private
 } // namespace DAVA
 

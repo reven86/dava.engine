@@ -394,6 +394,9 @@ bool UIInputSystem::HandleTouchEvent(UIEvent* event)
         focusedControlWhenTouchBegan = nullptr;
     }
 
+    // Copy actual 'touchLocker' pointer to original event object
+    event->touchLocker = eventToHandle->touchLocker;
+
     return processed;
 }
 

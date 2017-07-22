@@ -79,3 +79,8 @@ ValueProperty* SubValueProperty::GetValueProperty() const
 {
     return DynamicTypeCheck<ValueProperty*>(GetParent());
 }
+
+DAVA::int32 SubValueProperty::GetIndex() const
+{
+    return index;
+}

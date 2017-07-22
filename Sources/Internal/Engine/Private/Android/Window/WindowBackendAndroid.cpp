@@ -214,15 +214,17 @@ void WindowBackend::DoSetSurfaceScale(const float32 scale)
 jobject WindowBackend::CreateNativeControl(const char8* controlClassName, void* backendPointer)
 {
     jobject object = nullptr;
+
     try
     {
-        jstring className = JNI::CStrToJavaString(controlClassName);
+        JNI::LocalRef<jstring> className = JNI::CStrToJavaString(controlClassName);
         object = createNativeControl(surfaceView, className, reinterpret_cast<jlong>(backendPointer));
     }
     catch (const JNI::Exception& e)
     {
         Logger::Error("[WindowBackend::CreateNativeControl] failed to create native control %s: %s", controlClassName, e.what());
     }
+
     return object;
 }
 
@@ -315,6 +317,8 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
         }
 
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, dpi, eFullscreen::On));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, true));
 
         firstTimeSurfaceChanged = false;
     }
@@ -335,13 +339,23 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
                 engineBackend->ResetRenderer(this->window, !this->IsWindowReadyForRender());
             }));
         }
+
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([this]() {
+            if (engineBackend->IsSuspended())
+            {
+                engineBackend->DrawSingleFrameWhileSuspended();
+            }
+        }));
     }
 }
 
 void WindowBackend::SurfaceDestroyed()
 {
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([this]() {
+    // Android documentation says that after surfaceDestroyed call is finished no one should touch the surface
+    // So make a blocking call that resets native window pointer and renderer
+    mainDispatcher->SendEvent(MainDispatcherEvent::CreateFunctorEvent([this]() {
         ReplaceAndroidNativeWindow(nullptr);
+        engineBackend->ResetRenderer(this->window, true);
     }));
 }
 

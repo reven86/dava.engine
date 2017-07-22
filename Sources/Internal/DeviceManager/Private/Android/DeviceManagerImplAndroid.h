@@ -22,13 +22,16 @@ struct DeviceManagerImpl final
 
     DisplayInfo ConvertFromJavaDisplayInfo(JNIEnv* env, const jobject javaDisplayInfo, const bool isPrimary);
 
+    float32 GetCpuTemperature() const;
+
     DeviceManager* deviceManager = nullptr;
     Private::MainDispatcher* mainDispatcher = nullptr;
 
     // JNI part
     JNI::JavaClass javaDeviceManagerClass;
     JNI::JavaClass javaDisplayInfoClass;
-    jobject javaDeviceManagerInstance;
+    JNI::GlobalRef<jobject> javaDeviceManagerInstance;
+    Function<jfloat(jobject)> javaGetCpuTemperatureMethod;
     jfieldID javaDisplayInfoNameField;
     jfieldID javaDisplayInfoIdField;
     jfieldID javaDisplayInfoWidthField;

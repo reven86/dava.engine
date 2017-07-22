@@ -21,13 +21,12 @@ REGISTER_PREFERENCES_ON_START(SelectionSystem,
                               PREF_ARG("CanFindCommonForSelection", true),
                               )
 
-SelectionSystem::SelectionSystem(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor_)
-    : BaseEditorSystem(parent)
-    , accessor(accessor_)
+SelectionSystem::SelectionSystem(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor)
+    : BaseEditorSystem(parent, accessor)
 {
     documentDataWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<DocumentData>());
-    systemsManager->selectionChanged.Connect(this, &SelectionSystem::OnSelectionChanged);
     systemsManager->selectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
+
     PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
@@ -59,7 +58,7 @@ void SelectionSystem::ProcessInput(UIEvent* currentInput)
         return;
     }
 
-    ControlNode* selectedNode = systemsManager->GetControlNodeAtPoint(currentInput->point);
+    ControlNode* selectedNode = systemsManager->GetControlNodeAtPoint(currentInput->point, currentInput->tapCount > 1);
     if (nullptr != selectedNode)
     {
         SelectNode(selectedNode);
@@ -68,13 +67,19 @@ void SelectionSystem::ProcessInput(UIEvent* currentInput)
 
 void SelectionSystem::OnSelectByRect(const Rect& rect)
 {
+    using namespace DAVA::TArc;
+
     SelectedNodes newSelection;
     if (IsKeyPressed(KeyboardProxy::KEY_SHIFT))
     {
-        newSelection = selectionContainer.selectedNodes;
+        newSelection = documentDataWrapper.GetFieldValue(DocumentData::selectionPropertyName).Cast<SelectedNodes>(SelectedNodes());
     }
 
-    for (const PackageBaseNode* node : systemsManager->GetEditingRootControls())
+    DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    DocumentData* documentData = activeContext->GetData<DocumentData>();
+
+    for (const PackageBaseNode* node : documentData->GetDisplayedRootControls())
     {
         for (int i = 0, count = node->GetCount(); i < count; ++i)
         {
@@ -98,9 +103,19 @@ void SelectionSystem::ClearSelection()
 
 void SelectionSystem::SelectAllControls()
 {
+    using namespace DAVA::TArc;
+
+    DataContext* activeContext = accessor->GetActiveContext();
+    if (activeContext == nullptr)
+    {
+        return;
+    }
+
+    DocumentData* documentData = activeContext->GetData<DocumentData>();
+
     SelectedNodes selected;
     //find only children of root controls
-    for (const PackageBaseNode* node : systemsManager->GetEditingRootControls())
+    for (const PackageBaseNode* node : documentData->GetDisplayedRootControls())
     {
         for (int i = 0, count = node->GetCount(); i < count; ++i)
         {
@@ -125,10 +140,17 @@ void SelectionSystem::FocusPreviousChild()
 
 void SelectionSystem::FocusToChild(bool next)
 {
-    PackageBaseNode* startNode = nullptr;
-    if (!selectionContainer.selectedNodes.empty())
+    if (accessor->GetActiveContext() == nullptr)
     {
-        startNode = *selectionContainer.selectedNodes.rbegin();
+        return;
+    }
+
+    PackageBaseNode* startNode = nullptr;
+    SelectedNodes selection = documentDataWrapper.GetFieldValue(DocumentData::selectionPropertyName).Cast<SelectedNodes>(SelectedNodes());
+
+    if (!selection.empty())
+    {
+        startNode = *selection.rbegin();
     }
     PackageBaseNode* nextNode = nullptr;
     Vector<PackageBaseNode*> allNodes;
@@ -155,15 +177,9 @@ void SelectionSystem::FocusToChild(bool next)
     SelectNodes({ nextNode });
 }
 
-void SelectionSystem::OnSelectionChanged(const SelectedNodes& selection)
-{
-    selectionContainer.selectedNodes = selection;
-}
-
 void SelectionSystem::SelectNodes(const SelectedNodes& selection)
 {
-    selectionContainer.selectedNodes = selection;
-    //remove this "if" when other systems will not emit signal selectionChanged
+    //TODO: remove this "if" when other systems will not emit signal selectionChanged
     if (documentDataWrapper.HasData())
     {
         documentDataWrapper.SetFieldValue(DocumentData::selectionPropertyName, selection);
@@ -173,14 +189,15 @@ void SelectionSystem::SelectNodes(const SelectedNodes& selection)
 void SelectionSystem::SelectNode(ControlNode* selectedNode)
 {
     SelectedNodes newSelection;
+    SelectedNodes currentSelection = documentDataWrapper.GetFieldValue(DocumentData::selectionPropertyName).Cast<SelectedNodes>(SelectedNodes());
     if (IsKeyPressed(KeyboardProxy::KEY_SHIFT) || IsKeyPressed(KeyboardProxy::KEY_CTRL))
     {
-        newSelection = selectionContainer.selectedNodes;
+        newSelection = currentSelection;
     }
 
     if (selectedNode != nullptr)
     {
-        if (IsKeyPressed(KeyboardProxy::KEY_CTRL) && selectionContainer.IsSelected(selectedNode))
+        if (IsKeyPressed(KeyboardProxy::KEY_CTRL) && currentSelection.find(selectedNode) != currentSelection.end())
         {
             newSelection.erase(selectedNode);
         }
@@ -232,7 +249,7 @@ ControlNode* SelectionSystem::FindSmallNodeUnderNode(const Vector<ControlNode*>&
             Vector2 previousSize = lastNodeSize.second;
 
             ControlNode* previousNode = lastNodeSize.first;
-            //not toplevel node or it hierarchy. We don't search in background nodes
+            //not top level node or it hierarchy. We don't search in background nodes
             if (topLevelItemHierarchy.find(previousNode) == topLevelItemHierarchy.end())
             {
                 break;
@@ -267,19 +284,24 @@ void SelectionSystem::GetNodesForSelection(Vector<ControlNode*>& nodesUnderPoint
     auto findPredicate = [point](const ControlNode* node) -> bool {
         const UIControl* control = node->GetControl();
         DVASSERT(nullptr != control);
-        return control->GetVisibilityFlag() && control->IsPointInside(point);
+        return control->GetVisibilityFlag() && !control->IsHiddenForDebug() && control->IsPointInside(point);
     };
 
     auto stopPredicate = [](const ControlNode* node) -> bool {
         const UIControl* control = node->GetControl();
         DVASSERT(nullptr != control);
-        return !control->GetVisibilityFlag();
+        return !control->GetVisibilityFlag() || control->IsHiddenForDebug();
     };
     systemsManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), findPredicate, stopPredicate);
 }
 
 bool SelectionSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
 {
+    if (accessor->GetActiveContext() == nullptr)
+    {
+        return false;
+    }
+
     EditorSystemsManager::eDisplayState displayState = systemsManager->GetDisplayState();
     EditorSystemsManager::eDragState dragState = systemsManager->GetDragState();
     return (displayState == EditorSystemsManager::Edit
@@ -289,11 +311,25 @@ bool SelectionSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
     && currentInput->mouseButton == DAVA::eMouseButtons::LEFT;
 }
 
-ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const DAVA::Vector2& point) const
+ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const DAVA::Vector2& point, bool canGoDeeper) const
 {
     Vector<ControlNode*> nodesUnderPoint;
     GetNodesForSelection(nodesUnderPoint, point);
-    const SelectedNodes& selected = selectionContainer.selectedNodes;
+    SelectedNodes selection = documentDataWrapper.GetFieldValue(DocumentData::selectionPropertyName).Cast<SelectedNodes>(SelectedNodes());
+
+    //here we use only selected controls
+    for (auto iter = selection.begin(); iter != selection.end();)
+    {
+        if ((*iter)->GetControl() == nullptr)
+        {
+            iter = selection.erase(iter);
+        }
+        else
+        {
+            ++iter;
+        }
+    }
+
     //no selection. Search for the child of root under cursor
     if (nodesUnderPoint.empty())
     {
@@ -304,11 +340,11 @@ ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const DAVA::Vector2& point
         return nodesUnderPoint.front();
     }
 
-    if (!selected.empty())
+    if (!selection.empty())
     {
         //collect all selected hierarchy
         SelectedNodes parentsOfSelectedNodes;
-        for (PackageBaseNode* node : selected)
+        for (PackageBaseNode* node : selection)
         {
             node = node->GetParent();
             while (node != nullptr && node->GetControl() != nullptr)
@@ -324,18 +360,26 @@ ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const DAVA::Vector2& point
             ControlNode* node = *iter;
             PackageBaseNode* nodeParent = node->GetParent();
 
-            if (selected.find(node) != selected.end())
+            if (selection.find(node) != selection.end())
             {
                 return node;
             }
 
             //search child of selected to move down by hierarchy
             // or search neighbor to move left-right
-            if (selected.find(nodeParent) != selected.end())
+            if (selection.find(nodeParent) != selection.end())
             {
-                return node;
+                if (canGoDeeper)
+                {
+                    return node;
+                }
+                else
+                {
+                    DVASSERT(dynamic_cast<ControlNode*>(nodeParent) != nullptr);
+                    return dynamic_cast<ControlNode*>(nodeParent);
+                }
             }
-            else if (selected.find(node) == selected.end()
+            else if (selection.find(node) == selection.end()
                      && parentsOfSelectedNodes.find(nodeParent) != parentsOfSelectedNodes.end())
             {
                 return node;
@@ -373,8 +417,7 @@ ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const DAVA::Vector2& point
             }
         }
     }
-    //did not found nothing, get nearest
-    return GetNearestNodeUnderPoint(point);
+    return nullptr;
 }
 
 ControlNode* SelectionSystem::GetNearestNodeUnderPoint(const DAVA::Vector2& point) const

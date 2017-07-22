@@ -26,6 +26,7 @@ class ResultList;
 namespace TArc
 {
 class ContextAccessor;
+class UI;
 }
 }
 
@@ -40,7 +41,7 @@ class MainWindow : public QMainWindow, public DAVA::InspBase, public DAVA::Track
 public:
     class ProjectView;
 
-    explicit MainWindow(DAVA::TArc::ContextAccessor* accessor, QWidget* parent = nullptr);
+    explicit MainWindow(DAVA::TArc::ContextAccessor* accessor, DAVA::TArc::UI* ui, QWidget* parent = nullptr);
 
     ~MainWindow() override;
 

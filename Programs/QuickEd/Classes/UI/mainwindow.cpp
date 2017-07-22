@@ -32,7 +32,7 @@ REGISTER_PREFERENCES_ON_START(MainWindow,
 
 Q_DECLARE_METATYPE(const InspMember*);
 
-MainWindow::MainWindow(DAVA::TArc::ContextAccessor* accessor, QWidget* parent)
+MainWindow::MainWindow(DAVA::TArc::ContextAccessor* accessor, DAVA::TArc::UI* tarcUi, QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow())
 #if defined(__DAVAENGINE_MACOS__)
@@ -40,9 +40,14 @@ MainWindow::MainWindow(DAVA::TArc::ContextAccessor* accessor, QWidget* parent)
 #endif //__DAVAENGINE_MACOS__
 {
     ui->setupUi(this);
+    setObjectName("QuickEd"); //we need to support old names to save window settings
+
     ui->libraryWidget->SetAccessor(accessor);
+    ui->libraryWidget->SetUI(tarcUi);
     ui->propertiesWidget->SetAccessor(accessor);
+    ui->propertiesWidget->SetUI(tarcUi);
     ui->packageWidget->SetAccessor(accessor);
+    ui->packageWidget->SetUI(tarcUi);
 
     setWindowIcon(QIcon(":/icon.ico"));
     DebugTools::ConnectToUI(ui.get());
@@ -55,7 +60,6 @@ MainWindow::MainWindow(DAVA::TArc::ContextAccessor* accessor, QWidget* parent)
 
     PreferencesStorage::Instance()->RegisterPreferences(this);
 
-    connect(ui->packageWidget, &PackageWidget::CurrentIndexChanged, ui->propertiesWidget, &PropertiesWidget::UpdateModel);
     connect(projectView, &ProjectView::ProjectChanged, ui->propertiesWidget, &PropertiesWidget::SetProject);
 
     qApp->installEventFilter(this);
@@ -104,7 +108,6 @@ void MainWindow::SetupViewMenu()
     dockWidgetToggleActions << ui->propertiesWidget->toggleViewAction()
                             << ui->packageWidget->toggleViewAction()
                             << ui->libraryWidget->toggleViewAction()
-                            << ui->findWidget->toggleViewAction()
                             << ui->mainToolbar->toggleViewAction()
                             << ui->toolBarGlobal->toggleViewAction();
 

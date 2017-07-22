@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Math/Math2D.h"
 
 namespace DAVA
 {

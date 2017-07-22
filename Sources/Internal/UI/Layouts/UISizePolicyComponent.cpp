@@ -1,6 +1,8 @@
-#include "UISizePolicyComponent.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 #include "UI/UIControl.h"
+#include "UI/Layouts/LayoutFormula.h"
 #include "Math/Vector.h"
 
 namespace DAVA
@@ -10,20 +12,16 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UISizePolicyComponent)
     ReflectionRegistrator<UISizePolicyComponent>::Begin()
     .ConstructorByPointer()
     .DestructorByPointer([](UISizePolicyComponent* o) { o->Release(); })
-    .Field("horizontalPolicy", &UISizePolicyComponent::GetHorizontalPolicy, &UISizePolicyComponent::SetHorizontalPolicy)
-    [
-    M::EnumT<UISizePolicyComponent::eSizePolicy>()
-    ]
+    .Field("horizontalPolicy", &UISizePolicyComponent::GetHorizontalPolicy, &UISizePolicyComponent::SetHorizontalPolicy)[M::EnumT<UISizePolicyComponent::eSizePolicy>()]
     .Field("horizontalValue", &UISizePolicyComponent::GetHorizontalValue, &UISizePolicyComponent::SetHorizontalValue)
     .Field("horizontalMin", &UISizePolicyComponent::GetHorizontalMinValue, &UISizePolicyComponent::SetHorizontalMinValue)
     .Field("horizontalMax", &UISizePolicyComponent::GetHorizontalMaxValue, &UISizePolicyComponent::SetHorizontalMaxValue)
-    .Field("verticalPolicy", &UISizePolicyComponent::GetVerticalPolicy, &UISizePolicyComponent::SetVerticalPolicy)
-    [
-    M::EnumT<UISizePolicyComponent::eSizePolicy>()
-    ]
+    .Field("horizontalFormula", &UISizePolicyComponent::GetHorizontalFormula, &UISizePolicyComponent::SetHorizontalFormula)
+    .Field("verticalPolicy", &UISizePolicyComponent::GetVerticalPolicy, &UISizePolicyComponent::SetVerticalPolicy)[M::EnumT<UISizePolicyComponent::eSizePolicy>()]
     .Field("verticalValue", &UISizePolicyComponent::GetVerticalValue, &UISizePolicyComponent::SetVerticalValue)
     .Field("verticalMin", &UISizePolicyComponent::GetVerticalMinValue, &UISizePolicyComponent::SetVerticalMinValue)
     .Field("verticalMax", &UISizePolicyComponent::GetVerticalMaxValue, &UISizePolicyComponent::SetVerticalMaxValue)
+    .Field("verticalFormula", &UISizePolicyComponent::GetVerticalFormula, &UISizePolicyComponent::SetVerticalFormula)
     .End();
 }
 
@@ -50,6 +48,12 @@ UISizePolicyComponent::UISizePolicyComponent(const UISizePolicyComponent& src)
         policy[i].value = src.policy[i].value;
         policy[i].min = src.policy[i].min;
         policy[i].max = src.policy[i].max;
+
+        if (src.policy[i].formula)
+        {
+            policy[i].formula.reset(new LayoutFormula());
+            policy[i].formula->SetSource(src.policy[i].formula->GetSource());
+        }
     }
 }
 
@@ -126,6 +130,26 @@ void UISizePolicyComponent::SetHorizontalMaxValue(float32 value)
     SetLayoutDirty();
 }
 
+String UISizePolicyComponent::GetHorizontalFormula() const
+{
+    if (policy[Vector2::AXIS_X].formula)
+    {
+        return policy[Vector2::AXIS_X].formula->GetSource();
+    }
+    return "";
+}
+
+void UISizePolicyComponent::SetHorizontalFormula(const String& formulaSource)
+{
+    if (policy[Vector2::AXIS_X].formula == nullptr)
+    {
+        policy[Vector2::AXIS_X].formula.reset(new LayoutFormula());
+    }
+    policy[Vector2::AXIS_X].formula->SetSource(formulaSource);
+
+    SetLayoutDirty();
+}
+
 UISizePolicyComponent::eSizePolicy UISizePolicyComponent::GetVerticalPolicy() const
 {
     return policy[Vector2::AXIS_Y].policy;
@@ -190,6 +214,26 @@ void UISizePolicyComponent::SetVerticalMaxValue(float32 value)
     SetLayoutDirty();
 }
 
+String UISizePolicyComponent::GetVerticalFormula() const
+{
+    if (policy[Vector2::AXIS_Y].formula)
+    {
+        return policy[Vector2::AXIS_Y].formula->GetSource();
+    }
+    return "";
+}
+
+void UISizePolicyComponent::SetVerticalFormula(const String& formulaSource)
+{
+    if (policy[Vector2::AXIS_Y].formula == nullptr)
+    {
+        policy[Vector2::AXIS_Y].formula.reset(new LayoutFormula());
+    }
+    policy[Vector2::AXIS_Y].formula->SetSource(formulaSource);
+
+    SetLayoutDirty();
+}
+
 UISizePolicyComponent::eSizePolicy UISizePolicyComponent::GetPolicyByAxis(int32 axis) const
 {
     DVASSERT(0 <= axis && axis < Vector2::AXIS_COUNT);
@@ -214,31 +258,21 @@ float32 UISizePolicyComponent::GetMaxValueByAxis(int32 axis) const
     return policy[axis].max;
 }
 
+LayoutFormula* UISizePolicyComponent::GetFormula(int32 axis) const
+{
+    return policy[axis].formula.get();
+}
+
+void UISizePolicyComponent::RemoveFormula(int32 axis)
+{
+    policy[axis].formula.reset();
+}
+
 bool UISizePolicyComponent::IsDependsOnChildren(int32 axis) const
 {
     DVASSERT(0 <= axis && axis < Vector2::AXIS_COUNT);
     eSizePolicy p = policy[axis].policy;
-    return p == PERCENT_OF_CHILDREN_SUM || p == PERCENT_OF_MAX_CHILD || p == PERCENT_OF_FIRST_CHILD || p == PERCENT_OF_LAST_CHILD;
-}
-
-int32 UISizePolicyComponent::GetHorizontalPolicyAsInt() const
-{
-    return GetHorizontalPolicy();
-}
-
-void UISizePolicyComponent::SetHorizontalPolicyFromInt(int32 policy)
-{
-    SetHorizontalPolicy(static_cast<eSizePolicy>(policy));
-}
-
-int32 UISizePolicyComponent::GetVerticalPolicyAsInt() const
-{
-    return GetVerticalPolicy();
-}
-
-void UISizePolicyComponent::SetVerticalPolicyFromInt(int32 policy)
-{
-    SetVerticalPolicy(static_cast<eSizePolicy>(policy));
+    return p == PERCENT_OF_CHILDREN_SUM || p == PERCENT_OF_MAX_CHILD || p == PERCENT_OF_FIRST_CHILD || p == PERCENT_OF_LAST_CHILD || p == FORMULA;
 }
 
 void UISizePolicyComponent::SetLayoutDirty()

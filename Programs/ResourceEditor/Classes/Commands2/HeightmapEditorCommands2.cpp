@@ -1,17 +1,20 @@
 #include "HeightmapEditorCommands2.h"
-#include "../Qt/Scene/System/LandscapeEditorDrawSystem/HeightmapProxy.h"
-#include "../Qt/Scene/System/LandscapeEditorDrawSystem/LandscapeProxy.h"
-#include "../Qt/Scene/SceneEditor2.h"
-#include "../Qt/Scene/SceneSignals.h"
+#include "Classes/Qt/Scene/System/LandscapeEditorDrawSystem/HeightmapProxy.h"
+#include "Classes/Qt/Scene/System/LandscapeEditorDrawSystem.h"
 
-#include "../Qt/Main/QtUtils.h"
+#include "Classes/Qt/Scene/System/LandscapeEditorDrawSystem/LandscapeProxy.h"
+#include "Classes/Qt/Scene/SceneEditor2.h"
+#include "Classes/Qt/Scene/SceneSignals.h"
 
-ModifyHeightmapCommand::ModifyHeightmapCommand(HeightmapProxy* heightmapProxy,
+#include "Classes/Qt/Main/QtUtils.h"
+
+ModifyHeightmapCommand::ModifyHeightmapCommand(LandscapeEditorDrawSystem* drawSystem_,
                                                DAVA::Heightmap* originalHeightmap,
                                                const DAVA::Rect& updatedRect)
     : RECommand(CMDID_HEIGHTMAP_MODIFY, "Height Map Change")
-    , heightmapProxy(heightmapProxy)
+    , drawSystem(drawSystem_)
 {
+    HeightmapProxy* heightmapProxy = drawSystem->GetHeightmapProxy();
     if (originalHeightmap && heightmapProxy)
     {
         this->updatedRect = updatedRect;
@@ -61,6 +64,7 @@ DAVA::uint16* ModifyHeightmapCommand::GetHeightmapRegion(DAVA::Heightmap* height
 
 void ModifyHeightmapCommand::ApplyHeightmapRegion(DAVA::uint16* region)
 {
+    HeightmapProxy* heightmapProxy = drawSystem->GetHeightmapProxy();
     DAVA::int32 size = heightmapProxy->Size();
     DAVA::int32 width = static_cast<DAVA::int32>(ceilf(updatedRect.dx));
     DAVA::int32 height = static_cast<DAVA::int32>(ceilf(updatedRect.dy));

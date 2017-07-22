@@ -56,8 +56,7 @@ std::vector<GLuint> QueryObjectGLES2Pool;
 
 //==============================================================================
 
-static Handle
-gles2_QueryBuffer_Create(uint32 maxObjectCount)
+static Handle gles2_QueryBuffer_Create(uint32 maxObjectCount)
 {
     Handle handle = QueryBufferGLES2Pool::Alloc();
     QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
@@ -72,8 +71,7 @@ gles2_QueryBuffer_Create(uint32 maxObjectCount)
     return handle;
 }
 
-static void
-gles2_QueryBuffer_Reset(Handle handle)
+static void gles2_QueryBuffer_Reset(Handle handle)
 {
     QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
     DVASSERT(buf);
@@ -92,8 +90,7 @@ gles2_QueryBuffer_Reset(Handle handle)
     buf->bufferCompleted = false;
 }
 
-static void
-gles2_QueryBuffer_Delete(Handle handle)
+static void gles2_QueryBuffer_Delete(Handle handle)
 {
     QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
     DVASSERT(buf);
@@ -109,8 +106,7 @@ gles2_QueryBuffer_Delete(Handle handle)
     QueryBufferGLES2Pool::Free(handle);
 }
 
-static void
-gles2_Check_Query_Results(QueryBufferGLES2_t* buf)
+static void gles2_Check_Query_Results(QueryBufferGLES2_t* buf)
 {
     if (buf->pendingQueries.empty())
         return;
@@ -160,8 +156,7 @@ gles2_Check_Query_Results(QueryBufferGLES2_t* buf)
     }
 }
 
-static bool
-gles2_QueryBuffer_IsReady(Handle handle)
+static bool gles2_QueryBuffer_IsReady(Handle handle)
 {
     bool ready = false;
     QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
@@ -176,8 +171,7 @@ gles2_QueryBuffer_IsReady(Handle handle)
     return ready;
 }
 
-static bool
-gles2_QueryBuffer_ObjectIsReady(Handle handle, uint32 objectIndex)
+static bool gles2_QueryBuffer_ObjectIsReady(Handle handle, uint32 objectIndex)
 {
     bool ready = false;
     QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
@@ -201,8 +195,7 @@ gles2_QueryBuffer_ObjectIsReady(Handle handle, uint32 objectIndex)
     return ready;
 }
 
-static int
-gles2_QueryBuffer_Value(Handle handle, uint32 objectIndex)
+static int32 gles2_QueryBuffer_Value(Handle handle, uint32 objectIndex)
 {
     QueryBufferGLES2_t* buf = QueryBufferGLES2Pool::Get(handle);
     DVASSERT(buf);

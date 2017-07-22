@@ -1,8 +1,7 @@
-#ifndef __DAVAENGINE_SERVICEREGISTRAR_H__
-#define __DAVAENGINE_SERVICEREGISTRAR_H__
+#pragma once
 
-#include <Base/BaseTypes.h>
-#include <Functional/Function.h>
+#include "Base/BaseTypes.h"
+#include "Functional/Function.h"
 
 namespace DAVA
 {
@@ -74,5 +73,3 @@ inline bool operator==(const ServiceRegistrar::Entry& entry, uint32 serviceId)
 
 } // namespace Net
 } // namespace DAVA
-
-#endif // __DAVAENGINE_SERVICEREGISTRAR_H__

@@ -8,10 +8,6 @@ namespace DAVA
 {
 class Vector2;
 class UIControl;
-namespace TArc
-{
-class ContextAccessor;
-}
 }
 
 class EditorCanvas final : public BaseEditorSystem
@@ -70,7 +66,6 @@ private:
     const DAVA::float32 margin = 50.0f;
     bool isMouseMidButtonPressed = false;
     bool isSpacePressed = false;
-    DAVA::TArc::ContextAccessor* accessor = nullptr;
 
     DAVA::Vector<DAVA::float32> predefinedScales;
 };

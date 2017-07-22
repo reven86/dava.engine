@@ -21,7 +21,10 @@ public:
     void OnStatusRequested(DAVA::Net::IChannel* channel) override;
 
     //ClientNetProxyListener
+    void OnClientProxyStateChanged() override;
     void OnReceivedFromCache(const DAVA::AssetCache::CacheItemKey& key, const DAVA::AssetCache::CachedItemValue& value) override;
+
+    void OnRemoteDisconnecting();
 
     void Update();
 

@@ -3,10 +3,9 @@
 #include "Qt/Scene/SceneHelper.h"
 #include "Project/ProjectManagerData.h"
 
-
+#include "Scene3D/Components/SoundComponent.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Components/ComponentHelpers.h"
-#include "Scene3D/Components/SoundComponent.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include <Render/RenderBase.h>
 #include "Render/Material/NMaterialNames.h"
@@ -193,21 +192,26 @@ void CompareEffects(const Entity* entity1, const Entity* entity2, ValidationProg
     entity1->GetChildEntitiesWithComponent(childEffects1, Component::PARTICLE_EFFECT_COMPONENT, false);
     entity2->GetChildEntitiesWithComponent(childEffects2, Component::PARTICLE_EFFECT_COMPONENT, false);
 
-    auto paramLess = [](const Entity* entity1, const Entity* entity2)
+    bool vectorsAreDifferent = childEffects1.size() != childEffects2.size();
+    if (!vectorsAreDifferent)
     {
-        return (entity1->GetName() < entity2->GetName());
-    };
+        auto paramLess = [](const Entity* entity1, const Entity* entity2)
+        {
+            return (entity1->GetName() < entity2->GetName());
+        };
 
-    auto paramEqual = [](const Entity* entity1, const Entity* entity2)
-    {
-        return (entity1->GetName() == entity2->GetName());
-    };
+        auto paramEqual = [](const Entity* entity1, const Entity* entity2)
+        {
+            return (entity1->GetName() == entity2->GetName());
+        };
 
-    std::sort(childEffects1.begin(), childEffects1.end(), paramLess);
-    std::sort(childEffects2.begin(), childEffects2.end(), paramLess);
-    auto firstDiff = std::mismatch(childEffects1.begin(), childEffects1.end(), childEffects2.begin(), paramEqual);
+        std::sort(childEffects1.begin(), childEffects1.end(), paramLess);
+        std::sort(childEffects2.begin(), childEffects2.end(), paramLess);
+        auto firstDiff = std::mismatch(childEffects1.begin(), childEffects1.end(), childEffects2.begin(), paramEqual);
 
-    bool vectorsAreDifferent = (firstDiff.first != childEffects1.end());
+        vectorsAreDifferent = (firstDiff.first != childEffects1.end());
+    }
+
     if (vectorsAreDifferent)
     {
         validationProgress.Alerted(Format("Entity '%s' (id=%u) and entity '%s' (id=%u) have different effects",
@@ -381,6 +385,7 @@ void SceneValidation::ValidateSameNames(DAVA::Scene* scene, ValidationProgress& 
         auto rangePair = entitiesByName.equal_range(currentKey);
         if (std::distance(rangePair.first, rangePair.second) > 1)
         {
+            Logger::Debug("valdating %s", currentKey.c_str());
             for (auto rangeNextIter = std::next(rangePair.first);
                  rangeNextIter != rangePair.second;
                  ++rangeNextIter)

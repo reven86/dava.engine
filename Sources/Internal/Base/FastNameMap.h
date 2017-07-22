@@ -1,7 +1,8 @@
 #ifndef __DAVAENGINE_FAST_NAME_MAP__
 #define __DAVAENGINE_FAST_NAME_MAP__
 
-#include "FastName.h"
+#include "Base/FastName.h"
+#include "Base/HashMap.h"
 
 namespace DAVA
 {
@@ -139,5 +140,4 @@ inline bool FastNameSet::operator==(const FastNameSet& _another) const
     return true;
 }
 };
-
 #endif // __DAVAENGINE_FAST_NAME_MAP__

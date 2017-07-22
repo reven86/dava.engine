@@ -1,20 +1,19 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
-#include "Base/Any.h"
-#include "Base/RefPtr.h"
+#include <TArc/DataProcessing/DataWrapper.h>
+#include <TArc/DataProcessing/DataListener.h>
+#include <TArc/Utils/QtConnections.h>
 
-#include "Reflection/Reflection.h"
+#include <Engine/Qt/IClientDelegate.h>
+#include <Engine/Qt/RenderWidget.h>
 
-#include "UI/UIScreen.h"
-#include "UI/UI3DView.h"
+#include <Reflection/Reflection.h>
+#include <UI/UIScreen.h>
+#include <UI/UI3DView.h>
 
-#include "TArc/DataProcessing/DataWrapper.h"
-#include "TArc/DataProcessing/DataListener.h"
-#include "TArc/Utils/QtConnections.h"
-
-#include "Engine/Qt/RenderWidget.h"
-#include "Functional/TrackedObject.h"
+#include <Base/BaseTypes.h>
+#include <Base/Any.h>
+#include <Base/RefPtr.h>
 
 #include <QFrame>
 
@@ -30,7 +29,7 @@ class ContextAccessor;
 class SceneEditor2;
 class SelectableGroup;
 class SceneRenderWidget : public QFrame, private DAVA::TArc::DataListener,
-                          private DAVA::RenderWidget::IClientDelegate,
+                          private DAVA::IClientDelegate,
                           public DAVA::TrackedObject
 {
     Q_OBJECT

@@ -66,10 +66,10 @@ void ProjectModule::CreateActions()
         QAction* action = new QAction(QIcon(":/Icons/newscene.png"), newProjectActionName, nullptr);
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&ProjectModule::OnNewProject, this));
         ActionPlacementInfo placementInfo;
-        placementInfo.AddPlacementPoint(CreateMenuPoint(fileMenuName, { InsertionParams::eInsertionMethod::BeforeItem }));
+        placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuFile, { InsertionParams::eInsertionMethod::BeforeItem }));
         placementInfo.AddPlacementPoint(CreateToolbarPoint(toolBarName, { InsertionParams::eInsertionMethod::BeforeItem }));
 
-        ui->AddAction(QEGlobal::windowKey, placementInfo, action);
+        ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, action);
     }
 
     //action open project
@@ -78,10 +78,10 @@ void ProjectModule::CreateActions()
         action->setShortcut(QKeySequence("Ctrl+O"));
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&ProjectModule::OnOpenProject, this));
         ActionPlacementInfo placementInfo;
-        placementInfo.AddPlacementPoint(CreateMenuPoint(fileMenuName, { InsertionParams::eInsertionMethod::AfterItem, newProjectActionName }));
+        placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuFile, { InsertionParams::eInsertionMethod::AfterItem, newProjectActionName }));
         placementInfo.AddPlacementPoint(CreateToolbarPoint(toolBarName, { InsertionParams::eInsertionMethod::AfterItem, newProjectActionName }));
 
-        ui->AddAction(QEGlobal::windowKey, placementInfo, action);
+        ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, action);
     }
 
     //action close project
@@ -97,17 +97,17 @@ void ProjectModule::CreateActions()
 
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&ProjectModule::CloseProject, this));
         ActionPlacementInfo placementInfo;
-        placementInfo.AddPlacementPoint(CreateMenuPoint(fileMenuName, { InsertionParams::eInsertionMethod::AfterItem, openProjectActionName }));
+        placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuFile, { InsertionParams::eInsertionMethod::AfterItem, openProjectActionName }));
         placementInfo.AddPlacementPoint(CreateToolbarPoint(toolBarName, { InsertionParams::eInsertionMethod::AfterItem, openProjectActionName }));
 
-        ui->AddAction(QEGlobal::windowKey, placementInfo, action);
+        ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, action);
     }
 
     // RecentProjects
     {
         QAction* recentProjects = new QAction(recentProjectsActionName, nullptr);
-        DAVA::TArc::ActionPlacementInfo placementInfo(DAVA::TArc::CreateMenuPoint(fileMenuName, DAVA::TArc::InsertionParams(InsertionParams::eInsertionMethod::AfterItem, closeProjectActionName)));
-        ui->AddAction(QEGlobal::windowKey, placementInfo, recentProjects);
+        DAVA::TArc::ActionPlacementInfo placementInfo(DAVA::TArc::CreateMenuPoint(MenuItems::menuFile, DAVA::TArc::InsertionParams(InsertionParams::eInsertionMethod::AfterItem, closeProjectActionName)));
+        ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, recentProjects);
     }
 
     // Separator
@@ -116,17 +116,17 @@ void ProjectModule::CreateActions()
         separator->setObjectName("project actions separator");
         separator->setSeparator(true);
         DAVA::TArc::ActionPlacementInfo placementInfo(DAVA::TArc::CreateMenuPoint("File", DAVA::TArc::InsertionParams(InsertionParams::eInsertionMethod::AfterItem, recentProjectsActionName)));
-        ui->AddAction(QEGlobal::windowKey, placementInfo, separator);
+        ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, separator);
     }
 
     //Recent content
     {
-        RecentMenuItems::Params params(QEGlobal::windowKey, accessor, ProjectModuleDetails::projectsHistoryKey);
+        RecentMenuItems::Params params(DAVA::TArc::mainWindowKey, accessor, ProjectModuleDetails::projectsHistoryKey);
         params.ui = GetUI();
         params.getMaximumCount = [this]() {
             return ProjectModuleDetails::projectsHistoryMaxSize;
         };
-        params.menuSubPath << fileMenuName << recentProjectsActionName;
+        params.menuSubPath << MenuItems::menuFile << recentProjectsActionName;
         params.insertionParams.method = InsertionParams::eInsertionMethod::BeforeItem;
         recentProjects.reset(new RecentMenuItems(std::move(params)));
         recentProjects->actionTriggered.Connect([this](const DAVA::String& projectPath) {
@@ -153,7 +153,7 @@ void ProjectModule::OnOpenProject()
     params.dir = defaultPath;
     params.filters = QObject::tr("Project files(*.quicked *.uieditor)");
     params.title = QObject::tr("Select a project file");
-    QString projectPath = GetUI()->GetOpenFileName(QEGlobal::windowKey, params);
+    QString projectPath = GetUI()->GetOpenFileName(DAVA::TArc::mainWindowKey, params);
 
     if (projectPath.isEmpty())
     {
@@ -171,7 +171,7 @@ void ProjectModule::OnNewProject()
 
     DirectoryDialogParams params;
     params.title = QObject::tr("Select directory for new project");
-    QString projectDirPath = GetUI()->GetExistingDirectory(QEGlobal::windowKey, params);
+    QString projectDirPath = GetUI()->GetExistingDirectory(DAVA::TArc::mainWindowKey, params);
     if (projectDirPath.isEmpty())
     {
         return;
@@ -371,7 +371,7 @@ void ProjectModule::ShowResultList(const QString& title, const DAVA::ResultList&
     params.message = errors.join('\n');
     params.buttons = ModalMessageParams::Ok;
     UI* ui = GetUI();
-    ui->ShowModalMessage(QEGlobal::windowKey, params);
+    ui->ShowModalMessage(DAVA::TArc::mainWindowKey, params);
 }
 
 namespace ProjectModuleTesting

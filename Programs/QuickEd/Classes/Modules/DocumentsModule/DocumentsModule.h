@@ -3,18 +3,21 @@
 #include "Application/QEGlobal.h"
 #include "EditorSystems/EditorSystemsManager.h"
 
+#include "Utils/PackageListenerProxy.h"
+
 #include <TArc/Core/ControllerModule.h>
 #include <TArc/DataProcessing/DataContext.h>
 #include <TArc/Utils/QtConnections.h>
 
 #include <QtTools/Utils/QtDelayedExecutor.h>
 
+class FindInDocumentController;
 class PreviewWidget;
 class EditorSystemsManager;
 class PackageNode;
 class ControlNode;
 
-class DocumentsModule : public DAVA::TArc::ControllerModule
+class DocumentsModule : public DAVA::TArc::ControllerModule, PackageListener
 {
 public:
     DocumentsModule();
@@ -51,7 +54,6 @@ private:
     DAVA::TArc::DataContext::ContextID OpenDocument(const QString& path);
     DAVA::RefPtr<PackageNode> CreatePackage(const QString& path);
 
-    void CloseActiveDocument();
     void CloseDocument(DAVA::uint64 id);
     void CloseAllDocuments();
     void DeleteAllDocuments();
@@ -62,7 +64,7 @@ private:
     void ReloadDocuments(const DAVA::Set<DAVA::TArc::DataContext::ContextID>& ids);
 
     bool HasUnsavedDocuments() const;
-    void SaveDocument(const DAVA::TArc::DataContext::ContextID& contextID);
+    bool SaveDocument(const DAVA::TArc::DataContext::ContextID& contextID);
     void SaveAllDocuments();
     void SaveCurrentDocument();
 
@@ -79,12 +81,19 @@ private:
     DAVA::TArc::DataContext::ContextID GetContextByPath(const QString& path) const;
 
     void OnDragStateChanged(EditorSystemsManager::eDragState dragState, EditorSystemsManager::eDragState previousState);
+    void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from) override;
+    void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
 
     PreviewWidget* previewWidget = nullptr;
     std::unique_ptr<EditorSystemsManager> systemsManager;
     DAVA::TArc::QtConnections connections;
 
+    friend class FindInDocumentController;
+    std::unique_ptr<FindInDocumentController> findInDocumentController;
+
     QtDelayedExecutor delayedExecutor;
+
+    PackageListenerProxy packageListenerProxy;
 
     DAVA_VIRTUAL_REFLECTION(DocumentsModule, DAVA::TArc::ControllerModule);
 };

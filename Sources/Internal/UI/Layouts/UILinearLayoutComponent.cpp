@@ -1,5 +1,5 @@
-#include "UILinearLayoutComponent.h"
-
+#include "UI/Layouts/UILinearLayoutComponent.h"
+#include "Reflection/ReflectionRegistrator.h"
 #include "UI/UIControl.h"
 
 namespace DAVA

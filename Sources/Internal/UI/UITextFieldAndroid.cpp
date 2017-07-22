@@ -8,6 +8,7 @@
 #include "Render/Image/ImageConvert.h"
 #include "UI/UIControlSystem.h"
 #include "UI/Focus/FocusHelpers.h"
+#include "UI/UIControlBackground.h"
 #include "Utils/UTF8Utils.h"
 #include "Concurrency/LockGuard.h"
 
@@ -557,7 +558,7 @@ void TextFieldPlatformImpl::TextFieldUpdateTexture(uint32_t id, int32* rawPixels
         else
         {
             // reset sprite to prevent render old sprite under android view
-            textField.RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
+            textField.RemoveComponent<UIControlBackground>();
         }
     }
 }

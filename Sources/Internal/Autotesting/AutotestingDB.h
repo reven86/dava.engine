@@ -44,7 +44,6 @@ public:
     bool SaveToDB(MongodbUpdateObject* dbUpdateObject);
 
     void WriteLogHeader();
-    void WriteLog(const char8* text, ...);
     void Log(const String& level, const String& message);
 
     String GetStringTestParameter(const String& deviceName, const String& parameter);
@@ -64,9 +63,10 @@ public:
     FilePath logsFolder;
 
 protected:
-    MongodbClient* dbClient;
+    MongodbClient* dbClient = nullptr;
     FilePath logFilePath;
-    AutotestingSystem* autoSys;
+    AutotestingSystem* autoSys = nullptr;
+    std::unique_ptr<Logger> autotestingLogger;
 };
 }
 

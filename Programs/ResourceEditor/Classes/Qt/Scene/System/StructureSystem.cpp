@@ -110,12 +110,29 @@ void StructureSystem::RemoveEntities(DAVA::Vector<DAVA::Entity*>& objects)
             continue;
         }
 
-        for (auto delegate : delegates)
+        StructureSystemDelegate* exclusiveRemoveDelegate = nullptr;
+        for (StructureSystemDelegate* d : delegates)
+        {
+            if (d->HasCustomRemovingForEntity(sortEntity.entity) == true)
+            {
+                DVASSERT(exclusiveRemoveDelegate == nullptr);
+                exclusiveRemoveDelegate = d;
+            }
+        }
+
+        for (StructureSystemDelegate* delegate : delegates)
         {
             delegate->WillRemove(sortEntity.entity);
         }
-        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityRemoveCommand(sortEntity.entity)));
-        for (auto delegate : delegates)
+        if (exclusiveRemoveDelegate != nullptr)
+        {
+            exclusiveRemoveDelegate->PerformRemoving(sortEntity.entity);
+        }
+        else
+        {
+            sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityRemoveCommand(sortEntity.entity)));
+        }
+        for (StructureSystemDelegate* delegate : delegates)
         {
             delegate->DidRemoved(sortEntity.entity);
         }
@@ -309,14 +326,10 @@ void StructureSystem::Add(const DAVA::FilePath& newModelPath, const DAVA::Vector
     SceneEditor2* sceneEditor = (SceneEditor2*)GetScene();
     if (nullptr != sceneEditor)
     {
-        DAVA::ScopedPtr<DAVA::Entity> loadedEntity(Load(newModelPath));
+        DAVA::ScopedPtr<DAVA::Entity> loadedEntity(Load(newModelPath, true));
         if (static_cast<DAVA::Entity*>(loadedEntity) != nullptr)
         {
             DAVA::Vector3 entityPos = pos;
-
-            DAVA::KeyedArchive* customProps = GetOrCreateCustomProperties(loadedEntity)->GetArchive();
-            customProps->SetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, newModelPath.GetAbsolutePathname());
-
             if (entityPos.IsZero() && FindLandscape(loadedEntity) == nullptr)
             {
                 SceneCameraSystem* cameraSystem = sceneEditor->cameraSystem;
@@ -341,14 +354,7 @@ void StructureSystem::Add(const DAVA::FilePath& newModelPath, const DAVA::Vector
             transform.SetTranslationVector(entityPos);
             loadedEntity->SetLocalTransform(transform);
 
-            if (GetPathComponent(loadedEntity))
-            {
-                sceneEditor->pathSystem->AddPath(loadedEntity);
-            }
-            else
-            {
-                sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(loadedEntity, sceneEditor)));
-            }
+            sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(loadedEntity, sceneEditor)));
 
             // TODO: move this code to some another place (into command itself or into ProcessCommand function)
             //
@@ -425,9 +431,16 @@ void StructureSystem::CheckAndMarkSolid(DAVA::Entity* entity)
     }
 }
 
-DAVA::Entity* StructureSystem::Load(const DAVA::FilePath& sc2path)
+DAVA::Entity* StructureSystem::Load(const DAVA::FilePath& sc2path, bool storeReference)
 {
-    return LoadInternal(sc2path, false);
+    DAVA::Entity* result = LoadInternal(sc2path, false);
+    if (result != nullptr && storeReference == true)
+    {
+        DAVA::KeyedArchive* customProps = GetOrCreateCustomProperties(result)->GetArchive();
+        customProps->SetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, sc2path.GetAbsolutePathname());
+    }
+
+    return result;
 }
 
 DAVA::Entity* StructureSystem::LoadInternal(const DAVA::FilePath& sc2path, bool clearCache)

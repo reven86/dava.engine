@@ -21,14 +21,19 @@ DeviceManagerImpl::DeviceManagerImpl(DeviceManager* devManager, Private::MainDis
 {
     JNIEnv* env = JNI::GetEnv();
 
+    // DeviceManager.getCpuTemperature()
+    javaGetCpuTemperatureMethod = javaDeviceManagerClass.GetMethod<jfloat>("getCpuTemperature");
+
     // DeviceManager.instance()
     Function<jDeviceManager()> javaDeviceManagerGetInstanceMethod = javaDeviceManagerClass.GetStaticMethod<jDeviceManager>("instance");
 
-    // DeviceManager.getDisplaysInfo()
-    Function<jDisplayInfoArray(jobject)> javaDeviceManagerGetDisplaysInfoMethod = javaDeviceManagerClass.GetMethod<jDisplayInfoArray>("getDisplaysInfo");
-
     // Get Java DeviceManager instance
     javaDeviceManagerInstance = javaDeviceManagerGetInstanceMethod();
+
+    // Handle displays
+
+    // DeviceManager.getDisplaysInfo()
+    Function<jDisplayInfoArray(jobject)> javaDeviceManagerGetDisplaysInfoMethod = javaDeviceManagerClass.GetMethod<jDisplayInfoArray>("getDisplaysInfo");
 
     // Save fields ids for Java DisplayInfo class
     javaDisplayInfoNameField = env->GetFieldID(javaDisplayInfoClass, "name", JNI::TypeSignature<jstring>::value());
@@ -80,6 +85,11 @@ DisplayInfo DeviceManagerImpl::ConvertFromJavaDisplayInfo(JNIEnv* env, const job
     displayInfo.rawDpiY = static_cast<float32>(env->GetFloatField(javaDisplayInfo, javaDisplayInfoDpiYField));
     displayInfo.primary = isPrimary;
     return displayInfo;
+}
+
+float32 DeviceManagerImpl::GetCpuTemperature() const
+{
+    return static_cast<float32>(javaGetCpuTemperatureMethod(javaDeviceManagerInstance));
 }
 
 } // namespace Private

@@ -4,6 +4,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 #include "Base/GlobalEnum.h"
+#include "Base/TemplateHelpers.h"
 #include "FileSystem/VariantType.h"
 #include "Reflection/Reflection.h"
 

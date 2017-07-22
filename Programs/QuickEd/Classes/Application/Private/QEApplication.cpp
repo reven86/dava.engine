@@ -1,4 +1,5 @@
 #include "Application/QEApplication.h"
+#include "Application/QEGlobal.h"
 #include "Modules/LegacySupportModule/LegacySupportModule.h"
 #include "Classes/Application/ReflectionExtensions.h"
 
@@ -14,6 +15,7 @@
 #include <UI/UIControlSystem.h>
 #include <UI/Input/UIInputSystem.h>
 #include <UI/Layouts/UILayoutSystem.h>
+#include <UI/RichContent/UIRichContentSystem.h>
 #include <UI/Scroll/UIScrollBarLinkSystem.h>
 
 #include <FileSystem/FileSystem.h>
@@ -66,13 +68,17 @@ void QEApplication::Init(const DAVA::EngineContext* engineContext)
 #endif
     PVRConverter::Instance()->SetPVRTexTool(pvrTexToolPath);
 
-    ParticleEmitter::FORCE_DEEP_CLONE = true;
-
+    FileSystem* fs = engineContext->fileSystem;
+    fs->SetCurrentDocumentsDirectory(fs->GetUserDocumentsPath() + "QuickEd/");
+    fs->CreateDirectory(fs->GetCurrentDocumentsDirectory(), true);
     engineContext->logger->SetLogFilename("QuickEd.txt");
 
+    ParticleEmitter::FORCE_DEEP_CLONE = true;
+
     UIControlSystem* uiControlSystem = engineContext->uiControlSystem;
-    uiControlSystem->GetLayoutSystem()->SetAutoupdatesEnabled(false);
+    uiControlSystem->GetLayoutSystem()->SetAutoupdatesEnabled(true);
     uiControlSystem->GetSystem<UIScrollBarLinkSystem>()->SetRestoreLinks(true);
+    uiControlSystem->GetSystem<UIRichContentSystem>()->SetEditorMode(true);
 
     UIInputSystem* inputSystem = uiControlSystem->GetInputSystem();
     inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::LEFT), UIInputSystem::ACTION_FOCUS_LEFT);
@@ -82,10 +88,6 @@ void QEApplication::Init(const DAVA::EngineContext* engineContext)
 
     inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::TAB), UIInputSystem::ACTION_FOCUS_NEXT);
     inputSystem->BindGlobalShortcut(KeyboardShortcut(Key::TAB, eModifierKeys::SHIFT), UIInputSystem::ACTION_FOCUS_PREV);
-
-    FileSystem* fs = engineContext->fileSystem;
-    fs->SetCurrentDocumentsDirectory(fs->GetUserDocumentsPath() + "QuickEd/");
-    fs->CreateDirectory(fs->GetCurrentDocumentsDirectory(), true);
 
     const char* settingsPath = "QuickEdSettings.archive";
     FilePath localPrefrencesPath(fs->GetCurrentDocumentsDirectory() + settingsPath);
@@ -118,6 +120,7 @@ void QEApplication::CreateModules(DAVA::TArc::Core* tarcCore) const
 {
     Q_INIT_RESOURCE(QtToolsResources);
     tarcCore->CreateModule<LegacySupportModule>();
+
     for (const DAVA::ReflectedType* type : DAVA::TArc::ModuleCollection::Instance()->GetGuiModules())
     {
         tarcCore->CreateModule(type);

@@ -12,12 +12,16 @@ namespace DAVA
 {
 namespace JNI
 {
-JNIEnv* GetEnv()
+JNIEnv* GetEnv(bool abortIfNotAttachedToJVM)
 {
     JNIEnv* env = Private::AndroidBridge::GetEnv();
     if (env == nullptr)
     {
-        Logger::Error("Thread is not attached to Java VM");
+        ANDROID_LOG_FATAL("Thread is not attached to Java VM");
+        if (abortIfNotAttachedToJVM)
+        {
+            std::abort();
+        }
     }
     return env;
 }
@@ -66,7 +70,7 @@ jclass LoadJavaClass(const char8* className, bool throwJniException, JNIEnv* env
 {
     if (env == nullptr)
     {
-        env = Private::AndroidBridge::GetEnv();
+        env = GetEnv();
     }
 
     if (env != nullptr)
@@ -83,16 +87,23 @@ String JavaStringToString(jstring string, JNIEnv* env)
     {
         if (env == nullptr)
         {
-            env = Private::AndroidBridge::GetEnv();
+            env = GetEnv();
         }
 
         if (env != nullptr)
         {
-            const char* rawString = env->GetStringUTFChars(string, nullptr);
-            if (rawString != nullptr)
+            LocalRef<jbyteArray> bytes = Private::AndroidBridge::JavaStringToUtf8Bytes(env, string);
+            if (bytes != nullptr)
             {
-                result = rawString;
-                env->ReleaseStringUTFChars(string, rawString);
+                const jsize length = env->GetArrayLength(bytes);
+                jbyte* pBytes = env->GetByteArrayElements(bytes, nullptr);
+                JNI::CheckJavaException(env, true);
+                if (pBytes != nullptr)
+                {
+                    result.assign(reinterpret_cast<char*>(pBytes), reinterpret_cast<char*>(pBytes + length));
+                    env->ReleaseByteArrayElements(bytes, pBytes, JNI_ABORT);
+                    JNI::CheckJavaException(env, true);
+                }
             }
         }
     }
@@ -106,14 +117,22 @@ WideString JavaStringToWideString(jstring string, JNIEnv* env)
 
 jstring CStrToJavaString(const char* cstr, JNIEnv* env)
 {
-    if (env == nullptr)
+    if (cstr != nullptr)
     {
-        env = Private::AndroidBridge::GetEnv();
-    }
+        if (env == nullptr)
+        {
+            env = GetEnv();
+        }
 
-    if (env != nullptr)
-    {
-        return env->NewStringUTF(cstr);
+        if (env != nullptr)
+        {
+            jsize length = static_cast<jsize>(strlen(cstr));
+            LocalRef<jbyteArray> bytes = env->NewByteArray(length);
+            JNI::CheckJavaException(env, true);
+            env->SetByteArrayRegion(bytes, 0, length, reinterpret_cast<const jbyte*>(cstr));
+            JNI::CheckJavaException(env, true);
+            return Private::AndroidBridge::JavaStringFromUtf8Bytes(env, bytes);
+        }
     }
     return nullptr;
 }

@@ -43,6 +43,8 @@ public:
     virtual DAVA::Any GetDefaultSubValue(DAVA::int32 index) const;
     virtual void SetDefaultSubValue(DAVA::int32 index, const DAVA::Any& newValue);
 
+    DAVA::Any ChangeValueComponent(const DAVA::Any& value, const DAVA::Any& component, DAVA::int32 index) const;
+
 protected:
     void GenerateBuiltInSubProperties();
 
@@ -53,7 +55,6 @@ protected:
     void AddSubValueProperty(AbstractProperty* prop);
 
 private:
-    DAVA::Any ChangeValueComponent(const DAVA::Any& value, const DAVA::Any& component, DAVA::int32 index) const;
     const DAVA::Type* GetValueTypeComponent(DAVA::int32 index) const;
     DAVA::Any GetValueComponent(const DAVA::Any& value, DAVA::int32 index) const;
 

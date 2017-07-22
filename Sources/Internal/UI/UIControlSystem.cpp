@@ -12,10 +12,11 @@
 #include "UI/Focus/UIFocusSystem.h"
 #include "UI/Input/UIInputSystem.h"
 #include "UI/Scroll/UIScrollBarLinkSystem.h"
+#include "UI/Scroll/UIScrollSystem.h"
 #include "UI/Sound/UISoundSystem.h"
+#include "UI/Render/UIRenderSystem.h"
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
-#include "UI/UIScreenshoter.h"
 #include "UI/UIScreenTransition.h"
 #include "UI/UIEvent.h"
 #include "UI/UIPopup.h"
@@ -29,29 +30,29 @@
 #include "Debug/ProfilerOverlay.h"
 #include "Engine/Engine.h"
 #include "Input/MouseDevice.h"
+#include "UI/RichContent/UIRichContentSystem.h"
 
 namespace DAVA
 {
 UIControlSystem::UIControlSystem()
 {
-    baseGeometricData.position = Vector2(0, 0);
-    baseGeometricData.size = Vector2(0, 0);
-    baseGeometricData.pivotPoint = Vector2(0, 0);
-    baseGeometricData.scale = Vector2(1.0f, 1.0f);
-    baseGeometricData.angle = 0;
-
     AddSystem(std::make_unique<UIInputSystem>());
     AddSystem(std::make_unique<UIUpdateSystem>());
+    AddSystem(std::make_unique<UIRichContentSystem>());
     AddSystem(std::make_unique<UIStyleSheetSystem>());
     AddSystem(std::make_unique<UILayoutSystem>());
+    AddSystem(std::make_unique<UIScrollSystem>());
     AddSystem(std::make_unique<UIScrollBarLinkSystem>());
     AddSystem(std::make_unique<UISoundSystem>());
+    AddSystem(std::make_unique<UIRenderSystem>(RenderSystem2D::Instance()));
 
     inputSystem = GetSystem<UIInputSystem>();
     styleSheetSystem = GetSystem<UIStyleSheetSystem>();
     layoutSystem = GetSystem<UILayoutSystem>();
     soundSystem = GetSystem<UISoundSystem>();
     updateSystem = GetSystem<UIUpdateSystem>();
+    renderSystem = GetSystem<UIRenderSystem>();
+    
 
 #if defined(__DAVAENGINE_COREV2__)
     vcs = new VirtualCoordinatesSystem();
@@ -62,8 +63,6 @@ UIControlSystem::UIControlSystem()
     vcs->virtualSizeChanged.Connect(this, [](const Size2i&) { TextBlock::ScreenResolutionChanged(); });
     vcs->physicalSizeChanged.Connect(this, [](const Size2i&) { TextBlock::ScreenResolutionChanged(); });
 
-    screenshoter = new UIScreenshoter();
-
     popupContainer.Set(new UIControl(Rect(0, 0, 1, 1)));
     popupContainer->SetName("UIControlSystem_popupContainer");
     popupContainer->SetInputEnabled(false);
@@ -71,6 +70,7 @@ UIControlSystem::UIControlSystem()
     inputSystem->SetPopupContainer(popupContainer.Get());
     styleSheetSystem->SetPopupContainer(popupContainer);
     layoutSystem->SetPopupContainer(popupContainer);
+    renderSystem->SetPopupContainer(popupContainer);
 
 #if !defined(__DAVAENGINE_COREV2__)
     // calculate default radius
@@ -95,8 +95,6 @@ UIControlSystem::UIControlSystem()
 #else
     SetDoubleTapSettings(0.5f, 0.25f);
 #endif
-
-    ui3DViewCount = 0;
 }
 
 UIControlSystem::~UIControlSystem()
@@ -109,6 +107,9 @@ UIControlSystem::~UIControlSystem()
     layoutSystem->SetPopupContainer(RefPtr<UIControl>());
     layoutSystem->SetCurrentScreen(RefPtr<UIScreen>());
     layoutSystem->SetCurrentScreenTransition(RefPtr<UIScreenTransition>());
+    renderSystem->SetPopupContainer(RefPtr<UIControl>());
+    renderSystem->SetCurrentScreen(RefPtr<UIScreen>());
+    renderSystem->SetCurrentScreenTransition(RefPtr<UIScreenTransition>());
 
     popupContainer->InvokeInactive();
     popupContainer = nullptr;
@@ -119,14 +120,16 @@ UIControlSystem::~UIControlSystem()
         currentScreen = nullptr;
     }
 
+    lastClickData.touchLocker = nullptr;
+
     soundSystem = nullptr;
     inputSystem = nullptr;
     styleSheetSystem = nullptr;
     layoutSystem = nullptr;
     updateSystem = nullptr;
+    renderSystem = nullptr;
 
     systems.clear();
-    SafeDelete(screenshoter);
     SafeDelete(vcs);
 }
 
@@ -224,13 +227,33 @@ void UIControlSystem::Reset()
     inputSystem->SetCurrentScreen(nullptr);
     styleSheetSystem->SetCurrentScreen(RefPtr<UIScreen>());
     layoutSystem->SetCurrentScreen(RefPtr<UIScreen>());
+    renderSystem->SetCurrentScreen(RefPtr<UIScreen>());
     SetScreen(nullptr);
 }
 
-void UIControlSystem::UpdateControl(UIControl* control)
+void UIControlSystem::ForceUpdateControl(float32 timeElapsed, UIControl* control)
 {
-    styleSheetSystem->Update(control);
-    layoutSystem->Update(control);
+    DVASSERT(control != nullptr);
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_UPDATE);
+
+    if (control == nullptr || !Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
+        return;
+
+    for (auto& system : systems)
+    {
+        system->ForceProcessControl(timeElapsed, control);
+    }
+}
+
+void UIControlSystem::ForceDrawControl(UIControl* control)
+{
+    DVASSERT(control != nullptr);
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_DRAW);
+
+    if (control == nullptr)
+        return;
+
+    renderSystem->ForceRenderControl(control);
 }
 
 void UIControlSystem::ProcessScreenLogic()
@@ -274,6 +297,7 @@ void UIControlSystem::ProcessScreenLogic()
             inputSystem->SetCurrentScreen(currentScreen.Get());
             styleSheetSystem->SetCurrentScreen(currentScreen);
             layoutSystem->SetCurrentScreen(currentScreen);
+            renderSystem->SetCurrentScreen(currentScreen);
 
             if ((nextScreenProcessed == nullptr) || (prevScreen->GetGroupId() != nextScreenProcessed->GetGroupId()))
             {
@@ -299,6 +323,7 @@ void UIControlSystem::ProcessScreenLogic()
         inputSystem->SetCurrentScreen(currentScreen.Get());
         styleSheetSystem->SetCurrentScreen(currentScreen);
         layoutSystem->SetCurrentScreen(currentScreen);
+        renderSystem->SetCurrentScreen(currentScreen);
 
         NotifyListenersDidSwitch(currentScreen.Get());
 
@@ -313,6 +338,7 @@ void UIControlSystem::ProcessScreenLogic()
             currentScreenTransition->InvokeActive(UIControl::eViewState::VISIBLE);
             styleSheetSystem->SetCurrentScreenTransition(currentScreenTransition);
             layoutSystem->SetCurrentScreenTransition(currentScreenTransition);
+            renderSystem->SetCurrentScreenTransition(currentScreenTransition);
         }
 
         UnlockInput();
@@ -331,6 +357,7 @@ void UIControlSystem::ProcessScreenLogic()
             currentScreenTransition = nullptr;
             styleSheetSystem->SetCurrentScreenTransition(currentScreenTransition);
             layoutSystem->SetCurrentScreenTransition(currentScreenTransition);
+            renderSystem->SetCurrentScreenTransition(currentScreenTransition);
 
             UnlockInput();
             UnlockSwitch();
@@ -360,21 +387,17 @@ void UIControlSystem::Update()
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_UPDATE);
 
-    updateCounter = 0;
     ProcessScreenLogic();
 
-    float32 timeElapsed = SystemTimer::GetFrameDelta();
-
-    for (auto& system : systems)
+    if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
     {
-        system->Process(timeElapsed);
+        float32 timeElapsed = SystemTimer::GetFrameDelta();
+
+        for (auto& system : systems)
+        {
+            system->Process(timeElapsed);
+        }
     }
-
-    RenderSystem2D::RenderTargetPassDescriptor newDescr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
-    newDescr.clearTarget = (ui3DViewCount == 0 || currentScreenTransition) && needClearMainPass;
-    RenderSystem2D::Instance()->SetMainTargetDescriptor(newDescr);
-
-    //Logger::Info("UIControlSystem::updates: %d", updateCounter);
 }
 
 void UIControlSystem::Draw()
@@ -383,25 +406,12 @@ void UIControlSystem::Draw()
 
     resizePerFrame = 0;
 
-    drawCounter = 0;
-
-    if (currentScreenTransition)
-    {
-        currentScreenTransition->SystemDraw(baseGeometricData, nullptr);
-    }
-    else if (currentScreen)
-    {
-        currentScreen->SystemDraw(baseGeometricData, nullptr);
-    }
-
-    popupContainer->SystemDraw(baseGeometricData, nullptr);
+    renderSystem->Render();
 
     if (frameSkip > 0)
     {
         frameSkip--;
     }
-
-    GetScreenshoter()->OnFrame();
 }
 
 void UIControlSystem::SwitchInputToControl(uint32 eventID, UIControl* targetControl)
@@ -411,8 +421,6 @@ void UIControlSystem::SwitchInputToControl(uint32 eventID, UIControl* targetCont
 
 void UIControlSystem::OnInput(UIEvent* newEvent)
 {
-    inputCounter = 0;
-
     newEvent->point = UIControlSystem::Instance()->vcs->ConvertInputToVirtual(newEvent->physPoint);
     newEvent->tapCount = CalculatedTapCount(newEvent);
 
@@ -441,6 +449,11 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
             Replay::Instance()->RecordEvent(newEvent);
         }
         inputSystem->HandleEvent(newEvent);
+        // Store last 'touchLocker' reference.
+        if (newEvent->touchLocker)
+        {
+            lastClickData.touchLocker = newEvent->touchLocker;
+        }
     } // end if frameSkip <= 0
 }
 
@@ -451,6 +464,10 @@ void UIControlSystem::CancelInput(UIEvent* touch)
 
 void UIControlSystem::CancelAllInputs()
 {
+    lastClickData.touchLocker = nullptr;
+    lastClickData.tapCount = 0;
+    lastClickData.lastClickEnded = false;
+
     inputSystem->CancelAllInputs();
 }
 
@@ -555,11 +572,6 @@ void UIControlSystem::ProcessControlEvent(int32 eventType, const UIEvent* uiEven
     soundSystem->ProcessControlEvent(eventType, uiEvent, control);
 }
 
-const UIGeometricData& UIControlSystem::GetBaseGeometricData() const
-{
-    return baseGeometricData;
-}
-
 void UIControlSystem::ReplayEvents()
 {
     while (Replay::Instance()->IsEvent())
@@ -650,7 +662,10 @@ int32 UIControlSystem::CalculatedTapCount(UIEvent* newEvent)
         // only if last event ended
         if (lastClickData.lastClickEnded)
         {
-            if (CheckTimeAndPosition(newEvent))
+            // Make addditional 'IsPointInside' check for correct double tap detection.
+            // Event point must be in previously tapped control rect.
+            UIControl* lastTouchLocker = lastClickData.touchLocker.Get();
+            if (CheckTimeAndPosition(newEvent) && (lastTouchLocker == nullptr || lastTouchLocker->IsPointInside(newEvent->point)))
             {
                 tapCount = lastClickData.tapCount + 1;
             }
@@ -809,26 +824,14 @@ UIStyleSheetSystem* UIControlSystem::GetStyleSheetSystem() const
     return styleSheetSystem;
 }
 
+DAVA::UIRenderSystem* UIControlSystem::GetRenderSystem() const
+{
+    return renderSystem;
+}
+
 UIUpdateSystem* UIControlSystem::GetUpdateSystem() const
 {
     return updateSystem;
-}
-
-UIScreenshoter* UIControlSystem::GetScreenshoter()
-{
-    return screenshoter;
-}
-
-void UIControlSystem::SetClearColor(const DAVA::Color& clearColor)
-{
-    RenderSystem2D::RenderTargetPassDescriptor newDescr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
-    newDescr.clearColor = clearColor;
-    RenderSystem2D::Instance()->SetMainTargetDescriptor(newDescr);
-}
-
-void UIControlSystem::SetUseClearPass(bool useClearPass)
-{
-    needClearMainPass = useClearPass;
 }
 
 void UIControlSystem::SetDoubleTapSettings(float32 time, float32 inch)
@@ -849,21 +852,5 @@ void UIControlSystem::SetDoubleTapSettings(float32 time, float32 inch)
 #else
     doubleClickInchSquare = inch * inch;
 #endif
-}
-
-void UIControlSystem::UI3DViewAdded()
-{
-    ui3DViewCount++;
-}
-
-void UIControlSystem::UI3DViewRemoved()
-{
-    DVASSERT(ui3DViewCount);
-    ui3DViewCount--;
-}
-
-int32 UIControlSystem::GetUI3DViewCount()
-{
-    return ui3DViewCount;
 }
 };

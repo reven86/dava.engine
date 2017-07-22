@@ -2,6 +2,7 @@
 
 #include "Functional/Function.h"
 #include "Base/RefPtr.h"
+#include "Math/Math2D.h"
 #include "FileSystem/FilePath.h"
 
 class SceneEditor2;

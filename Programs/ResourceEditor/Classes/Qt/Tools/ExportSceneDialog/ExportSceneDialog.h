@@ -3,7 +3,7 @@
 #include <Tools/TextureCompression/TextureConverter.h>
 #include <Render/RenderBase.h>
 
-#include <QDialog.h>
+#include <QDialog>
 
 class FilePathBrowser;
 class QCheckBox;
@@ -22,7 +22,6 @@ public:
     DAVA::TextureConverter::eConvertQuality GetQuality() const;
     bool GetOptimizeOnExport() const;
     bool GetUseHDTextures() const;
-    bool GetForceCompressTextures() const;
 
 private slots:
     void SetExportEnabled();
@@ -38,7 +37,6 @@ private:
 
     QCheckBox* optimizeOnExport = nullptr;
     QCheckBox* useHDtextures = nullptr;
-    QCheckBox* forceCompressTextures = nullptr;
 
     QPushButton* exportButton = nullptr;
 };

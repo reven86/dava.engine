@@ -7,6 +7,7 @@
 
 class QLabel;
 
+class TileTexturePreviewWidgetItemDelegate;
 class TileTexturePreviewWidget : public QTreeWidget
 {
     Q_OBJECT
@@ -74,6 +75,7 @@ private:
     void InitWithoutColors();
 
     DAVA::Image* MultiplyImageWithColor(DAVA::Image* image, const DAVA::Color& color);
+    TileTexturePreviewWidgetItemDelegate* itemDelegate = nullptr;
 };
 
 #endif /* defined(__RESOURCEEDITORQT__TILETEXTUREPREVIEWWIDGET__) */

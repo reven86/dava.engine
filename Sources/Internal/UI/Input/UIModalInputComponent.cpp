@@ -1,4 +1,5 @@
-#include "UIModalInputComponent.h"
+#include "UI/Input/UIModalInputComponent.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {

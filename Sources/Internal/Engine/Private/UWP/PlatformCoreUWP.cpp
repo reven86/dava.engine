@@ -96,6 +96,27 @@ void PlatformCore::Quit()
     quitGameThread = true;
 }
 
+void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
+{
+    engineBackend->GetPrimaryWindow()->RunOnUIThreadAsync([this, enabled]() {
+        if (displayRequestActive != enabled)
+        {
+            return;
+        }
+
+        if (enabled)
+        {
+            displayRequest->RequestRelease();
+            displayRequestActive = false;
+        }
+        else
+        {
+            displayRequest->RequestActive();
+            displayRequestActive = true;
+        }
+    });
+}
+
 void PlatformCore::OnLaunchedOrActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs ^ args)
 {
     using ::Windows::UI::Core::CoreDispatcher;
@@ -222,7 +243,7 @@ void PlatformCore::GameThread()
     catch (const Exception& e)
     {
         StringStream ss;
-        ss << "!!! Unhandled DAVA::Exception at `" << e.file << "`: " << e.line << std::endl;
+        ss << "!!! Unhandled DAVA::Exception \"" << e.what() << "\" at `" << e.file << "`: " << e.line << std::endl;
         ss << Debug::GetBacktraceString(e.callstack) << std::endl;
         Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
         throw;

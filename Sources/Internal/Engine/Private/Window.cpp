@@ -472,33 +472,41 @@ void Window::HandleVisibleFrameChanged(const Private::MainDispatcherEvent& e)
 
 void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
 {
-    Logger::FrameworkDebug("=========== WINDOW_FOCUS_CHANGED: state=%s", e.stateEvent.state ? "got_focus" : "lost_focus");
-
-    uiControlSystem->CancelAllInputs();
-    inputSystem->GetKeyboard().ClearAllKeys();
-    hasFocus = e.stateEvent.state != 0;
-    /*if (windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
+    bool gainsFocus = e.stateEvent.state != 0;
+    if (hasFocus != gainsFocus)
     {
-        // When the native window loses focus, it restores the original cursor capture and visibility.
-        // After the window gives the focus back, set the current visibility state, if not set pinning mode.
-        // If the cursor capture mode is pinning, set the visibility state and capture mode when input activated.
-        if (hasFocus && cursorCapture != eCursorCapture::PINNING)
+        Logger::FrameworkDebug("=========== WINDOW_FOCUS_CHANGED: state=%s", e.stateEvent.state ? "got_focus" : "lost_focus");
+
+        uiControlSystem->CancelAllInputs();
+        inputSystem->GetKeyboard().ClearAllKeys();
+        hasFocus = gainsFocus;
+        /*if (windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
         {
-            windowBackend->SetCursorVisibility(cursorVisible);
-            windowBackend->SetCursorCapture(cursorCapture);
+            // When the native window loses focus, it restores the original cursor capture and visibility.
+            // After the window gives the focus back, set the current visibility state, if not set pinning mode.
+            // If the cursor capture mode is pinning, set the visibility state and capture mode when input activated.
+            if (hasFocus && cursorCapture != eCursorCapture::PINNING)
+            {
+                windowBackend->SetCursorVisibility(cursorVisible);
+                windowBackend->SetCursorCapture(cursorCapture);
+            }
         }
+        focusChanged.Emit(this, hasFocus);
     }
-    focusChanged.Emit(this, hasFocus);
 }
 
 void Window::HandleVisibilityChanged(const Private::MainDispatcherEvent& e)
 {
-    Logger::Info("Window::HandleVisibilityChanged: become %s", e.stateEvent.state ? "visible" : "hidden");
+    bool becomesVisible = e.stateEvent.state != 0;
+    if (isVisible != becomesVisible)
+    {
+        Logger::Info("Window::HandleVisibilityChanged: become %s", e.stateEvent.state ? "visible" : "hidden");
 
-    isVisible = e.stateEvent.state != 0;
-    visibilityChanged.Emit(this, isVisible);
+        isVisible = becomesVisible;
+        visibilityChanged.Emit(this, isVisible);
 
-    waitInputActivation = isVisible;
+        waitInputActivation = isVisible;
+    }
 }
 
 void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)

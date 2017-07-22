@@ -45,6 +45,11 @@ Window* Engine::PrimaryWindow() const
     return engineBackend->GetPrimaryWindow();
 }
 
+const Vector<Window*>& Engine::GetWindows() const
+{
+    return engineBackend->GetWindows();
+}
+
 eEngineRunMode Engine::GetRunMode() const
 {
     return engineBackend->GetRunMode();
@@ -80,19 +85,14 @@ void Engine::QuitAsync(int exitCode)
     engineBackend->Quit(exitCode);
 }
 
+void Engine::Terminate(int exitCode)
+{
+    engineBackend->Terminate(exitCode);
+}
+
 void Engine::SetCloseRequestHandler(const Function<bool(Window*)>& handler)
 {
     engineBackend->SetCloseRequestHandler(handler);
-}
-
-void Engine::RunOnMainThreadAsync(const Function<void()>& task)
-{
-    engineBackend->DispatchOnMainThread(task, false);
-}
-
-void Engine::RunOnMainThread(const Function<void()>& task)
-{
-    engineBackend->DispatchOnMainThread(task, true);
 }
 
 uint32 Engine::GetGlobalFrameIndex() const
@@ -118,6 +118,11 @@ const KeyedArchive* Engine::GetOptions() const
 bool Engine::IsSuspended() const
 {
     return engineBackend->IsSuspended();
+}
+
+void Engine::SetScreenTimeoutEnabled(bool enabled)
+{
+    engineBackend->SetScreenTimeoutEnabled(enabled);
 }
 
 } // namespace DAVA

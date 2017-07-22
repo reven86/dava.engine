@@ -57,6 +57,7 @@ struct StretchDrawData
     int32 type;
     Vector2 stretchCap;
     Matrix3 transformMatr;
+    bool usePerPixelAccuracy;
 };
 
 struct TiledMultilayerData

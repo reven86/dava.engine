@@ -104,10 +104,10 @@ void UIMovieView::UpdateControlRect()
     movieViewControl->SetRect(rect);
 }
 
-void UIMovieView::SystemDraw(const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
+void UIMovieView::Draw(const UIGeometricData& parentGeometricData)
 {
-    UIControl::SystemDraw(geometricData, parentBackground);
-
+    UIControl::Draw(parentGeometricData);
+    movieViewControl->Draw(parentGeometricData);
 #if defined(DRAW_PLACEHOLDER_FOR_STUB_UIMOVIEVIEW)
     static Color drawColor(Color(1.0f, 0.4f, 0.8f, 1.0f));
 
@@ -119,12 +119,6 @@ void UIMovieView::SystemDraw(const UIGeometricData& geometricData, const UIContr
     RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 3, drawColor);
     RenderSystem2D::Instance()->DrawCircle(absRect.GetCenter(), minRadius / 4, drawColor);
 #endif
-}
-
-void UIMovieView::Draw(const UIGeometricData& parentGeometricData)
-{
-    UIControl::Draw(parentGeometricData);
-    movieViewControl->Draw(parentGeometricData);
 }
 
 void UIMovieView::Update(float32 timeElapsed)

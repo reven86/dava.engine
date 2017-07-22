@@ -11,7 +11,6 @@
 #include "Sound/SoundSystem.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "UI/ProjectView.h"
-#include "UI/Find/FindFilter.h"
 
 #include <TArc/Core/ContextAccessor.h>
 #include <TArc/Core/OperationInvoker.h>
@@ -242,14 +241,4 @@ void Project::OnFontPresetChanged()
                                  DVASSERT(data != nullptr);
                                  data->RefreshAllControlProperties();
                              });
-}
-
-const FileSystemCache* Project::GetFileSystemCache() const
-{
-    using namespace DAVA::TArc;
-    DataContext* globalContext = accessor->GetGlobalContext();
-    DVASSERT(nullptr != globalContext);
-    const FileSystemCacheData* fileSystemCacheData = globalContext->GetData<FileSystemCacheData>();
-    DVASSERT(nullptr != fileSystemCacheData);
-    return fileSystemCacheData->GetFileSystemCache();
 }

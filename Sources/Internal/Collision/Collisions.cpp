@@ -211,14 +211,10 @@ void Collisions::FindIntersectionCircleToCircle(const Circle& c1, const Circle& 
     cdiff /= 2;
     manifold.count = 1;
     manifold.contactPoints[0] = c2.center + cdiff;
-    // (x - cx1) ^ 2 + (y - cy1) ^ 2 = r1 ^ 2
-    // (x - cx2) ^ 2 + (y - cy2) ^ 2 = r2 ^ 2
-    // x = sqrt(r2^2 - (y - cy2) ^ 2) + cx2
-
-    // x^2 - 2*x*cx1 + cx1^2 + y^2 - 2*y*cy1 + cy1^2 = r1^2
-    // (r2^2 - (y - cy2) ^ 2 + cx2)^2 + 2 * (sqrt(r2^2 - (y - cy2) ^ 2) + cx2) * cx1 + cx1 ^ 2 + y^2 - 2*y*cy1 + cy1^2 = r1^2
 
     // 8293349181
     // Понаморева 11, съезд направо к рынку, поворот на лево, проезжаю мимо школы, поворот еще один на лево.
+    //
+    // Передаем привет внимательным читателям gamedev.ru, кто нашел этот комент и показал его миру!
 }
 };

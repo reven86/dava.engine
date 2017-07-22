@@ -3,6 +3,7 @@
 
 #include <Engine/Engine.h>
 #include <Logger/Logger.h>
+#include <UI/Render/UIDebugRenderComponent.h>
 
 using namespace DAVA;
 
@@ -37,6 +38,7 @@ void CoreV2Test::LoadResources()
     float32 gap = 10.0f;
     float32 y = 10.0f;
     buttonQuit = CreateUIButton(font, Rect(10, y, 200, h), "Quit", &CoreV2Test::OnQuit);
+    buttonTerminate = CreateUIButton(font, Rect(10, y += h + gap, 200, h), "Terminate", &CoreV2Test::OnTerminate);
     buttonCloseWindow = CreateUIButton(font, Rect(10, y += h + gap, 200, h), "Close window", &CoreV2Test::OnCloseWindow);
 
     buttonResize640x480 = CreateUIButton(font, Rect(10, y += h + gap, 200, h), "Resize 640x480", &CoreV2Test::OnResize);
@@ -57,6 +59,9 @@ void CoreV2Test::LoadResources()
     buttonDisableClose = CreateUIButton(font, Rect(500, y, 200, h), "Disable close", &CoreV2Test::OnDisableEnableClose);
     buttonEnableClose = CreateUIButton(font, Rect(500, y += h + gap, 200, h), "Enable close", &CoreV2Test::OnDisableEnableClose);
 
+    buttonDisableScreenTimeout = CreateUIButton(font, Rect(500, y += h + gap, 200, h), "Disable screen timeout", &CoreV2Test::OnDisableEnableScreenTimeout);
+    buttonEnableScreenTimeout = CreateUIButton(font, Rect(500, y += h + gap, 200, h), "Enable screen timeout", &CoreV2Test::OnDisableEnableScreenTimeout);
+
     engine.windowCreated.Connect(this, &CoreV2Test::OnWindowCreated);
     engine.windowDestroyed.Connect(this, &CoreV2Test::OnWindowDestroyed);
     engine.SetCloseRequestHandler(MakeFunction(this, &CoreV2Test::OnWindowWantsToClose));
@@ -70,6 +75,7 @@ void CoreV2Test::UnloadResources()
     engine.windowDestroyed.Disconnect(this);
 
     SafeRelease(buttonQuit);
+    SafeRelease(buttonTerminate);
     SafeRelease(buttonCloseWindow);
     SafeRelease(buttonResize640x480);
     SafeRelease(buttonResize1024x768);
@@ -77,6 +83,8 @@ void CoreV2Test::UnloadResources()
     SafeRelease(buttonRunOnUI);
     SafeRelease(buttonDisableClose);
     SafeRelease(buttonEnableClose);
+    SafeRelease(buttonDisableScreenTimeout);
+    SafeRelease(buttonEnableScreenTimeout);
 
     SafeRelease(buttonDispTrigger1);
     SafeRelease(buttonDispTrigger2);
@@ -94,6 +102,12 @@ void CoreV2Test::OnQuit(DAVA::BaseObject* obj, void* data, void* callerData)
 {
     Logger::Info("CoreV2Test: sending quit...");
     engine.QuitAsync(4);
+}
+
+void CoreV2Test::OnTerminate(DAVA::BaseObject* obj, void* data, void* callerData)
+{
+    Logger::Info("CoreV2Test: terminating...");
+    engine.Terminate();
 }
 
 void CoreV2Test::OnCloseWindow(DAVA::BaseObject* obj, void* data, void* callerData)
@@ -130,6 +144,20 @@ void CoreV2Test::OnDisableEnableClose(DAVA::BaseObject* obj, void* data, void* c
     {
         Logger::Debug("Closing application or window by user is enabled");
         closeDisabled = false;
+    }
+}
+
+void CoreV2Test::OnDisableEnableScreenTimeout(DAVA::BaseObject* obj, void* data, void* callerData)
+{
+    if (obj == buttonDisableScreenTimeout)
+    {
+        Logger::Debug("Screen timeout is disabled");
+        engine.SetScreenTimeoutEnabled(false);
+    }
+    else if (obj == buttonEnableScreenTimeout)
+    {
+        Logger::Debug("Screen timeout is enabled");
+        engine.SetScreenTimeoutEnabled(true);
     }
 }
 
@@ -274,7 +302,7 @@ DAVA::UIButton* CoreV2Test::CreateUIButton(DAVA::Font* font, const DAVA::Rect& r
     button->SetStateFont(0xFF, font);
     button->SetStateText(0xFF, UTF8Utils::EncodeToWideString(text));
     button->SetStateFontColor(0xFF, Color::White);
-    button->SetDebugDraw(true);
+    button->GetOrCreateComponent<UIDebugRenderComponent>();
     button->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, onClick));
     AddControl(button);
     return button;

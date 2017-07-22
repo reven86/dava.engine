@@ -2,13 +2,13 @@
 #define __DAVAENGINE_TEXTURE_H__
 
 #include "Base/BaseTypes.h"
-#include "Render/RenderBase.h"
 #include "Base/BaseMath.h"
 #include "Base/BaseObject.h"
 #include "Base/FastName.h"
 #include "FileSystem/FilePath.h"
+#include "Concurrency/Mutex.h"
 #include "Render/RHI/rhi_Public.h"
-
+#include "Render/RenderBase.h"
 #include "Render/UniqueStateSet.h"
 
 #include "MemoryManager/MemoryProfiler.h"

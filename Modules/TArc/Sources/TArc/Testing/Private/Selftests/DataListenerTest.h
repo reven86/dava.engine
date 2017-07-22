@@ -59,9 +59,9 @@ DAVA_TARC_TESTCLASS(DataListenerTest)
         TEST_VERIFY(ctx->GetData<DataListenerNode>() != nullptr);
         ctx->GetData<DataListenerNode>()->dummyIntField = 1;
 
-        EXPECT_CALL(listener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::String("dummyIntField")) }));
-        EXPECT_CALL(secondListener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::String("dummyIntField")) }));
-        EXPECT_CALL(bothListener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::String("dummyIntField")) }));
+        EXPECT_CALL(listener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::FastName("dummyIntField")) }));
+        EXPECT_CALL(secondListener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::FastName("dummyIntField")) }));
+        EXPECT_CALL(bothListener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::FastName("dummyIntField")) }));
     }
 
     void ReaderVerify(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
@@ -76,9 +76,9 @@ DAVA_TARC_TESTCLASS(DataListenerTest)
         using namespace ::testing;
 
         TEST_VERIFY(GetActiveContext()->GetData<DataListenerNode>() != nullptr);
-        EXPECT_CALL(listener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::String("dummyIntField")) }));
-        EXPECT_CALL(secondListener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::String("dummyFloatField")) }));
-        EXPECT_CALL(bothListener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::String("dummyIntField")), DAVA::Any(DAVA::String("dummyFloatField")) }))
+        EXPECT_CALL(listener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::FastName("dummyIntField")) }));
+        EXPECT_CALL(secondListener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::FastName("dummyFloatField")) }));
+        EXPECT_CALL(bothListener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::FastName("dummyIntField")), DAVA::Any(DAVA::FastName("dummyFloatField")) }))
         .WillOnce(Invoke(this, &DataListenerTest::ReaderVerify));
 
         activeWrapper.CreateEditor<DataListenerNode>()->dummyFloatField = 10.0f;
@@ -88,9 +88,9 @@ DAVA_TARC_TESTCLASS(DataListenerTest)
     DAVA_TEST (SetFieldValueTest)
     {
         using namespace ::testing;
-        EXPECT_CALL(listener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::String("dummyFloatField")) }));
-        EXPECT_CALL(secondListener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::String("dummyIntField")), DAVA::Any(DAVA::String("dummyFloatField")) }));
-        EXPECT_CALL(bothListener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::String("dummyIntField")), DAVA::Any(DAVA::String("dummyFloatField")) }));
+        EXPECT_CALL(listener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::FastName("dummyFloatField")) }));
+        EXPECT_CALL(secondListener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::FastName("dummyIntField")), DAVA::Any(DAVA::FastName("dummyFloatField")) }));
+        EXPECT_CALL(bothListener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::FastName("dummyIntField")), DAVA::Any(DAVA::FastName("dummyFloatField")) }));
 
         GetActiveContext()->GetData<DataListenerNode>()->dummyFloatField = -100.0f;
         activeWrapper.SetFieldValue("dummyIntField", -10);

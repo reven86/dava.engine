@@ -2,9 +2,9 @@
 
 #include "EditorSystems/EditorSystemsManager.h"
 
+#include <Engine/Qt/IClientDelegate.h>
 #include <Engine/Qt/RenderWidget.h>
 
-#include <QWidget>
 #include <QFrame>
 #include <QCursor>
 #include <QPointer>
@@ -22,14 +22,17 @@ class WidgetsData;
 
 class ControlNode;
 class PackageBaseNode;
-class RulerController;
-class EditorCanvas;
 class CursorInterpreter;
 class AbstractProperty;
 
-class QGridLayout;
+class FindInDocumentWidget;
 class RulerWidget;
 class RulerController;
+class RulerController;
+class EditorCanvas;
+class GuidesController;
+
+class QGridLayout;
 class QComboBox;
 class QScrollBar;
 class RulerController;
@@ -40,14 +43,14 @@ class QDragLeaveEvent;
 class QDropEvent;
 class QMenu;
 
-class PreviewWidget : public QFrame, private DAVA::RenderWidget::IClientDelegate
+class PreviewWidget : public QFrame, private DAVA::IClientDelegate
 {
     Q_OBJECT
 public:
     explicit PreviewWidget(DAVA::TArc::ContextAccessor* accessor, DAVA::RenderWidget* renderWidget, EditorSystemsManager* systemsManager);
     ~PreviewWidget();
 
-    void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
+    FindInDocumentWidget* GetFindInDocumentWidget();
 
     DAVA::Signal<DAVA::uint64> requestCloseTab;
     DAVA::Signal<ControlNode*> requestChangeTextInNode;
@@ -58,6 +61,8 @@ signals:
     void CutRequested();
     void CopyRequested();
     void PasteRequested();
+    void DuplicateRequested();
+
     void OpenPackageFile(QString path);
     void DropRequested(const QMimeData* data, Qt::DropAction action, PackageBaseNode* targetNode, DAVA::uint32 destIndex, const DAVA::Vector2* pos);
 
@@ -81,6 +86,7 @@ private slots:
     void UpdateScrollArea(const DAVA::Vector2& size = DAVA::Vector2(0.0f, 0.0f));
     void OnPositionChanged(const DAVA::Vector2& position);
     void OnResized(DAVA::uint32 width, DAVA::uint32 height);
+    void OnRulersGeometryChanged();
 
 private:
     void InitUI();
@@ -90,7 +96,8 @@ private:
 
     void InitFromSystemsManager(EditorSystemsManager* systemsManager);
 
-private:
+    void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
+
     void CreateActions();
     void ApplyPosChanges();
     void OnMouseReleased(QMouseEvent* event) override;
@@ -104,6 +111,8 @@ private:
     void OnKeyPressed(QKeyEvent* event) override;
 
     float GetScaleFromComboboxText() const;
+
+    bool event(QEvent* event) override;
 
     DAVA::TArc::ContextAccessor* accessor = nullptr;
     DAVA::RenderWidget* renderWidget = nullptr;
@@ -126,6 +135,11 @@ private:
     QGridLayout* gridLayout = nullptr;
     RulerWidget* horizontalRuler = nullptr;
     RulerWidget* verticalRuler = nullptr;
+
+    GuidesController* hGuidesController = nullptr;
+    GuidesController* vGuidesController = nullptr;
+
+    FindInDocumentWidget* findInDocumentWidget = nullptr;
     QComboBox* scaleCombo = nullptr;
     QScrollBar* horizontalScrollBar = nullptr;
     QScrollBar* verticalScrollBar = nullptr;

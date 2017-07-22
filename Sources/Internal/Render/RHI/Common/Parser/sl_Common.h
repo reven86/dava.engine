@@ -77,6 +77,15 @@ public:
     {
     }
 
+    ~Array()
+    {
+        if (buffer)
+        {
+            allocator->Delete<T>(buffer);
+            buffer = nullptr;
+        }
+    }
+
     void PushBack(const T& val)
     {
         DVASSERT(&val < buffer || &val >= buffer + m_size);
@@ -185,10 +194,11 @@ private:
 struct StringPool
 {
     StringPool(Allocator* allocator);
+    ~StringPool();
     const char* AddString(const char* string);
     bool GetContainsString(const char* string) const;
 
-    Array<const char*> stringArray;
+    Array<char*> stringArray;
 };
 
 enum Target
@@ -199,14 +209,14 @@ enum Target
 
 
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_POSIX__)
 
 #define stricmp strcasecmp
 #define strnicmp strncasecmp
 
 #endif
 
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WINDOWS__)
 
     #define stricmp _strcmpi
 

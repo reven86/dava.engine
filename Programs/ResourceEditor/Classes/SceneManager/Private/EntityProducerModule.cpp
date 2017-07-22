@@ -32,7 +32,7 @@ void EntityProducerModule::PostInit()
     ActionPlacementInfo placementInfo;
     placementInfo.AddPlacementPoint(CreateMenuPoint(QList<QString>() << "menuCreateNode"
                                                                      << "menuAdd"));
-    GetUI()->AddAction(REGlobal::MainWindowKey, placementInfo, instantiateCamera);
+    GetUI()->AddAction(DAVA::TArc::mainWindowKey, placementInfo, instantiateCamera);
     connections.AddConnection(instantiateCamera, &QAction::triggered, DAVA::MakeFunction(this, &EntityProducerModule::InstantiateCurrentCamera));
 }
 

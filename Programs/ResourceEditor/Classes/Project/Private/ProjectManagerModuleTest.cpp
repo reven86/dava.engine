@@ -189,12 +189,12 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
                              TEST_VERIFY(GetAccessor()->GetGlobalContext()->GetData<ProjectManagerData>()->GetProjectPath().IsEmpty());
                          }));
 
-        QWidget* wnd = GetWindow(REGlobal::MainWindowKey);
+        QWidget* wnd = GetWindow(DAVA::TArc::mainWindowKey);
         QMainWindow* mainWnd = qobject_cast<QMainWindow*>(wnd);
         TEST_VERIFY(wnd != nullptr);
 
         QMenuBar* menu = mainWnd->menuBar();
-        QMenu* fileMenu = menu->findChild<QMenu*>("File");
+        QMenu* fileMenu = menu->findChild<QMenu*>(MenuItems::menuFile);
 
         QAction* closeProjectAction = nullptr;
         QList<QAction*> actions = fileMenu->actions();

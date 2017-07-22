@@ -49,8 +49,7 @@ Window* GetPrimaryWindow();
     \ingroup engine
     Utility function to run asynchronous task on DAVA main thread.
 
-    Behaviour is undefined when called before `Engine` instantiated or after `Engine::cleanup` signal has emited.
-    Another but longer way to get primary window is to call `Engine::Instance()->RunOnMainThreadAsync()`.
+    Behaviour is undefined when called after `Engine::cleanup` signal has emited.
 */
 void RunOnMainThreadAsync(const Function<void()>& task);
 
@@ -58,8 +57,8 @@ void RunOnMainThreadAsync(const Function<void()>& task);
     \ingroup engine
     Utility function to run task on DAVA main thread and wait its completion blocking caller thread.
 
-    Behaviour is undefined when called before `Engine` instantiated or after `Engine::cleanup` signal has emited.
-    Another but longer way to get primary window is to call `Engine::Instance()->RunOnMainThread()`.
+    This function should not be called before `Engine::Run` is executed since it can lead to deadlock.
+    Behaviour is undefined when called after `Engine::cleanup` signal has emited.
 */
 void RunOnMainThread(const Function<void()>& task);
 
@@ -71,7 +70,6 @@ void RunOnMainThread(const Function<void()>& task);
         - if Engine is initialized with console run mode.
         - if called before `Engine::Init` method which create instance of primary window.
         - if called after `Engine::windowDestroyed` signal emited for primary window.
-    Another but longer way to get primary window is to call `Engine::Instance()->PrimaryWindow()->RunOnUIThreadAsync()`.
 */
 void RunOnUIThreadAsync(const Function<void()>& task);
 
@@ -83,7 +81,6 @@ void RunOnUIThreadAsync(const Function<void()>& task);
         - if Engine is initialized with console run mode.
         - if called before `Engine::windowCreated` signal emited for primary window.
         - if called after `Engine::windowDestroyed` signal emited for primary window.
-    Another but longer way to get primary window is to call `Engine::Instance()->PrimaryWindow()->RunOnUIThread()`.
 */
 void RunOnUIThread(const Function<void()>& task);
 
@@ -179,6 +176,11 @@ public:
     */
     Window* PrimaryWindow() const;
 
+    /**
+        Return currently existing windows, including the primary one.
+    */
+    const Vector<Window*>& GetWindows() const;
+
     eEngineRunMode GetRunMode() const;
     bool IsStandaloneGUIMode() const;
     bool IsEmbeddedGUIMode() const;
@@ -194,7 +196,7 @@ public:
             - as console application (eEngineRunMode::CONSOLE_MODE)
             - as GUI application embedded into other framework (eEngineRunMode::GUI_EMBEDDED)
     
-        Application may list dava.engine's modules (subsystems) which she wants to use during execution. List may be empty.
+        Application may list dava.engine's modules (subsystems) which it wants to use during execution. The list may be empty.
         For now application may choose to create only several subsystems:
             - DownloadManager
             - JobManager
@@ -253,12 +255,25 @@ public:
     void QuitAsync(int exitCode);
 
     /**
+        Immediately terminate application with given exit code.
+
+        Application is immediately terminated bypassing normal exiting sequence:
+            - memory and resources are not freed,
+            - destructors of global objects are not called,
+            - destructors of automatic objects that exist at the time of the call are not called,
+            - signals such as `gameLoopStopped`, `cleanup` and others are not emitted.
+
+        \note Termination is an unusual way to exit application.
+    */
+    void Terminate(int exitCode = EXIT_FAILURE);
+
+    /**
         Set handler which is invoked when user is trying to close window or application.
         
         Handler can prevent window/application closing by returning false. This ability is
         supported only on desktop platforms: win32 and macOS.
         Typical usage is to return false in handler to prevent immediate window/app closing
-        and show dialog asking user whether she wants to close window/app. If she chooses to
+        and show dialog asking user whether he wants to close window/app. If he chooses to
         close window/app then application should call Window::Close or Engine::Quit.
         Handler is only invoked if window/app is closing by user request: by pressing Alt+F4 or
         by clicking mouse on window close button or by pressing Cmd+Q on macOS.
@@ -271,18 +286,6 @@ public:
                        otherwise user is trying to close specified window.
     */
     void SetCloseRequestHandler(const Function<bool(Window*)>& handler);
-
-    /**
-        Run given task in DAVA main thread context without waiting task execution.
-        This method can be called from any thread.
-    */
-    void RunOnMainThreadAsync(const Function<void()>& task);
-
-    /**
-        Run given task in DAVA main thread context and block calling thread until task is executed.
-        This method can be called from any thread.
-    */
-    void RunOnMainThread(const Function<void()>& task);
 
     const KeyedArchive* GetOptions() const;
 
@@ -320,6 +323,14 @@ public:
         \note Only these platforms support suspending: Win10, iOS, Android.
     */
     bool IsSuspended() const;
+
+    /**
+        Set value indicating if screen timeout is enabled.
+        If value is `true`, screens will dim some time after last user interaction (if it's enabled in system settings),
+        otherwise screens will stay active even if there's no input.
+        By default, timeout is enabled.
+    */
+    void SetScreenTimeoutEnabled(bool enabled);
 
 public:
     Signal<> gameLoopStarted; //!< Emited just before entring game loop. Note: native windows are not created yet and renderer is not initialized.

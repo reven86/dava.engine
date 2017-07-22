@@ -68,6 +68,7 @@ private:
     DAVA::Vector<DAVA::uint32> controlPointIndices;
     DAVA::Map<DAVA::RenderObject*, DAVA::Entity*> renderObjectToEntity;
     VisibilityCheckRenderer renderer;
+    DAVA::ScopedPtr<DAVA::NMaterial> debugMaterial;
     StateCache stateCache;
     size_t currentPointIndex = 0;
     bool shouldPrerender = true;

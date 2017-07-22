@@ -277,7 +277,6 @@ protected:
     Fn fn;
     std::shared_ptr<Obj> obj;
 };
-
 } // namespace Fn11
 
 template <typename Fn>

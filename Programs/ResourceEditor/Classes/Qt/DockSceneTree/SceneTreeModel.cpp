@@ -10,7 +10,7 @@
 #include "Classes/Selection/Selection.h"
 
 // framework
-#include "Scene3d/Components/ComponentHelpers.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 
 // commands
 #include "Commands2/ParticleEditorCommands.h"

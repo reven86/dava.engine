@@ -20,11 +20,7 @@
 #include "Debug/DVAssert.h"
 
 #include <QApplication>
-#include <QDesktopWidget>
-#include <QOpenGLContext>
-#include <QOpenGLFramebufferObject>
 #include <QObject>
-#include <QQuickWidget>
 
 namespace DAVA
 {
@@ -43,95 +39,6 @@ public:
 
 namespace Private
 {
-class WindowBackend::OGLContextBinder
-{
-public:
-    OGLContextBinder(QSurface* surface, QOpenGLContext* context)
-        : davaContext(surface, context)
-    {
-        DVASSERT(binder == nullptr);
-        binder = this;
-    }
-
-    ~OGLContextBinder()
-    {
-        DVASSERT(binder != nullptr);
-        binder = nullptr;
-    }
-
-    void AcquireContext()
-    {
-        QSurface* prevSurface = nullptr;
-        QOpenGLContext* prevContext = QOpenGLContext::currentContext();
-        if (prevContext != nullptr)
-        {
-            prevSurface = prevContext->surface();
-        }
-
-        contextStack.emplace(prevSurface, prevContext);
-
-        if (prevContext != davaContext.context)
-        {
-            davaContext.context->makeCurrent(davaContext.surface);
-        }
-    }
-
-    void ReleaseContext()
-    {
-        DVASSERT(!contextStack.empty());
-        QOpenGLContext* currentContext = QOpenGLContext::currentContext();
-
-        ContextNode topNode = contextStack.top();
-        contextStack.pop();
-
-        if (topNode.context == currentContext)
-        {
-            return;
-        }
-        else if (currentContext != nullptr)
-        {
-            currentContext->doneCurrent();
-        }
-
-        if (topNode.context != nullptr && topNode.surface != nullptr)
-        {
-            topNode.context->makeCurrent(topNode.surface);
-        }
-    }
-
-    static OGLContextBinder* binder;
-
-private:
-    struct ContextNode
-    {
-        ContextNode(QSurface* surface_ = nullptr, QOpenGLContext* context_ = nullptr)
-            : surface(surface_)
-            , context(context_)
-        {
-        }
-
-        QSurface* surface = nullptr;
-        QOpenGLContext* context = nullptr;
-    };
-
-    ContextNode davaContext;
-    DAVA::Stack<ContextNode> contextStack;
-};
-
-WindowBackend::OGLContextBinder* WindowBackend::OGLContextBinder::binder = nullptr;
-
-void AcquireContextImpl()
-{
-    DVASSERT(WindowBackend::OGLContextBinder::binder);
-    WindowBackend::OGLContextBinder::binder->AcquireContext();
-}
-
-void ReleaseContextImpl()
-{
-    DVASSERT(WindowBackend::OGLContextBinder::binder);
-    WindowBackend::OGLContextBinder::binder->ReleaseContext();
-}
-
 class TriggerProcessEvent : public QEvent
 {
 public:
@@ -279,9 +186,6 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     case UIDispatcherEvent::SET_MINIMUM_SIZE:
         DoSetMinimumSize(e.resizeEvent.width, e.resizeEvent.height);
         break;
-    case UIDispatcherEvent::SET_FULLSCREEN:
-        DoSetFullscreen(e.setFullscreenEvent.mode);
-        break;
     case UIDispatcherEvent::FUNCTOR:
         e.functor();
         break;
@@ -292,40 +196,10 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
     }
 }
 
-namespace WindowBackendDetails
-{
-//there is a bug in Qt: https://bugreports.qt.io/browse/QTBUG-50465
-void Kostil_ForceUpdateCurrentScreen(RenderWidget* renderWidget, QWindow* wnd, QApplication* application)
-{
-    QDesktopWidget* desktop = application->desktop();
-    int screenNumber = desktop->screenNumber(renderWidget);
-    DVASSERT(screenNumber >= 0 && screenNumber < qApp->screens().size());
-
-    QWindow* parent = wnd;
-    while (parent->parent() != nullptr)
-    {
-        parent = parent->parent();
-    }
-    parent->setScreen(application->screens().at(screenNumber));
-}
-} //unnamed namespace
-
 void WindowBackend::OnCreated()
 {
     uiDispatcher.LinkToCurrentThread();
 
-    // QuickWidnow in QQuickWidget is not "real" window, it doesn't have "platform window" handle,
-    // so Qt can't make context current for that surface. Real surface is QOffscreenWindow that live inside
-    // QQuickWidgetPrivate and we can get it only through context.
-    // In applications with QMainWindow (where RenderWidget is a part of MainWindow) it's good solution,
-    // But for TestBed for example this solution is not full,
-    // because QQuickWidget "recreate" offscreenWindow every time on pair of show-hide events
-    // I don't know what we can do with this.
-    // Now i can only suggest: do not create Qt-based game! Never! Do you hear me??? Never! Never! Never! Never! Never! NEVER!!!
-    QOpenGLContext* context = renderWidget->GetQQuickWindow()->openglContext();
-    contextBinder.reset(new OGLContextBinder(context->surface(), context));
-
-    WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, renderWidget->GetQQuickWindow(), PlatformApi::Qt::GetApplication());
     dpi = static_cast<float32>(renderWidget->logicalDpiX());
     float32 scale = static_cast<float32>(renderWidget->devicePixelRatio());
     float32 w = static_cast<float32>(renderWidget->width());
@@ -430,7 +304,8 @@ void WindowBackend::OnDragMoved(QDragMoveEvent* qtEvent)
 
 void WindowBackend::OnMouseDBClick(QMouseEvent* qtEvent)
 {
-    // Do not handle mouse double click as dava.engine internals produce double clicks
+    OnMousePressed(qtEvent);
+    OnMouseReleased(qtEvent);
 }
 
 void WindowBackend::OnWheel(QWheelEvent* qtEvent)
@@ -579,32 +454,14 @@ void WindowBackend::DoSetMinimumSize(float32 width, float32 height)
     renderWidget->setMinimumSize(static_cast<int>(width), static_cast<int>(height));
 }
 
-void WindowBackend::DoSetFullscreen(eFullscreen newMode)
-{
-    QQuickWindow* quickWindow = renderWidget->GetQQuickWindow();
-    if (quickWindow == nullptr)
-    {
-        return;
-    }
-
-    if (newMode == eFullscreen::On)
-    {
-        quickWindow->showFullScreen();
-    }
-    else
-    {
-        quickWindow->showNormal();
-    }
-}
-
 void WindowBackend::AcquireContext()
 {
-    AcquireContextImpl();
+    renderWidget->AcquireContext();
 }
 
 void WindowBackend::ReleaseContext()
 {
-    ReleaseContextImpl();
+    renderWidget->ReleaseContext();
 }
 
 void WindowBackend::OnApplicationFocusChanged(bool isInFocus)
@@ -619,7 +476,7 @@ void WindowBackend::Update()
 {
     if (renderWidget != nullptr)
     {
-        renderWidget->GetQQuickWindow()->update();
+        renderWidget->Update();
     }
 }
 
@@ -634,12 +491,7 @@ DAVA::RenderWidget* WindowBackend::GetRenderWidget()
 
 void WindowBackend::InitCustomRenderParams(rhi::InitParam& params)
 {
-    params.threadedRenderEnabled = false;
-    params.threadedRenderFrameCount = 1;
-    params.acquireContextFunc = &AcquireContextImpl;
-    params.releaseContextFunc = &ReleaseContextImpl;
-    DVASSERT(renderWidget != nullptr);
-    params.defaultFrameBuffer = reinterpret_cast<void*>(renderWidget->GetQQuickWindow()->renderTarget()->handle());
+    renderWidget->InitCustomRenderParams(params);
 }
 
 void WindowBackend::SetCursorCapture(eCursorCapture mode)

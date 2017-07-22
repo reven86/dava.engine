@@ -9,7 +9,7 @@
 #include "Classes/Qt/Tools/QtPropertyEditor/QtPropertyEditor.h"
 #include "Classes/Qt/Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataMetaObject.h"
 
-#include <QDialog.h>
+#include <QDialog>
 #include <QDialogButtonBox>
 
 namespace Ui

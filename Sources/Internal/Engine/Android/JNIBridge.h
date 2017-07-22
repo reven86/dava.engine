@@ -43,7 +43,7 @@ class Exception : public std::runtime_error
     using std::runtime_error::runtime_error;
 };
 
-JNIEnv* GetEnv();
+JNIEnv* GetEnv(bool abortIfNotAttachedToJVM = true);
 void AttachCurrentThreadToJVM();
 void DetachCurrentThreadFromJVM();
 

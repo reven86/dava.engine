@@ -1,5 +1,4 @@
-#ifndef __RESOURCEEDITORQT__HEIGHTMAPEDITORCOMMANDS2__
-#define __RESOURCEEDITORQT__HEIGHTMAPEDITORCOMMANDS2__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
@@ -12,14 +11,11 @@ class Heightmap;
 class Entity;
 }
 
-class HeightmapProxy;
-class LandscapeProxy;
-class SceneEditor2;
-
+class LandscapeEditorDrawSystem;
 class ModifyHeightmapCommand : public RECommand
 {
 public:
-    ModifyHeightmapCommand(HeightmapProxy* heightmapProxy, DAVA::Heightmap* originalHeightmap, const DAVA::Rect& updatedRect);
+    ModifyHeightmapCommand(LandscapeEditorDrawSystem* drawSystem, DAVA::Heightmap* originalHeightmap, const DAVA::Rect& updatedRect);
     ~ModifyHeightmapCommand() override;
 
 private:
@@ -30,10 +26,9 @@ private:
     void ApplyHeightmapRegion(DAVA::uint16* region);
 
 private:
-    HeightmapProxy* heightmapProxy = nullptr;
+    LandscapeEditorDrawSystem* drawSystem = nullptr;
+
     DAVA::uint16* undoRegion = nullptr;
     DAVA::uint16* redoRegion = nullptr;
     DAVA::Rect updatedRect;
 };
-
-#endif /* defined(__RESOURCEEDITORQT__HEIGHTMAPEDITORCOMMANDS2__) */

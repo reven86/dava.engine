@@ -2,7 +2,7 @@
 
 #include "Infrastructure/BaseScreen.h"
 
-#include <Engine/Private/Dispatcher/Dispatcher.h>
+#include <Engine/Dispatcher.h>
 
 namespace DAVA
 {
@@ -28,6 +28,7 @@ protected:
 
 private:
     void OnQuit(DAVA::BaseObject* obj, void* data, void* callerData);
+    void OnTerminate(DAVA::BaseObject* obj, void* data, void* callerData);
     void OnCloseWindow(DAVA::BaseObject* obj, void* data, void* callerData);
 
     void OnResize(DAVA::BaseObject* obj, void* data, void* callerData);
@@ -35,6 +36,7 @@ private:
     void OnDispatcherTest(DAVA::BaseObject* obj, void* data, void* callerData);
 
     void OnDisableEnableClose(DAVA::BaseObject* obj, void* data, void* callerData);
+    void OnDisableEnableScreenTimeout(DAVA::BaseObject* obj, void* data, void* callerData);
 
     void OnWindowCreated(DAVA::Window* w);
     bool OnWindowWantsToClose(DAVA::Window* w);
@@ -47,6 +49,7 @@ private:
     DAVA::Engine& engine;
 
     DAVA::UIButton* buttonQuit = nullptr;
+    DAVA::UIButton* buttonTerminate = nullptr;
     DAVA::UIButton* buttonCloseWindow = nullptr;
 
     DAVA::UIButton* buttonResize640x480 = nullptr;
@@ -64,6 +67,9 @@ private:
 
     DAVA::UIButton* buttonDisableClose = nullptr;
     DAVA::UIButton* buttonEnableClose = nullptr;
+
+    DAVA::UIButton* buttonDisableScreenTimeout = nullptr;
+    DAVA::UIButton* buttonEnableScreenTimeout = nullptr;
 
     bool closeDisabled = false;
 

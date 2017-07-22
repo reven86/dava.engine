@@ -420,6 +420,26 @@ void dx11_DestroyDevice()
     dx11.device.Reset();
 }
 
+void dx11_SetSwapChain(const InitParam& param)
+{
+#if defined(__DAVAENGINE_WIN_UAP__)
+    using ::Windows::UI::Core::CoreDispatcherPriority;
+    using ::Windows::UI::Core::DispatchedHandler;
+    using ::Windows::UI::Xaml::Controls::SwapChainPanel;
+
+    SwapChainPanel ^ swapChainPanel = reinterpret_cast<SwapChainPanel ^>(param.window);
+    auto handler = [swapChainPanel, param]() // Capture param by value as calling function may create it on stack
+    {
+        ComPtr<ISwapChainPanelNative> panelNative;
+        if (DX11Check(reinterpret_cast<IUnknown*>(swapChainPanel)->QueryInterface(IID_PPV_ARGS(panelNative.GetAddressOf()))))
+            panelNative->SetSwapChain(dx11.swapChain.Get());
+        else
+            ReportError(param, RenderingError::FailedToInitialize);
+    };
+    swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler(handler, Platform::CallbackContext::Any));
+#endif
+}
+
 bool dx11_CreateSwapChain(const InitParam& param)
 {
     DXGI_SWAP_CHAIN_DESC1 desc = {};
@@ -455,22 +475,6 @@ bool dx11_CreateSwapChain(const InitParam& param)
 
     if (!DX11Check(result))
         return false;
-
-#if defined(__DAVAENGINE_WIN_UAP__)
-    using Windows::UI::Core::CoreDispatcherPriority;
-    using Windows::UI::Core::DispatchedHandler;
-    using namespace Windows::UI::Xaml::Controls;
-    SwapChainPanel ^ swapChainPanel = reinterpret_cast<SwapChainPanel ^>(param.window);
-    auto handler = [swapChainPanel, &param]()
-    {
-        ComPtr<ISwapChainPanelNative> panelNative;
-        if (DX11Check(reinterpret_cast<IUnknown*>(swapChainPanel)->QueryInterface(IID_PPV_ARGS(panelNative.GetAddressOf()))))
-            panelNative->SetSwapChain(dx11.swapChain.Get());
-        else
-            ReportError(param, RenderingError::FailedToInitialize);
-    };
-    swapChainPanel->Dispatcher->RunAsync(CoreDispatcherPriority::High, ref new DispatchedHandler(handler, Platform::CallbackContext::Any));
-#endif
 
     dx11.dxgiDevice->SetMaximumFrameLatency(1);
     return true;
@@ -674,6 +678,7 @@ static void dx11_InitContext()
         ReportError(dx11.initParameters, RenderingError::FailedToInitialize);
         return;
     }
+    dx11_SetSwapChain(dx11.initParameters);
 
     if (!dx11_ResizeSwapChain(dx11.initParameters.width, dx11.initParameters.height, dx11.initParameters.scaleX, dx11.initParameters.scaleY))
     {

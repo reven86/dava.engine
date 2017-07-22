@@ -4,7 +4,7 @@
 #include "UI/UIYamlLoader.h"
 #include "Engine/Engine.h"
 
-#include "DavaEngine.h"
+#include "DAVAEngine.h"
 
 using namespace DAVA;
 

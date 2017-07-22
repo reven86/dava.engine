@@ -54,6 +54,11 @@ const uint32_t packIndex) const
     return table_packs.at(packIndex);
 }
 
+const std::vector<uint32_t>& pack_meta_data::get_children(const uint32_t pack_index) const
+{
+    return table_childs[pack_index];
+}
+
 std::vector<uint8_t> pack_meta_data::serialize() const
 {
     return std::vector<uint8_t>();
@@ -93,7 +98,7 @@ void pack_meta_data::deserialize(const void* ptr, size_t size)
     // compressed_size b
     array<char, 4> header;
     is.read(&header[0], 4);
-    if (!is || header != array<char, 4>{ 'm', 'e', 't', 'a' })
+    if (!is || header != array<char, 4>{ 'm', 'e', 't', '2' })
     {
         l << "read metadata error - not meta\n";
         throw runtime_error("read metadata error - not meta");
@@ -136,7 +141,6 @@ void pack_meta_data::deserialize(const void* ptr, size_t size)
     l << "read compressedSize " << compressedSize << '\n';
 
     l << "numFilesBytes = " << numFilesBytes << " compressedSize = " << compressedSize << " size = " << size << '\n';
-    assert(16 + numFilesBytes + compressedSize == size);
 
     vector<uint8_t> compressedBuf(compressedSize);
 
@@ -184,4 +188,42 @@ void pack_meta_data::deserialize(const void* ptr, size_t size)
         packDependency = line.substr(first_space + 1);
         table_packs.push_back({ packName, packDependency });
     }
+
+    // read children table
+    l << "start reading children table\n";
+    uint32_t numPacksWithChildren = 0;
+    is.read(reinterpret_cast<char*>(&numPacksWithChildren), sizeof(numPacksWithChildren));
+    if (!is)
+    {
+        throw std::runtime_error("read numPacksWithChildren failed");
+    }
+
+    table_childs.resize(table_packs.size());
+
+    for (; numPacksWithChildren > 0; --numPacksWithChildren)
+    {
+        uint32_t childPackIndex = 0;
+        is.read(reinterpret_cast<char*>(&childPackIndex), sizeof(childPackIndex));
+        if (!is)
+        {
+            throw std::runtime_error("read childPackIndex failed");
+        }
+
+        uint32_t numChildPacks = 0;
+        is.read(reinterpret_cast<char*>(&numChildPacks), sizeof(numChildPacks));
+        if (!is)
+        {
+            throw std::runtime_error("read numChildPacks failed");
+        }
+        std::vector<uint32_t>& child = table_childs[childPackIndex];
+        child.resize(numChildPacks);
+
+        uint32_t numBytes = numChildPacks * sizeof(child[0]);
+        is.read(reinterpret_cast<char*>(&child[0]), numBytes);
+        if (!is)
+        {
+            throw std::runtime_error("read numBytes failed");
+        }
+    }
+    l << "finish read children talbe\n";
 }

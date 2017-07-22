@@ -63,6 +63,7 @@
         <file>Icons/QtControlIcons/uiswitch.png</file>
         <file>Icons/QtControlIcons/uitextfield.png</file>
         <file>Icons/QtControlIcons/uiwebview.png</file>
+        <file>Icons/settings.png</file>
         <file>Cursors/eastWestResizeCursor.png</file>
         <file>Cursors/moveCursor.png</file>
         <file>Cursors/northEastSouthWestResizeCursor.png</file>
@@ -70,6 +71,6 @@
         <file>Cursors/northWestSouthEastResizeCursor.png</file>
         <file>Cursors/cursorRotate.png</file>
         <file>Cursors/cursorCross.png</file>
-        <file>Icons/settings.png</file>
+        <file>Cursors/trashCursor.png</file>
     </qresource>
 </RCC>

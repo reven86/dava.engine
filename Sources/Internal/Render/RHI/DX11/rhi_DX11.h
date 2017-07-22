@@ -72,7 +72,8 @@ void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void SetToRHIFragment(Handle tex, uint32 unitIndex, ID3D11DeviceContext* context);
 void SetToRHIVertex(Handle tex, uint32 unitIndex, ID3D11DeviceContext* context);
-void SetRenderTarget(Handle color, Handle depthstencil, uint32 level, TextureFace face, ID3D11DeviceContext* context);
+void SetRenderTarget(Handle tex, uint32 level, TextureFace face, ID3D11DeviceContext* context, ID3D11RenderTargetView** view);
+void SetDepthStencil(Handle tex, ID3D11DepthStencilView** view);
 void ResolveMultisampling(Handle from, Handle to, ID3D11DeviceContext* context);
 Size2i Size(Handle tex);
 }

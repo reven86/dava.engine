@@ -1,21 +1,23 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "DLCManager/DLCDownloader.h"
 #include "DLCManager/DLCManager.h"
 #include "Compression/Compressor.h"
 
 namespace DAVA
 {
 class DLCManagerImpl;
+class FileSystem;
 
 /**
-	Downdload several files
+	Download several files with one request
 */
 class PackRequest : public DLCManager::IRequest
 {
 public:
     PackRequest(DLCManagerImpl& packManager_, const String& packName, Vector<uint32> fileIndexes_);
-    void CancelCurrentsDownloads();
+    void CancelCurrentDownloadRequests();
     PackRequest(DLCManagerImpl& packManager_, const String& requestedPackName);
 
     ~PackRequest() override;
@@ -26,11 +28,12 @@ public:
 
     const String& GetRequestedPackName() const override;
     /** recalculate full size with all dependencies */
-    Vector<String> GetDependencies() const override;
+    Vector<uint32> GetDependencies() const;
     /** return size of files within this request without dependencies */
     uint64 GetSize() const override;
     /** recalculate current downloaded size without dependencies */
     uint64 GetDownloadedSize() const override;
+
     /** return true when all files loaded and ready */
     bool IsDownloaded() const override;
 
@@ -68,7 +71,7 @@ private:
         uint64 sizeOfCompressedFile = 0;
         uint64 sizeOfUncompressedFile = 0;
         uint64 downloadedFileSize = 0;
-        uint32 taskId = 0;
+        DLCDownloader::Task* task = nullptr;
         Compressor::Type compressionType = Compressor::Type::Lz4HC;
         Status status = Wait;
     };
@@ -84,7 +87,11 @@ private:
                                FileRequest& fileRequest);
 
     static void DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest);
-    void DisableRequestingAndFireSignalNoSpaceLeft(PackRequest::FileRequest& fileRequest);
+    void DisableRequestingAndFireSignalIOError(FileRequest& fileRequest, int32 errVal) const;
+    bool CheckLocalFileState(FileSystem* fs, FileRequest& fileRequest);
+    bool CheckLoadingStatusOfFileRequest(FileRequest& fileRequest, DLCDownloader* dm, const String& dstPath);
+    bool LoadingPackFileState(FileSystem* fs, FileRequest& fileRequest);
+    bool CheckHaskState(FileRequest& fileRequest);
     bool UpdateFileRequests();
 
     DLCManagerImpl* packManagerImpl = nullptr;
@@ -92,11 +99,11 @@ private:
     Vector<FileRequest> requests;
     Vector<uint32> fileIndexes;
     String requestedPackName;
-    mutable Vector<String> dependencyCache;
+    mutable Vector<uint32> dependencyCache;
 
     uint32 numOfDownloadedFile = 0;
 
-    // if this fild is false, you can check fileIndexes
+    // if this field is false, you can check fileIndexes
     // else fileIndexes maybe empty and wait initialization
     bool delayedRequest = true;
 };

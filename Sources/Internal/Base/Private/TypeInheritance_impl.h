@@ -6,20 +6,20 @@
 
 namespace DAVA
 {
-namespace RttiInheritanceDetail
+namespace TypeInheritanceDetail
 {
 static uint32_t stubData = 0xcccccccc;
 
 template <typename From, typename To>
 std::ptrdiff_t GetPtrDiff()
 {
-    From* from = reinterpret_cast<From*>(&stubData);
-    To* to = static_cast<To*>(from);
+    const From* from = reinterpret_cast<const From*>(&stubData);
+    const To* to = static_cast<const To*>(from);
 
     ptrdiff_t ret = reinterpret_cast<uintptr_t>(to) - reinterpret_cast<uintptr_t>(from);
     return ret;
 }
-} // RttiInheritanceDetail
+} // namespace TypeInheritanceDetail
 
 inline const Vector<TypeInheritance::Info>& TypeInheritance::GetBaseTypes() const
 {
@@ -63,34 +63,18 @@ void TypeInheritance::RegisterBases()
 template <typename T, typename B>
 bool TypeInheritance::AddBaseType()
 {
-    const Type* type = Type::Instance<T>();
-    const TypeInheritance* inheritance = type->GetInheritance();
+    TypeInheritance* inheritance = Type::Instance<T>()->EditInheritance();
+    inheritance->AddBaseType(Type::Instance<B>(), TypeInheritanceDetail::GetPtrDiff<T, B>());
 
-    if (nullptr == inheritance)
-    {
-        inheritance = new TypeInheritance();
-        type->inheritance.reset(inheritance);
-    }
-
-    const Type* base = Type::Instance<B>();
-    inheritance->baseTypesInfo.push_back({ base, RttiInheritanceDetail::GetPtrDiff<T, B>() });
     return true;
 }
 
 template <typename T, typename D>
 bool TypeInheritance::AddDerivedType()
 {
-    const Type* type = Type::Instance<T>();
-    const TypeInheritance* inheritance = type->GetInheritance();
+    TypeInheritance* inheritance = Type::Instance<T>()->EditInheritance();
+    inheritance->AddDerivedType(Type::Instance<D>(), TypeInheritanceDetail::GetPtrDiff<T, D>());
 
-    if (nullptr == inheritance)
-    {
-        inheritance = new TypeInheritance();
-        type->inheritance.reset(inheritance);
-    }
-
-    const Type* derived = Type::Instance<D>();
-    inheritance->derivedTypesInfo.push_back({ derived, RttiInheritanceDetail::GetPtrDiff<T, D>() });
     return true;
 }
 } // namespace DAVA

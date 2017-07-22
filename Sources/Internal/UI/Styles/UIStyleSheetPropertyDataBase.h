@@ -16,7 +16,7 @@ public StaticSingleton<UIStyleSheetPropertyDataBase>
 {
 public:
     virtual ~UIStyleSheetPropertyDataBase();
-    static const int32 STYLE_SHEET_PROPERTY_COUNT = 71;
+    static const int32 STYLE_SHEET_PROPERTY_COUNT = 74;
 
     UIStyleSheetPropertyDataBase();
 
@@ -28,13 +28,14 @@ public:
 
     bool IsValidStyleSheetProperty(const FastName& name) const;
     const UIStyleSheetPropertyDescriptor& GetStyleSheetPropertyByIndex(uint32 index) const;
-    int32 FindStyleSheetProperty(int32 componentType, const FastName& name) const;
+    int32 FindStyleSheetProperty(const Type* componentType, const FastName& name) const;
 
 private:
     UIStyleSheetPropertyGroup controlGroup;
     UIStyleSheetPropertyGroup bgGroup;
     UIStyleSheetPropertyGroup staticTextGroup;
     UIStyleSheetPropertyGroup textFieldGroup;
+    UIStyleSheetPropertyGroup particleEffectGroup;
 
     UIStyleSheetPropertyGroup linearLayoutGroup;
     UIStyleSheetPropertyGroup flowLayoutGroup;

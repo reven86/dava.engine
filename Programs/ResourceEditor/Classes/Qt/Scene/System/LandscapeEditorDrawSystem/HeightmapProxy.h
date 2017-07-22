@@ -1,5 +1,4 @@
-#ifndef __RESOURCEEDITORQT__HEIGHTMAPPROXY__
-#define __RESOURCEEDITORQT__HEIGHTMAPPROXY__
+#pragma once
 
 #include "DAVAEngine.h"
 #include "Deprecated/EditorHeightmap.h"
@@ -19,5 +18,3 @@ private:
     DAVA::Rect changedRect;
     bool heightmapChanged = false;
 };
-
-#endif /* defined(__RESOURCEEDITORQT__HEIGHTMAPPROXY__) */

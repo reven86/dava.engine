@@ -1,4 +1,5 @@
-#include "UINavigationComponent.h"
+#include "UI/Focus/UINavigationComponent.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
