@@ -21,7 +21,7 @@ void Matrix4::glOrtho(float32 left, float32 right, float32 bottom, float32 top, 
     float32 f_n = f - n;
     float32 tx = -(right + left) / (right - left);
     float32 ty = -(top + bottom) / (top - bottom);
-    float32 tz = -(f + n) / (f - n);
+    float32 tz = -n / (f - n);
 
     data[0] = 2.0f / r_l;
     data[1] = 0.0f;
@@ -35,7 +35,7 @@ void Matrix4::glOrtho(float32 left, float32 right, float32 bottom, float32 top, 
 
     data[8] = 0.0f;
     data[9] = 0.0f;
-    data[10] = -2.0f / f_n;
+    data[10] = -1.0f / f_n;
     data[11] = 0.0f;
 
     //RHI_COMPLETE - update it to zero based clip range
