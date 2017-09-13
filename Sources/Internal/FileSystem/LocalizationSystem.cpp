@@ -215,7 +215,7 @@ bool LocalizationSystem::SetCurrentLocale(const String& requestedLangId)
     //TODO: add reloading strings data on langId changing
     Logger::FrameworkDebug("LocalizationSystem requested locale: %s, set locale: %s", requestedLangId.c_str(), actualLangId.c_str());
     langId = actualLangId;
-    SoundSystem::Instance()->SetCurrentLocale(langId);
+    //SoundSystem::Instance()->SetCurrentLocale(langId);
     return requestedLocaleFound;
 }
 

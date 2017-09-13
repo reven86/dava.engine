@@ -130,8 +130,8 @@ void ProjectResources::LoadProject(const DAVA::FilePath& incomePath)
 
         DAVA::QualitySettingsSystem::Instance()->Load(data->projectPath + "DataSource/quality.yaml");
 
-        const DAVA::EngineContext* engineCtx = accessor->GetEngineContext();
-        engineCtx->soundSystem->InitFromQualitySettings();
+        //const DAVA::EngineContext* engineCtx = accessor->GetEngineContext();
+        //engineCtx->soundSystem->InitFromQualitySettings();
     }
 }
 

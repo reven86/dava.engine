@@ -982,7 +982,7 @@ void QtMainWindow::EnableSounds(bool toEnable)
         SettingsManager::SetValue(Settings::Internal_EnableSounds, DAVA::VariantType(toEnable));
     }
 
-    DAVA::SoundSystem::Instance()->Mute(!toEnable);
+    //DAVA::SoundSystem::Instance()->Mute(!toEnable);
 }
 
 void QtMainWindow::OnSelectMode()
