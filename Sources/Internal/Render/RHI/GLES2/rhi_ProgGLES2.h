@@ -1,14 +1,12 @@
-#if !defined __RHI_PROGGLES2_HPP__
-#define __RHI_PROGGLES2_HPP__
+#pragma once
 
-    #include "../Common/rhi_Private.h"
+#include "../Common/rhi_Private.h"
 
 namespace rhi
 {
-//==============================================================================
+struct GLCommand;
 
-class
-ProgGLES2
+class ProgGLES2
 {
 public:
     ProgGLES2(ProgType t);
@@ -23,7 +21,8 @@ public:
 
     unsigned ConstBufferCount() const;
     Handle InstanceConstBuffer(unsigned bufIndex) const;
-    void SetupTextureUnits(unsigned baseUnit = 0) const;
+
+    void SetupTextureUnits(uint32 baseUnit, GLCommand* commands, uint32& commandsCount) const;
 
     static void InvalidateAllConstBufferInstances();
 
@@ -113,6 +112,4 @@ private:
     mutable unsigned texunitInited : 1;
 };
 
-//==============================================================================
 } // namespace rhi
-#endif // __RHI_PROGGLES2_HPP__

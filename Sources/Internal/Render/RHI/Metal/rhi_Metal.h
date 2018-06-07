@@ -99,14 +99,17 @@ void ReCreateAll();
 }
 namespace SamplerStateMetal
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 }
 namespace PipelineStateMetal
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 }
 namespace DepthStencilStateMetal
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 }
 namespace ConstBufferMetal
@@ -117,11 +120,13 @@ void ResetRingBuffer();
 }
 namespace RenderPassMetal
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 }
 
 namespace CommandBufferMetal
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 }
 

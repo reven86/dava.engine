@@ -1,10 +1,9 @@
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_COREV2__)
-
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 
 #import <Foundation/NSAutoreleasePool.h>
+
 #include "Base/Exception.h"
 #include "Base/Platform.h"
 #include "Debug/Backtrace.h"
@@ -41,15 +40,6 @@ int main(int argc, char* argv[])
         Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
         throw;
     }
-    catch (const std::exception& e)
-    {
-        StringStream ss;
-        ss << "!!! Unhandled std::exception in DAVAMain: " << e.what() << std::endl;
-        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
-        throw;
-    }
 }
 
 #endif // __DAVAENGINE_MACOS__ || __DAVAENGINE_IPHONE__
-
-#endif // __DAVAENGINE_COREV2__

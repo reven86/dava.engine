@@ -9,7 +9,6 @@
 #include "Debug/DVAssert.h"
 #include "Logger/Logger.h"
 using DAVA::Logger;
-#include "Core/Core.h"
 #include "Debug/ProfilerCPU.h"
 #include "../Common/rhi_CommonImpl.h"
 #include "../Common/SoftwareCommandBuffer.h"
@@ -842,6 +841,10 @@ static void metal_RenderPass_End(Handle pass_h)
 
 namespace RenderPassMetal
 {
+void Init(uint32 maxCount)
+{
+    RenderPassPoolMetal::Reserve(maxCount);
+}
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_Renderpass_Allocate = &metal_RenderPass_Allocate;
@@ -1764,6 +1767,10 @@ static void metal_Reset(const ResetParam& param)
 
 namespace CommandBufferMetal
 {
+void Init(uint32 maxCount)
+{
+    CommandBufferPoolMetal::Reserve(maxCount);
+}
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_CommandBuffer_Begin = &metal_CommandBuffer_Begin;

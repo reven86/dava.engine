@@ -1,6 +1,5 @@
 #include "Engine/Private/Win32/DllImportWin32.h"
 
-#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_WIN32__)
 
 namespace DAVA
@@ -46,4 +45,3 @@ void DllImport::Initialize()
 } // namespace DAVA
 
 #endif // __DAVAENGINE_WIN32__
-#endif // __DAVAENGINE_COREV2__

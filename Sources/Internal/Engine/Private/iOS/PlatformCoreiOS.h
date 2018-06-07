@@ -2,12 +2,10 @@
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
-#include "Functional/Signal.h"
-
 #include "Engine/Private/EnginePrivateFwd.h"
+#include "Functional/Signal.h"
 
 namespace DAVA
 {
@@ -31,7 +29,7 @@ public:
     // Signals for distribution UIApplicationDelegate's notifications:
     //  - applicationDidBecomeActive/applicationWillResignActive
     //  - applicationWillEnterForeground/applicationDidEnterBackground
-    // WindowBackends usually connect to these signals to manage its focus
+    // WindowImpls usually connect to these signals to manage its focus
     // and visibility states
     Signal<bool> didBecomeResignActive;
     Signal<bool> didEnterForegroundBackground;
@@ -49,4 +47,3 @@ public:
 } // namespace DAVA
 
 #endif // __DAVAENGINE_IPHONE__
-#endif // __DAVAENGINE_COREV2__

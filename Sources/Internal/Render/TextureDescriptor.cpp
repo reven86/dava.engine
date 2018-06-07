@@ -275,6 +275,11 @@ bool TextureDescriptor::IsCompressedTextureActual(eGPUFamily forGPU) const
     {
         //this code need until using of convertation params in crc
         const ImageFormat imageFormat = GetImageFormatForGPU(forGPU);
+        if (imageFormat == ImageFormat::IMAGE_FORMAT_UNKNOWN)
+        {
+            return false;
+        }
+
         const FilePath filePath = TextureDescriptorLocal::CreateCompressedTexturePathname(pathname, forGPU, imageFormat);
         ImageInfo imageInfo = ImageSystem::GetImageInfo(filePath);
 
@@ -1016,6 +1021,11 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
         return 0;
 
     ImageFormat imageFormat = GetImageFormatForGPU(forGPU);
+    if (imageFormat == ImageFormat::IMAGE_FORMAT_UNKNOWN)
+    {
+        return 0;
+    }
+
     FilePath filePath = TextureDescriptorLocal::CreateCompressedTexturePathname(pathname, forGPU, imageFormat);
     if (imageFormat == IMAGE_FORMAT_PVR)
     {
@@ -1071,6 +1081,11 @@ bool TextureDescriptor::CreateSingleMipPathnamesForGPU(const eGPUFamily gpuFamil
     if ((dataSettings.textureFlags & TextureDataSettings::FLAG_HAS_SEPARATE_HD_FILE) && GPUFamilyDescriptor::IsGPUForDevice(gpuFamily))
     {
         ImageFormat imageFormat = GetImageFormatForGPU(gpuFamily);
+        if (imageFormat == ImageFormat::IMAGE_FORMAT_UNKNOWN)
+        {
+            return false;
+        }
+
         String postfix = TextureDescriptorLocal::GetPostfix(gpuFamily, imageFormat);
         pathes.emplace_back(FilePath::CreateWithNewExtension(pathname, ".hd" + postfix));
 
@@ -1101,15 +1116,28 @@ PixelFormat TextureDescriptor::GetPixelFormatForGPU(eGPUFamily forGPU) const
 
 ImageFormat TextureDescriptor::GetImageFormatForGPU(eGPUFamily forGPU) const
 {
+    ImageFormat retValue = ImageFormat::IMAGE_FORMAT_UNKNOWN;
     if (eGPUFamily::GPU_INVALID == forGPU)
-        return dataSettings.sourceFileFormat;
-
-    if (IsCompressedFile())
     {
-        return imageFormat;
+        retValue = dataSettings.sourceFileFormat;
+    }
+    else if (IsCompressedFile())
+    {
+        retValue = imageFormat;
+    }
+    else
+    {
+        retValue = static_cast<ImageFormat>(compression[forGPU].imageFormat);
     }
 
-    return static_cast<ImageFormat>(compression[forGPU].imageFormat);
+    bool imageFormatIsValid = (ImageFormat::IMAGE_FORMAT_UNKNOWN == retValue) || ((ImageFormat::IMAGE_FORMAT_PNG <= retValue) && (retValue < ImageFormat::IMAGE_FORMAT_COUNT));
+    if (imageFormatIsValid == false)
+    {
+        Logger::Error("[%s] Seems that file is corrupted, %s", __FUNCTION__, pathname.GetStringValue().c_str());
+        return ImageFormat::IMAGE_FORMAT_UNKNOWN;
+    }
+
+    return retValue;
 }
 
 void TextureDescriptor::Initialize(rhi::TextureAddrMode wrap, bool generateMipmaps)

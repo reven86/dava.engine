@@ -1,12 +1,14 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
-
 #include <atomic>
 #include <iosfwd>
 
+#include "Base/BaseTypes.h"
+#include "Base/String.h"
+
 namespace DAVA
 {
+class ProfilerCPU;
 /**
 	This class is for downloading with HTTP protocol. You can perform the
 	following tasks:
@@ -49,22 +51,25 @@ class DLCDownloader
 {
 public:
     virtual ~DLCDownloader();
-    /** Create new instance of DLCDownloader. You can customize it with
-	    ```DLCDownloader::SetHints(const Hints)``` right after creation. */
-    static DLCDownloader* Create();
-    /** Destroy downloader instance */
-    static void Destroy(DLCDownloader* downloader);
-
     /**
-		You can customize some internal parameters before start requesting
-		tasks.
-	*/
+     You can customize some internal parameters before start requesting
+     tasks.
+     */
     struct Hints
     {
+        Hints()
+        {
+        } // fix for clang++
         int32 numOfMaxEasyHandles = 8; //!< How many curl easy handles will be used
         int32 chunkMemBuffSize = 512 * 1024; //!< Max buffer size per one download operation per curl easy handler
         int32 timeout = 30; //!< Timeout in seconds for curl easy handlers to wait on connect, dns request etc.
+        ProfilerCPU* profiler = nullptr; //!< performance checking
     };
+    /** Create new instance of DLCDownloader. You can customize it with
+	    ```DLCDownloader::SetHints(const Hints)``` right after creation. */
+    static DLCDownloader* Create(const Hints& hints = Hints());
+    /** Destroy downloader instance */
+    static void Destroy(DLCDownloader* downloader);
 
     /**
 		Task can be in one of next states.
@@ -90,14 +95,16 @@ public:
     struct IWriter
     {
         virtual ~IWriter() = default;
-        /** Save next buffer bytes into memory or file, on error return differs from parameter size */
+        /** Save next buffer bytes into memory or file, on error result != size */
         virtual uint64 Save(const void* ptr, uint64 size) = 0;
         /** Return current size of saved byte stream, return ```std::numeric_limits<uint64>::max()``` value on error */
         virtual uint64 GetSeekPos() = 0;
         /** Truncate file(or buffer) to zero length, return false on error */
         virtual bool Truncate() = 0;
-        /** Close internal resource (file handle, socket, free memory) */
-        virtual void Close() = 0;
+        /** Close internal resource (file handle, socket, free memory)
+		    return true on success
+		*/
+        virtual bool Close() = 0;
         /** Check internal state */
         virtual bool IsClosed() const = 0;
     };
@@ -164,27 +171,34 @@ public:
         TaskStatus& operator=(const TaskStatus& other);
     };
 
-    struct Task;
+    struct ITask
+    {
+        virtual ~ITask() = default;
+    };
 
     /** Start http request to find out content size. */
-    virtual Task* StartGetContentSize(const String& srcUrl) = 0;
+    virtual ITask* StartGetContentSize(const String& srcUrl) = 0;
     /** Start downloading to dstPath file */
-    virtual Task* StartTask(const String& srcUrl, const String& dstPath, Range range = EmptyRange) = 0;
-    /** Start downloading to custom writer */
-    virtual Task* StartTask(const String& srcUrl, IWriter& customWriter, Range range = EmptyRange) = 0;
+    virtual ITask* StartTask(const String& srcUrl, const String& dstPath, Range range = EmptyRange) = 0;
+    /** Start downloading to custom writer
+	    You can reuse customWriter after finish Task
+	*/
+    virtual ITask* StartTask(const String& srcUrl, std::shared_ptr<IWriter> customWriter, Range range = EmptyRange) = 0;
     /** Resume downloading to file starting from current file size */
-    virtual Task* ResumeTask(const String& srcUrl, const String& dstPath, Range range = EmptyRange) = 0;
-    /** Resume downloading to custom writer starting from current position */
-    virtual Task* ResumeTask(const String& srcUrl, IWriter& customWriter, Range range = EmptyRange) = 0;
+    virtual ITask* ResumeTask(const String& srcUrl, const String& dstPath, Range range = EmptyRange) = 0;
+    /** Resume downloading to custom writer starting from current position
+	    You can reuse customWriter after finish Task
+	*/
+    virtual ITask* ResumeTask(const String& srcUrl, std::shared_ptr<IWriter> customWriter, Range range = EmptyRange) = 0;
 
     /**  Clear task data and free resources */
-    virtual void RemoveTask(Task* task) = 0;
+    virtual void RemoveTask(ITask* task) = 0;
 
     /** Wait for task status == finished */
-    virtual void WaitTask(Task* task) = 0;
+    virtual void WaitTask(ITask* task) = 0;
 
-    virtual const TaskInfo& GetTaskInfo(Task* task) = 0;
-    virtual const TaskStatus& GetTaskStatus(Task* task) = 0;
+    virtual const TaskInfo& GetTaskInfo(ITask* task) = 0;
+    virtual const TaskStatus& GetTaskStatus(ITask* task) = 0;
 
     /** You can customize internal curl behavior. Do it just after new
 	```DLCDownloader``` created and before any task started.*/

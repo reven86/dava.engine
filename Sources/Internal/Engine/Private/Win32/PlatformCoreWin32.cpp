@@ -1,6 +1,5 @@
 #include "Engine/Private/Win32/PlatformCoreWin32.h"
 
-#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)
@@ -10,12 +9,19 @@
 
 #include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
+#include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
 #include "Engine/Private/Win32/DllImportWin32.h"
-#include "Engine/Private/Win32/Window/WindowBackendWin32.h"
+#include "Engine/Private/Win32/WindowImplWin32.h"
 
 #include "Logger/Logger.h"
 #include "Time/SystemTimer.h"
 #include "Utils/Utils.h"
+
+#if !defined(_WIN32_WINNT)
+#define _WIN32_WINNT 0x0501
+#else
+static_assert(_WIN32_WINNT >= 0x0501, "_WIN32_WINNT >= 0x0501 required by QueryMemoryResourceNotification");
+#endif
 
 namespace DAVA
 {
@@ -25,6 +31,7 @@ HINSTANCE PlatformCore::hinstance = nullptr;
 
 PlatformCore::PlatformCore(EngineBackend* engineBackend)
     : engineBackend(*engineBackend)
+    , lowMemoryNotificationHandle(nullptr)
 {
     DllImport::Initialize();
 
@@ -39,9 +46,20 @@ PlatformCore::PlatformCore(EngineBackend* engineBackend)
         }
     }
     hinstance = reinterpret_cast<HINSTANCE>(::GetModuleHandleW(nullptr));
+
+    lowMemoryNotificationHandle = CreateMemoryResourceNotification(LowMemoryResourceNotification);
+
+    DVASSERT(lowMemoryNotificationHandle != nullptr);
 }
 
-PlatformCore::~PlatformCore() = default;
+PlatformCore::~PlatformCore()
+{
+    if (lowMemoryNotificationHandle != nullptr)
+    {
+        BOOL succeeded = CloseHandle(lowMemoryNotificationHandle);
+        DVASSERT(succeeded);
+    }
+}
 
 void PlatformCore::Init()
 {
@@ -84,8 +102,8 @@ void PlatformCore::Run()
 
     engineBackend.OnGameLoopStarted();
 
-    WindowBackend* primaryWindowBackend = EngineBackend::GetWindowBackend(engineBackend.GetPrimaryWindow());
-    primaryWindowBackend->Create(1024.0f, 768.0f);
+    WindowImpl* primaryWindowImpl = EngineBackend::GetWindowImpl(engineBackend.GetPrimaryWindow());
+    primaryWindowImpl->Create(1024.0f, 768.0f);
 
     for (;;)
     {
@@ -102,6 +120,9 @@ void PlatformCore::Run()
         }
 
         int32 fps = engineBackend.OnFrame();
+
+        QueryLowMemoryNotification();
+
         int64 frameEndTime = SystemTimer::GetMs();
         int32 frameDuration = static_cast<int32>(frameEndTime - frameBeginTime);
 
@@ -174,8 +195,27 @@ void PlatformCore::EnableHighResolutionTimer(bool enable)
     }
 }
 
+void PlatformCore::QueryLowMemoryNotification()
+{
+    static const size_t freq = 60;
+    static size_t framesToWait = 0;
+
+    framesToWait = framesToWait > 0 ? framesToWait - 1 : 0;
+
+    if (lowMemoryNotificationHandle != nullptr && framesToWait == 0)
+    {
+        BOOL lowMemory = false;
+        BOOL succeeded = QueryMemoryResourceNotification(lowMemoryNotificationHandle, &lowMemory);
+
+        if (succeeded && lowMemory)
+        {
+            engineBackend.GetDispatcher()->PostEvent(MainDispatcherEvent(MainDispatcherEvent::LOW_MEMORY));
+            framesToWait = freq;
+        }
+    }
+}
+
 } // namespace Private
 } // namespace DAVA
 
 #endif // __DAVAENGINE_WIN32__
-#endif // __DAVAENGINE_COREV2__

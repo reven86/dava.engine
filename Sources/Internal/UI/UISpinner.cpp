@@ -20,7 +20,7 @@ static const float32 UISPINNER_SLIDE_GESTURE_TIME = 0.1f;
 
 DAVA_VIRTUAL_REFLECTION_IMPL(UISpinner)
 {
-    ReflectionRegistrator<UISpinner>::Begin()
+    ReflectionRegistrator<UISpinner>::Begin()[M::DisplayName("Spinner")]
     .ConstructorByPointer()
     .DestructorByPointer([](UISpinner* o) { o->Release(); })
     .End();

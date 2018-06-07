@@ -4,8 +4,6 @@
 #include "rhi_Pool.h"
 #include "rhi_Utils.h"
 
-#include "Core/Core.h"
-
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/Thread.h"
@@ -354,6 +352,11 @@ HSyncObject GetCurrentFrameSyncObject()
 void SuspendRendering()
 {
     RenderLoop::SuspendRender();
+}
+
+void SuspendRenderingAfterFrame()
+{
+    RenderLoop::SuspendRenderAfterFrame();
 }
 
 void ResumeRendering()

@@ -15,12 +15,12 @@ void UIStyleSheetYamlLoader::LoadFromYaml(const YamlNode* rootNode, Vector<UISty
 {
     DVASSERT(styleSheets);
 
-    const Vector<YamlNode*>& styleSheetMap = rootNode->AsVector();
+    const auto& styleSheetMap = rootNode->AsVector();
     const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
 
     for (auto styleSheetIter = styleSheetMap.begin(); styleSheetIter != styleSheetMap.end(); ++styleSheetIter)
     {
-        const UnorderedMap<String, YamlNode*>& styleSheet = (*styleSheetIter)->AsMap();
+        const auto& styleSheet = (*styleSheetIter)->AsMap();
 
         auto propertiesSectionIter = styleSheet.find("properties");
 
@@ -50,7 +50,7 @@ void UIStyleSheetYamlLoader::LoadFromYaml(const YamlNode* rootNode, Vector<UISty
                     {
                         if (prop.propertyIndex == index)
                         {
-                            const Vector<YamlNode*>& transitionProps = propertyTransitionIter.second->AsVector();
+                            const auto& transitionProps = propertyTransitionIter.second->AsVector();
                             int32 transitionFunctionType = Interpolation::LINEAR;
                             if (transitionProps.size() > 1)
                                 GlobalEnumMap<Interpolation::FuncType>::Instance()->ToValue(transitionProps[1]->AsString().c_str(), transitionFunctionType);

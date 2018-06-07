@@ -11,6 +11,7 @@ class Color;
 class RenderSystem2D;
 class UIControlBackground;
 class UIDebugRenderComponent;
+class UITextComponent;
 class UIScreen;
 class UIScreenTransition;
 class UIScreenshoter;
@@ -27,17 +28,20 @@ public:
     const UIGeometricData& GetBaseGeometricData() const;
     UIScreenshoter* GetScreenshoter() const;
     int32 GetUI3DViewCount() const;
+    RenderSystem2D* GetRenderSystem2D() const;
 
     void SetClearColor(const Color& clearColor);
     void SetUseClearPass(bool useClearPass);
 
     void SetCurrentScreen(const RefPtr<UIScreen>& screen);
-    void SetCurrentScreenTransition(const RefPtr<UIScreenTransition>& screenTransition);
     void SetPopupContainer(const RefPtr<UIControl>& popupContainer);
 
 protected:
     void OnControlVisible(UIControl* control) override;
     void OnControlInvisible(UIControl* control) override;
+
+    void RegisterComponent(UIControl* control, UIComponent* component) override;
+    void UnregisterComponent(UIControl* control, UIComponent* component) override;
 
     void Process(float32 elapsedTime) override;
     void Render();
@@ -47,9 +51,11 @@ private:
 
     void RenderControlHierarhy(UIControl* control, const UIGeometricData& geometricData, const UIControlBackground* parentBackground);
 
-    void DebugRender(const UIDebugRenderComponent* component, const UIGeometricData& geometricData, const Rect& unrotatedRect);
+    void DebugRender(const UIDebugRenderComponent* component, const UIGeometricData& geometricData);
     void RenderDebugRect(const UIDebugRenderComponent* component, const UIGeometricData& geometricData);
-    void RenderPivotPoint(const UIDebugRenderComponent* component, const Rect& drawRect);
+    void RenderPivotPoint(const UIDebugRenderComponent* component, const UIGeometricData& geometricData);
+
+    void RenderText(const UIControl* control, const UITextComponent* component, const UIGeometricData& geometricData, const Color& parentColor);
 
     RenderSystem2D* renderSystem2D = nullptr;
     UIGeometricData baseGeometricData;
@@ -58,9 +64,8 @@ private:
 
     RefPtr<UIScreen> currentScreen;
     RefPtr<UIControl> popupContainer;
-    RefPtr<UIScreenTransition> currentScreenTransition;
 
-    int32 ui3DViewCount = 0;
+    Set<UIControl*> ui3DViews;
     bool needClearMainPass = true;
 };
 }

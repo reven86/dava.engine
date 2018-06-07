@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cmath>
-#include "Base/Any.h"
 #include "Base/BaseTypes.h"
 #include "Base/Any.h"
 #include "Math/MathConstants.h"
@@ -9,8 +8,8 @@
 namespace DAVA
 {
 /**	
-	\ingroup math
-	\brief Vector with 2 coordinates.
+    \ingroup math
+    \brief Vector with 2 coordinates.
  */
 class Vector2
 {
@@ -112,15 +111,15 @@ inline float32 CrossProduct(const Vector2& a, const Vector2& b);
 inline Vector2 Reflect(const Vector2& v, const Vector2& n);
 Vector2 Rotate(const Vector2& in, float32 angleRad);
 /**	
-	\ingroup math
-	\brief Vector with 3 coordinates
+    \ingroup math
+    \brief Vector with 3 coordinates
  */
 class Vector4;
 
 class Vector3
 {
 public:
-    enum eAxis
+    enum eAxis : uint8
     {
         AXIS_X = 0,
         AXIS_Y = 1,
@@ -183,9 +182,23 @@ public:
         x = y = z = 0.f;
     } // = 0
 
+    Vector2& xy()
+    {
+        return *(reinterpret_cast<Vector2*>(data));
+    }
+
     const Vector2& xy() const
     {
         return *(reinterpret_cast<const Vector2*>(data));
+    }
+
+    Vector3 xzy() const
+    {
+        return Vector3(x, z, y);
+    }
+    Vector3 zxy() const
+    {
+        return Vector3(z, x, y);
     }
 
     //! On functions
@@ -235,10 +248,15 @@ inline Vector3 Lerp(const Vector3& _v1, const Vector3& _v2, float32 t);
 inline Vector3 Reflect(const Vector3& v, const Vector3& n);
 inline float32 Distance(const Vector3& v1, const Vector3& v2);
 inline Vector3 PerpendicularVector(const Vector3& normal);
+inline Vector3 Floor(const Vector3& v);
+inline Vector3 Frac(const Vector3& v);
+inline Vector3 Fmod(const Vector3& v, const Vector3& m);
+inline Vector3 Max(const Vector3& v1, const Vector3& v2);
+inline Vector3 Min(const Vector3& v1, const Vector3& v2);
 
 /**	
-	\ingroup math
-	\brief Vector with 4 coordinates.
+    \ingroup math
+    \brief Vector with 4 coordinates.
  */
 class Vector4
 {
@@ -293,6 +311,8 @@ public:
     inline const Vector4& operator-=(const Vector4& _v);
     inline const Vector4& operator*=(float32 f);
     inline const Vector4& operator/=(float32 f);
+    inline const Vector4& operator*=(const Vector4& _v);
+    inline const Vector4& operator/=(const Vector4& _v);
     inline Vector4 operator-() const;
 
     //! Comparison operators
@@ -306,6 +326,9 @@ public:
 //! operators
 inline Vector4 operator-(const Vector4& _v1, const Vector4& _v2);
 inline Vector4 operator+(const Vector4& _v1, const Vector4& _v2);
+
+inline Vector4 operator*(Vector4 _v1, const Vector4& _v2);
+inline Vector4 operator/(Vector4 _v1, const Vector4& _v2);
 
 //! with scalar
 inline Vector4 operator+(const Vector4& _v, float32 _f);
@@ -325,7 +348,12 @@ inline Vector4 Normalize(const Vector4& v);
 inline Vector4 CrossProduct(const Vector4& v1, const Vector4& v2);
 inline float32 DotProduct(const Vector4& v1, const Vector4& v2);
 inline Vector4 Lerp(const Vector4& _v1, const Vector4& _v2, float32 t);
-
+inline Vector4 Floor(const Vector4& v);
+inline Vector4 Frac(const Vector4& v);
+inline Vector4 Fmod(const Vector4& v, const Vector4& m);
+inline Vector4 Abs(const Vector4& v);
+inline Vector4 Max(const Vector4& v1, const Vector4& v2);
+inline Vector4 Min(const Vector4& v1, const Vector4& v2);
 // Vector2 Implementation
 
 inline Vector2::Vector2()
@@ -888,6 +916,56 @@ inline Vector3 PerpendicularVector(const Vector3& normal)
     return Vector3(0.0f, -normal.z / scaleFactor, normal.y / scaleFactor);
 }
 
+inline Vector3 Floor(const Vector3& v)
+{
+    return Vector3
+    (
+    std::floor(v.x),
+    std::floor(v.y),
+    std::floor(v.z)
+    );
+}
+
+inline Vector3 Frac(const Vector3& v)
+{
+    return Vector3
+    (
+    std::fmod(v.x, 1.0f),
+    std::fmod(v.y, 1.0f),
+    std::fmod(v.z, 1.0f)
+    );
+}
+
+inline Vector3 Fmod(const Vector3& v, const Vector3& m)
+{
+    return Vector3
+    (
+    std::fmod(v.x, m.x),
+    std::fmod(v.y, m.y),
+    std::fmod(v.z, m.z)
+    );
+}
+
+inline Vector3 Max(const Vector3& v1, const Vector3& v2)
+{
+    return Vector3
+    (
+    std::max(v1.x, v2.x),
+    std::max(v1.y, v2.y),
+    std::max(v1.z, v2.z)
+    );
+}
+
+inline Vector3 Min(const Vector3& v1, const Vector3& v2)
+{
+    return Vector3
+    (
+    std::min(v1.x, v2.x),
+    std::min(v1.y, v2.y),
+    std::min(v1.z, v2.z)
+    );
+}
+
 // Vector4 implementation
 inline Vector4::Vector4()
 {
@@ -1065,6 +1143,25 @@ inline const Vector4& Vector4::operator/=(float32 f)
     w /= f;
     return *this;
 }
+
+inline const Vector4& Vector4::operator*=(const Vector4& _v)
+{
+    x *= _v.x;
+    y *= _v.y;
+    z *= _v.z;
+    w *= _v.w;
+    return *this;
+}
+
+inline const Vector4& Vector4::operator/=(const Vector4& _v)
+{
+    x *= _v.x;
+    y *= _v.y;
+    z *= _v.z;
+    w *= _v.w;
+    return *this;
+}
+
 inline Vector4 Vector4::operator-() const
 {
     return Vector4(-x, -y, -z, -w);
@@ -1098,6 +1195,18 @@ inline Vector4 operator-(const Vector4& _v1, const Vector4& _v2)
 inline Vector4 operator+(const Vector4& _v1, const Vector4& _v2)
 {
     return Vector4(_v1.x + _v2.x, _v1.y + _v2.y, _v1.z + _v2.z, _v1.w + _v2.w);
+}
+
+inline Vector4 operator*(Vector4 _v1, const Vector4& _v2)
+{
+    _v1 *= _v2;
+    return _v1;
+}
+
+inline Vector4 operator/(Vector4 _v1, const Vector4& _v2)
+{
+    _v1 /= _v2;
+    return _v1;
 }
 
 //! with scalar
@@ -1154,6 +1263,72 @@ inline Vector4 Lerp(const Vector4& _v1, const Vector4& _v2, float32 t)
     Vector4 v;
     v.Lerp(_v1, _v2, t);
     return v;
+}
+
+inline Vector4 Floor(const Vector4& v)
+{
+    return
+    {
+      std::floor(v.x),
+      std::floor(v.y),
+      std::floor(v.z),
+      std::floor(v.w)
+    };
+}
+
+inline Vector4 Frac(const Vector4& v)
+{
+    return Vector4
+    (
+    std::fmod(v.x, 1.0f),
+    std::fmod(v.y, 1.0f),
+    std::fmod(v.z, 1.0f),
+    std::fmod(v.w, 1.0f)
+    );
+}
+
+inline Vector4 Fmod(const Vector4& v, const Vector4& m)
+{
+    return Vector4
+    (
+    std::fmod(v.x, m.x),
+    std::fmod(v.y, m.y),
+    std::fmod(v.z, m.z),
+    std::fmod(v.w, m.w)
+    );
+}
+
+inline Vector4 Abs(const Vector4& v)
+{
+    return Vector4
+    (
+    std::abs(v.x),
+    std::abs(v.y),
+    std::abs(v.z),
+    std::abs(v.w)
+    );
+}
+
+inline Vector4 Max(const Vector4& v1, const Vector4& v2)
+{
+    return Vector4
+    (
+    std::max(v1.x, v2.x),
+    std::max(v1.y, v2.y),
+    std::max(v1.z, v2.z),
+    std::max(v1.w, v2.w)
+    );
+}
+
+inline Vector4 Min(const Vector4& v1, const Vector4& v2)
+{
+    return Vector4
+    (
+    std::min(v1.x, v2.x),
+    std::min(v1.y, v2.y),
+    std::min(v1.z, v2.z),
+    std::min(v1.w, v2.w)
+    );
 }
 
 inline Vector4 Normalize(const Vector4& v)

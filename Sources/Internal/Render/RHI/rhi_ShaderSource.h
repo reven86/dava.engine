@@ -19,8 +19,7 @@ namespace rhi
 {
 using DAVA::uint32;
 using DAVA::FastName;
-struct
-ShaderProp
+struct ShaderProp
 {
     enum Type
     {
@@ -58,8 +57,7 @@ ShaderProp
 
 typedef std::vector<ShaderProp> ShaderPropList;
 
-struct
-ShaderSampler
+struct ShaderSampler
 {
     TextureType type;
     FastName uid;
@@ -67,8 +65,7 @@ ShaderSampler
 
 typedef std::vector<ShaderSampler> ShaderSamplerList;
 
-class
-ShaderSource
+class ShaderSource
 {
 public:
     ShaderSource(const char* filename = "");
@@ -89,14 +86,15 @@ public:
     ShaderProp::Source ConstBufferSource(uint32 bufIndex) const;
     BlendState Blending() const;
 
+    static void PurgeIncludesCache();
+    static void AddIncludeDirectory(const char* dir);
     void Dump() const;
 
 private:
     void Reset();
     bool ProcessMetaData(sl::HLSLTree* ast);
 
-    struct
-    buf_t
+    struct buf_t
     {
         ShaderProp::Source source;
         FastName tag;
@@ -136,7 +134,7 @@ private:
         FastName uid;
         uint32 api;
         uint32 srcHash;
-        ShaderSource* src;
+        ShaderSource* src = nullptr;
     };
 
     static std::vector<entry_t> Entry;

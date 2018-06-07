@@ -87,21 +87,6 @@ protected:
     Color diffuseColor;
     float32 intensity;
 
-public:
-    INTROSPECTION_EXTEND(Light, BaseObject,
-                         MEMBER(position, "Position", I_SAVE | I_VIEW)
-                         MEMBER(direction, "Direction", I_SAVE | I_VIEW)
-
-                         MEMBER(type, InspDesc("Type", GlobalEnumMap<Light::eType>::Instance()), I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("isDynamic", "isDynamic", IsDynamic, SetDynamic, I_VIEW | I_EDIT)
-
-                         MEMBER(ambientColor, "Ambient Color", I_SAVE | I_VIEW | I_EDIT)
-                         MEMBER(diffuseColor, "Color", I_SAVE | I_VIEW | I_EDIT)
-                         MEMBER(intensity, "Intensity", I_SAVE | I_VIEW | I_EDIT)
-                         MEMBER(flags, "Flags", I_SAVE | I_VIEW | I_EDIT)
-                         )
-
     DAVA_VIRTUAL_REFLECTION(Light, BaseObject);
 };
 };

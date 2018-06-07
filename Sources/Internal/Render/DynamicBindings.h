@@ -86,7 +86,7 @@ public:
     void SetDynamicParam(eUniformSemantic shaderSemantic, const void* value, pointer_size updateSemantic);
     const void* GetDynamicParam(eUniformSemantic shaderSemantic);
     pointer_size GetDynamicParamUpdateSemantic(eUniformSemantic shaderSemantic);
-    int32 GetDynamicParamArraySize(eUniformSemantic shaderSemantic, int32 defaultValue);
+    uint32 GetDynamicParamArraySize(eUniformSemantic shaderSemantic, uint32 defaultValue = 1);
     inline const Matrix4& GetDynamicParamMatrix(eUniformSemantic shaderSemantic);
 
 private:

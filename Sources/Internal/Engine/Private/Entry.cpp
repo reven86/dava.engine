@@ -1,7 +1,5 @@
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Base/Exception.h"
 #include "Base/Platform.h"
 #include "Debug/Backtrace.h"
@@ -62,11 +60,6 @@ int main(int argc, char* argv[])
         ss << Debug::GetBacktraceString(e.callstack) << std::endl;
         Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
         throw;
-    } catch (const std::exception& e) {
-        StringStream ss;
-        ss << "!!! Unhandled std::exception in DAVAMain: " << e.what() << std::endl;
-        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
-        throw;
     }
 }
 
@@ -94,11 +87,6 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
         ss << Debug::GetBacktraceString(e.callstack) << std::endl;
         Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
         throw;
-    } catch (const std::exception& e) {
-        StringStream ss;
-        ss << "!!! Unhandled std::exception in DAVAMain: " << e.what() << std::endl;
-        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
-        throw;
     }
 }
 
@@ -108,7 +96,7 @@ namespace DAVA
 {
 namespace Private
 {
-extern int StartUWPApplication(Vector<String> cmdargs);
+extern int StartApplication(Vector<String> cmdargs);
 } // namespace Private
 } // namespace DAVA
 
@@ -117,7 +105,7 @@ extern int StartUWPApplication(Vector<String> cmdargs);
 int APIENTRY wWinMain(HINSTANCE, HINSTANCE, LPWSTR, int)
 {
     using namespace DAVA;
-    return Private::StartUWPApplication(Private::GetCommandArgs());
+    return Private::StartApplication(Private::GetCommandArgs());
 }
 
 #elif defined(__DAVAENGINE_ANDROID__)
@@ -152,5 +140,3 @@ JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* /*reserved*/)
 #endif
 
 // clang-format on
-
-#endif // __DAVAENGINE_COREV2__

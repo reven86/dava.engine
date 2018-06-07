@@ -107,8 +107,17 @@ uint32 GetVertexLayoutRequiredFormat(const rhi::VertexLayout& layout)
             res |= EVF_JOINTWEIGHT;
             break;
         case rhi::VS_BLENDINDEX:
-            res |= EVF_JOINTINDEX;
-            break;
+        {
+            if (layout.ElementDataCount(i) == 1)
+            {
+                res |= EVF_HARD_JOINTINDEX;
+            }
+            else
+            {
+                res |= EVF_JOINTINDEX;
+            }
+        }
+        break;
         default:
             break;
         }
@@ -128,6 +137,7 @@ ENUM_DECLARE(DAVA::eVertexFormat)
     ENUM_ADD_DESCR(DAVA::EVF_TEXCOORD3, "TexCoord 3");
     ENUM_ADD_DESCR(DAVA::EVF_TANGENT, "Tangent");
     ENUM_ADD_DESCR(DAVA::EVF_BINORMAL, "Binormal");
+    ENUM_ADD_DESCR(DAVA::EVF_HARD_JOINTINDEX, "Joint index hard");
     ENUM_ADD_DESCR(DAVA::EVF_PIVOT4, "Pivot");
     ENUM_ADD_DESCR(DAVA::EVF_PIVOT_DEPRECATED, "PivotDeprecated");
     ENUM_ADD_DESCR(DAVA::EVF_FLEXIBILITY, "Flexibility");

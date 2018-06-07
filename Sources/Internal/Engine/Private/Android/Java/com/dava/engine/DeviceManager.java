@@ -27,8 +27,9 @@ public final class DeviceManager
         public final int height;
         public final float dpiX;
         public final float dpiY;
+        public final float maxFps;
         
-        public DisplayInfo(String name, int id, int width, int height, float dpiX, float dpiY)
+        public DisplayInfo(String name, int id, int width, int height, float dpiX, float dpiY, float maxFps)
         {
             this.name = name;
             this.id = id;
@@ -36,6 +37,7 @@ public final class DeviceManager
             this.height = height;
             this.dpiX = dpiX;
             this.dpiY = dpiY;
+            this.maxFps = maxFps;
         }
     }
 
@@ -191,13 +193,14 @@ public final class DeviceManager
 
         int width = metrics.widthPixels;
         int height = metrics.heightPixels;
+        float maxFps = display.getRefreshRate();
         
         final int id = display.getDisplayId();
         final String name = runningOnPostJellyBeanMR1() ? display.getName() : ("Unnamed-" + id);
 
         // metrics.xdpi & metrics.ydpi are filled by OEM and can be incorrect (for example on ZTE Nubia Z5S)
         // So we use densityDpi instead
-        return new DisplayInfo(name, id, width, height, metrics.densityDpi, metrics.densityDpi);
+        return new DisplayInfo(name, id, width, height, metrics.densityDpi, metrics.densityDpi, maxFps);
     }
 
     // CPU stats
@@ -230,7 +233,11 @@ public final class DeviceManager
             }
             else
             {
-                DavaLog.e(DavaActivity.LOG_TAG, "Could not retrieve CPU temperature from file: " + filepath + ": file format is wrong");
+                if (firstTimeCpuTempException)
+                {
+                    DavaLog.e(DavaActivity.LOG_TAG, "Could not retrieve CPU temperature from file: " + filepath + ": file format is wrong");
+                    firstTimeCpuTempException = false;
+                }
             }
             scanner.close();
         }

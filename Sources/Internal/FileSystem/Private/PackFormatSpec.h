@@ -34,13 +34,13 @@ struct PackFile
                 uint32 compressedCrc32;
                 Compressor::Type type;
                 uint32 originalCrc32;
-                uint32 metaIndex; // can be castom user index in metaData
+                uint32 metaIndex; // can be custom user index in metaData
             };
 
             Vector<Data> files;
         } data;
 
-        // 0 to N bytes (all file names concatenated and '\0' separeted and packed)
+        // 0 to N bytes (all file names concatenated and '\0' separated and packed)
         // order of file names same as in FilesData
         struct Names
         {
@@ -51,18 +51,18 @@ struct PackFile
 
     struct FooterBlock
     {
-        Array<uint8, 8> reserved;
-        uint32 metaDataCrc32; // 0 or crc32 for custom user meta block
-        uint32 metaDataSize; // 0 or size of custom user meta data block
-        uint32 infoCrc32;
+        Array<uint8, 8> reserved{};
+        uint32 metaDataCrc32 = 0; // 0 or crc32 for custom user meta block
+        uint32 metaDataSize = 0; // 0 or size of custom user meta data block
+        uint32 infoCrc32 = 0;
         struct Info
         {
-            uint32 numFiles;
-            uint32 namesSizeCompressed; // lz4hc
-            uint32 namesSizeOriginal;
-            uint32 filesTableSize;
-            uint32 filesTableCrc32; // hash for both FilesData and FileNames if one file change -> hash will change, or if name of file change -> hash will change too
-            Array<char8, 4> packArchiveMarker;
+            uint32 numFiles = 0;
+            uint32 namesSizeCompressed = 0; // lz4hc
+            uint32 namesSizeOriginal = 0;
+            uint32 filesTableSize = 0;
+            uint32 filesTableCrc32 = 0; // hash for both FilesData and FileNames if one file change -> hash will change, or if name of file change -> hash will change too
+            Array<char8, 4> packArchiveMarker{};
         } info;
     } footer;
 }; // end PackFile struct

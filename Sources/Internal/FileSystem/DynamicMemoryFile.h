@@ -10,9 +10,14 @@ class DynamicMemoryFile : public File
 {
 protected:
     DynamicMemoryFile();
-    virtual ~DynamicMemoryFile();
+    ~DynamicMemoryFile() override = default;
 
 public:
+    DynamicMemoryFile(DynamicMemoryFile&&);
+    DynamicMemoryFile& operator=(DynamicMemoryFile&&);
+    DynamicMemoryFile(const DynamicMemoryFile&) = delete;
+    DynamicMemoryFile& operator=(DynamicMemoryFile&) = delete;
+
     static DynamicMemoryFile* Create(Vector<uint8>&& data, uint32 attributes, const FilePath& name);
     /**
      \brief funciton to create a file instance with give attributes
@@ -32,7 +37,7 @@ public:
 
     /**
      \brief returns pointer to the data contained in the memory file
-     \returns pointer to the first byte of the file data if file is empty returns NULL
+     \returns pointer to the first byte of the file data if file is empty returns pointer to empty buffer
      */
     const uint8* GetData() const;
 
@@ -82,11 +87,13 @@ public:
     */
     bool Truncate(uint64 size) override;
 
+    bool Flush() override;
+
 protected:
     uint64 currentPtr;
     Vector<uint8> data;
     uint32 fileAttributes;
-    bool isEof;
+    bool isEof = false;
 };
 
 inline const Vector<uint8>& DynamicMemoryFile::GetDataVector() const

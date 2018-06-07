@@ -1,13 +1,13 @@
 #include "Scene3D/Systems/SwitchSystem.h"
+#include "Scene3D/Systems/EventSystem.h"
+#include "Scene3D/Components/ActionComponent.h"
+#include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/SwitchComponent.h"
 #include "Debug/DVAssert.h"
 #include "Scene3D/Entity.h"
-#include "Scene3D/Components/SwitchComponent.h"
-#include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Scene.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
-#include "Scene3D/Components/ActionComponent.h"
-#include "Scene3D/Components/ComponentHelpers.h"
 #include "Render/Highlevel/RenderObject.h"
 
 namespace DAVA
@@ -27,7 +27,7 @@ void SwitchSystem::Process(float32 timeElapsed)
     for (it = updatableEntities.begin(); it != itEnd; ++it)
     {
         Entity* entity = *it;
-        SwitchComponent* sw = static_cast<SwitchComponent*>(entity->GetComponent(Component::SWITCH_COMPONENT));
+        SwitchComponent* sw = entity->GetComponent<SwitchComponent>();
 
         if (sw->oldSwitchIndex != sw->newSwitchIndex)
         {
@@ -35,7 +35,7 @@ void SwitchSystem::Process(float32 timeElapsed)
 
             sw->oldSwitchIndex = sw->newSwitchIndex;
 
-            ActionComponent* actionComponent = CastIfEqual<ActionComponent*>(entity->GetComponent(Component::ACTION_COMPONENT));
+            ActionComponent* actionComponent = entity->GetComponent<ActionComponent>();
             if (NULL != actionComponent)
             {
                 actionComponent->StartSwitch(sw->newSwitchIndex);
@@ -62,6 +62,11 @@ void SwitchSystem::AddEntity(Entity* entity)
 void SwitchSystem::RemoveEntity(Entity* entity)
 {
     updatableEntities.erase(entity);
+}
+
+void SwitchSystem::PrepareForRemove()
+{
+    updatableEntities.clear();
 }
 
 void SwitchSystem::SetSwitchHierarchy(Entity* entity, int32 switchIndex)

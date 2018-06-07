@@ -29,8 +29,6 @@ public:
 class UpdatableComponent : public Component
 {
 public:
-    IMPLEMENT_COMPONENT_TYPE(UPDATABLE_COMPONENT);
-
     enum eUpdateType
     {
         UPDATE_PRE_TRANSFORM,
@@ -52,11 +50,6 @@ public:
 
 private:
     IUpdatable* updatableObject;
-
-public:
-    INTROSPECTION_EXTEND(UpdatableComponent, Component,
-                         MEMBER(updatableObject, "Updatable Object", I_SAVE)
-                         );
 
     DAVA_VIRTUAL_REFLECTION(UpdatableComponent, Component);
 };

@@ -65,7 +65,7 @@ public:
     ~StaticOcclusion();
 
     void StartBuildOcclusion(StaticOcclusionData* currentData, RenderSystem* renderSystem, Landscape* landscape, uint32 occlusionPixelThreshold, uint32 occlusionPixelThresholdForSpeedtree);
-    bool ProccessBlock(); // returns true if finished building
+    bool ProcessBlock(); // returns true if finished building
     void AdvanceToNextBlock();
 
     uint32 GetCurrentStepsCount();

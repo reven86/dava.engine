@@ -1,22 +1,25 @@
 #include "Render/2D/Sprite.h"
 #include "Debug/DVAssert.h"
-#include "Utils/Utils.h"
-#include "Utils/StringFormat.h"
-#include "Time/SystemTimer.h"
+#include "Engine/Engine.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
-#include "Core/Core.h"
-#include "Render/Shader.h"
-#include "Render/RenderHelper.h"
 #include "FileSystem/LocalizationSystem.h"
-#include "Render/Image/Image.h"
-#include "Render/Image/ImageSystem.h"
 #include "FileSystem/UnmanagedMemoryFile.h"
-#include "Render/TextureDescriptor.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/DynamicAtlasSystem.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
+#include "Render/Image/ImageSystem.h"
+#include "Render/RenderHelper.h"
+#include "Render/Shader.h"
+#include "Render/TextureDescriptor.h"
+#include "Time/SystemTimer.h"
 #include "UI/UIControlSystem.h"
+#include "Utils/StringFormat.h"
+#include "Utils/Utils.h"
+#include "Engine/EngineContext.h"
 
 #define NEW_PPA
 
@@ -33,7 +36,7 @@ static int32 fboCounter = 0;
 
 Mutex Sprite::spriteMapMutex;
 
-Sprite::DrawState::DrawState()
+SpriteDrawState::SpriteDrawState()
 {
     Reset();
 
@@ -135,7 +138,7 @@ FilePath Sprite::GetScaledName(const FilePath& spriteName)
     else
         pathname = spriteName.GetAbsolutePathname();
 
-    VirtualCoordinatesSystem* virtualCoordsSystem = UIControlSystem::Instance()->vcs;
+    VirtualCoordinatesSystem* virtualCoordsSystem = GetEngineContext()->uiControlSystem->vcs;
     const String baseGfxFolderName = virtualCoordsSystem->GetResourceFolder(virtualCoordsSystem->GetBaseResourceIndex());
     String::size_type pos = pathname.find(baseGfxFolderName);
     if (String::npos != pos)
@@ -144,6 +147,16 @@ FilePath Sprite::GetScaledName(const FilePath& spriteName)
         pathname.replace(pos, baseGfxFolderName.length(), desirableGfxFolderName);
         return pathname;
     }
+    else if (virtualCoordsSystem->GetResourceFoldersCount() == 1 && baseGfxFolderName != "Gfx")
+    { // magic for QE
+
+        String::size_type startPos = pathname.find("/Gfx/");
+        if (String::npos != startPos)
+        {
+            pathname.replace(startPos, 5, "/" + baseGfxFolderName + "/");
+            return pathname;
+        }
+    }
 
     return spriteName;
 }
@@ -151,7 +164,7 @@ FilePath Sprite::GetScaledName(const FilePath& spriteName)
 File* Sprite::LoadLocalizedFile(const FilePath& spritePathname, FilePath& texturePath)
 {
     FilePath localizedScaledPath(spritePathname);
-    localizedScaledPath.ReplaceDirectory(spritePathname.GetDirectory() + (LocalizationSystem::Instance()->GetCurrentLocale() + "/"));
+    localizedScaledPath.ReplaceDirectory(spritePathname.GetDirectory() + (GetEngineContext()->localizationSystem->GetCurrentLocale() + "/"));
 
     texturePath = FilePath();
     File* fp = File::Create(localizedScaledPath, File::READ | File::OPEN);
@@ -173,8 +186,6 @@ File* Sprite::LoadLocalizedFile(const FilePath& spritePathname, FilePath& textur
 
 void Sprite::InitFromFile(File* file)
 {
-    bool usedForScale = false; //Думаю, после исправлений в конвертере, эта магия больше не нужна. Но переменную пока оставлю.
-
     type = SPRITE_FROM_FILE;
     const FilePath& pathName = file->GetFilename();
 
@@ -191,17 +202,14 @@ void Sprite::InitFromFile(File* file)
         sscanf(tempBuf, "%s", textureCharName);
 
         FilePath tp = pathName.GetDirectory() + String(textureCharName);
-        Texture* testTexture = Texture::CreateFromFile(tp);
-
-        textures[k] = testTexture;
         textureNames[k] = tp;
-        DVASSERT(textures[k], "ERROR: Texture loading failed" /* + pathName*/);
+        textures[k] = nullptr;
     }
 
     int32 width, height;
     file->ReadLine(tempBuf, 1024);
     sscanf(tempBuf, "%d %d", &width, &height);
-    size = UIControlSystem::Instance()->vcs->ConvertResourceToVirtual(Vector2(float32(width), float32(height)), resourceSizeIndex);
+    size = GetEngineContext()->uiControlSystem->vcs->ConvertResourceToVirtual(Vector2(float32(width), float32(height)), resourceSizeIndex);
 
     file->ReadLine(tempBuf, 1024);
     sscanf(tempBuf, "%d", &frameCount);
@@ -210,6 +218,7 @@ void Sprite::InitFromFile(File* file)
     frameVertices = new float32*[frameCount];
     rectsAndOffsets = new float32*[frameCount];
     frameTextureIndex = new int32[frameCount];
+    rectsAndOffsetsOriginal.resize(frameCount);
 
     frameNames.resize(frameCount);
     for (int32 i = 0; i < frameCount; i++)
@@ -225,54 +234,97 @@ void Sprite::InitFromFile(File* file)
         sscanf(tempBuf, "%d %d %d %d %d %d %d %s", &x, &y, &dx, &dy, &xOff, &yOff, &frameTextureIndex[i], frameName);
         frameNames[i] = (*frameName == '\0') ? FastName() : FastName(frameName);
 
-        Rect rect = UIControlSystem::Instance()->vcs->ConvertResourceToVirtual(Rect(float32(xOff), float32(yOff), float32(dx), float32(dy)), resourceSizeIndex);
-
-        rectsAndOffsets[i][0] = float32(x);
-        rectsAndOffsets[i][1] = float32(y);
-        rectsAndOffsets[i][2] = rect.dx;
-        rectsAndOffsets[i][3] = rect.dy;
-        rectsAndOffsets[i][4] = rect.x;
-        rectsAndOffsets[i][5] = rect.y;
-
-        frameVertices[i][0] = rect.x;
-        frameVertices[i][1] = rect.y;
-        frameVertices[i][2] = rect.x + rect.dx;
-        frameVertices[i][3] = rect.y;
-        frameVertices[i][4] = rect.x;
-        frameVertices[i][5] = rect.y + rect.dy;
-        frameVertices[i][6] = rect.x + rect.dx;
-        frameVertices[i][7] = rect.y + rect.dy;
-
-        float32 xof = 0;
-        float32 yof = 0;
-        if (usedForScale)
-        {
-            xof = 0.15f + (0.45f - 0.15f) * (dx * 0.01f);
-            yof = 0.15f + (0.45f - 0.15f) * (dy * 0.01f);
-            if (xof > 0.45f)
-            {
-                xof = 0.45f;
-            }
-            if (yof > 0.45f)
-            {
-                yof = 0.45f;
-            }
-        }
-
-        dx += x;
-        dy += y;
-
-        texCoords[i][0] = (x + xof) / textures[frameTextureIndex[i]]->width;
-        texCoords[i][1] = (y + yof) / textures[frameTextureIndex[i]]->height;
-        texCoords[i][2] = (dx - xof) / textures[frameTextureIndex[i]]->width;
-        texCoords[i][3] = (y + yof) / textures[frameTextureIndex[i]]->height;
-        texCoords[i][4] = (x + xof) / textures[frameTextureIndex[i]]->width;
-        texCoords[i][5] = (dy - yof) / textures[frameTextureIndex[i]]->height;
-        texCoords[i][6] = (dx - xof) / textures[frameTextureIndex[i]]->width;
-        texCoords[i][7] = (dy - yof) / textures[frameTextureIndex[i]]->height;
+        rectsAndOffsetsOriginal[i][eRectsAndOffsets::X_POSITION_IN_TEXTURE] = x;
+        rectsAndOffsetsOriginal[i][eRectsAndOffsets::Y_POSITION_IN_TEXTURE] = y;
+        rectsAndOffsetsOriginal[i][eRectsAndOffsets::ACTIVE_WIDTH] = dx;
+        rectsAndOffsetsOriginal[i][eRectsAndOffsets::ACTIVE_HEIGHT] = dy;
+        rectsAndOffsetsOriginal[i][eRectsAndOffsets::X_OFFSET_TO_ACTIVE] = xOff;
+        rectsAndOffsetsOriginal[i][eRectsAndOffsets::Y_OFFSET_TO_ACTIVE] = yOff;
     }
     defaultPivotPoint.x = 0;
     defaultPivotPoint.y = 0;
+
+    if (GetEngineContext()->dynamicAtlasSystem->RegisterSprite(this))
+    {
+        // Sprite was added into system
+        // Texture will created in `DynamicAtlasSystem::EndAtlas()` call.
+    }
+    else
+    {
+        // Load default textures
+        for (int32 k = 0; k < textureCount; ++k)
+        {
+            textures[k] = Texture::CreateFromFile(textureNames[k]);
+            DVASSERT(textures[k], "ERROR: Texture loading failed" /* + pathName*/);
+        }
+    }
+
+    // Update default geometry
+    for (int32 i = 0; i < frameCount; i++)
+    {
+        UpdateFrameGeometry(rectsAndOffsetsOriginal[i][eRectsAndOffsets::X_POSITION_IN_TEXTURE],
+                            rectsAndOffsetsOriginal[i][eRectsAndOffsets::Y_POSITION_IN_TEXTURE], i);
+    }
+
+    if (!inDynamicAtlas)
+    {
+        // Reduces memory usage by freeing unused memory
+        rectsAndOffsetsOriginal.clear();
+        rectsAndOffsetsOriginal.shrink_to_fit();
+    }
+}
+
+void Sprite::UpdateFrameGeometry(int32 x, int32 y, int32 frameIdx)
+{
+    DVASSERT(rectsAndOffsetsOriginal.size() == frameCount);
+
+    float32 dx = static_cast<float32>(rectsAndOffsetsOriginal[frameIdx][eRectsAndOffsets::ACTIVE_WIDTH]);
+    float32 dy = static_cast<float32>(rectsAndOffsetsOriginal[frameIdx][eRectsAndOffsets::ACTIVE_HEIGHT]);
+    float32 xOff = static_cast<float32>(rectsAndOffsetsOriginal[frameIdx][eRectsAndOffsets::X_OFFSET_TO_ACTIVE]);
+    float32 yOff = static_cast<float32>(rectsAndOffsetsOriginal[frameIdx][eRectsAndOffsets::Y_OFFSET_TO_ACTIVE]);
+
+    Rect rect = GetEngineContext()->uiControlSystem->vcs->ConvertResourceToVirtual(Rect(float32(xOff), float32(yOff), float32(dx), float32(dy)), resourceSizeIndex);
+
+    rectsAndOffsets[frameIdx][eRectsAndOffsets::X_POSITION_IN_TEXTURE] = static_cast<float32>(x);
+    rectsAndOffsets[frameIdx][eRectsAndOffsets::Y_POSITION_IN_TEXTURE] = static_cast<float32>(y);
+    rectsAndOffsets[frameIdx][eRectsAndOffsets::ACTIVE_WIDTH] = rect.dx;
+    rectsAndOffsets[frameIdx][eRectsAndOffsets::ACTIVE_HEIGHT] = rect.dy;
+    rectsAndOffsets[frameIdx][eRectsAndOffsets::X_OFFSET_TO_ACTIVE] = rect.x;
+    rectsAndOffsets[frameIdx][eRectsAndOffsets::Y_OFFSET_TO_ACTIVE] = rect.y;
+
+    frameVertices[frameIdx][0] = rect.x;
+    frameVertices[frameIdx][1] = rect.y;
+    frameVertices[frameIdx][2] = rect.x + rect.dx;
+    frameVertices[frameIdx][3] = rect.y;
+    frameVertices[frameIdx][4] = rect.x;
+    frameVertices[frameIdx][5] = rect.y + rect.dy;
+    frameVertices[frameIdx][6] = rect.x + rect.dx;
+    frameVertices[frameIdx][7] = rect.y + rect.dy;
+
+    dx += x;
+    dy += y;
+
+    Texture* frameTexture = textures[frameTextureIndex[frameIdx]];
+    float32 texWidth = 1.0;
+    float32 texHeight = 1.0;
+    if (frameTexture != nullptr)
+    {
+        texWidth = static_cast<float32>(frameTexture->width);
+        texHeight = static_cast<float32>(frameTexture->height);
+    }
+
+    float32 textureX = x / texWidth;
+    float32 textureDX = dx / texWidth;
+    float32 textureY = y / texHeight;
+    float32 textureDY = dy / texHeight;
+    texCoords[frameIdx][0] = textureX;
+    texCoords[frameIdx][1] = textureY;
+    texCoords[frameIdx][2] = textureDX;
+    texCoords[frameIdx][3] = textureY;
+    texCoords[frameIdx][4] = textureX;
+    texCoords[frameIdx][5] = textureDY;
+    texCoords[frameIdx][6] = textureDX;
+    texCoords[frameIdx][7] = textureDY;
 }
 
 Sprite* Sprite::Create(const FilePath& spriteName)
@@ -332,7 +384,7 @@ Sprite* Sprite::CreateFromImage(Image* image, bool contentScaleIncluded /* = fal
         Vector2 sprSize((float32(width)), (float32(height)));
         if (inVirtualSpace)
         {
-            sprSize = UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtual(sprSize);
+            sprSize = GetEngineContext()->uiControlSystem->vcs->ConvertPhysicalToVirtual(sprSize);
         }
 
         sprite = Sprite::CreateFromTexture(texture, 0, 0, sprSize.x, sprSize.y, contentScaleIncluded);
@@ -419,14 +471,14 @@ void Sprite::InitFromTexture(Texture* fromTexture, int32 xOffset, int32 yOffset,
     size = Vector2(sprWidth, sprHeight);
     if (!contentScaleIncluded)
     {
-        offset = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(offset);
+        offset = GetEngineContext()->uiControlSystem->vcs->ConvertVirtualToPhysical(offset);
     }
     else
     {
-        size = UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtual(size);
+        size = GetEngineContext()->uiControlSystem->vcs->ConvertPhysicalToVirtual(size);
     }
 
-    resourceSizeIndex = UIControlSystem::Instance()->vcs->GetBaseResourceIndex();
+    resourceSizeIndex = GetEngineContext()->uiControlSystem->vcs->GetBaseResourceIndex();
 
     type = SPRITE_FROM_TEXTURE;
     textureCount = 1;
@@ -459,18 +511,18 @@ void Sprite::InitFromTexture(Texture* fromTexture, int32 xOffset, int32 yOffset,
         float32 x, y, dx, dy, xOff, yOff;
         x = offset.x;
         y = offset.y;
-        dx = (targetWidth == -1) ? UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(size.x) : float32(targetWidth);
-        dy = (targetHeight == -1) ? UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(size.y) : float32(targetHeight);
+        dx = (targetWidth == -1) ? GetEngineContext()->uiControlSystem->vcs->ConvertVirtualToPhysicalX(size.x) : float32(targetWidth);
+        dy = (targetHeight == -1) ? GetEngineContext()->uiControlSystem->vcs->ConvertVirtualToPhysicalY(size.y) : float32(targetHeight);
         xOff = 0;
         yOff = 0;
 
         float32* rectAndOffset = rectsAndOffsets[i];
-        rectAndOffset[0] = x;
-        rectAndOffset[1] = y;
-        rectAndOffset[2] = size.x;
-        rectAndOffset[3] = size.y;
-        rectAndOffset[4] = xOff;
-        rectAndOffset[5] = yOff;
+        rectAndOffset[eRectsAndOffsets::X_POSITION_IN_TEXTURE] = x;
+        rectAndOffset[eRectsAndOffsets::Y_POSITION_IN_TEXTURE] = y;
+        rectAndOffset[eRectsAndOffsets::ACTIVE_WIDTH] = size.x;
+        rectAndOffset[eRectsAndOffsets::ACTIVE_HEIGHT] = size.y;
+        rectAndOffset[eRectsAndOffsets::X_OFFSET_TO_ACTIVE] = xOff;
+        rectAndOffset[eRectsAndOffsets::Y_OFFSET_TO_ACTIVE] = yOff;
 
         float32* frameVerts = frameVertices[i];
         frameVerts[0] = xOff;
@@ -489,14 +541,19 @@ void Sprite::InitFromTexture(Texture* fromTexture, int32 xOffset, int32 yOffset,
         Texture* texture = textures[frameIndex];
         float32* texCoord = texCoords[i];
 
-        texCoord[0] = x / texture->width;
-        texCoord[1] = y / texture->height;
-        texCoord[2] = dx / texture->width;
-        texCoord[3] = y / texture->height;
-        texCoord[4] = x / texture->width;
-        texCoord[5] = dy / texture->height;
-        texCoord[6] = dx / texture->width;
-        texCoord[7] = dy / texture->height;
+        float32 textureX = x / texture->width;
+        float32 textureDX = dx / texture->width;
+        float32 textureY = y / texture->height;
+        float32 textureDY = dy / texture->height;
+
+        texCoord[0] = textureX;
+        texCoord[1] = textureY;
+        texCoord[2] = textureDX;
+        texCoord[3] = textureY;
+        texCoord[4] = textureX;
+        texCoord[5] = textureDY;
+        texCoord[6] = textureDX;
+        texCoord[7] = textureDY;
     }
 
     // DF-1984 - Set available sprite relative path name here. Use FBO sprite name only if sprite name is empty.
@@ -511,23 +568,6 @@ void Sprite::InitFromTexture(Texture* fromTexture, int32 xOffset, int32 yOffset,
 
     fboCounter++;
     Reset();
-}
-
-void Sprite::SetOffsetsForFrame(int frame, float32 xOff, float32 yOff)
-{
-    DVASSERT(frame < frameCount);
-
-    rectsAndOffsets[frame][4] = xOff;
-    rectsAndOffsets[frame][5] = yOff;
-
-    frameVertices[frame][0] = xOff;
-    frameVertices[frame][1] = yOff;
-    frameVertices[frame][2] = xOff + rectsAndOffsets[frame][2];
-    frameVertices[frame][3] = yOff;
-    frameVertices[frame][4] = xOff;
-    frameVertices[frame][5] = yOff + rectsAndOffsets[frame][3];
-    frameVertices[frame][6] = xOff + rectsAndOffsets[frame][2];
-    frameVertices[frame][7] = yOff + rectsAndOffsets[frame][3];
 }
 
 void Sprite::Clear()
@@ -554,6 +594,7 @@ void Sprite::Clear()
     SafeDeleteArray(rectsAndOffsets);
     SafeDeleteArray(frameTextureIndex);
     textureCount = 0;
+    rectsAndOffsetsOriginal.clear();
 }
 
 Sprite::~Sprite()
@@ -561,6 +602,7 @@ Sprite::~Sprite()
     spriteMapMutex.Lock();
     spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
     spriteMapMutex.Unlock();
+    GetEngineContext()->dynamicAtlasSystem->UnregisterSprite(this);
     Clear();
 }
 
@@ -633,29 +675,11 @@ int32 Sprite::GetFrameByName(const FastName& frameName) const
     return INVALID_FRAME_INDEX;
 }
 
-void Sprite::SetModification(int32 modif)
-{
-    modification = modif;
-    if (modif != 0)
-    {
-        flags = flags | EST_MODIFICATION;
-    }
-    else
-    {
-        ResetModification();
-    }
-}
-
 void Sprite::Reset()
 {
     flags = 0;
     modification = 0;
     clipPolygon = 0;
-}
-
-void Sprite::ResetModification()
-{
-    flags = flags & ~EST_MODIFICATION;
 }
 
 float32 Sprite::GetRectOffsetValueForFrame(int32 frame, eRectsAndOffsets valueType) const
@@ -700,6 +724,7 @@ void Sprite::PrepareForNewSize()
     spriteMapMutex.Lock();
     spriteMap.erase(FILEPATH_MAP_KEY(relativePathname));
     spriteMapMutex.Unlock();
+    GetEngineContext()->dynamicAtlasSystem->UnregisterSprite(this);
 
     textures = 0;
     textureNames = 0;
@@ -737,7 +762,7 @@ void Sprite::ValidateForSize()
     for (SpriteMap::iterator it = spriteMap.begin(); it != spriteMap.end(); ++it)
     {
         Sprite* sp = it->second;
-        if (sp->type == SPRITE_FROM_FILE && UIControlSystem::Instance()->vcs->GetDesirableResourceIndex() != sp->GetResourceSizeIndex())
+        if (sp->type == SPRITE_FROM_FILE && GetEngineContext()->uiControlSystem->vcs->GetDesirableResourceIndex() != sp->GetResourceSizeIndex())
         {
             spritesToReload.push_back(sp);
         }
@@ -777,32 +802,32 @@ void Sprite::SetClipPolygon(Polygon2* _clipPolygon)
 
 void Sprite::ConvertToVirtualSize()
 {
-    frameVertices[0][0] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualX(frameVertices[0][0], resourceSizeIndex);
-    frameVertices[0][1] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualY(frameVertices[0][1], resourceSizeIndex);
-    frameVertices[0][2] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualX(frameVertices[0][2], resourceSizeIndex);
-    frameVertices[0][3] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualY(frameVertices[0][3], resourceSizeIndex);
-    frameVertices[0][4] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualX(frameVertices[0][4], resourceSizeIndex);
-    frameVertices[0][5] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualY(frameVertices[0][5], resourceSizeIndex);
-    frameVertices[0][6] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualX(frameVertices[0][6], resourceSizeIndex);
-    frameVertices[0][7] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualY(frameVertices[0][7], resourceSizeIndex);
+    frameVertices[0][0] = GetEngineContext()->uiControlSystem->vcs->ConvertResourceToVirtualX(frameVertices[0][0], resourceSizeIndex);
+    frameVertices[0][1] = GetEngineContext()->uiControlSystem->vcs->ConvertResourceToVirtualY(frameVertices[0][1], resourceSizeIndex);
+    frameVertices[0][2] = GetEngineContext()->uiControlSystem->vcs->ConvertResourceToVirtualX(frameVertices[0][2], resourceSizeIndex);
+    frameVertices[0][3] = GetEngineContext()->uiControlSystem->vcs->ConvertResourceToVirtualY(frameVertices[0][3], resourceSizeIndex);
+    frameVertices[0][4] = GetEngineContext()->uiControlSystem->vcs->ConvertResourceToVirtualX(frameVertices[0][4], resourceSizeIndex);
+    frameVertices[0][5] = GetEngineContext()->uiControlSystem->vcs->ConvertResourceToVirtualY(frameVertices[0][5], resourceSizeIndex);
+    frameVertices[0][6] = GetEngineContext()->uiControlSystem->vcs->ConvertResourceToVirtualX(frameVertices[0][6], resourceSizeIndex);
+    frameVertices[0][7] = GetEngineContext()->uiControlSystem->vcs->ConvertResourceToVirtualY(frameVertices[0][7], resourceSizeIndex);
 
-    frameVertices[0][0] = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(frameVertices[0][0]);
-    frameVertices[0][1] = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(frameVertices[0][1]);
-    frameVertices[0][2] = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(frameVertices[0][2]);
-    frameVertices[0][3] = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(frameVertices[0][3]);
-    frameVertices[0][4] = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(frameVertices[0][4]);
-    frameVertices[0][5] = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(frameVertices[0][5]);
-    frameVertices[0][6] = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(frameVertices[0][6]);
-    frameVertices[0][7] = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(frameVertices[0][7]);
+    frameVertices[0][0] = GetEngineContext()->uiControlSystem->vcs->ConvertVirtualToPhysicalX(frameVertices[0][0]);
+    frameVertices[0][1] = GetEngineContext()->uiControlSystem->vcs->ConvertVirtualToPhysicalY(frameVertices[0][1]);
+    frameVertices[0][2] = GetEngineContext()->uiControlSystem->vcs->ConvertVirtualToPhysicalX(frameVertices[0][2]);
+    frameVertices[0][3] = GetEngineContext()->uiControlSystem->vcs->ConvertVirtualToPhysicalY(frameVertices[0][3]);
+    frameVertices[0][4] = GetEngineContext()->uiControlSystem->vcs->ConvertVirtualToPhysicalX(frameVertices[0][4]);
+    frameVertices[0][5] = GetEngineContext()->uiControlSystem->vcs->ConvertVirtualToPhysicalY(frameVertices[0][5]);
+    frameVertices[0][6] = GetEngineContext()->uiControlSystem->vcs->ConvertVirtualToPhysicalX(frameVertices[0][6]);
+    frameVertices[0][7] = GetEngineContext()->uiControlSystem->vcs->ConvertVirtualToPhysicalY(frameVertices[0][7]);
 
-    texCoords[0][0] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualX(texCoords[0][0], resourceSizeIndex);
-    texCoords[0][1] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualY(texCoords[0][1], resourceSizeIndex);
-    texCoords[0][2] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualX(texCoords[0][2], resourceSizeIndex);
-    texCoords[0][3] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualY(texCoords[0][3], resourceSizeIndex);
-    texCoords[0][4] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualX(texCoords[0][4], resourceSizeIndex);
-    texCoords[0][5] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualY(texCoords[0][5], resourceSizeIndex);
-    texCoords[0][6] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualX(texCoords[0][6], resourceSizeIndex);
-    texCoords[0][7] = UIControlSystem::Instance()->vcs->ConvertResourceToVirtualY(texCoords[0][7], resourceSizeIndex);
+    texCoords[0][0] = GetEngineContext()->uiControlSystem->vcs->ConvertResourceToVirtualX(texCoords[0][0], resourceSizeIndex);
+    texCoords[0][1] = GetEngineContext()->uiControlSystem->vcs->ConvertResourceToVirtualY(texCoords[0][1], resourceSizeIndex);
+    texCoords[0][2] = GetEngineContext()->uiControlSystem->vcs->ConvertResourceToVirtualX(texCoords[0][2], resourceSizeIndex);
+    texCoords[0][3] = GetEngineContext()->uiControlSystem->vcs->ConvertResourceToVirtualY(texCoords[0][3], resourceSizeIndex);
+    texCoords[0][4] = GetEngineContext()->uiControlSystem->vcs->ConvertResourceToVirtualX(texCoords[0][4], resourceSizeIndex);
+    texCoords[0][5] = GetEngineContext()->uiControlSystem->vcs->ConvertResourceToVirtualY(texCoords[0][5], resourceSizeIndex);
+    texCoords[0][6] = GetEngineContext()->uiControlSystem->vcs->ConvertResourceToVirtualX(texCoords[0][6], resourceSizeIndex);
+    texCoords[0][7] = GetEngineContext()->uiControlSystem->vcs->ConvertResourceToVirtualY(texCoords[0][7], resourceSizeIndex);
 }
 
 const FilePath& Sprite::GetRelativePathname() const
@@ -810,7 +835,7 @@ const FilePath& Sprite::GetRelativePathname() const
     return relativePathname;
 }
 
-void Sprite::DrawState::BuildStateFromParentAndLocal(const Sprite::DrawState& parentState, const Sprite::DrawState& localState)
+void SpriteDrawState::BuildStateFromParentAndLocal(const SpriteDrawState& parentState, const SpriteDrawState& localState)
 {
     position.x = parentState.position.x + localState.position.x * parentState.scale.x;
     position.y = parentState.position.y + localState.position.y * parentState.scale.y;
@@ -843,6 +868,11 @@ void Sprite::DrawState::BuildStateFromParentAndLocal(const Sprite::DrawState& pa
     frame = localState.frame;
 }
 
+void Sprite::ReloadSprites()
+{
+    ReloadSprites(Texture::GetPrimaryGPUForLoading());
+}
+
 void Sprite::ReloadSprites(eGPUFamily gpu)
 {
     for (SpriteMap::iterator it = spriteMap.begin(); it != spriteMap.end(); ++it)
@@ -851,10 +881,16 @@ void Sprite::ReloadSprites(eGPUFamily gpu)
     }
 }
 
+void Sprite::Reload()
+{
+    Reload(Texture::GetPrimaryGPUForLoading());
+}
+
 void Sprite::Reload(eGPUFamily gpu)
 {
     if (type == SPRITE_FROM_FILE)
     {
+        GetEngineContext()->dynamicAtlasSystem->UnregisterSprite(this);
         ReloadExistingTextures(gpu);
         Clear();
 
@@ -882,22 +918,28 @@ File* Sprite::GetSpriteFile(const FilePath& spriteName, int32& resourceSizeIndex
     FilePath pathName = FilePath::CreateWithNewExtension(spriteName, ".txt");
     FilePath scaledPath = GetScaledName(pathName);
 
+    VirtualCoordinatesSystem* vcs = GetEngineContext()->uiControlSystem->vcs;
+
     FilePath texturePath;
     File* fp = LoadLocalizedFile(scaledPath, texturePath);
     if (!fp)
     {
-        fp = LoadLocalizedFile(pathName, texturePath);
+        if (vcs->GetResourceFoldersCount() > 1)
+        { // try to load default path in case of several resource folders
+            fp = LoadLocalizedFile(pathName, texturePath);
+        }
+
         if (!fp)
         {
             Logger::Warning("Failed to open sprite file: %s", pathName.GetAbsolutePathname().c_str());
             return NULL;
         }
 
-        resourceSizeIndex = UIControlSystem::Instance()->vcs->GetBaseResourceIndex();
+        resourceSizeIndex = vcs->GetBaseResourceIndex();
     }
     else
     {
-        resourceSizeIndex = UIControlSystem::Instance()->vcs->GetDesirableResourceIndex();
+        resourceSizeIndex = vcs->GetDesirableResourceIndex();
     }
 
     return fp;

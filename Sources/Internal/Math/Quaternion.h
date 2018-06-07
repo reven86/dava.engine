@@ -10,11 +10,14 @@ namespace DAVA
 /** 
     \ingroup math
     \brief Class that represents quaternion. Main purpose of the class to give you ability to interpolate between 3D orientations.
-    It used inside skeleton animations, to make all animations smooth and frame intedepndant. 
+    It is used inside skeleton animations, to make all animations smooth and frame independent. 
 */
+
 class Quaternion
 {
 public:
+    static const Quaternion Identity;
+
     union
     {
         struct
@@ -25,11 +28,14 @@ public:
     };
 
     inline Quaternion(float32 _x = 0.0f, float32 _y = 0.0f, float32 _z = 0.0f, float32 _w = 1.0f);
+    inline Quaternion(const float32* _data);
     inline Quaternion(const Quaternion& _q);
     inline const Quaternion& operator=(const Quaternion& _q);
 
     inline Matrix4 GetMatrix() const;
     inline void GetMatrix(Matrix4* m) const;
+    inline Quaternion GetInverse() const;
+    inline Vector3 GetEuler() const;
 
     inline float32 Lenght() const;
     inline void Normalize();
@@ -40,7 +46,7 @@ public:
 
     // Construct
     inline static Quaternion MakeRotation(const Vector3& euler);
-    inline static Quaternion MakeRotation(const Vector3& vector, float32 Angle);
+    inline static Quaternion MakeRotation(const Vector3& vector, float32 angle);
     inline static Quaternion MakeRotation(const Matrix4& matrix);
     inline static Quaternion MakeRotation(const Vector3& source, const Vector3& dest, const Vector3& fallbackAxis = Vector3(0, 0, 0));
 
@@ -138,6 +144,14 @@ inline Quaternion::Quaternion(float32 _x, float32 _y, float32 _z, float32 _w)
 {
 }
 
+inline Quaternion::Quaternion(const float32* _data)
+{
+    x = _data[0];
+    y = _data[1];
+    z = _data[2];
+    w = _data[3];
+}
+
 inline Quaternion::Quaternion(const Quaternion& _q)
 {
     x = _q.x;
@@ -191,15 +205,44 @@ inline void Quaternion::Inverse()
     Normalize(); //
 }
 
-inline Matrix4 Quaternion::GetMatrix() const
+inline Quaternion Quaternion::GetInverse() const
+{
+    Quaternion result = *this;
+    result.Inverse();
+    return result;
+}
+
+DAVA::Vector3 Quaternion::GetEuler() const
 {
     /*
-    [ 1-2y2-2z2     2xy-2wz     2xz+2wy     ]
-    [ 2xy+2wz       1-2x2-2z2   2yz-2wx     ]
-    [ 2xz-2wy       2yz+2wx     1-2x2-2y2   ]
-*/
-    Matrix4 m;
-    float wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
+     [ 1-2y2-2z2     2xy-2wz     2xz+2wy     ]
+     [ 2xy+2wz       1-2x2-2z2   2yz-2wx     ]
+     [ 2xz-2wy       2yz+2wx     1-2x2-2y2   ]
+     */
+
+    //    float32 wx, wy, wz, xx, yy, yz, xy, xz, zz;
+    //    xx = x * x;
+    //    xy = x * y;
+    //    xz = x * z;
+    //    yy = y * y;
+    //    yz = y * z;
+    //    zz = z * z;
+    //    wx = w * x;
+    //    wy = w * y;
+    //    wz = w * z;
+
+    Vector3 euler;
+    //    float32 m_21 = 2.0f * (yz + wx);
+    //    float32 m_22 = 1.0f - 2.0f * (xx + yy);
+    //    float32 m_20 = 2.0f * (xz - wy);
+    //    float32 m_10 = 2.0f * (xy + wz);
+    //    float32 m_00 = 1.0f - 2.0f * (yy + zz);
+
+    //    euler.x = std::atan2(m_21, m_22);
+    //    euler.y = std::atan2(-m_20, std::sqrt(m_21 * m_21 + m_22 * m_22));
+    //    euler.z = std::atan2(m_10, m_00);
+
+    float32 wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
     x2 = x + x;
     y2 = y + y;
     z2 = z + z;
@@ -213,20 +256,23 @@ inline Matrix4 Quaternion::GetMatrix() const
     wy = w * y2;
     wz = w * z2;
 
-    m._data[0][0] = 1.0f - (yy + zz);
-    m._data[1][0] = xy - wz;
-    m._data[2][0] = xz + wy;
-    m._data[0][1] = xy + wz;
-    m._data[1][1] = 1.0f - (xx + zz);
-    m._data[2][1] = yz - wx;
-    m._data[0][2] = xz - wy;
-    m._data[1][2] = yz + wx;
-    m._data[2][2] = 1.0f - (xx + yy);
+    float32 m_12 = yz + wx;
+    float32 m_22 = 1.0f - (xx + yy);
+    float32 m_02 = xz - wy;
+    float32 m_01 = xy + wz;
+    float32 m_00 = 1.0f - (yy + zz);
 
-    m._data[3][0] = m._data[3][1] = m._data[3][2] = 0;
-    m._data[0][3] = m._data[1][3] = m._data[2][3] = 0;
-    m._data[3][3] = 1;
+    euler.x = std::atan2(m_12, m_22);
+    euler.y = std::asin(-m_02);
+    euler.z = std::atan2(m_01, m_00);
 
+    return euler;
+}
+
+inline Matrix4 Quaternion::GetMatrix() const
+{
+    Matrix4 m;
+    GetMatrix(&m);
     return m;
 }
 
@@ -235,7 +281,7 @@ inline void Quaternion::GetMatrix(Matrix4* m) const
     if (!m)
         return;
 
-    float wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
+    float32 wx, wy, wz, xx, yy, yz, xy, xz, zz, x2, y2, z2;
     x2 = x + x;
     y2 = y + y;
     z2 = z + z;
@@ -400,42 +446,32 @@ inline void Quaternion::ConstructRotationFastZ(float32 angle)
 
 inline void Quaternion::Construct(const Vector3& euler)
 {
-    Quaternion x_q, y_q, z_q, v;
-    x_q.Construct(Vector3::UnitX, euler.x);
-    y_q.Construct(Vector3::UnitY, euler.y);
-    z_q.Construct(Vector3::UnitZ, euler.z);
+    {
+        float32 cy = std::cos(euler.z * 0.5f);
+        float32 sy = std::sin(euler.z * 0.5f);
+        float32 cr = std::cos(euler.x * 0.5f);
+        float32 sr = std::sin(euler.x * 0.5f);
+        float32 cp = std::cos(euler.y * 0.5f);
+        float32 sp = std::sin(euler.y * 0.5f);
 
-    *this = x_q;
-    Mul(&y_q, &v);
-    v.Mul(&z_q, this);
+        w = cy * cr * cp + sy * sr * sp;
+        x = cy * sr * cp - sy * cr * sp;
+        y = cy * cr * sp + sy * sr * cp;
+        z = sy * cr * cp - cy * sr * sp;
+    }
 }
 
 inline void Quaternion::Construct(const Matrix4& matrix)
 {
-    //float tr = m[0][0] + m[1][1] + m[2][2]; // trace of martix
-    //if (tr > 0.0f){     // if trace positive than "w" is biggest component
-    //  Set( m[1][2] - m[2][1], m[2][0] - m[0][2], m[0][1] - m[1][0], tr + 1.0f );
-    //}else                 // Some of vector components is bigger
-    //{
-    //  if( (m[0][0] > m[1][1] ) && ( m[0][0] > m[2][2]) ) {
-    //      Set( 1.0f + m[0][0] - m[1][1] - m[2][2], m[1][0] + m[0][1],
-    //          m[2][0] + m[0][2], m[1][2] - m[2][1] );
-    //  }else
-    //      if ( m[1][1] > m[2][2] ){
-    //          Set( m[1][0] + m[0][1], 1.0f + m[1][1] - m[0][0] - m[2][2],
-    //              m[2][1] + m[1][2], m[2][0] - m[0][2] );
-    //      }else{
-    //          Set( m[2][0] + m[0][2], m[2][1] + m[1][2],
-    //              1.0f + m[2][2] - m[0][0] - m[1][1], m[0][1] - m[1][0] );
-    //      }
-    //}
+    //http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/
+
     using mtx_elm = float32[4][4];
     const mtx_elm& m = matrix._data;
 
-    float tr, s, q[4];
-    int i, j, k;
+    float32 tr, s, q[4];
+    int32 i, j, k;
 
-    int nxt[3] = { 1, 2, 0 };
+    int32 nxt[3] = { 1, 2, 0 };
 
     tr = m[0][0] + m[1][1] + m[2][2];
 
@@ -508,13 +544,14 @@ inline bool Quaternion::operator!=(const Quaternion& _v) const
 inline Quaternion Quaternion::MakeRotation(const Vector3& euler)
 {
     Quaternion ret;
-
+    ret.Construct(euler);
     return ret;
 }
-inline Quaternion Quaternion::MakeRotation(const Vector3& vector, float32 Angle)
+
+inline Quaternion Quaternion::MakeRotation(const Vector3& vector, float32 angle)
 {
     Quaternion ret;
-    ret.Construct(vector, Angle);
+    ret.Construct(vector, angle);
     return ret;
 }
 inline Quaternion Quaternion::MakeRotation(const Matrix4& matrix)
@@ -554,4 +591,8 @@ inline Quaternion Quaternion::MakeRotationFastZ(float32 angle)
     ret.ConstructRotationFastZ(angle);
     return ret;
 }
+
+template <>
+bool AnyCompare<Quaternion>::IsEqual(const Any& v1, const Any& v2);
+extern template struct AnyCompare<Quaternion>;
 };

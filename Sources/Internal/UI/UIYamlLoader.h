@@ -4,6 +4,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "FileSystem/FilePath.h"
+#include "Render/2D/FontManager.h"
 
 namespace DAVA
 {
@@ -17,7 +18,6 @@ namespace DAVA
 */
 
 class YamlNode;
-class Font;
 
 class UIYamlLoader : public BaseObject
 {
@@ -32,7 +32,8 @@ public:
      \param[in] yamlPathName						we get config file using this pathname
      */
     static void LoadFonts(const FilePath& yamlPathname);
-    static Font* CreateFontFromYamlNode(const YamlNode* node);
+    static FontPreset CreateFontPresetFromYamlNode(const YamlNode* node);
+    static YamlNode* CreateYamlNodeFromFontPreset(const FontPreset& preset);
 
     /**
      \brief	This function saves fonts to the YAML file passed.
@@ -42,7 +43,7 @@ public:
      */
     static bool SaveFonts(const FilePath& yamlPathname);
 
-    Font* GetFontByName(const String& fontName) const;
+    const FontPreset& GetFontPresetByName(const String& fontName) const;
 
 protected:
     //Internal functions that do actual loading and saving.

@@ -42,11 +42,6 @@ protected:
     bool isRuntime;
     Scene* scene;
 
-public:
-    INTROSPECTION_EXTEND(DataNode, BaseObject,
-                         MEMBER(id, "Id", I_SAVE)
-                         )
-
     DAVA_VIRTUAL_REFLECTION(DataNode, BaseObject);
 };
 }

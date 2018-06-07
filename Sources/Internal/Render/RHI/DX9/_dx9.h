@@ -25,10 +25,11 @@ extern IDirect3DDevice9* _D3D9_Device;
 extern unsigned _D3D9_TargetCount;
 extern IDirect3DSurface9* _D3D9_BackBuf;
 extern IDirect3DSurface9* _D3D9_DepthBuf;
-extern UINT _D3D9_Adapter;
 
 extern InitParam _DX9_InitParam;
 extern D3DPRESENT_PARAMETERS _DX9_PresentParam;
+extern RECT _DX9_PresentRect;
+extern PRECT _DX9_PresentRectPtr;
 extern DAVA::Mutex _DX9_ResetParamsMutex;
 
 } // namespace rhi

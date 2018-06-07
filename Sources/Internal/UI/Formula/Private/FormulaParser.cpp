@@ -7,67 +7,76 @@
     \ingroup formula
  
     grammar formula; // antlr EBNF format https://github.com/antlr/antlr4/blob/master/doc/index.md
+ 
+ expression: whenExpression  | vector | map;
+ 
+ vector: OPEN_SQUARE_BRACKET (expression SEMICOLON)* expression? CLOSE_SQUAR_BRACKET;
+ map: OPEN_CURLY_BRACKET (IDENTIFIER ASSIGN expression SEMICOLON)* (IDENTIFIER ASSIGN expression)? CLOSE_CURLY_BRACKET;
+ 
+ whenExpression : logicalOrExpression | WHEN whenEntry+ elseExpression;
+ whenEntry: whenExpression ARROW whenExpression COMMA;
+ elseExpression: whenExpression;
+ 
+ logicalOrExpression: logicalAndExpression | logicalOrExpression OR logicalAndExpression;
+ logicalAndExpression: equalityExpression | logicalAndExpression AND equalityExpression;
+ equalityExpression: relationExpression | equalityExpression (EQ | NOT_EQ) relationExpression;
+ relationExpression: additiveExpression | relationExpression (LE | LT | GE | GT) additiveExpression;
+ additiveExpression: multiplicativeExpression | additiveExpression (PLUS | MINUS) multiplicativeExpression;
+ multiplicativeExpression: unaryExpression | multiplicativeExpression (MUL | DIV | MOD) unaryExpression;
+ unaryExpression: postfixExpression | (NOT | MINUS) unaryExpression;
+ 
+ postfixExpression: functionExpression | accessExpression | primaryExpression;
+ 
+ functionExpression: IDENTIFIER OPEN_BRACKET (expression (COMMA expression)*)? CLOSE_BRACKET;
+ 
+ accessExpression:
+ IDENTIFIER |
+ accessExpression DOT IDENTIFIER |
+ accessExpression OPEN_SQUARE_BRACKET expression CLOSE_SQUAR_BRACKET;
+ 
+ primaryExpression: BOOL | INTEGER | STRING | FLOAT | OPEN_BRACKET expression CLOSE_BRACKET;
+ 
+ WHEN: 'when';
+ ELSE: 'else';
+ BOOL: 'true' | 'false';
+ STRING: '"' (~["])* '"';
+ INTEGER: [0-9]+ INTEGER_SUFFIX?;
+ FLOAT: [0-9]+ DOT [0-9]*;
+ IDENTIFIER: ([A-Za-z] | '_') ([a-zA-Z0-9] | '_')* ;
+ 
+ fragment INTEGER_SUFFIX: UNSIGNED_SUFFIX LONG_SUFFIX? | LONG_SUFFIX UNSIGNED_SUFFIX?;
+ 
+ fragment UNSIGNED_SUFFIX: [uU];
+ fragment LONG_SUFFIX: [lL];
+ 
+ COMMA: ',';
+ SEMICOLON: ';';
+ DOT: '.';
+ LT: '<';
+ LE: '<=';
+ GT: '>';
+ GE: '>=';
+ PLUS: '+';
+ MINUS: '-';
+ MUL: '*';
+ DIV: '/';
+ MOD: '%';
+ ASSIGN: '=';
+ EQ: '==';
+ NOT_EQ: '!=';
+ NOT: 'not';
+ AND: 'and';
+ OR: 'or';
+ ARROW: '->';
+ OPEN_BRACKET: '(';
+ CLOSE_BRACKET: ')';
+ OPEN_CURLY_BRACKET: '{';
+ CLOSE_CURLY_BRACKET: '}';
+ OPEN_SQUARE_BRACKET: '[';
+ CLOSE_SQUAR_BRACKET: ']';
+ 
+ WS : [ \t\r\n]+ -> skip ;
 
-    expression: logicalOrExpression | vector | map;
-    vector: OPEN_SQUARE_BRACKET expression* CLOSE_SQUAR_BRACKET;
-    map: OPEN_CURLY_BRACKET (IDENTIFIER ASSIGN_SIGN expression)* CLOSE_CURLY_BRACKET;
-
-    logicalOrExpression: logicalAndExpression | logicalOrExpression OR logicalAndExpression;
-    logicalAndExpression: equalityExpression | logicalAndExpression AND equalityExpression;
-    equalityExpression: relationExpression | equalityExpression (EQ | NOT_EQ) relationExpression;
-    relationExpression: additiveExpression | relationExpression (LE | LT | GE | GT) additiveExpression;
-    additiveExpression: multiplicativeExpression | additiveExpression (PLUS | MINUS) multiplicativeExpression;
-    multiplicativeExpression: unaryExpression | multiplicativeExpression (MUL | DIV | MOD) unaryExpression;
-    unaryExpression: postfixExpression | (NOT | MINUS) unaryExpression;
-
-    postfixExpression: functionExpression | accessExpression | primaryExpression;
-
-    functionExpression: IDENTIFIER OPEN_BRACKET (expression (COMMA expression)*)? CLOSE_BRACKET;
-
-    accessExpression:
-        IDENTIFIER |
-        accessExpression DOT IDENTIFIER |
-        accessExpression OPEN_SQUARE_BRACKET expression CLOSE_SQUAR_BRACKET;
-
-    primaryExpression: BOOL | INTEGER | STRING | FLOAT | OPEN_BRACKET expression CLOSE_BRACKET;
-
-
-    BOOL: 'true' | 'false';
-    STRING: '"' (~["])* '"';
-    INTEGER: [0-9]+ INTEGER_SUFFIX?;
-    FLOAT: [0-9]+ DOT [0-9]*;
-    IDENTIFIER: ([A-Za-z] | '_') ([a-zA-Z0-9] | '_')* ;
-
-    fragment INTEGER_SUFFIX: UNSIGNED_SUFFIX LONG_SUFFIX? | LONG_SUFFIX UNSIGNED_SUFFIX?;
-
-    fragment UNSIGNED_SUFFIX: [uU];
-    fragment LONG_SUFFIX: [lL];
-
-    COMMA: ',';
-    DOT: '.';
-    LT: '<';
-    LE: '<=';
-    GT: '>';
-    GE: '>=';
-    PLUS: '+';
-    MINUS: '-';
-    MUL: '*';
-    DIV: '/';
-    MOD: '%';
-    ASSIGN_SIGN: '=';
-    EQ: '==';
-    NOT_EQ: '!=';
-    NOT: '!';
-    AND: '&&';
-    OR: '|';
-    OPEN_BRACKET: '(';
-    CLOSE_BRACKET: ')';
-    OPEN_CURLY_BRACKET: '{';
-    CLOSE_CURLY_BRACKET: '}';
-    OPEN_SQUARE_BRACKET: '[';
-    CLOSE_SQUAR_BRACKET: ']';
-
-    WS : [ \t\r\n]+ -> skip ;
  */
 
 namespace DAVA
@@ -120,7 +129,7 @@ shared_ptr<FormulaExpression> FormulaParser::ParseExpression()
     }
     else
     {
-        return ParseLogicalOr();
+        return ParseConditionalExpression();
     }
 }
 
@@ -129,13 +138,14 @@ shared_ptr<FormulaDataMap> FormulaParser::ParseMap()
     shared_ptr<FormulaDataMap> map = make_shared<FormulaDataMap>();
 
     FormulaToken token = LookToken();
-    while (token.GetType() == FormulaToken::IDENTIFIER)
+    bool inProgress = token.GetType() == FormulaToken::IDENTIFIER;
+    while (inProgress)
     {
         token = NextToken();
         String name = GetTokenStringValue(token);
 
         token = NextToken();
-        if (token.GetType() != FormulaToken::ASSIGN_SIGN)
+        if (token.GetType() != FormulaToken::ASSIGN)
         {
             DAVA_THROW(FormulaException, "'=' expected", token.GetLineNumber(), token.GetPositionInLine());
         }
@@ -158,6 +168,16 @@ shared_ptr<FormulaDataMap> FormulaParser::ParseMap()
         }
 
         token = LookToken();
+        if (token.GetType() == FormulaToken::SEMICOLON)
+        {
+            NextToken(); // semicolon
+            token = LookToken();
+            inProgress = token.GetType() == FormulaToken::IDENTIFIER;
+        }
+        else
+        {
+            inProgress = false;
+        }
     }
 
     return map;
@@ -169,7 +189,8 @@ std::shared_ptr<FormulaDataVector> FormulaParser::ParseVector()
 
     int32 index = 0;
     FormulaToken token = LookToken();
-    while (token.GetType() != FormulaToken::CLOSE_SQUARE_BRACKET)
+    bool inProgress = token.GetType() != FormulaToken::CLOSE_SQUARE_BRACKET;
+    while (inProgress)
     {
         shared_ptr<FormulaExpression> exp = ParseExpression();
         if (!exp)
@@ -188,10 +209,66 @@ std::shared_ptr<FormulaDataVector> FormulaParser::ParseVector()
         }
 
         token = LookToken();
+
+        if (token.GetType() == FormulaToken::SEMICOLON)
+        {
+            NextToken(); // semicolon
+            token = LookToken();
+            inProgress = token.GetType() != FormulaToken::CLOSE_SQUARE_BRACKET;
+        }
+        else
+        {
+            inProgress = false;
+        }
+
         index++;
     }
 
     return vector;
+}
+
+std::shared_ptr<FormulaExpression> FormulaParser::ParseConditionalExpression()
+{
+    FormulaToken token = LookToken();
+    if (token.GetType() == FormulaToken::WHEN)
+    {
+        int32 lineNumber = token.GetLineNumber();
+        int32 positionNumber = token.GetPositionInLine();
+        NextToken();
+
+        Vector<std::pair<std::shared_ptr<FormulaExpression>, std::shared_ptr<FormulaExpression>>> branches;
+        std::shared_ptr<FormulaExpression> elseBranch;
+        while (elseBranch.get() == nullptr)
+        {
+            shared_ptr<FormulaExpression> exp1 = ParseConditionalExpression();
+
+            token = LookToken();
+            if (token.GetType() == FormulaToken::ARROW)
+            {
+                NextToken();
+                shared_ptr<FormulaExpression> exp2 = ParseConditionalExpression();
+
+                token = NextToken();
+                if (token.GetType() != FormulaToken::COMMA)
+                {
+                    DAVA_THROW(FormulaException, "Comma expected", token.GetLineNumber(), token.GetPositionInLine());
+                }
+                branches.push_back(std::pair<std::shared_ptr<FormulaExpression>, std::shared_ptr<FormulaExpression>>(exp1, exp2));
+            }
+            else
+            {
+                elseBranch = exp1;
+            }
+        }
+
+        if (branches.empty())
+        {
+            DAVA_THROW(FormulaException, "When-operator must have at least one non-else branch", lineNumber, positionNumber);
+        }
+
+        return std::make_shared<FormulaWhenExpression>(branches, elseBranch, lineNumber, positionNumber);
+    }
+    return ParseLogicalOr();
 }
 
 std::shared_ptr<FormulaExpression> FormulaParser::ParseLogicalOr()

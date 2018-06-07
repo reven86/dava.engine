@@ -1,19 +1,13 @@
 #if defined(ENABLE_CEF_WEBVIEW)
 
-#include "cef/Sources/CEFWebViewControl.h"
+#include <CEFWebview/CEFWebViewControl.h>
 #include "UI/Private/CEF/WebViewControl.h"
 
 namespace DAVA
 {
-#if defined(__DAVAENGINE_COREV2__)
 WebViewControl::WebViewControl(Window* w, UIWebView* uiWebView)
     : impl(new CEFWebViewControl(w, *uiWebView))
     , cefController(impl)
-#else
-WebViewControl::WebViewControl(UIWebView* uiWebView)
-    : impl(new CEFWebViewControl(*uiWebView))
-    , cefController(impl)
-#endif
 {
     if (!cefController.IsCEFAvailable())
     {

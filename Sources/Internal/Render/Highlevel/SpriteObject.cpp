@@ -267,7 +267,7 @@ const Vector2& SpriteObject::GetPivot() const
     return sprPivot;
 }
 
-void SpriteObject::BindDynamicParameters(Camera* camera)
+void SpriteObject::BindDynamicParameters(Camera* camera, RenderBatch* batch)
 {
     const Matrix4& cameraMatrix = camera->GetMatrix();
     switch (spriteType)
@@ -328,8 +328,9 @@ void SpriteObject::Save(KeyedArchive* archive, SerializationContext* serializati
 {
     // we dont need to save render batche(s)
     // because sprite creating it on loading
-    Vector<IndexedRenderBatch> currentRenderBatches;
+    Vector<RenderBatchWithOptions> currentRenderBatches;
     renderBatchArray.swap(currentRenderBatches);
+
     RenderObject::Save(archive, serializationContext);
     renderBatchArray.swap(currentRenderBatches);
 

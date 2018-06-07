@@ -1,4 +1,5 @@
 #pragma once
+
 #include "../rhi_Type.h"
 #include "rhi_RingBuffer.h"
 
@@ -38,27 +39,17 @@ enum SoftwareCommandType
     CMD_SET_MARKER = 51,
 };
 
-#if defined(__DAVAENGINE_WIN32__)
-#pragma pack(push, 1)
-#endif
-
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-#define DV_ATTR_PACKED __attribute__((packed))
-#else
-#define DV_ATTR_PACKED 
-#endif
-
 struct SWCommand
 {
-    uint8 type;
-    uint8 size;
+    uint16 type;
+    uint16 size;
 
-    SWCommand(uint8 t, uint8 sz)
+    SWCommand(uint16 t, uint16 sz)
         : type(t)
         , size(sz)
     {
     }
-} DV_ATTR_PACKED;
+};
 
 template <class T, SoftwareCommandType t>
 struct SWCommandImpl : public SWCommand
@@ -67,64 +58,63 @@ struct SWCommandImpl : public SWCommand
         : SWCommand(t, sizeof(T))
     {
     }
-} DV_ATTR_PACKED;
+};
 
 struct SWCommand_Begin : public SWCommandImpl<SWCommand_Begin, CMD_BEGIN>
 {
-} DV_ATTR_PACKED;
+};
 
 struct SWCommand_End : public SWCommandImpl<SWCommand_End, CMD_END>
 {
     Handle syncObject;
-    bool doCommit;
-} DV_ATTR_PACKED;
+};
 
 struct SWCommand_SetVertexData : public SWCommandImpl<SWCommand_SetVertexData, CMD_SET_VERTEX_DATA>
 {
-    uint16 streamIndex;
     Handle vb;
-} /*DV_ATTR_PACKED*/;
+    uint32 streamIndex;
+};
 
 struct SWCommand_SetIndices : public SWCommandImpl<SWCommand_SetIndices, CMD_SET_INDICES>
 {
     Handle ib;
-} DV_ATTR_PACKED;
+};
 
 struct SWCommand_SetQueryBuffer : public SWCommandImpl<SWCommand_SetQueryBuffer, CMD_SET_QUERY_BUFFER>
 {
     Handle queryBuf;
-} DV_ATTR_PACKED;
+};
 
 struct SWCommand_SetQueryIndex : public SWCommandImpl<SWCommand_SetQueryIndex, CMD_SET_QUERY_INDEX>
 {
     uint32 objectIndex;
-} DV_ATTR_PACKED;
+};
 
 struct SWCommand_IssueTimestamptQuery : public SWCommandImpl<SWCommand_IssueTimestamptQuery, CMD_ISSUE_TIMESTAMP_QUERY>
 {
     Handle perfQuery;
-} DV_ATTR_PACKED;
+};
 
 struct SWCommand_SetPipelineState : public SWCommandImpl<SWCommand_SetPipelineState, CMD_SET_PIPELINE_STATE>
 {
     uint32 vdecl;
     uint32 ps;
-} DV_ATTR_PACKED;
+};
 
 struct SWCommand_SetDepthStencilState : public SWCommandImpl<SWCommand_SetDepthStencilState, CMD_SET_DEPTHSTENCIL_STATE>
 {
     Handle depthStencilState;
-} DV_ATTR_PACKED;
+};
 
 struct SWCommand_SetSamplerState : public SWCommandImpl<SWCommand_SetSamplerState, CMD_SET_SAMPLER_STATE>
 {
     Handle samplerState;
-} DV_ATTR_PACKED;
+};
 
 struct SWCommand_SetCullMode : public SWCommandImpl<SWCommand_SetCullMode, CMD_SET_CULL_MODE>
 {
-    uint8 mode;
-} DV_ATTR_PACKED;
+    uint32 mode;
+};
 
 struct SWCommand_SetScissorRect : public SWCommandImpl<SWCommand_SetScissorRect, CMD_SET_SCISSOR_RECT>
 {
@@ -132,7 +122,7 @@ struct SWCommand_SetScissorRect : public SWCommandImpl<SWCommand_SetScissorRect,
     uint16 y;
     uint16 width;
     uint16 height;
-} /*DV_ATTR_PACKED*/;
+};
 
 struct SWCommand_SetViewport : public SWCommandImpl<SWCommand_SetViewport, CMD_SET_VIEWPORT>
 {
@@ -140,116 +130,118 @@ struct SWCommand_SetViewport : public SWCommandImpl<SWCommand_SetViewport, CMD_S
     uint16 y;
     uint16 width;
     uint16 height;
-} /*DV_ATTR_PACKED*/;
+};
 
 struct SWCommand_SetFillMode : public SWCommandImpl<SWCommand_SetFillMode, CMD_SET_FILLMODE>
 {
-    uint8 mode;
-} DV_ATTR_PACKED;
+    uint32 mode;
+};
 
 struct SWCommand_SetVertexProgConstBuffer : public SWCommandImpl<SWCommand_SetVertexProgConstBuffer, CMD_SET_VERTEX_PROG_CONST_BUFFER>
 {
-    uint8 bufIndex;
-    Handle buffer;
     const void* inst;
-} DV_ATTR_PACKED;
+    Handle buffer;
+    uint8 bufIndex;
+};
 
 struct SWCommand_SetFragmentProgConstBuffer : public SWCommandImpl<SWCommand_SetFragmentProgConstBuffer, CMD_SET_FRAGMENT_PROG_CONST_BUFFER>
 {
-    uint8 bufIndex;
-    Handle buffer;
     const void* inst;
-} DV_ATTR_PACKED;
+    Handle buffer;
+    uint8 bufIndex;
+};
 
 struct SWCommand_SetVertexTexture : public SWCommandImpl<SWCommand_SetVertexTexture, CMD_SET_VERTEX_TEXTURE>
 {
-    uint8 unitIndex;
     Handle tex;
-} DV_ATTR_PACKED;
+    uint8 unitIndex;
+};
 
 struct SWCommand_SetFragmentTexture : public SWCommandImpl<SWCommand_SetFragmentTexture, CMD_SET_FRAGMENT_TEXTURE>
 {
-    uint8 unitIndex;
     Handle tex;
-} DV_ATTR_PACKED;
+    uint8 unitIndex;
+};
 
 struct SWCommand_DrawPrimitive : public SWCommandImpl<SWCommand_DrawPrimitive, CMD_DRAW_PRIMITIVE>
 {
-    uint8 mode;
     uint32 vertexCount;
-} DV_ATTR_PACKED;
+    uint8 mode;
+};
 
 struct SWCommand_DrawInstancedPrimitive : public SWCommandImpl<SWCommand_DrawInstancedPrimitive, CMD_DRAW_INSTANCED_PRIMITIVE>
 {
-    uint8 mode;
     uint32 vertexCount;
-    uint16 instanceCount;
-    uint16 baseInstance;
-} DV_ATTR_PACKED;
+    uint32 instanceCount;
+    uint32 baseInstance;
+    uint8 mode;
+};
 
 struct SWCommand_DrawIndexedPrimitive : public SWCommandImpl<SWCommand_DrawIndexedPrimitive, CMD_DRAW_INDEXED_PRIMITIVE>
 {
-    uint8 mode;
     uint32 indexCount;
     uint32 firstVertex;
     uint32 startIndex;
-} DV_ATTR_PACKED;
+    uint8 mode;
+};
 
 struct SWCommand_DrawIndexedPrimitiveRanged : public SWCommandImpl<SWCommand_DrawIndexedPrimitiveRanged, CMD_DRAW_INDEXED_PRIMITIVE_RANGED>
 {
-    uint8 mode;
     uint32 indexCount;
     uint32 firstVertex;
     uint32 startIndex;
     uint32 vertexCount;
-} DV_ATTR_PACKED;
+    uint8 mode;
+};
 
 struct SWCommand_DrawInstancedIndexedPrimitive : public SWCommandImpl<SWCommand_DrawInstancedIndexedPrimitive, CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE>
 {
-    uint8 mode;
     uint32 indexCount;
     uint32 firstVertex;
     uint32 startIndex;
-    uint16 instanceCount;
-    uint16 baseInstance;
-} DV_ATTR_PACKED;
+    uint32 instanceCount;
+    uint32 baseInstance;
+    uint8 mode;
+};
 
 struct SWCommand_DrawInstancedIndexedPrimitiveRanged : public SWCommandImpl<SWCommand_DrawInstancedIndexedPrimitiveRanged, CMD_DRAW_INSTANCED_INDEXED_PRIMITIVE_RANGED>
 {
-    uint8 mode;
     uint32 indexCount;
     uint32 firstVertex;
     uint32 startIndex;
     uint32 vertexCount;
-    uint16 instanceCount;
-    uint16 baseInstance;
-} DV_ATTR_PACKED;
+    uint32 instanceCount;
+    uint32 baseInstance;
+    uint8 mode;
+};
 
 struct SWCommand_SetMarker : public SWCommandImpl<SWCommand_SetMarker, CMD_SET_MARKER>
 {
     const char* text;
 };
 
-#ifdef __DAVAENGINE_WIN32__
-#pragma pack(pop)
-#endif
-
 struct SoftwareCommandBuffer
 {
-public:
-    template <class T>
-    inline T* allocCmd()
+    enum : uint32
     {
-        if (curUsedSize + sizeof(T) >= cmdDataSize)
+        CapacityGrowStep = 4 * 1024,
+        Alignment = 4,
+    };
+
+    template <class T>
+    T* allocCmd()
+    {
+        uint32 alignedSize = (sizeof(T) + Alignment - 1) & (~(Alignment - 1));
+        if (curUsedSize + alignedSize >= cmdDataSize)
         {
-            cmdDataSize += 4 * 1024; // CRAP: hardcoded grow-size
+            cmdDataSize += CapacityGrowStep;
             cmdData = reinterpret_cast<uint8*>(::realloc(cmdData, cmdDataSize));
         }
 
-        uint8* p = cmdData + curUsedSize;
-        curUsedSize += sizeof(T);
-
-        return new (reinterpret_cast<T*>(p)) T();
+        T* command = new (cmdData + curUsedSize) T();
+        command->size = alignedSize;
+        curUsedSize += alignedSize;
+        return command;
     }
 
     uint8* cmdData = nullptr;

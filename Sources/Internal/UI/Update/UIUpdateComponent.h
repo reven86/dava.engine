@@ -2,7 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/Components/UIComponent.h"
-#include "Functional/Function.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -14,7 +14,7 @@ namespace DAVA
 class UIUpdateComponent : public UIComponent
 {
     DAVA_VIRTUAL_REFLECTION(UIUpdateComponent, UIComponent);
-    IMPLEMENT_UI_COMPONENT(UIUpdateComponent);
+    DECLARE_UI_COMPONENT(UIUpdateComponent);
 
 public:
     UIUpdateComponent();

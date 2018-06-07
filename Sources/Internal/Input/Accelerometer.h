@@ -11,9 +11,6 @@ namespace DAVA
 #define DEFAULT_UPDATE_RATE 1.0f / 10.0f
 
 /**
-	\defgroup input Input System
- */
-/**
 	\ingroup input
 	\brief Accelerometer access. Available only on devices that have accelerometer. 
  */

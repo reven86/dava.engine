@@ -19,7 +19,7 @@ public:
 
     void RecalcBoundingBox() override;
     void PrepareToRender(Camera* camera) override;
-    void BindDynamicParameters(Camera* camera) override;
+    void BindDynamicParameters(Camera* camera, RenderBatch* batch) override;
 
     void Save(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Load(KeyedArchive* archive, SerializationContext* serializationContext) override;
@@ -32,10 +32,6 @@ public:
 private:
     Matrix4 billboardTransform = Matrix4::IDENTITY;
     uint32 billboardType = BillboardType::BILLBOARD_SPHERICAL;
-
-public:
-    INTROSPECTION_EXTEND(BillboardRenderObject, RenderObject,
-                         MEMBER(billboardType, InspDesc("billboardType", GlobalEnumMap<BillboardRenderObject::BillboardType>::Instance()), I_SAVE | I_VIEW | I_EDIT))
 
     DAVA_VIRTUAL_REFLECTION(BillboardRenderObject, RenderObject);
 };

@@ -11,7 +11,7 @@ class UIControl;
 class UIIgnoreLayoutComponent : public UIComponent
 {
     DAVA_VIRTUAL_REFLECTION(UIIgnoreLayoutComponent, UIComponent);
-    IMPLEMENT_UI_COMPONENT(UIIgnoreLayoutComponent);
+    DECLARE_UI_COMPONENT(UIIgnoreLayoutComponent);
 
 public:
     UIIgnoreLayoutComponent() = default;

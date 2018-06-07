@@ -2,8 +2,8 @@
 #define __DAVAENGINE_FILE_SYSTEM_DIALOG__
 
 #include "UI/UIControl.h"
-#include "UI/UIList.h"
-#include "UI/UITextField.h"
+#include "UI/UIListDelegate.h"
+#include "UI/UITextFieldDelegate.h"
 #include "FileSystem/FilePath.h"
 
 namespace DAVA

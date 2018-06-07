@@ -47,10 +47,15 @@ void StaticOcclusionBuildSystem::RemoveEntity(Entity* entity)
     occlusionEntities.erase(std::remove(occlusionEntities.begin(), occlusionEntities.end(), entity), occlusionEntities.end());
 }
 
+void StaticOcclusionBuildSystem::PrepareForRemove()
+{
+    occlusionEntities.clear();
+}
+
 void StaticOcclusionBuildSystem::ImmediateEvent(Component* _component, uint32 event)
 {
     Entity* entity = _component->GetEntity();
-    StaticOcclusionComponent* component = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
+    StaticOcclusionComponent* component = entity->GetComponent<StaticOcclusionComponent>();
     if (component->GetPlaceOnLandscape() && (event == EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED))
     {
         OnEntityChanged(entity);
@@ -121,7 +126,7 @@ void StaticOcclusionBuildSystem::CollectEntitiesForOcclusionRecursively(Vector<E
 
 void StaticOcclusionBuildSystem::OnEntityChanged(Entity* entity)
 {
-    StaticOcclusionComponent* component = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
+    StaticOcclusionComponent* component = entity->GetComponent<StaticOcclusionComponent>();
     component->cellHeightOffset.clear();
     component->cellHeightOffset.resize(component->GetSubdivisionsX() * component->GetSubdivisionsY(), 0);
     /*place on landscape*/
@@ -129,7 +134,7 @@ void StaticOcclusionBuildSystem::OnEntityChanged(Entity* entity)
     AABBox3 localBox = component->GetBoundingBox();
     Vector3 boxSize = localBox.GetSize();
     AABBox3 bbox;
-    localBox.GetTransformedBox(GetTransformComponent(entity)->GetWorldTransform(), bbox);
+    localBox.GetTransformedBox(GetTransformComponent(entity)->GetWorldMatrix(), bbox);
     uint32 xSubdivisions = component->GetSubdivisionsX();
     uint32 ySubdivisions = component->GetSubdivisionsY();
     boxSize.x /= xSubdivisions;
@@ -161,7 +166,7 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion()
     // Prepare occlusion per component
     Entity* entity = occlusionEntities[activeIndex];
 
-    componentInProgress = static_cast<StaticOcclusionDataComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT));
+    componentInProgress = entity->GetComponent<StaticOcclusionDataComponent>();
     if (componentInProgress)
     {
         // We detach component from system, to let system know that this data is not valid right now.
@@ -174,11 +179,11 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion()
     }
     StaticOcclusionData& data = componentInProgress->GetData();
 
-    StaticOcclusionComponent* occlusionComponent = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
-    TransformComponent* transformComponent = static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT));
+    StaticOcclusionComponent* occlusionComponent = entity->GetComponent<StaticOcclusionComponent>();
+    TransformComponent* transformComponent = entity->GetComponent<TransformComponent>();
     AABBox3 localBox = occlusionComponent->GetBoundingBox();
     AABBox3 worldBox;
-    localBox.GetTransformedBox(transformComponent->GetWorldTransform(), worldBox);
+    localBox.GetTransformedBox(transformComponent->GetWorldMatrix(), worldBox);
 
     data.Init(occlusionComponent->GetSubdivisionsX(), occlusionComponent->GetSubdivisionsY(),
               occlusionComponent->GetSubdivisionsZ(), objectsCount, worldBox, occlusionComponent->GetCellHeightOffsets());
@@ -191,7 +196,7 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion()
 
 void StaticOcclusionBuildSystem::FinishBuildOcclusion()
 {
-    Component* prevComponent = occlusionEntities[activeIndex]->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT);
+    Component* prevComponent = occlusionEntities[activeIndex]->GetComponent<StaticOcclusionDataComponent>();
 
     // We've detached component so we verify that here we still do not have this component.
     DVASSERT(prevComponent == 0);
@@ -249,11 +254,11 @@ const String& StaticOcclusionBuildSystem::GetBuildStatusInfo() const
 void StaticOcclusionBuildSystem::SceneForceLod(int32 forceLodIndex)
 {
     Vector<Entity*> lodEntities;
-    GetScene()->GetChildEntitiesWithComponent(lodEntities, Component::LOD_COMPONENT);
+    GetScene()->GetChildEntitiesWithComponent(lodEntities, Type::Instance<LodComponent>());
     uint32 size = static_cast<uint32>(lodEntities.size());
     for (uint32 k = 0; k < size; ++k)
     {
-        LodComponent* lodComponent = static_cast<LodComponent*>(lodEntities[k]->GetComponent(Component::LOD_COMPONENT));
+        LodComponent* lodComponent = lodEntities[k]->GetComponent<LodComponent>();
         GetScene()->lodSystem->SetForceLodLayer(lodComponent, forceLodIndex);
     }
     GetScene()->lodSystem->Process(0.0f);
@@ -262,13 +267,14 @@ void StaticOcclusionBuildSystem::SceneForceLod(int32 forceLodIndex)
 void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
 {
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+
     for (auto& pair : tsc->worldTransformChanged.map)
     {
-        if (pair.first->GetComponentsCount(Component::STATIC_OCCLUSION_COMPONENT) > 0)
+        if (pair.first->GetComponentsCount(Type::Instance<StaticOcclusionComponent>()) > 0)
         {
             for (Entity* entity : pair.second)
             {
-                StaticOcclusionComponent* component = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
+                StaticOcclusionComponent* component = entity->GetComponent<StaticOcclusionComponent>();
                 if (component->GetPlaceOnLandscape())
                 {
                     OnEntityChanged(entity);
@@ -280,7 +286,7 @@ void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
     if (activeIndex == static_cast<uint32>(-1))
         return;
 
-    bool finished = staticOcclusion->ProccessBlock();
+    bool finished = staticOcclusion->ProcessBlock();
     if (finished)
     {
         FinishBuildOcclusion();

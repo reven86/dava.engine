@@ -31,11 +31,11 @@ MaxLength::MaxLength(uint32 length_)
 Validator::Validator(const TValidationFn& fn_)
     : fn(fn_)
 {
-    DVASSERT(fn != nullptr);
 }
 
 ValidationResult Validator::Validate(const Any& value, const Any& prevValue) const
 {
+    DVASSERT(fn != nullptr);
     return fn(value, prevValue);
 }
 
@@ -69,6 +69,15 @@ ValueDescription::ValueDescription(const TValueDescriptorFn& fn_)
 String ValueDescription::GetDescription(const Any& v) const
 {
     return fn(v);
+}
+
+Bindable::Bindable()
+{
+}
+
+Tooltip::Tooltip(const String& tooltipFieldName_)
+    : tooltipFieldName(tooltipFieldName_)
+{
 }
 
 } // namespace Metas

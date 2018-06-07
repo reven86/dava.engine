@@ -79,7 +79,7 @@ void RenderLayer::Draw(Camera* camera, const RenderBatchArray& batchArray, rhi::
     {
         RenderBatch* batch = batchArray.Get(k);
         RenderObject* renderObject = batch->GetRenderObject();
-        renderObject->BindDynamicParameters(camera);
+        renderObject->BindDynamicParameters(camera, batch);
         NMaterial* mat = batch->GetMaterial();
         if (mat)
         {

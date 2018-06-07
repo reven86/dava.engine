@@ -2,7 +2,6 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
-#include "Base/Any.h"
 #include "Math/Vector.h"
 #include "Math/Ray.h"
 
@@ -71,12 +70,6 @@ public:
     //! \brief Checks is bounding box is empty
     inline bool IsEmpty() const;
 
-    //! \brief check if bounding box intersect line
-    inline bool IsIntersectLine(const Vector3& l1, const Vector3& l2);
-
-    //! \brief check if bounding box intersect ray
-    bool IsIntersectsWithRay(Ray3& r, float32& tmin, float32& tmax, float32 t0 = 0.0f, float32 t1 = 1.0f);
-
     //! \brief check if point inside bbox.
     inline bool IsInside(const Vector3& pt) const;
 
@@ -100,12 +93,29 @@ public:
     {
         return (min == _bbox.min) && (max == _bbox.max);
     }
+    bool operator!=(const AABBox3& _bbox) const
+    {
+        return (min != _bbox.min) || (max != _bbox.max);
+    }
 
     void GetTransformedBox(const Matrix4& transform, AABBox3& result) const;
     void GetCorners(Vector3* cornersArray) const;
 
     float32 GetBoundingSphereRadius() const;
     AABBox3 GetMaxRotationExtentBox(const Vector3& rotationCenter) const;
+};
+
+namespace Intersection
+{
+//! \brief check if bounding box intersect ray
+bool RayBox(const Ray3& r, const AABBox3& box);
+bool RayBox(const Ray3& r, const AABBox3& box, float32& result);
+bool RayBox(const Ray3& r, const AABBox3& box, float32& resultMin, float32& resultMax);
+bool SegmentBox(const Vector3& v1, const Vector3& v2, const AABBox3& box, float32& resultMin, float32& resultMax);
+bool RayBox(const Ray3Optimized& r, const AABBox3& box, float32& resultMin, float32& resultMax);
+//! \brief check if bounding box intersect triangle
+bool BoxTriangle(const AABBox3& box, const Vector3& v1, const Vector3& v2, const Vector3& v3);
+bool BoxBox(const AABBox3& box1, const AABBox3& box2);
 };
 
 //! \brief construct empty bounding box
@@ -190,23 +200,6 @@ inline bool AABBox3::IsEmpty() const
     return (min.x > max.x || min.y > max.y || min.z > max.z);
 }
 
-//! \brief check if bounding box intersect line
-inline bool IsIntersectLine(const Vector3& /*l1*/, const Vector3& /*l2*/)
-{
-    //float32 tmin[3];
-    //float32 tmax[3];
-    //
-    //Vector3 center = (min + max) / 2.0f;
-    //Vector3 p = center  - l1;
-    //
-    //for (int i = 0; i < 3; ++i)
-    //{
-    //	float32 e =
-    //	float32 d =
-    //}
-    return false;
-}
-
 inline bool AABBox3::IsInside(const Vector3& pt) const
 {
     if (
@@ -246,7 +239,7 @@ inline AABBox3& AABBox3::operator=(const AABBox3& _bbox)
 //! \brief get center
 inline Vector3 AABBox3::GetCenter() const
 {
-    return (min + max) / 2.0f;
+    return (min + max) * 0.5f;
 }
 
 inline Vector3 AABBox3::GetSize() const
@@ -257,4 +250,17 @@ inline Vector3 AABBox3::GetSize() const
 template <>
 bool AnyCompare<AABBox3>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2);
 extern template struct AnyCompare<AABBox3>;
-}
+
+namespace Intersection
+{
+//! \brief check if bounding box intersect other bounding box
+//! \param box another bounding box
+//! \return true if intersect, false otherwise
+inline bool BoxBox(const AABBox3& box1, const AABBox3& box2)
+{
+    return (box1.min.x <= box2.max.x && box1.min.y <= box2.max.y && box1.min.z <= box2.max.z &&
+            box1.max.x >= box2.min.x && box1.max.y >= box2.min.y && box1.max.z >= box2.min.z);
+};
+};
+
+}; // namespace DAVA

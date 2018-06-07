@@ -1,14 +1,18 @@
 #include "DLC.h"
-#include "Job/JobManager.h"
-#include "Patcher/PatchFile.h"
-#include "Platform/DeviceInfo.h"
-#include "Downloader/DownloadManager.h"
-#include "Render/GPUFamilyDescriptor.h"
-#include "Utils/StringFormat.h"
-#include "Logger/Logger.h"
 
+#include "Downloader/DownloadManager.h"
+#include "Engine/Engine.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
+#include "Job/JobManager.h"
+#include "Logger/Logger.h"
+#include "Patcher/PatchFile.h"
+#include "Platform/DeviceInfo.h"
+#include "Render/GPUFamilyDescriptor.h"
+#include "Utils/StringFormat.h"
+
+
+
 #include <functional>
 
 namespace DAVA
@@ -164,7 +168,7 @@ void DLC::SetLogFileName(const FilePath& customLogFileName)
 void DLC::PostEvent(DLCEvent event)
 {
     Function<void()> fn = Bind(&DLC::FSM, this, event);
-    JobManager::Instance()->CreateMainJob(fn);
+    GetEngineContext()->jobManager->CreateMainJob(fn);
 }
 
 void DLC::PostError(DLCError error)
@@ -1019,7 +1023,7 @@ void DLC::PatchingThread()
     }
 
     Function<void()> fn(this, &DLC::StepPatchFinish);
-    JobManager::Instance()->CreateMainJob(fn);
+    GetEngineContext()->jobManager->CreateMainJob(fn);
 }
 
 void DLC::StepClean()

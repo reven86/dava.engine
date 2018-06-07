@@ -56,6 +56,12 @@ void SnapToLandscapeControllerSystem::RemoveEntity(Entity* entity)
     DVASSERT(0);
 }
 
+void SnapToLandscapeControllerSystem::PrepareForRemove()
+{
+    entities.clear();
+    positions.clear();
+}
+
 void SnapToLandscapeControllerSystem::Process(float32 timeElapsed)
 {
     const uint32 size = static_cast<uint32>(entities.size());

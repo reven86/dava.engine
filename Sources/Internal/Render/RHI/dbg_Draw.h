@@ -131,7 +131,7 @@ private:
     private:
         enum
         {
-            VBCount = 2
+            VBCount = 6
         };
 
         void _grow();

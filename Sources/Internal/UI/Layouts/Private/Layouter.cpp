@@ -41,36 +41,37 @@ void Layouter::CollectControls(UIControl* control, bool recursive)
 {
     layoutData.clear();
     layoutData.emplace_back(ControlLayoutData(control));
-    CollectControlChildren(control, 0, recursive);
+    CollectControlChildren(control, -1, 0, recursive);
 }
 
-void Layouter::CollectControlChildren(UIControl* control, int32 parentIndex, bool recursive)
+void Layouter::CollectControlChildren(UIControl* control, int32 parentIndex, int32 index, bool recursive)
 {
-    int32 index = static_cast<int32>(layoutData.size());
-    const List<UIControl*>& children = control->GetChildren();
+    int32 childIndex = static_cast<int32>(layoutData.size());
+    const auto& children = control->GetChildren();
 
     int32 childrenCount = 0;
 
-    for (UIControl* child : children)
+    for (const auto& child : children)
     {
         if (child->GetComponentCount<UILayoutIsolationComponent>() == 0)
         {
-            layoutData.emplace_back(ControlLayoutData(child));
+            layoutData.emplace_back(ControlLayoutData(child.Get()));
             childrenCount++;
         }
     }
 
-    layoutData[parentIndex].SetFirstChildIndex(index);
-    layoutData[parentIndex].SetLastChildIndex(index + childrenCount - 1);
+    layoutData[index].SetParentIndex(parentIndex);
+    layoutData[index].SetFirstChildIndex(childIndex);
+    layoutData[index].SetLastChildIndex(childIndex + childrenCount - 1);
 
     if (recursive)
     {
-        for (UIControl* child : children)
+        for (const auto& child : children)
         {
             if (child->GetComponentCount<UILayoutIsolationComponent>() == 0)
             {
-                CollectControlChildren(child, index, recursive);
-                index++;
+                CollectControlChildren(child.Get(), index, childIndex, recursive);
+                childIndex++;
             }
         }
     }
@@ -93,7 +94,7 @@ void Layouter::DoMeasurePhase(Vector2::eAxis axis)
         UISizePolicyComponent* sizePolicy = layoutData[index].GetControl()->GetComponent<UISizePolicyComponent>();
         if (sizePolicy != nullptr)
         {
-            SizeMeasuringAlgorithm(layoutData, layoutData[index], axis, sizePolicy).Apply();
+            SizeMeasuringAlgorithm(*this, layoutData[index], axis, sizePolicy).Apply();
         }
     }
 }
@@ -105,14 +106,14 @@ void Layouter::DoLayoutPhase(Vector2::eAxis axis)
         UIFlowLayoutComponent* flowLayoutComponent = it->GetControl()->GetComponent<UIFlowLayoutComponent>();
         if (flowLayoutComponent && flowLayoutComponent->IsEnabled())
         {
-            FlowLayoutAlgorithm(layoutData, isRtl).Apply(*it, axis);
+            FlowLayoutAlgorithm(*this).Apply(*it, axis);
         }
         else
         {
             UILinearLayoutComponent* linearLayoutComponent = it->GetControl()->GetComponent<UILinearLayoutComponent>();
             if (linearLayoutComponent != nullptr && linearLayoutComponent->IsEnabled() && linearLayoutComponent->GetAxis() == axis)
             {
-                LinearLayoutAlgorithm alg(layoutData, isRtl);
+                LinearLayoutAlgorithm alg(*this);
 
                 bool inverse = linearLayoutComponent->IsInverse();
                 if (isRtl && linearLayoutComponent->IsUseRtl() && linearLayoutComponent->GetAxis() == Vector2::AXIS_X)
@@ -126,13 +127,14 @@ void Layouter::DoLayoutPhase(Vector2::eAxis axis)
                 alg.SetSpacing(linearLayoutComponent->GetSpacing());
 
                 alg.SetDynamicPadding(linearLayoutComponent->IsDynamicPadding());
+                alg.SetSafeAreaPaddingInset(linearLayoutComponent->IsSafeAreaPaddingInset());
                 alg.SetDynamicSpacing(linearLayoutComponent->IsDynamicSpacing());
 
                 alg.Apply(*it, axis);
             }
             else
             {
-                AnchorLayoutAlgorithm(layoutData, isRtl).Apply(*it, axis, false);
+                AnchorLayoutAlgorithm(*this).Apply(*it, axis, false);
             }
         }
 
@@ -182,5 +184,42 @@ void Layouter::ApplyPositions()
 void Layouter::SetRtl(bool rtl)
 {
     isRtl = rtl;
+}
+
+bool Layouter::IsLeftNotch() const
+{
+    return isLeftNotch;
+}
+
+bool Layouter::IsRightNotch() const
+{
+    return isRightNotch;
+}
+
+const LayoutMargins& Layouter::GetSafeAreaInsets() const
+{
+    return safeAreaInsets;
+}
+
+void Layouter::SetSafeAreaInsets(float32 left, float32 top, float32 right, float32 bottom, bool isLeftNotch_, bool isRightNotch_)
+{
+    safeAreaInsets.left = left;
+    safeAreaInsets.top = top;
+    safeAreaInsets.right = right;
+    safeAreaInsets.bottom = bottom;
+    isLeftNotch = isLeftNotch_;
+    isRightNotch = isRightNotch_;
+}
+
+void Layouter::SetSafeAreaInsets(const LayoutMargins& insets, bool isLeftNotch_, bool isRightNotch_)
+{
+    safeAreaInsets = insets;
+    isLeftNotch = isLeftNotch_;
+    isRightNotch = isRightNotch_;
+}
+
+void Layouter::SetVisibilityRect(const Rect& r)
+{
+    visibilityRect = r;
 }
 }

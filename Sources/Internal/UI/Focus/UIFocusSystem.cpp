@@ -12,8 +12,6 @@
 #include "UI/UIControlHelpers.h"
 #include "UI/UITextField.h"
 
-#include "Input/KeyboardDevice.h"
-
 namespace DAVA
 {
 UIFocusSystem::UIFocusSystem()
@@ -177,18 +175,18 @@ bool UIFocusSystem::MoveFocus(UITabOrderComponent::Direction dir, bool repeat)
 void UIFocusSystem::ClearFocusState(UIControl* control)
 {
     control->SetState(control->GetState() & (~UIControl::STATE_FOCUSED));
-    for (UIControl* c : control->GetChildren())
+    for (const auto& c : control->GetChildren())
     {
-        ClearFocusState(c);
+        ClearFocusState(c.Get());
     }
 }
 
 UIControl* UIFocusSystem::FindFirstControl(UIControl* control) const
 {
     UIControl* candidate = nullptr;
-    for (UIControl* c : control->GetChildren())
+    for (const auto& c : control->GetChildren())
     {
-        UIControl* res = FindFirstControl(c);
+        UIControl* res = FindFirstControl(c.Get());
         if (res != nullptr && IsControlBetterForFocusThanCandidate(res, candidate))
         {
             candidate = res;

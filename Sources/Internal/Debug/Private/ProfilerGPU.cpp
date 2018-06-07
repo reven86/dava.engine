@@ -4,7 +4,6 @@
 #include "Render/Renderer.h"
 #include "Render/RHI/dbg_Draw.h"
 #include "Engine/Engine.h"
-#include "Core/Core.h"
 #include <ostream>
 
 //==============================================================================
@@ -153,11 +152,7 @@ void ProfilerGPU::OnFrameEnd()
 
     if (profilerStarted)
     {
-#ifdef __DAVAENGINE_COREV2__
         currentFrame.globalFrameIndex = Engine::Instance()->GetGlobalFrameIndex();
-#else
-        currentFrame.globalFrameIndex = Core::Instance()->GetGlobalFrameIndex();
-#endif
         currentFrame.perfQuery = GetPerfQueryPair();
         rhi::SetFramePerfQueries(currentFrame.perfQuery.query[0], currentFrame.perfQuery.query[1]);
 

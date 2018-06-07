@@ -158,6 +158,10 @@ dx9_SamplerState_Delete(Handle state)
 
 namespace SamplerStateDX9
 {
+void Init(uint32 maxCount)
+{
+    SamplerStateDX9Pool::Reserve(maxCount);
+}
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_SamplerState_Create = &dx9_SamplerState_Create;

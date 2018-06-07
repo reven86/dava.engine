@@ -16,8 +16,8 @@ ParticleDebugRenderPass::ParticleDebugRenderPass(ParticleDebugRenderPassConfig c
     , debugTexture(nullptr)
     , wireframeMaterial(config.wireframeMaterial)
     , overdrawMaterial(config.overdrawMaterial)
-    , selectedParticles(config.selectedParticles)
     , showAlphaMaterial(config.showAlphaMaterial)
+    , selectedParticles(config.selectedParticles)
     , drawMode(config.drawMode)
     , drawOnlySelected(config.drawOnlySelected)
 {
@@ -141,7 +141,7 @@ void ParticleDebugRenderPass::MakePacket(Camera* camera)
     {
         RenderBatch* batch = particleBatches.Get(i);
         RenderObject* renderObject = batch->GetRenderObject();
-        renderObject->BindDynamicParameters(camera);
+        renderObject->BindDynamicParameters(camera, batch);
         NMaterial* mat = SelectMaterial(batch);
 
         if (mat != nullptr)

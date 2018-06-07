@@ -21,7 +21,7 @@ public:
     void Save(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Load(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
-    void BindDynamicParameters(Camera* camera) override;
+    void BindDynamicParameters(Camera* camera, RenderBatch* batch) override;
     void PrepareToRender(Camera* camera) override;
 
     void SetSphericalHarmonics(const DAVA::Array<float32, HARMONICS_BUFFER_CAPACITY>& coeffs);
@@ -54,11 +54,6 @@ protected:
     float32 lightSmoothing;
 
     const Matrix4* invWorldTransform = nullptr;
-
-public:
-    INTROSPECTION_EXTEND(SpeedTreeObject, RenderObject,
-                         PROPERTY("lightSmoothing", "Light Smoothing", GetLightSmoothing, SetLightSmoothing, I_SAVE | I_EDIT | I_VIEW)
-                         );
 
     DAVA_VIRTUAL_REFLECTION(SpeedTreeObject, RenderObject);
 

@@ -25,6 +25,7 @@ namespace DAVA
 	\todo refactoring of utils and ~res:/ ~doc:/ access for the project files
 	\todo add support for pack files
 */
+class FileSystemDelegate;
 class FileSystem : public Singleton<FileSystem>
 {
 public:
@@ -84,7 +85,7 @@ public:
 		\brief Function to retrieve current working directory
 		\returns current working directory
 	 */
-    virtual const FilePath& GetCurrentWorkingDirectory();
+    virtual FilePath GetCurrentWorkingDirectory();
 
     /**
 		\brief Function to retrieve directory, which contain executable binary file
@@ -134,7 +135,7 @@ public:
      */
     virtual const FilePath GetPublicDocumentsPath();
 
-#if defined(__DAVAENGINE_APPLE__)
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
     /**
         \brief Function to retrieve user’s home path
         \returns user’s home path
@@ -278,9 +279,14 @@ public:
     bool GetFileSize(const FilePath& path, uint64& size);
 
     /**
-     \brief Function check if specified path exists on file system
+     \brief Function check if specified path exists on file system (on Android also check in assets dir)
      */
     bool Exists(const FilePath& filePath) const;
+
+    /**
+    * \brief Search for file in android APK in assets folder
+    */
+    bool ExistsInAndroidAssets(const FilePath& path) const;
 
     /**
     \brief Copies one folder into another recursively
@@ -291,22 +297,29 @@ public:
 
     FilePath GetTempDirectoryPath() const;
 
+    void SetFilenamesTag(const String& newTag);
+    const String& GetFilenamesTag() const;
+
+    void SetDelegate(FileSystemDelegate* delegate);
+    FileSystemDelegate* GetDelegate() const;
+
 private:
     bool HasLineEnding(File* f);
 
     virtual eCreateDirectoryResult CreateExactDirectory(const FilePath& filePath);
 
-    FilePath currentWorkingDirectory;
-    FilePath currentDocDirectory;
+    FilePath currentDocDirectory; // TODO how it influence on multithreading with FS?
 
     struct ResourceArchiveItem
     {
         ResourceArchiveItem() = default;
         ResourceArchiveItem(const ResourceArchiveItem&) = delete;
         ResourceArchiveItem(ResourceArchiveItem&& other)
-            : archive(std::move(other.archive))
-            , attachPath(std::move(other.attachPath))
-            , archiveFilePath(std::move(other.archiveFilePath))
+        : archive(std::move(other.archive))
+          ,
+          attachPath(std::move(other.attachPath))
+          ,
+          archiveFilePath(std::move(other.archiveFilePath))
         {
         }
 
@@ -319,6 +332,12 @@ private:
     UnorderedMap<String, ResourceArchiveItem> resArchiveMap;
     Map<String, void*> lockedFileHandles;
 
+    String filenamesTag;
+
+    FileSystemDelegate* fsDelegate = nullptr;
+
     friend class File;
+    friend class FilePath;
+    Vector<FilePath> resourceFolders;
 };
 }

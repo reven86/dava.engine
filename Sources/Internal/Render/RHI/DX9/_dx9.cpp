@@ -17,10 +17,11 @@ IDirect3DDevice9* _D3D9_Device = nullptr;
 unsigned _D3D9_TargetCount = 1;
 IDirect3DSurface9* _D3D9_BackBuf = nullptr;
 IDirect3DSurface9* _D3D9_DepthBuf = nullptr;
-UINT _D3D9_Adapter = D3DADAPTER_DEFAULT;
 
 InitParam _DX9_InitParam;
 D3DPRESENT_PARAMETERS _DX9_PresentParam;
+RECT _DX9_PresentRect;
+PRECT _DX9_PresentRectPtr = nullptr;
 DAVA::Mutex _DX9_ResetParamsMutex;
 
 const char* D3D9ErrorText(HRESULT hr)
@@ -196,6 +197,8 @@ D3DFORMAT DX9_TextureFormat(TextureFormat format)
         return D3DFMT_A16B16G16R16F;
     case TEXTURE_FORMAT_RGBA32F:
         return D3DFMT_A32B32G32R32F;
+    default:
+        break;
     }
 
     return D3DFMT_UNKNOWN;

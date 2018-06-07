@@ -11,14 +11,6 @@
 
 #include "Utils/StringFormat.h"
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-#include "libpvr/PVRTError.h"
-#include "libpvr/PVRTDecompress.h"
-#include "libpvr/PVRTMap.h"
-#include "libpvr/PVRTextureHeader.h"
-#include "libpvr/PVRTexture.h"
-#endif //#if defined (__DAVAENGINE_MACOS__) || defined (__DAVAENGINE_WIN32__)
-
 namespace DAVA
 {
 PVRFile::~PVRFile()
@@ -561,37 +553,6 @@ bool LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::Loadi
     }
 
     return true;
-}
-
-bool DecodeToRGBA8888(const Image* encodedImage, Image* decodedImage)
-{
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-    decodedImage->mipmapLevel = encodedImage->mipmapLevel;
-    decodedImage->cubeFaceID = encodedImage->cubeFaceID;
-
-    uint32 retCode = 0;
-    if (encodedImage->format == PixelFormat::FORMAT_PVR2)
-    {
-        retCode = PVRTDecompressPVRTC(encodedImage->data, 1, encodedImage->width, encodedImage->height, decodedImage->data);
-    }
-    else if (encodedImage->format == PixelFormat::FORMAT_PVR4)
-    {
-        retCode = PVRTDecompressPVRTC(encodedImage->data, 0, encodedImage->width, encodedImage->height, decodedImage->data);
-    }
-    else if (encodedImage->format == PixelFormat::FORMAT_ETC1)
-    {
-        retCode = PVRTDecompressETC(encodedImage->data, encodedImage->width, encodedImage->height, decodedImage->data, 0);
-    }
-    else
-    {
-        Logger::Error("Can't decode PVR: source Image has unknown format %s", GlobalEnumMap<PixelFormat>::Instance()->ToString(encodedImage->format));
-        return false;
-    }
-
-    return (retCode == encodedImage->dataSize);
-#else //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
-    return false;
-#endif //#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 }
 
 bool WriteFile(const FilePath& pathname, const PVRFile& pvrFile)

@@ -17,8 +17,6 @@ protected:
 public:
     WindComponent();
 
-    IMPLEMENT_COMPONENT_TYPE(WIND_COMPONENT);
-
     Component* Clone(Entity* toEntity) override;
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
@@ -37,13 +35,6 @@ protected:
     AABBox3 influenceBbox;
     float32 windForce;
     float32 windSpeed;
-
-public:
-    INTROSPECTION_EXTEND(WindComponent, Component,
-                         PROPERTY("influenceBbox", "influenceBbox", GetInfluenceBBox, SetInfluenceBBox, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("windForce", "windForce", GetWindForce, SetWindForce, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("windSpeed", "windSpeed", GetWindSpeed, SetWindSpeed, I_SAVE | I_VIEW | I_EDIT)
-                         );
 
     DAVA_VIRTUAL_REFLECTION(WindComponent, Component);
 };

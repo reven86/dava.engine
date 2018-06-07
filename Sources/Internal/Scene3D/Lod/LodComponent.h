@@ -18,8 +18,6 @@ Hold distance data for LodSystem.
 class LodComponent : public Component
 {
 public:
-    IMPLEMENT_COMPONENT_TYPE(LOD_COMPONENT);
-
     /**
     Set distance for the specified `layerNum`. The behavior is undefined unless `layerNum` is in [0, MAX_LOD_LAYERS] range.
     */
@@ -56,12 +54,6 @@ private:
     Array<float32, MAX_LOD_LAYERS> distances = Array<float32, MAX_LOD_LAYERS>{ { 300.f, 600.f, 900.f, 1000.f } }; //cause list initialization for members not implemented in MSVC https://msdn.microsoft.com/en-us/library/dn793970.aspx
 
     friend class LodSystem;
-
-public:
-    INTROSPECTION_EXTEND(LodComponent, Component,
-                         MEMBER(currentLod, "Current Lod", I_VIEW)
-                         )
-
     DAVA_VIRTUAL_REFLECTION(LodComponent, Component);
 };
 

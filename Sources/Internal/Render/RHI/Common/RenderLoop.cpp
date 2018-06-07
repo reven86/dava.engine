@@ -36,6 +36,9 @@ static std::atomic<bool> resetPending(false);
 static std::atomic<CommonImpl::ImmediateCommand*> pendingImmediateCmd(nullptr);
 static DAVA::Mutex pendingImmediateCmdSync;
 
+static uint32 framesPassedAfterResume = 0;
+static bool suspendSkipFrame = false;
+
 struct ScheduledDeleteResource
 {
     Handle handle;
@@ -119,6 +122,7 @@ static void RenderFunc()
         if (renderThreadSuspended.load())
         {
             DispatchPlatform::FinishRendering();
+            framesPassedAfterResume = 0;
             renderThreadSuspendSyncReached = true;
             renderThreadSuspendSync.Wait();
             DispatchPlatform::ValidateSurface();
@@ -130,7 +134,8 @@ static void RenderFunc()
             while ((!frameReady) && (!resetPending))
             {
                 //exit or suspend should leave frame loop
-                if (renderThreadExitPending || renderThreadSuspended.load(std::memory_order_relaxed))
+                bool allowSuspend = (!suspendSkipFrame) || (framesPassedAfterResume > 0);
+                if (renderThreadExitPending || (renderThreadSuspended.load(std::memory_order_relaxed) && allowSuspend))
                     break;
 
                 CheckImmediateCommand();
@@ -164,6 +169,7 @@ static void RenderFunc()
 
             ProcessScheduledDelete();
         }
+        framesPassedAfterResume++;
     }
 
     Logger::Info("[RHI] render-thread finished");
@@ -192,6 +198,12 @@ void InitializeRenderLoop(uint32 frameCount, DAVA::Thread::eThreadPriority prior
     }
 }
 
+void SuspendRenderAfterFrame()
+{
+    suspendSkipFrame = true;
+    SuspendRender();
+}
+
 void SuspendRender()
 {
     DVASSERT(!renderThreadSuspended);
@@ -209,13 +221,15 @@ void SuspendRender()
         DispatchPlatform::FinishRendering();
     }
 
-    Logger::Error("Render  Suspended");
+    Logger::Info("Render Suspended");
+    suspendSkipFrame = false;
 }
 
 void ResumeRender()
 {
     DVASSERT(renderThreadSuspended);
-    Logger::Error("Render Resumed");
+
+    Logger::Info("Render Resumed");
     renderThreadSuspended = false;
     if (renderThreadFrameCount)
     {

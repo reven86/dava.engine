@@ -66,8 +66,17 @@ const FastName NMaterialName::DEBUG_DRAW_PARTICLES_NO_DEPTH = FastName("~res:/Ma
 
 const FastName NMaterialName::WATER_ALL_QUALITIES = FastName("~res:/Materials/WaterAllQualities.material");
 
+const FastName NMaterialName::WATER_PER_PIXEL_REAL_REFLECTIONS = FastName("~res:/Materials/WaterPerPixelRealReflections.material");
+const FastName NMaterialName::WATER_PER_PIXEL_CUBEMAP_ALPHABLEND = FastName("~res:/Materials/WaterPerPixelCubemapAlphablend.material");
+const FastName NMaterialName::WATER_PER_VERTEX_CUBEMAP_DECAL = FastName("~res:/Materials/WaterPerVertexCubemapDecal.material");
+
+const FastName NMaterialName::NORMALIZED_BLINN_PHONG_PER_PIXEL_OPAQUE = FastName("~res:/Materials/NormalizedBlinnPhongPerPixel.Opaque.material");
+const FastName NMaterialName::NORMALIZED_BLINN_PHONG_PER_PIXEL_FAST_OPAQUE = FastName("~res:/Materials/NormalizedBlinnPhongPerPixelFast.Opaque.material");
+const FastName NMaterialName::NORMALIZED_BLINN_PHONG_PER_VERTEX_OPAQUE = FastName("~res:/Materials/NormalizedBlinnPhongPerVertex.Opaque.material");
+
 const FastName NMaterialTextureName::TEXTURE_ALBEDO("albedo");
 const FastName NMaterialTextureName::TEXTURE_NORMAL("normalmap");
+const FastName NMaterialTextureName::TEXTURE_SPECULAR("specularmap");
 const FastName NMaterialTextureName::TEXTURE_DETAIL("detail");
 const FastName NMaterialTextureName::TEXTURE_LIGHTMAP("lightmap");
 const FastName NMaterialTextureName::TEXTURE_DECAL("decal");
@@ -76,6 +85,9 @@ const FastName NMaterialTextureName::TEXTURE_HEIGHTMAP("heightmap");
 const FastName NMaterialTextureName::TEXTURE_TANGENTSPACE("tangentSpace");
 const FastName NMaterialTextureName::TEXTURE_DECALMASK("decalmask");
 const FastName NMaterialTextureName::TEXTURE_DECALTEXTURE("decaltexture");
+const FastName NMaterialTextureName::TEXTURE_FLOW("flowmap");
+const FastName NMaterialTextureName::TEXTURE_NOISE("noiseTex");
+const FastName NMaterialTextureName::TEXTURE_ALPHA_REMAP("alphaRemapTex");
 
 const FastName NMaterialTextureName::TEXTURE_DYNAMIC_REFLECTION("dynamicReflection");
 const FastName NMaterialTextureName::TEXTURE_DYNAMIC_REFRACTION("dynamicRefraction");
@@ -83,7 +95,7 @@ const FastName NMaterialTextureName::TEXTURE_DYNAMIC_REFRACTION("dynamicRefracti
 const FastName NMaterialTextureName::TEXTURE_PARTICLES_HEATMAP("heatMap");
 const FastName NMaterialTextureName::TEXTURE_PARTICLES_RT("particlesRT");
 
-//params
+// params
 
 const FastName NMaterialParamName::PARAM_LIGHT_POSITION0("lightPosition0");
 const FastName NMaterialParamName::PARAM_PROP_AMBIENT_COLOR("ambientColor");
@@ -123,6 +135,14 @@ const FastName NMaterialParamName::WATER_CLEAR_COLOR("waterColor");
 const FastName NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM("shadowColor");
 const FastName NMaterialParamName::DEPRECATED_LANDSCAPE_TEXTURE_0_TILING("texture0Tiling");
 const FastName NMaterialParamName::PARAM_TREE_LEAF_COLOR_MUL("treeLeafColorMul");
+const FastName NMaterialParamName::FORCED_SHADOW_DIRECTION_PARAM("forcedShadowDirection");
+const FastName NMaterialParamName::PARAM_SPECULAR_SCALE("inSpecularity");
+
+// Particles params.
+const FastName NMaterialParamName::PARAM_PARTICLES_GRADIENT_COLOR_FOR_WHITE("gradientColorForWhite");
+const FastName NMaterialParamName::PARAM_PARTICLES_GRADIENT_COLOR_FOR_BLACK("gradientColorForBlack");
+const FastName NMaterialParamName::PARAM_PARTICLES_GRADIENT_COLOR_FOR_MIDDLE("gradientColorForMiddle");
+const FastName NMaterialParamName::PARAM_PARTICLES_GRADIENT_MIDDLE_POINT("gradientMiddlePoint");
 
 //flags
 const FastName NMaterialFlagName::FLAG_BLENDING = FastName("BLENDING");
@@ -141,6 +161,8 @@ const FastName NMaterialFlagName::FLAG_FAST_NORMALIZATION = FastName("FAST_NORMA
 const FastName NMaterialFlagName::FLAG_TILED_DECAL_MASK = FastName("TILED_DECAL_MASK");
 const FastName NMaterialFlagName::FLAG_TILED_DECAL_ROTATION = FastName("TILE_DECAL_ROTATION");
 const FastName NMaterialFlagName::FLAG_FLATCOLOR = FastName("FLATCOLOR");
+const FastName NMaterialFlagName::FLAG_FLATALBEDO = FastName("FLATALBEDO");
+
 const FastName NMaterialFlagName::FLAG_DISTANCEATTENUATION = FastName("DISTANCE_ATTENUATION");
 const FastName NMaterialFlagName::FLAG_SPECULAR = FastName("SPECULAR");
 const FastName NMaterialFlagName::FLAG_SEPARATE_NORMALMAPS = FastName("SEPARATE_NORMALMAPS");
@@ -154,9 +176,17 @@ const FastName NMaterialFlagName::FLAG_DEBUG_UNITY_Z_NORMAL = FastName("DEBUG_UN
 const FastName NMaterialFlagName::FLAG_DEBUG_Z_NORMAL_SCALE = FastName("DEBUG_Z_NORMAL_SCALE");
 const FastName NMaterialFlagName::FLAG_DEBUG_NORMAL_ROTATION = FastName("DEBUG_NORMAL_ROTATION");
 
-const FastName NMaterialFlagName::FLAG_SKINNING = FastName("SKINNING");
+const FastName NMaterialFlagName::FLAG_HARD_SKINNING = FastName("HARD_SKINNING");
+const FastName NMaterialFlagName::FLAG_SOFT_SKINNING = FastName("SOFT_SKINNING");
 
 const FastName NMaterialFlagName::FLAG_FLOWMAP_SKY = FastName("FLOWMAP_SKY");
+const FastName NMaterialFlagName::FLAG_PARTICLES_FLOWMAP = FastName("PARTICLES_FLOWMAP");
+const FastName NMaterialFlagName::FLAG_PARTICLES_FLOWMAP_ANIMATION = FastName("PARTICLES_FLOWMAP_ANIMATION");
+const FastName NMaterialFlagName::FLAG_PARTICLES_PERSPECTIVE_MAPPING = FastName("PARTICLES_PERSPECTIVE_MAPPING");
+const FastName NMaterialFlagName::FLAG_PARTICLES_THREE_POINT_GRADIENT = FastName("PARTICLES_THREE_POINT_GRADIENT");
+const FastName NMaterialFlagName::FLAG_PARTICLES_NOISE = FastName("PARTICLES_NOISE");
+const FastName NMaterialFlagName::FLAG_PARTICLES_FRESNEL_TO_ALPHA = FastName("PARTICLES_FRESNEL_TO_ALPHA");
+const FastName NMaterialFlagName::FLAG_PARTICLES_ALPHA_REMAP = FastName("PARTICLES_ALPHA_REMAP");
 
 const FastName NMaterialFlagName::FLAG_LIGHTMAPONLY = FastName("MATERIAL_VIEW_LIGHTMAP_ONLY");
 const FastName NMaterialFlagName::FLAG_TEXTUREONLY = FastName("MATERIAL_VIEW_TEXTURE_ONLY");
@@ -185,7 +215,11 @@ const FastName NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER = FastName("
 
 const FastName NMaterialFlagName::FLAG_TEST_OCCLUSION = FastName("TEST_OCCLUSION");
 
+const FastName NMaterialFlagName::FLAG_FORCED_SHADOW_DIRECTION = FastName("FORCED_SHADOW_DIRECTION");
+
 const FastName NMaterialFlagName::FLAG_PARTICLES_DEBUG_SHOW_HEATMAP = FastName("HEATMAP");
+const FastName NMaterialFlagName::FLAG_GEO_DECAL = FastName("GEO_DECAL");
+const FastName NMaterialFlagName::FLAG_GEO_DECAL_SPECULAR = FastName("GEO_DECAL_SPECULAR");
 
 //quality
 const FastName NMaterialQualityName::QUALITY_FLAG_NAME = FastName("Quality");

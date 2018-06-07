@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_LOCK_GUARD_H__
-#define __DAVAENGINE_LOCK_GUARD_H__
+#pragma once
 
 namespace DAVA
 {
@@ -43,5 +42,3 @@ LockGuard<MutexT>::~LockGuard()
 }
 
 } //  namespace DAVA
-
-#endif //  __DAVAENGINE_LOCK_GUARD_H__

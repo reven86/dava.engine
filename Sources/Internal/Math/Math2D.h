@@ -12,11 +12,8 @@
 // definition of basic 2D types
 namespace DAVA
 {
-
-#define FLOAT_EQUAL(f1, f2) (std::abs(f1 - f2) < DAVA::EPSILON)
-#define FLOAT_EQUAL_EPS(f1, f2, EPS) (std::abs(f1 - f2) < EPS)
-
 inline float32 FloatClamp(float32 min, float32 max, float32 val);
+inline float32 Lerp(float32 v0, float32 v1, float32 t);
 
 /*
     Helper classes designed mostly for internal framework usage
@@ -44,6 +41,11 @@ inline float32 FloatClamp(float32 min, float32 max, float32 val)
         val = min;
     return val;
 };
+
+inline float32 Lerp(float32 v0, float32 v1, float32 t)
+{
+    return v0 * (1.0f - t) + v1 * t;
+}
 
 /**
     \brief Fast function to compute index of bit that is set in a value. Only one bit should be set to make it work correctly.
@@ -80,4 +82,23 @@ inline float32 FloatClamp(float32 min, float32 max, float32 val)
 extern const int MultiplyDeBruijnBitPosition2[32];
 #define FastLog2(value) MultiplyDeBruijnBitPosition2[(uint32)(value * 0x077CB531U) >> 27]
 #endif
+
+template <pointer_size I>
+struct StaticLog2
+{
+    static_assert(I > 0, "Invalid argument provided to StaticLog2");
+    enum : pointer_size
+    {
+        value = 1 + StaticLog2<I / 2>::value
+    };
+};
+
+template <>
+struct StaticLog2<1>
+{
+    enum : pointer_size
+    {
+        value = 0
+    };
+};
 };

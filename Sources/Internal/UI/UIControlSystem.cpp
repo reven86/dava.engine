@@ -1,68 +1,115 @@
 #include "UI/UIControlSystem.h"
-#include "UI/UIScreen.h"
-#include "UI/Styles/UIStyleSheetSystem.h"
-#include "Logger/Logger.h"
 #include "Debug/DVAssert.h"
-#include "Time/SystemTimer.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
+#include "Debug/ProfilerOverlay.h"
 #include "Debug/Replay.h"
-#include "UI/UIControlSystem.h"
+#include "DeviceManager/DeviceManager.h"
+#include "Engine/Engine.h"
+#include "Input/InputEvent.h"
+#include "Input/InputSystem.h"
+#include "Input/Keyboard.h"
+#include "Input/Mouse.h"
+#include "Input/TouchScreen.h"
+#include "Logger/Logger.h"
+#include "Platform/DeviceInfo.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "UI/UISystem.h"
-#include "UI/Layouts/UILayoutSystem.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/2D/TextBlock.h"
+#include "Render/RenderHelper.h"
+#include "Render/Renderer.h"
+#include "Time/SystemTimer.h"
+#include "UI/DataBinding/UIDataBindingSystem.h"
+#include "UI/DataBinding/UIDataBindingPostProcessingSystem.h"
+#include "UI/Flow/Private/UIFlowTransitionAnimationSystem.h"
+#include "UI/Flow/UIFlowControllerSystem.h"
+#include "UI/Flow/UIFlowStateSystem.h"
+#include "UI/Flow/UIFlowViewSystem.h"
 #include "UI/Focus/UIFocusSystem.h"
 #include "UI/Input/UIInputSystem.h"
+#include "UI/Layouts/UILayoutSystem.h"
+#include "UI/Render/UIRenderSystem.h"
+#include "UI/RichContent/UIRichContentSystem.h"
+#include "UI/ScreenSwitchListener.h"
 #include "UI/Scroll/UIScrollBarLinkSystem.h"
 #include "UI/Scroll/UIScrollSystem.h"
 #include "UI/Sound/UISoundSystem.h"
-#include "UI/Render/UIRenderSystem.h"
-#include "Render/Renderer.h"
-#include "Render/RenderHelper.h"
-#include "UI/UIScreenTransition.h"
+#include "UI/Styles/UIStyleSheetSystem.h"
+#include "UI/Text/UITextSystem.h"
+#include "UI/Script/UIScriptSystem.h"
+#include "UI/Events/UIEventsSystem.h"
+#include "UI/UIControlSystem.h"
 #include "UI/UIEvent.h"
 #include "UI/UIPopup.h"
-#include "Debug/ProfilerCPU.h"
-#include "Debug/ProfilerMarkerNames.h"
-#include "Render/2D/TextBlock.h"
-#include "Platform/DPIHelper.h"
-#include "Platform/DeviceInfo.h"
-#include "Input/InputSystem.h"
+#include "UI/UIScreen.h"
+#include "UI/UIScreenTransition.h"
+#include "UI/UISystem.h"
 #include "UI/Update/UIUpdateSystem.h"
-#include "Debug/ProfilerOverlay.h"
-#include "Engine/Engine.h"
-#include "Input/MouseDevice.h"
-#include "UI/RichContent/UIRichContentSystem.h"
+#include "UI/Joypad/UIJoypadSystem.h"
+#include "UI/Scene3D/UIEntityMarkerSystem.h"
 
 namespace DAVA
 {
 UIControlSystem::UIControlSystem()
 {
+    vcs = new VirtualCoordinatesSystem();
+    vcs->EnableReloadResourceOnResize(true);
+    vcs->virtualSizeChanged.Connect(this, [](const Size2i&) { TextBlock::ScreenResolutionChanged(); });
+    vcs->physicalSizeChanged.Connect(this, [](const Size2i&) { TextBlock::ScreenResolutionChanged(); });
+
     AddSystem(std::make_unique<UIInputSystem>());
+    AddSystem(std::make_unique<UIEventsSystem>());
+    AddSystem(std::make_unique<UIFlowStateSystem>());
+    AddSystem(std::make_unique<UIFlowViewSystem>());
+    AddSystem(std::make_unique<UIFlowControllerSystem>());
+    AddSystem(std::make_unique<UIScriptSystem>());
     AddSystem(std::make_unique<UIUpdateSystem>());
+    AddSystem(std::make_unique<UIDataBindingSystem>());
     AddSystem(std::make_unique<UIRichContentSystem>());
+    AddSystem(std::make_unique<UIEntityMarkerSystem>());
     AddSystem(std::make_unique<UIStyleSheetSystem>());
+    AddSystem(std::make_unique<UITextSystem>()); // Must be before UILayoutSystem
     AddSystem(std::make_unique<UILayoutSystem>());
     AddSystem(std::make_unique<UIScrollSystem>());
     AddSystem(std::make_unique<UIScrollBarLinkSystem>());
     AddSystem(std::make_unique<UISoundSystem>());
+    AddSystem(std::make_unique<UIJoypadSystem>());
     AddSystem(std::make_unique<UIRenderSystem>(RenderSystem2D::Instance()));
+    AddSystem(std::make_unique<UIDataBindingPostProcessingSystem>(GetSystem<UIDataBindingSystem>()));
+
+    AddSystem(std::make_unique<UIFlowTransitionAnimationSystem>(GetSystem<UIFlowStateSystem>(), GetSystem<UIRenderSystem>()), GetSystem<UIFlowViewSystem>());
 
     inputSystem = GetSystem<UIInputSystem>();
     styleSheetSystem = GetSystem<UIStyleSheetSystem>();
+    textSystem = GetSystem<UITextSystem>();
     layoutSystem = GetSystem<UILayoutSystem>();
     soundSystem = GetSystem<UISoundSystem>();
     updateSystem = GetSystem<UIUpdateSystem>();
     renderSystem = GetSystem<UIRenderSystem>();
-    
+    eventsSystem = GetSystem<UIEventsSystem>();
 
-#if defined(__DAVAENGINE_COREV2__)
-    vcs = new VirtualCoordinatesSystem();
-    vcs->EnableReloadResourceOnResize(true);
-#else
-    vcs = VirtualCoordinatesSystem::Instance();
-#endif
-    vcs->virtualSizeChanged.Connect(this, [](const Size2i&) { TextBlock::ScreenResolutionChanged(); });
-    vcs->physicalSizeChanged.Connect(this, [](const Size2i&) { TextBlock::ScreenResolutionChanged(); });
+    eventsSystem->RegisterCommands();
 
+    SetDoubleTapSettings(0.5f, 0.25f);
+}
+
+UIControlSystem::~UIControlSystem()
+{
+    soundSystem = nullptr;
+    inputSystem = nullptr;
+    styleSheetSystem = nullptr;
+    textSystem = nullptr;
+    layoutSystem = nullptr;
+    updateSystem = nullptr;
+    renderSystem = nullptr;
+    eventsSystem = nullptr;
+
+    systems.clear();
+    SafeDelete(vcs);
+}
+
+void UIControlSystem::Init()
+{
     popupContainer.Set(new UIControl(Rect(0, 0, 1, 1)));
     popupContainer->SetName("UIControlSystem_popupContainer");
     popupContainer->SetInputEnabled(false);
@@ -71,75 +118,39 @@ UIControlSystem::UIControlSystem()
     styleSheetSystem->SetPopupContainer(popupContainer);
     layoutSystem->SetPopupContainer(popupContainer);
     renderSystem->SetPopupContainer(popupContainer);
-
-#if !defined(__DAVAENGINE_COREV2__)
-    // calculate default radius
-    if (DeviceInfo::IsHIDConnected(DeviceInfo::eHIDType::HID_TOUCH_TYPE))
-    {
-        // quarter of an inch
-        defaultDoubleClickRadiusSquared = DPIHelper::GetScreenDPI() * 0.25f;
-        if (DeviceInfo::GetScreenInfo().scale != 0.f)
-        {
-            // to look the same on all devices
-            defaultDoubleClickRadiusSquared = defaultDoubleClickRadiusSquared / DeviceInfo::GetScreenInfo().scale;
-        }
-        defaultDoubleClickRadiusSquared *= defaultDoubleClickRadiusSquared;
-    }
-    else
-    {
-        defaultDoubleClickRadiusSquared = 4.f; // default, if touch didn't detect, 4 - default pixels in windows desktop
-    }
-    doubleClickTime = defaultDoubleClickTime;
-    doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
-    doubleClickPhysSquare = defaultDoubleClickRadiusSquared;
-#else
-    SetDoubleTapSettings(0.5f, 0.25f);
-#endif
 }
 
-UIControlSystem::~UIControlSystem()
+void UIControlSystem::Shutdown()
 {
     inputSystem->SetPopupContainer(nullptr);
     inputSystem->SetCurrentScreen(nullptr);
     styleSheetSystem->SetPopupContainer(RefPtr<UIControl>());
     styleSheetSystem->SetCurrentScreen(RefPtr<UIScreen>());
-    styleSheetSystem->SetCurrentScreenTransition(RefPtr<UIScreenTransition>());
     layoutSystem->SetPopupContainer(RefPtr<UIControl>());
     layoutSystem->SetCurrentScreen(RefPtr<UIScreen>());
-    layoutSystem->SetCurrentScreenTransition(RefPtr<UIScreenTransition>());
     renderSystem->SetPopupContainer(RefPtr<UIControl>());
     renderSystem->SetCurrentScreen(RefPtr<UIScreen>());
-    renderSystem->SetCurrentScreenTransition(RefPtr<UIScreenTransition>());
 
     popupContainer->InvokeInactive();
+    popupContainer->SetScene(nullptr);
     popupContainer = nullptr;
 
     if (currentScreen.Valid())
     {
         currentScreen->InvokeInactive();
+        currentScreen->SetScene(nullptr);
         currentScreen = nullptr;
     }
 
     lastClickData.touchLocker = nullptr;
-
-    soundSystem = nullptr;
-    inputSystem = nullptr;
-    styleSheetSystem = nullptr;
-    layoutSystem = nullptr;
-    updateSystem = nullptr;
-    renderSystem = nullptr;
-
-    systems.clear();
-    SafeDelete(vcs);
 }
 
-void UIControlSystem::SetScreen(UIScreen* _nextScreen, UIScreenTransition* _transition)
+void UIControlSystem::SetScreen(UIScreen* _nextScreen)
 {
     if (_nextScreen == currentScreen)
     {
         if (nextScreen != nullptr)
         {
-            nextScreenTransition = nullptr;
             nextScreen = nullptr;
         }
         return;
@@ -150,7 +161,6 @@ void UIControlSystem::SetScreen(UIScreen* _nextScreen, UIScreenTransition* _tran
         Logger::Warning("2 screen switches during one frame.");
     }
 
-    nextScreenTransition = _transition;
     nextScreen = _nextScreen;
 
     if (nextScreen == nullptr)
@@ -191,8 +201,8 @@ void UIControlSystem::RemovePopup(UIPopup* popup)
         return;
     }
 
-    const List<UIControl*>& popups = popupContainer->GetChildren();
-    if (popups.end() == std::find(popups.begin(), popups.end(), DynamicTypeCheck<UIPopup*>(popup)))
+    const auto& popups = popupContainer->GetChildren();
+    if (popups.end() == std::find(popups.begin(), popups.end(), RefPtr<UIControl>::ConstructWithRetain(popup)))
     {
         Logger::Error("[UIControlSystem::RemovePopup] attempt to remove uknown popup.");
         DVASSERT(false);
@@ -205,21 +215,16 @@ void UIControlSystem::RemovePopup(UIPopup* popup)
 void UIControlSystem::RemoveAllPopups()
 {
     popupsToRemove.clear();
-    const List<UIControl*>& totalChilds = popupContainer->GetChildren();
-    for (List<UIControl*>::const_iterator it = totalChilds.begin(); it != totalChilds.end(); it++)
+    const auto& totalChilds = popupContainer->GetChildren();
+    for (auto it = totalChilds.begin(); it != totalChilds.end(); it++)
     {
-        popupsToRemove.insert(DynamicTypeCheck<UIPopup*>(*it));
+        popupsToRemove.insert(DynamicTypeCheck<UIPopup*>(it->Get()));
     }
 }
 
 UIControl* UIControlSystem::GetPopupContainer() const
 {
     return popupContainer.Get();
-}
-
-UIScreenTransition* UIControlSystem::GetScreenTransition() const
-{
-    return currentScreenTransition.Get();
 }
 
 void UIControlSystem::Reset()
@@ -264,12 +269,9 @@ void UIControlSystem::ProcessScreenLogic()
     if (screenLockCount == 0 && (nextScreen.Valid() || removeCurrentScreen))
     {
         RefPtr<UIScreen> nextScreenProcessed;
-        RefPtr<UIScreenTransition> nextScreenTransitionProcessed;
 
         nextScreenProcessed = nextScreen;
-        nextScreenTransitionProcessed = nextScreenTransition;
         nextScreen = nullptr; // functions called by this method can request another screen switch (for example, LoadResources)
-        nextScreenTransition = nullptr;
 
         LockInput();
 
@@ -277,20 +279,11 @@ void UIControlSystem::ProcessScreenLogic()
 
         NotifyListenersWillSwitch(nextScreenProcessed.Get());
 
-        if (nextScreenTransitionProcessed)
-        {
-            if (nextScreenTransitionProcessed->GetRect() != fullscreenRect)
-            {
-                nextScreenTransitionProcessed->SystemScreenSizeChanged(fullscreenRect);
-            }
-
-            nextScreenTransitionProcessed->StartTransition();
-            nextScreenTransitionProcessed->SetSourceScreen(currentScreen.Get());
-        }
         // if we have current screen we call events, unload resources for it group
         if (currentScreen)
         {
             currentScreen->InvokeInactive();
+            currentScreen->SetScene(nullptr);
 
             RefPtr<UIScreen> prevScreen = currentScreen;
             currentScreen = nullptr;
@@ -318,6 +311,7 @@ void UIControlSystem::ProcessScreenLogic()
 
         if (currentScreen)
         {
+            currentScreen->SetScene(this);
             currentScreen->InvokeActive(UIControl::eViewState::VISIBLE);
         }
         inputSystem->SetCurrentScreen(currentScreen.Get());
@@ -327,43 +321,10 @@ void UIControlSystem::ProcessScreenLogic()
 
         NotifyListenersDidSwitch(currentScreen.Get());
 
-        if (nextScreenTransitionProcessed)
-        {
-            nextScreenTransitionProcessed->SetDestinationScreen(currentScreen.Get());
-
-            LockSwitch();
-            LockInput();
-
-            currentScreenTransition = nextScreenTransitionProcessed;
-            currentScreenTransition->InvokeActive(UIControl::eViewState::VISIBLE);
-            styleSheetSystem->SetCurrentScreenTransition(currentScreenTransition);
-            layoutSystem->SetCurrentScreenTransition(currentScreenTransition);
-            renderSystem->SetCurrentScreenTransition(currentScreenTransition);
-        }
-
         UnlockInput();
 
         frameSkip = FRAME_SKIP;
         removeCurrentScreen = false;
-    }
-    else
-    if (currentScreenTransition)
-    {
-        if (currentScreenTransition->IsComplete())
-        {
-            currentScreenTransition->InvokeInactive();
-
-            RefPtr<UIScreenTransition> prevScreenTransitionProcessed = currentScreenTransition;
-            currentScreenTransition = nullptr;
-            styleSheetSystem->SetCurrentScreenTransition(currentScreenTransition);
-            layoutSystem->SetCurrentScreenTransition(currentScreenTransition);
-            renderSystem->SetCurrentScreenTransition(currentScreenTransition);
-
-            UnlockInput();
-            UnlockSwitch();
-
-            prevScreenTransitionProcessed->EndTransition();
-        }
     }
 
     /*
@@ -385,17 +346,26 @@ void UIControlSystem::ProcessScreenLogic()
 
 void UIControlSystem::Update()
 {
+    float32 timeElapsed = SystemTimer::GetFrameDelta();
+    UpdateWithCustomTime(timeElapsed);
+}
+
+void UIControlSystem::UpdateWithCustomTime(float32 timeElapsed)
+{
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_UPDATE);
 
     ProcessScreenLogic();
 
     if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
     {
-        float32 timeElapsed = SystemTimer::GetFrameDelta();
-
         for (auto& system : systems)
         {
             system->Process(timeElapsed);
+        }
+
+        for (auto& components : singleComponents)
+        {
+            components->ResetState();
         }
     }
 }
@@ -407,6 +377,7 @@ void UIControlSystem::Draw()
     resizePerFrame = 0;
 
     renderSystem->Render();
+    GetSystem<UIFlowTransitionAnimationSystem>()->Render();
 
     if (frameSkip > 0)
     {
@@ -419,9 +390,20 @@ void UIControlSystem::SwitchInputToControl(uint32 eventID, UIControl* targetCont
     return inputSystem->SwitchInputToControl(eventID, targetControl);
 }
 
+bool UIControlSystem::HandleInputEvent(const InputEvent& inputEvent)
+{
+    UIEvent uie = MakeUIEvent(inputEvent);
+    if (uie.phase != UIEvent::Phase::ERROR)
+    {
+        OnInput(&uie);
+        return true; // ????
+    }
+    return false;
+}
+
 void UIControlSystem::OnInput(UIEvent* newEvent)
 {
-    newEvent->point = UIControlSystem::Instance()->vcs->ConvertInputToVirtual(newEvent->physPoint);
+    newEvent->point = GetEngineContext()->uiControlSystem->vcs->ConvertInputToVirtual(newEvent->physPoint);
     newEvent->tapCount = CalculatedTapCount(newEvent);
 
     if (Replay::IsPlayback())
@@ -433,11 +415,6 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
     {
         return;
     }
-
-#if !defined(__DAVAENGINE_COREV2__)
-    if (InputSystem::Instance()->GetMouseDevice().SkipEvents(newEvent))
-        return;
-#endif // !defined(__DAVAENGINE_COREV2__)
 
     if (ProfilerOverlay::globalProfilerOverlay && ProfilerOverlay::globalProfilerOverlay->OnInput(newEvent))
         return;
@@ -529,15 +506,10 @@ void UIControlSystem::ScreenSizeChanged(const Rect& newFullscreenRect)
     resizePerFrame++;
     if (resizePerFrame >= 5)
     {
-        Logger::Error("Resizes per frame : %d", resizePerFrame);
+        Logger::Warning("Resizes per frame : %d", resizePerFrame);
     }
 
     fullscreenRect = newFullscreenRect;
-
-    if (currentScreenTransition.Valid())
-    {
-        currentScreenTransition->SystemScreenSizeChanged(fullscreenRect);
-    }
 
     if (currentScreen.Valid())
     {
@@ -570,6 +542,7 @@ UIControl* UIControlSystem::GetFocusedControl() const
 void UIControlSystem::ProcessControlEvent(int32 eventType, const UIEvent* uiEvent, UIControl* control)
 {
     soundSystem->ProcessControlEvent(eventType, uiEvent, control);
+    eventsSystem->ProcessControlEvent(eventType, uiEvent, control);
 }
 
 void UIControlSystem::ReplayEvents()
@@ -635,11 +608,9 @@ bool UIControlSystem::CheckTimeAndPosition(UIEvent* newEvent)
     if ((lastClickData.timestamp != 0.0) && ((newEvent->timestamp - lastClickData.timestamp) < doubleClickTime))
     {
         Vector2 point = lastClickData.physPoint - newEvent->physPoint;
-        
-#if defined(__DAVAENGINE_COREV2__)
+
         float32 dpi = GetPrimaryWindow()->GetDPI();
         float32 doubleClickPhysSquare = doubleClickInchSquare * (dpi * dpi);
-#endif
 
         if (point.SquareLength() <= doubleClickPhysSquare)
         {
@@ -712,7 +683,7 @@ void UIControlSystem::SetBiDiSupportEnabled(bool support)
 
 bool UIControlSystem::IsHostControl(const UIControl* control) const
 {
-    return (GetScreen() == control || GetPopupContainer() == control || GetScreenTransition() == control);
+    return (GetScreen() == control || GetPopupContainer() == control || GetFlowRoot() == control);
 }
 
 void UIControlSystem::RegisterControl(UIControl* control)
@@ -765,11 +736,12 @@ void UIControlSystem::UnregisterComponent(UIControl* control, UIComponent* compo
 
 void UIControlSystem::AddSystem(std::unique_ptr<UISystem> system, const UISystem* insertBeforeSystem)
 {
+    system->SetScene(this);
+    UISystem* weak = system.get();
     if (insertBeforeSystem)
     {
         auto insertIt = std::find_if(systems.begin(), systems.end(),
-                                     [insertBeforeSystem](const std::unique_ptr<UISystem>& systemPtr)
-                                     {
+                                     [insertBeforeSystem](const std::unique_ptr<UISystem>& systemPtr) {
                                          return systemPtr.get() == insertBeforeSystem;
                                      });
         DVASSERT(insertIt != systems.end());
@@ -779,24 +751,51 @@ void UIControlSystem::AddSystem(std::unique_ptr<UISystem> system, const UISystem
     {
         systems.push_back(std::move(system));
     }
+    weak->RegisterSystem();
 }
 
 std::unique_ptr<UISystem> UIControlSystem::RemoveSystem(const UISystem* system)
 {
     auto it = std::find_if(systems.begin(), systems.end(),
-                           [system](const std::unique_ptr<UISystem>& systemPtr)
-                           {
+                           [system](const std::unique_ptr<UISystem>& systemPtr) {
                                return systemPtr.get() == system;
                            });
 
     if (it != systems.end())
     {
+        (*it)->UnregisterSystem();
         std::unique_ptr<UISystem> systemPtr(it->release());
         systems.erase(it);
+        systemPtr->SetScene(nullptr);
         return systemPtr;
     }
 
     return nullptr;
+}
+
+void UIControlSystem::AddSingleComponent(std::unique_ptr<UISingleComponent> single)
+{
+    singleComponents.push_back(std::move(single));
+}
+
+std::unique_ptr<UISingleComponent> UIControlSystem::RemoveSingleComponent(const UISingleComponent* singleComponent)
+{
+    auto it = std::find_if(singleComponents.begin(), singleComponents.end(),
+                           [singleComponent](const std::unique_ptr<UISingleComponent>& ptr) {
+                               return ptr.get() == singleComponent;
+                           });
+    if (it != singleComponents.end())
+    {
+        std::unique_ptr<UISingleComponent> ptr(it->release());
+        singleComponents.erase(it);
+        return ptr;
+    }
+    return nullptr;
+}
+
+UITextSystem* UIControlSystem::GetTextSystem() const
+{
+    return textSystem;
 }
 
 UILayoutSystem* UIControlSystem::GetLayoutSystem() const
@@ -834,23 +833,207 @@ UIUpdateSystem* UIControlSystem::GetUpdateSystem() const
     return updateSystem;
 }
 
+UIEventsSystem* UIControlSystem::GetEventsSystem() const
+{
+    return eventsSystem;
+}
+
 void UIControlSystem::SetDoubleTapSettings(float32 time, float32 inch)
 {
     DVASSERT((time > 0.0f) && (inch > 0.0f));
     doubleClickTime = time;
-
-#if !defined(__DAVAENGINE_COREV2__)
-    // calculate pixels from inch
-    float32 dpi = static_cast<float32>(DPIHelper::GetScreenDPI());
-    if (DeviceInfo::GetScreenInfo().scale != 0.f)
-    {
-        // to look the same on all devices
-        dpi /= DeviceInfo::GetScreenInfo().scale;
-    }
-    doubleClickPhysSquare = inch * dpi;
-    doubleClickPhysSquare *= doubleClickPhysSquare;
-#else
     doubleClickInchSquare = inch * inch;
-#endif
 }
-};
+
+void UIControlSystem::SetFlowRoot(UIControl* root)
+{
+    if (flowRoot == root)
+    {
+        return;
+    }
+
+    if (flowRoot)
+    {
+        flowRoot->InvokeInactive();
+        flowRoot->SetScene(nullptr);
+    }
+
+    flowRoot = root;
+
+    if (flowRoot)
+    {
+        flowRoot->SetScene(this);
+        flowRoot->InvokeActive(UIControl::eViewState::VISIBLE);
+    }
+}
+
+UIControl* UIControlSystem::GetFlowRoot() const
+{
+    return flowRoot.Get();
+}
+
+void UIControlSystem::SetPhysicalSafeAreaInsets(float32 left, float32 top, float32 right, float32 bottom, bool isLeftNotch, bool isRightNotch)
+{
+    layoutSystem->SetPhysicalSafeAreaInsets(left, top, right, bottom, isLeftNotch, isRightNotch);
+}
+
+UIEvent UIControlSystem::MakeUIEvent(const InputEvent& inputEvent) const
+{
+    UIEvent uie;
+    uie.phase = UIEvent::Phase::ERROR;
+    uie.timestamp = inputEvent.timestamp;
+    uie.window = inputEvent.window;
+
+    if (inputEvent.deviceType == eInputDeviceTypes::KEYBOARD)
+    {
+        uie.device = eInputDevices::KEYBOARD;
+        uie.key = inputEvent.elementId;
+        uie.modifiers = GetKeyboardModifierKeys();
+
+        if (inputEvent.keyboardEvent.charCode > 0)
+        {
+            uie.phase = inputEvent.keyboardEvent.charRepeated ? UIEvent::Phase::CHAR_REPEAT : UIEvent::Phase::CHAR;
+            uie.keyChar = inputEvent.keyboardEvent.charCode;
+        }
+        else
+        {
+            if (inputEvent.digitalState.IsReleased())
+            {
+                uie.phase = UIEvent::Phase::KEY_UP;
+            }
+            else
+            {
+                if (inputEvent.digitalState.IsJustPressed())
+                {
+                    uie.phase = UIEvent::Phase::KEY_DOWN;
+                }
+                else
+                {
+                    uie.phase = UIEvent::Phase::KEY_DOWN_REPEAT;
+                }
+            }
+        }
+    }
+    else if (IsMouseInputElement(inputEvent.elementId))
+    {
+        uie.device = eInputDevices::MOUSE;
+        uie.mouseButton = eMouseButtons::NONE;
+        uie.isRelative = inputEvent.mouseEvent.isRelative;
+        uie.modifiers = GetKeyboardModifierKeys();
+
+        Mouse* mouse = GetEngineContext()->deviceManager->GetMouse();
+        AnalogElementState mousePosition = mouse->GetPosition();
+        AnalogElementState mouseWheelDelta = mouse->GetWheelDelta();
+
+        switch (inputEvent.elementId)
+        {
+        case eInputElements::MOUSE_LBUTTON:
+        case eInputElements::MOUSE_RBUTTON:
+        case eInputElements::MOUSE_MBUTTON:
+        case eInputElements::MOUSE_EXT1BUTTON:
+        case eInputElements::MOUSE_EXT2BUTTON:
+            uie.phase = inputEvent.digitalState.IsPressed() ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
+            uie.mouseButton = static_cast<eMouseButtons>(inputEvent.elementId - eInputElements::MOUSE_LBUTTON + 1);
+            uie.physPoint = { mousePosition.x, mousePosition.y };
+            break;
+        case eInputElements::MOUSE_WHEEL:
+            uie.phase = UIEvent::Phase::WHEEL;
+            uie.physPoint = { mousePosition.x, mousePosition.y };
+            uie.wheelDelta = { mouseWheelDelta.x, mouseWheelDelta.y };
+            break;
+        case eInputElements::MOUSE_POSITION:
+            // TODO: Holy shit, how to make multiple DRAG UIEvents from single inputEvent
+            uie.mouseButton = TranslateMouseElementToButtons(mouse->GetFirstPressedButton());
+            uie.phase = uie.mouseButton == eMouseButtons::NONE ? UIEvent::Phase::MOVE : UIEvent::Phase::DRAG;
+            uie.physPoint = { mousePosition.x, mousePosition.y };
+            break;
+        default:
+            DVASSERT(0, "Unexpected mouse input element");
+            break;
+        }
+    }
+    else if (IsTouchInputElement(inputEvent.elementId))
+    {
+        uie.device = eInputDevices::TOUCH_SURFACE;
+        uie.modifiers = GetKeyboardModifierKeys();
+
+        const bool isDigitalEvent = IsTouchClickInputElement(inputEvent.elementId);
+
+        // UIEvent's touch id = touch index + 1 (since 0 means 'no touch' inside of UI system)
+
+        if (isDigitalEvent)
+        {
+            AnalogElementState analogState = inputEvent.device->GetAnalogElementState(GetTouchPositionElementFromClickElement(inputEvent.elementId));
+
+            uie.phase = inputEvent.digitalState.IsPressed() ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
+            uie.physPoint = { analogState.x, analogState.y };
+
+            uie.touchId = inputEvent.elementId - eInputElements::TOUCH_FIRST_CLICK + 1;
+        }
+        else
+        {
+            uie.phase = UIEvent::Phase::DRAG;
+            uie.physPoint = { inputEvent.analogState.x, inputEvent.analogState.y };
+            uie.touchId = inputEvent.elementId - eInputElements::TOUCH_FIRST_POSITION + 1;
+        }
+    }
+
+    return uie;
+}
+
+eModifierKeys UIControlSystem::GetKeyboardModifierKeys() const
+{
+    eModifierKeys modifierKeys = eModifierKeys::NONE;
+    Keyboard* keyboard = GetEngineContext()->deviceManager->GetKeyboard();
+    if (keyboard != nullptr)
+    {
+        DigitalElementState lctrl = keyboard->GetKeyState(eInputElements::KB_LCTRL);
+        DigitalElementState rctrl = keyboard->GetKeyState(eInputElements::KB_RCTRL);
+        if (lctrl.IsPressed() || rctrl.IsPressed())
+        {
+            modifierKeys |= eModifierKeys::CONTROL;
+        }
+
+        DigitalElementState lshift = keyboard->GetKeyState(eInputElements::KB_LSHIFT);
+        DigitalElementState rshift = keyboard->GetKeyState(eInputElements::KB_RSHIFT);
+        if (lshift.IsPressed() || rshift.IsPressed())
+        {
+            modifierKeys |= eModifierKeys::SHIFT;
+        }
+
+        DigitalElementState lalt = keyboard->GetKeyState(eInputElements::KB_LALT);
+        DigitalElementState ralt = keyboard->GetKeyState(eInputElements::KB_RALT);
+        if (lalt.IsPressed() || ralt.IsPressed())
+        {
+            modifierKeys |= eModifierKeys::ALT;
+        }
+
+        DigitalElementState lcmd = keyboard->GetKeyState(eInputElements::KB_LCMD);
+        DigitalElementState rcmd = keyboard->GetKeyState(eInputElements::KB_RCMD);
+        if (lcmd.IsPressed() || rcmd.IsPressed())
+        {
+            modifierKeys |= eModifierKeys::COMMAND;
+        }
+    }
+    return modifierKeys;
+}
+
+eMouseButtons UIControlSystem::TranslateMouseElementToButtons(eInputElements element)
+{
+    switch (element)
+    {
+    case eInputElements::MOUSE_LBUTTON:
+        return eMouseButtons::LEFT;
+    case eInputElements::MOUSE_RBUTTON:
+        return eMouseButtons::RIGHT;
+    case eInputElements::MOUSE_MBUTTON:
+        return eMouseButtons::MIDDLE;
+    case eInputElements::MOUSE_EXT1BUTTON:
+        return eMouseButtons::EXTENDED1;
+    case eInputElements::MOUSE_EXT2BUTTON:
+        return eMouseButtons::EXTENDED2;
+    default:
+        return eMouseButtons::NONE;
+    }
+}
+}

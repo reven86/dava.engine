@@ -2,25 +2,28 @@
 
 #include <algorithm>
 
-#include "UI/UIButton.h"
-#include "UI/UIList.h"
-#include "UI/UITextField.h"
-#include "UI/UIStaticText.h"
+#include "Engine/Engine.h"
 #include "FileSystem/FileList.h"
-#include "Utils/UTF8Utils.h"
-#include "Core/Core.h"
-#include "Time/SystemTimer.h"
-#include "UI/UIControlSystem.h"
-#include "Render/2D/FTFont.h"
 #include "Logger/Logger.h"
+#include "Render/2D/FTFont.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Time/SystemTimer.h"
+#include "UI/UIButton.h"
+#include "UI/UIControlBackground.h"
+#include "UI/UIControlSystem.h"
+#include "UI/UIList.h"
+#include "UI/UIListCell.h"
+#include "UI/UIStaticText.h"
+#include "UI/UITextField.h"
+#include "Utils/UTF8Utils.h"
 
 namespace DAVA
 {
 UIFileSystemDialog::UIFileSystemDialog(const FilePath& _fontPath)
-    : UIControl(Rect(UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dx / 2.f,
-                     UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy / 2.f,
-                     UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dx * 2.f / 3.f,
-                     UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy * 4.f / 5.f
+    : UIControl(Rect(GetEngineContext()->uiControlSystem->vcs->GetVirtualScreenSize().dx / 2.f,
+                     GetEngineContext()->uiControlSystem->vcs->GetVirtualScreenSize().dy / 2.f,
+                     GetEngineContext()->uiControlSystem->vcs->GetVirtualScreenSize().dx * 2.f / 3.f,
+                     GetEngineContext()->uiControlSystem->vcs->GetVirtualScreenSize().dy * 4.f / 5.f
                      )
                 )
 {
@@ -34,9 +37,9 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath& _fontPath)
     delegate = NULL;
     extensionFilter.push_back(".*");
 
-    cellH = UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy / 20.0f;
+    cellH = GetEngineContext()->uiControlSystem->vcs->GetVirtualScreenSize().dy / 20.0f;
     cellH = Max(cellH, 32.0f);
-    float32 border = UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy / 64.0f;
+    float32 border = GetEngineContext()->uiControlSystem->vcs->GetVirtualScreenSize().dy / 64.0f;
     float32 halfBorder = float32(int32(border / 2.0f));
     fileListView = new UIList(Rect(border, border + cellH, size.x - border * 2.0f, size.y - cellH * 3.0f - border * 3.0f), UIList::ORIENTATION_VERTICAL);
     fileListView->SetDelegate(this);
@@ -48,10 +51,11 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath& _fontPath)
     lastSelectionTime = 0;
 
     Font* f = FTFont::Create(fontPath);
-    f->SetSize(static_cast<float32>(int32(cellH * 2.0f) / 3));
+    float32 fSize = static_cast<float32>(int32(cellH * 2.0f) / 3);
 
     title = new UIStaticText(Rect(border, halfBorder, size.x - border * 2.0f, cellH));
     title->SetFont(f);
+    title->SetFontSize(fSize);
     title->SetTextColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
     title->SetTextColor(Color(1.f, 1.f, 1.f, 1.f));
     title->SetFittingOption(TextBlock::FITTING_REDUCE);
@@ -61,6 +65,7 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath& _fontPath)
     workingPath = new UIStaticText(Rect(border, halfBorder + fileListView->size.y + fileListView->relativePosition.y, size.x - border * 2.0f, cellH));
     workingPath->SetTextColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
     workingPath->SetFont(f);
+    workingPath->SetFontSize(fSize);
     workingPath->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
     workingPath->SetFittingOption(TextBlock::FITTING_REDUCE);
     workingPath->SetText(L"c:");
@@ -75,6 +80,7 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath& _fontPath)
     positiveButton->SetStateDrawType(UIControl::STATE_DISABLED, UIControlBackground::DRAW_FILL);
     positiveButton->GetStateBackground(UIControl::STATE_DISABLED)->SetColor(Color(0.2f, 0.2f, 0.2f, 0.2f));
     positiveButton->SetStateFont(UIControl::STATE_NORMAL, f);
+    positiveButton->SetStateFontSize(UIControl::STATE_NORMAL, fSize);
     positiveButton->SetStateText(UIControl::STATE_NORMAL, L"OK");
     positiveButton->SetStateTextColorInheritType(UIControl::STATE_NORMAL, UIControlBackground::COLOR_IGNORE_PARENT);
     positiveButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UIFileSystemDialog::ButtonPressed));
@@ -88,6 +94,7 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath& _fontPath)
     negativeButton->SetStateDrawType(UIControl::STATE_DISABLED, UIControlBackground::DRAW_FILL);
     negativeButton->GetStateBackground(UIControl::STATE_DISABLED)->SetColor(Color(0.2f, 0.2f, 0.2f, 0.2f));
     negativeButton->SetStateFont(UIControl::STATE_NORMAL, f);
+    negativeButton->SetStateFontSize(UIControl::STATE_NORMAL, fSize);
     negativeButton->SetStateText(UIControl::STATE_NORMAL, L"Cancel");
     negativeButton->SetStateTextColorInheritType(UIControl::STATE_NORMAL, UIControlBackground::COLOR_IGNORE_PARENT);
     negativeButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UIFileSystemDialog::ButtonPressed));
@@ -102,6 +109,7 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath& _fontPath)
     historyBackwardButton->SetStateDrawType(UIControl::STATE_DISABLED, UIControlBackground::DRAW_FILL);
     historyBackwardButton->GetStateBackground(UIControl::STATE_DISABLED)->SetColor(Color(0.2f, 0.2f, 0.2f, 0.2f));
     historyBackwardButton->SetStateFont(UIControl::STATE_NORMAL, f);
+    historyBackwardButton->SetStateFontSize(UIControl::STATE_NORMAL, fSize);
     historyBackwardButton->SetStateText(UIControl::STATE_NORMAL, L"<");
     historyBackwardButton->SetStateTextColorInheritType(UIControl::STATE_NORMAL, UIControlBackground::COLOR_IGNORE_PARENT);
     historyBackwardButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UIFileSystemDialog::HistoryButtonPressed));
@@ -118,6 +126,7 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath& _fontPath)
     historyForwardButton->SetStateDrawType(UIControl::STATE_DISABLED, UIControlBackground::DRAW_FILL);
     historyForwardButton->GetStateBackground(UIControl::STATE_DISABLED)->SetColor(Color(0.2f, 0.2f, 0.2f, 0.2f));
     historyForwardButton->SetStateFont(UIControl::STATE_NORMAL, f);
+    historyForwardButton->SetStateFontSize(UIControl::STATE_NORMAL, fSize);
     historyForwardButton->SetStateText(UIControl::STATE_NORMAL, L">");
     historyForwardButton->SetStateTextColorInheritType(UIControl::STATE_NORMAL, UIControlBackground::COLOR_IGNORE_PARENT);
     historyForwardButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &UIFileSystemDialog::HistoryButtonPressed));
@@ -132,6 +141,7 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath& _fontPath)
     textFieldBg->SetDrawType(UIControlBackground::DRAW_FILL);
     textFieldBg->SetColor(Color(0.25f, 0.25f, 0.25f, 0.25f));
     textField->SetFont(f);
+    textField->SetFontSize(fSize);
     textField->SetDelegate(this);
 
     SafeRelease(f);
@@ -338,12 +348,14 @@ void UIFileSystemDialog::RefreshList()
     int32 cnt = files->GetCount();
     int32 outCnt = 0;
     int32 p = -1;
+    size_t npos = String::npos;
+    int32 iNpos = static_cast<int32>(npos);
 
     String curDirPath = currentDir.GetDirectory().GetAbsolutePathname();
     while (true)
     {
         p = static_cast<int32>(curDirPath.rfind("/", p));
-        if (p != static_cast<int32>(curDirPath.npos))
+        if (p != iNpos)
         {
             p--;
             outCnt++;
@@ -456,8 +468,8 @@ UIListCell* UIFileSystemDialog::CellAtIndex(UIList* forList, int32 index)
         text->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
 
         Font* f = FTFont::Create(fontPath);
-        f->SetSize(static_cast<float32>(cellH) * 2 / 3);
         text->SetFont(f);
+        text->SetFontSize(static_cast<float32>(cellH) * 2 / 3);
         text->SetTextColor(Color(1.f, 1.f, 1.f, 1.f));
         SafeRelease(f);
         UIControlBackground* bg = c->GetOrCreateComponent<UIControlBackground>();

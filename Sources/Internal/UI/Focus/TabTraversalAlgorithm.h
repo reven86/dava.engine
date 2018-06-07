@@ -28,7 +28,7 @@ private:
     template <typename It>
     UIControl* FindFirstControlRecursive(It begin, It end, UITabOrderComponent::Direction dir);
 
-    void PrepareChildren(UIControl* control, Vector<UIControl*>& children);
+    void PrepareChildren(UIControl* control, Vector<RefPtr<UIControl>>& children);
 
     RefPtr<UIControl> root;
 };

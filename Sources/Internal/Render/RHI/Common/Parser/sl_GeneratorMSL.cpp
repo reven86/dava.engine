@@ -429,8 +429,10 @@ void MSLGenerator::OutputExpression(HLSLExpression* expression)
         const char* name = functionCall->function->name;
         bool sampler_call = false;
         bool sampler_lod = String_Equal(name, "tex2Dlod");
+        bool sampler_cmp = String_Equal(name, "tex2Dcmp");
+        bool sampler_prj = String_Equal(name, "tex2Dproj");
 
-        if (String_Equal(name, "tex2D") || String_Equal(name, "tex2Dlod") || String_Equal(name, "texCUBE"))
+        if (String_Equal(name, "tex2D") || String_Equal(name, "tex2Dproj") || String_Equal(name, "tex2Dcmp") || String_Equal(name, "tex2Dlod") || String_Equal(name, "texCUBE"))
         {
             sampler_call = true;
         }
@@ -460,6 +462,41 @@ void MSLGenerator::OutputExpression(HLSLExpression* expression)
 
                         ++arg;
                     }
+                    writer.Write(")");
+                }
+            }
+            else if (sampler_prj)
+            {
+                DVASSERT(functionCall->argument->nodeType == HLSLNodeType_IdentifierExpression);
+                HLSLIdentifierExpression* identifier = static_cast<HLSLIdentifierExpression*>(functionCall->argument);
+                DVASSERT(IsSamplerType(identifier->expressionType) && identifier->global);
+
+                HLSLExpression* expr = identifier->nextExpression;
+                writer.Write("%s_texture.sample( %s_sampler, (", identifier->name, identifier->name);
+                OutputExpression(expr);
+                writer.Write(").xy / (");
+                OutputExpression(expr);
+                writer.Write(").w ");
+
+                writer.Write(")");
+            }
+            else if (sampler_cmp)
+            {
+                DVASSERT(functionCall->argument->nodeType == HLSLNodeType_IdentifierExpression);
+                HLSLIdentifierExpression* identifier = static_cast<HLSLIdentifierExpression*>(functionCall->argument);
+                DVASSERT(IsSamplerType(identifier->expressionType) && identifier->global);
+
+                if (identifier->expressionType.baseType == HLSLBaseType_Sampler2DShadow)
+                {
+                    HLSLExpression* expr = identifier->nextExpression;
+
+                    writer.Write("%s_texture.sample_compare( %s_sampler ", identifier->name, identifier->name);
+                    writer.Write(", ");
+                    OutputExpression(expr);
+                    writer.Write(".xy, ");
+                    OutputExpression(expr);
+                    writer.Write(".z, ");
+                    writer.Write("level(0) ");
                     writer.Write(")");
                 }
             }
@@ -590,10 +627,17 @@ void MSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
                             const char* mtl_fp_semantic;
                         } attr[] =
                         {
-                          { "POSITION", rhi::VATTR_POSITION, "position", "" },
-                          { "SV_POSITION", rhi::VATTR_POSITION, "position", "" },
-                          { "NORMAL", rhi::VATTR_NORMAL, "normal", "" },
-                          { "NORMAL", rhi::VATTR_NORMAL, "normal", "" },
+                          { "POSITION", rhi::VATTR_POSITION_0, "position0", "" },
+                          { "POSITION0", rhi::VATTR_POSITION_1, "position0", "" },
+                          { "POSITION1", rhi::VATTR_POSITION_1, "position1", "" },
+                          { "POSITION2", rhi::VATTR_POSITION_2, "position2", "" },
+                          { "POSITION3", rhi::VATTR_POSITION_3, "position3", "" },
+                          { "SV_POSITION", rhi::VATTR_POSITION_0, "position", "" },
+                          { "NORMAL", rhi::VATTR_NORMAL_0, "normal0", "" },
+                          { "NORMAL0", rhi::VATTR_NORMAL_0, "normal0", "" },
+                          { "NORMAL1", rhi::VATTR_NORMAL_1, "normal1", "" },
+                          { "NORMAL2", rhi::VATTR_NORMAL_2, "normal2", "" },
+                          { "NORMAL3", rhi::VATTR_NORMAL_3, "normal3", "" },
                           { "TEXCOORD", rhi::VATTR_TEXCOORD_0, "texcoord0", "" },
                           { "TEXCOORD0", rhi::VATTR_TEXCOORD_0, "texcoord0", "" },
                           { "TEXCOORD1", rhi::VATTR_TEXCOORD_1, "texcoord1", "" },

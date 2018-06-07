@@ -159,6 +159,11 @@ dx9_DepthStencilState_Delete(Handle state)
 
 namespace DepthStencilStateDX9
 {
+void Init(uint32 maxCount)
+{
+    DepthStencilStateDX9Pool::Reserve(maxCount);
+}
+
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_DepthStencilState_Create = &dx9_DepthStencilState_Create;

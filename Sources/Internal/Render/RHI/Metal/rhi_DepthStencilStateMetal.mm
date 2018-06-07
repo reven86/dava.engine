@@ -158,6 +158,10 @@ metal_DepthStencilState_Delete(Handle state)
 
 namespace DepthStencilStateMetal
 {
+void Init(uint32 maxCount)
+{
+    DepthStencilStateMetalPool::Reserve(maxCount);
+}
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_DepthStencilState_Create = &metal_DepthStencilState_Create;

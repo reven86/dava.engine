@@ -14,7 +14,7 @@ namespace DAVA
 class FormulaExecutor : private FormulaExpressionVisitor
 {
 public:
-    FormulaExecutor(FormulaContext* context);
+    FormulaExecutor(const std::shared_ptr<FormulaContext>& context);
     ~FormulaExecutor() override;
 
     /**
@@ -49,6 +49,7 @@ private:
     void Visit(FormulaValueExpression* exp) override;
     void Visit(FormulaNegExpression* exp) override;
     void Visit(FormulaNotExpression* exp) override;
+    void Visit(FormulaWhenExpression* exp) override;
     void Visit(FormulaBinaryOperatorExpression* exp) override;
     void Visit(FormulaFunctionExpression* exp) override;
     void Visit(FormulaFieldAccessExpression* exp) override;
@@ -61,14 +62,20 @@ private:
     Any CalculateNumberAnyValues(FormulaBinaryOperatorExpression::Operator op, Any lVal, Any rVal) const;
 
     template <typename T>
-    Any CalculateIntAnyValues(FormulaBinaryOperatorExpression::Operator op, Any lVal, Any rVal) const;
+    Any CalculateIntAnyValues(FormulaBinaryOperatorExpression::Operator op, Any lVal, Any rVal, FormulaExpression* exp) const;
+
+    template <typename T>
+    Any CalculateIntValues(FormulaBinaryOperatorExpression::Operator op, T lVal, T rVal, FormulaExpression* exp) const;
 
     template <typename T>
     Any CalculateNumberValues(FormulaBinaryOperatorExpression::Operator op, T lVal, T rVal) const;
 
-    FormulaContext* context = nullptr;
+    bool CastToInt32(const Any& val, int32* res) const;
+
+    std::shared_ptr<FormulaContext> context;
     Any calculationResult;
     Reflection dataReference;
     Vector<void*> dependencies;
+    Vector<FormulaExpression*> expressionsStack;
 };
 }

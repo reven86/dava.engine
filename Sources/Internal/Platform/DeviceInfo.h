@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "FileSystem/FilePath.h"
 #include "Functional/Signal.h"
 #include "Render/RenderBase.h"
-#include "FileSystem/FilePath.h"
 
 namespace DAVA
 {
@@ -13,29 +13,6 @@ class DeviceInfo
 {
 public:
     static const int32 SIGNAL_STRENGTH_UNKNOWN = -1;
-
-#if !defined(__DAVAENGINE_COREV2__)
-    struct ScreenInfo
-    {
-        int32 width;
-        int32 height;
-        float32 scale;
-
-        ScreenInfo()
-        {
-            width = 0;
-            height = 0;
-            scale = 1;
-        }
-
-        ScreenInfo(int32 w, int32 h, float32 _scale)
-        {
-            width = w;
-            height = h;
-            scale = _scale;
-        }
-    };
-#endif
 
     enum ePlatform
     {
@@ -149,11 +126,6 @@ public:
     // true if device connected
     static bool IsHIDConnected(eHIDType type);
 
-#if !defined(__DAVAENGINE_COREV2__)
-    static ScreenInfo& GetScreenInfo();
-    static void InitializeScreenInfo(const ScreenInfo& screenInfo = ScreenInfo(), bool fullInit = true);
-#endif
-
     // Override real gpu family
     static void SetOverridenGPU(eGPUFamily newGPU);
     // Reset override
@@ -169,4 +141,4 @@ public:
 private:
     static DeviceInfoPrivate* GetPrivateImpl();
 };
-};
+}

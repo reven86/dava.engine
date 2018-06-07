@@ -78,6 +78,8 @@ using DeveloperModeOnly = Meta<Metas::DeveloperModeOnly>;
     Name of property that should be shown for user instead of field name
 */
 using DisplayName = Meta<Metas::DisplayName>;
+/** Hint that property can be edited as slider */
+using Slider = Meta<Metas::Slider>;
 /**
     \ingroup metas
     Add hint that indicates valid range of value
@@ -218,6 +220,14 @@ using Group = Meta<Metas::Group>;
 using ValueDescription = Meta<Metas::ValueDescription>;
 
 /**
+     \ingroup metas
+     Indicates that we can bind UIControl/UIComponent reflection field to some
+     data from model. QuickEd uses this indication to build special editor in
+     Property Panel.
+*/
+using Bindable = Meta<Metas::Bindable>;
+
+/**
     \ingroup metas
     We think about some types like about base types: Vector2, Vector3, Vector4, Color, Rect etc
     But in real this types are complex and have fields. For example Vector3 comprises the following fields: X, Y, Z
@@ -244,6 +254,27 @@ using CantBeCreatedManualyComponent = Meta<Metas::CantBeCreatedManualyComponent>
     Type that derived from Component and marked by this Meta couldn't be created in PropertyPanel
 */
 using CantBeDeletedManualyComponent = Meta<Metas::CantBeDeletedManualyComponent>;
+
+/** 
+    \ingroup metas
+    Says that type derived from Component and marked by this Meta can't be exported 
+*/
+using NonExportableComponent = Meta<Metas::NonExportableComponent>;
+
+/**
+    \ingroup metas
+    Says that type derived from Component and marked by this Meta can't be serialized
+*/
+using NonSerializableComponent = Meta<Metas::NonSerializableComponent>;
+
+using Tooltip = Meta<Metas::Tooltip>;
+using IntColor = Meta<Metas::IntColor>;
+
+/** 
+    \ingroup metas
+    Marks UIComponent type as multiple instances per UIControl
+*/
+using Multiple = Meta<Metas::Multiple>;
 }
 
 } // namespace DAVA

@@ -28,19 +28,23 @@
 #include "Math/MathHelpers.h"
 #include "Concurrency/LockGuard.h"
 
-
-
-#ifdef __DAVAENGINE_ANDROID__
-#ifndef GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
-#define GL_COMPRESSED_RGBA_S3TC_DXT3_EXT 0x83F2
-#endif //GL_COMPRESSED_RGBA_S3TC_DXT3_EXT
-#ifndef GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
-#define GL_COMPRESSED_RGBA_S3TC_DXT5_EXT 0x83F3
-#endif //GL_COMPRESSED_RGBA_S3TC_DXT5_EXT
-#endif //__DAVAENGINE_ANDROID__
+#define DAVA_DEBUG_TEXTURE_DISABLE_LOADING 0
 
 namespace DAVA
 {
+
+#if (DAVA_DEBUG_TEXTURE_DISABLE_LOADING)
+Texture* GetSharedPinkTexture()
+{
+    static Texture* pink = nullptr;
+    if (pink == nullptr)
+    {
+        pink = Texture::CreatePink();
+    }
+    return SafeRetain(pink);
+}
+#endif
+
 namespace Validator
 {
 bool IsFormatHardwareSupported(PixelFormat format)
@@ -223,16 +227,16 @@ void Texture::AddToMap(Texture* tex)
 }
 
 Texture::Texture()
-    : width(0)
+    : handle(rhi::InvalidHandle)
+    , samplerStateHandle(rhi::InvalidHandle)
+    , singleTextureSet(rhi::InvalidHandle)
+    , width(0)
     , height(0)
     , loadedAsFile(GPU_ORIGIN)
     , state(STATE_INVALID)
     , textureType(rhi::TEXTURE_TYPE_2D)
     , isRenderTarget(false)
     , isPink(false)
-    , handle(rhi::InvalidHandle)
-    , samplerStateHandle(rhi::InvalidHandle)
-    , singleTextureSet(rhi::InvalidHandle)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -279,6 +283,10 @@ void Texture::ReleaseTextureData()
 
 Texture* Texture::CreateTextFromData(PixelFormat format, uint8* data, uint32 width, uint32 height, bool generateMipMaps, const char* addInfo)
 {
+#if (DAVA_DEBUG_TEXTURE_DISABLE_LOADING)
+    return GetSharedPinkTexture();
+#endif
+
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     Texture* tx = CreateFromData(format, data, width, height, generateMipMaps);
@@ -304,6 +312,10 @@ void Texture::TexImage(int32 level, uint32 width, uint32 height, const void* _da
 
 Texture* Texture::CreateFromData(PixelFormat _format, const uint8* _data, uint32 _width, uint32 _height, bool generateMipMaps)
 {
+#if (DAVA_DEBUG_TEXTURE_DISABLE_LOADING)
+    return GetSharedPinkTexture();
+#endif
+
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     if ((_width < Texture::MINIMAL_WIDTH || _height < Texture::MINIMAL_HEIGHT) && (_format == FORMAT_PVR2 || _format == FORMAT_PVR4))
@@ -331,6 +343,10 @@ Texture* Texture::CreateFromData(PixelFormat _format, const uint8* _data, uint32
 
 Texture* Texture::CreateFromData(Image* image, bool generateMipMaps)
 {
+#if (DAVA_DEBUG_TEXTURE_DISABLE_LOADING)
+    return GetSharedPinkTexture();
+#endif
+
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     if ((image->width < Texture::MINIMAL_WIDTH || image->height < Texture::MINIMAL_HEIGHT) && (image->format == FORMAT_PVR2 || image->format == FORMAT_PVR4))
@@ -355,6 +371,10 @@ Texture* Texture::CreateFromData(Image* image, bool generateMipMaps)
 
 Texture* Texture::CreateFromData(const Vector<Image*>& imgs)
 {
+#if (DAVA_DEBUG_TEXTURE_DISABLE_LOADING)
+    return GetSharedPinkTexture();
+#endif
+
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     Texture* texture = new Texture();
@@ -394,11 +414,15 @@ void Texture::SetMinMagFilter(rhi::TextureFilter minFilter, rhi::TextureFilter m
 
 void Texture::GenerateMipmaps()
 {
-    DVASSERT("Mipmap generation on fly is not supported anymore!");
+    DVASSERT(0, "Mipmap generation on fly is not supported anymore!");
 }
 
 Texture* Texture::CreateFromImage(TextureDescriptor* descriptor, eGPUFamily gpu)
 {
+#if (DAVA_DEBUG_TEXTURE_DISABLE_LOADING)
+    return GetSharedPinkTexture();
+#endif
+
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     Texture* texture = new Texture();
@@ -690,6 +714,10 @@ void Texture::FlushDataToRenderer(Vector<Image*>* images)
 
 Texture* Texture::CreateFromFile(const FilePath& pathName, const FastName& group, rhi::TextureType typeHint)
 {
+#if (DAVA_DEBUG_TEXTURE_DISABLE_LOADING)
+    return GetSharedPinkTexture();
+#endif
+
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
     Texture* texture = PureCreate(pathName, group);
@@ -898,6 +926,7 @@ Texture* Texture::CreateFBO(const Texture::FBODescriptor& fboDesc)
     {
         descriptor.isRenderTarget = false;
         descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
+        descriptor.type = rhi::TEXTURE_TYPE_2D;
         tx->handleDepthStencil = rhi::CreateTexture(descriptor);
     }
 
@@ -1051,8 +1080,8 @@ Texture* Texture::CreatePink(rhi::TextureType requestedType, bool checkers)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
-    //we need instances for pink textures for ResourceEditor. We use it for reloading for different GPUs
-    //pink textures at game is invalid situation
+    // we need instances for pink textures for ResourceEditor. We use it for reloading for different GPUs
+    // pink textures at game is invalid situation
     Texture* tex = new Texture();
     if (rhi::TEXTURE_TYPE_CUBE == requestedType)
     {

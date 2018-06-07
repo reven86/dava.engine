@@ -367,9 +367,9 @@ void SpeedTreeConverter::ValidateSpeedTreeComponentCount(Entity* node)
         ValidateSpeedTreeComponentCount(childNode);
     }
 
-    while (node->GetComponentCount(Component::SPEEDTREE_COMPONENT) > 1u)
+    while (node->GetComponentCount<SpeedTreeComponent>() > 1u)
     {
-        node->RemoveComponent(Component::SPEEDTREE_COMPONENT, 1u);
+        node->RemoveComponent<SpeedTreeComponent>(1u);
     };
 }
 };

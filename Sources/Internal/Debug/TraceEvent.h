@@ -2,9 +2,8 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
-#include <type_traits>
-#include <iosfwd>
 #include "FileSystem/FileSystem.h"
+#include <iosfwd>
 
 namespace DAVA
 {
@@ -49,16 +48,16 @@ struct TraceEvent
 template <class Container>
 void TraceEvent::DumpJSON(const Container& trace, const FilePath& filePath)
 {
-    DAVA::FileSystem::Instance()->CreateDirectory(filePath.GetDirectory(), true);
-    DAVA::FileSystem::Instance()->DeleteFile(filePath);
-    DAVA::File* json = DAVA::File::Create(filePath, DAVA::File::CREATE | DAVA::File::WRITE);
+    FileSystem* fs = FileSystem::Instance();
+    fs->CreateDirectory(filePath.GetDirectory(), true);
+    fs->DeleteFile(filePath);
+    ScopedPtr<File> json(File::Create(filePath, File::CREATE | File::WRITE));
     if (json)
     {
         std::stringstream stream;
         DumpJSON<Container>(trace, stream);
         json->WriteNonTerminatedString(stream.str());
     }
-    SafeRelease(json);
 }
 
 template <class Container>
@@ -70,7 +69,7 @@ void TraceEvent::DumpJSON(const Container& trace, std::ostream& stream)
         "B", "E", "I", "X"
     };
 
-    stream << "{ \"traceEvents\": [" << std::endl;
+    stream << "{ \"traceEvents\": [\n";
 
     auto begin = trace.begin(), end = trace.end();
     for (auto it = begin; it != end; ++it)
@@ -78,7 +77,7 @@ void TraceEvent::DumpJSON(const Container& trace, std::ostream& stream)
         const TraceEvent& event = (*it);
 
         if (it != begin)
-            stream << "," << std::endl;
+            stream << ",\n";
 
         stream << "{ ";
         stream << "\"pid\": " << event.processID << ", ";
@@ -86,19 +85,22 @@ void TraceEvent::DumpJSON(const Container& trace, std::ostream& stream)
         stream << "\"ts\": " << event.timestamp << ", ";
 
         if (event.phase == PHASE_DURATION)
+        {
             stream << "\"dur\": " << event.duration << ", ";
+        }
 
         stream << "\"ph\": \"" << PHASE_STR[event.phase] << "\", ";
         stream << "\"name\": \"" << event.name.c_str() << "\"";
 
         for (const std::pair<FastName, uint32>& arg : event.args)
+        {
             stream << ", \"args\": { \"" << arg.first.c_str() << "\": " << arg.second << " }";
+        }
 
         stream << " }";
     }
 
-    stream << std::endl
-           << "] }" << std::endl;
+    stream << "\n] }\n";
 
     stream.flush();
 }

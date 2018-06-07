@@ -27,6 +27,7 @@ public:
     WaveSystem(Scene* scene);
     virtual ~WaveSystem();
 
+    void PrepareForRemove() override;
     void ImmediateEvent(Component* component, uint32 event) override;
     void Process(float32 timeElapsed) override;
 

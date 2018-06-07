@@ -29,6 +29,8 @@ public:
 	*/
     const PackMetaData& GetMeta() const;
 
+    const PackFormat::PackFile& GetPackFile() const;
+
     static void ExtractFileTableData(const PackFormat::PackFile::FooterBlock& footerBlock,
                                      const Vector<uint8>& tmpBuffer,
                                      String& fileNames,

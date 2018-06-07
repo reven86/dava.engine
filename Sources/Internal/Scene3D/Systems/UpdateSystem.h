@@ -15,6 +15,7 @@ public:
 
     void AddEntity(Entity* entity) override;
     void RemoveEntity(Entity* entity) override;
+    void PrepareForRemove() override;
 
     void UpdatePreTransform(float32 timeElapsed);
     void UpdatePostTransform(float32 timeElapsed);

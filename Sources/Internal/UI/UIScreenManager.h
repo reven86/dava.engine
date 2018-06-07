@@ -1,14 +1,34 @@
-#ifndef __DAVAENGINE_SCREENMANAGER_H__
-#define __DAVAENGINE_SCREENMANAGER_H__
+#pragma once
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_LINUX__)
-    #include "UI/UIScreenManagerDefault.h"
-#elif defined(__DAVAENGINE_IPHONE__)
-    #include "UI/UIScreenManageriPhone.h"
-#elif defined(__DAVAENGINE_ANDROID__)
-    #include "UI/UIScreenManagerAndroid.h"
-#else //PLATFORMS
-//other platforms
-#endif //PLATFORMS
+#include "Base/BaseTypes.h"
+#include "Base/RefPtr.h"
 
-#endif // __DAVAENGINE_SCREENMANAGER_C_H__
+namespace DAVA
+{
+class UIControlSystem;
+class UIScreen;
+
+class UIScreenManager final
+{
+public:
+    UIScreenManager(UIControlSystem* uiControlSystem);
+    ~UIScreenManager();
+
+    DAVA_DEPRECATED(bool RegisterScreen(int32 screenId, UIScreen* screen));
+    bool RegisterScreen(int32 screenId, const RefPtr<UIScreen>& screen);
+    bool UnregisterScreen(int32 screenId);
+
+    void SetFirst(int32 screenId);
+    void SetScreen(int32 screenId);
+    void ResetScreen();
+
+    UIScreen* GetScreen(int32 screenId) const;
+    UIScreen* GetScreen() const;
+    int32 GetScreenId() const;
+
+private:
+    UIControlSystem* uiControlSystem = nullptr;
+    UnorderedMap<int32, RefPtr<UIScreen>> screens;
+    int32 activeScreenId = -1;
+};
+};

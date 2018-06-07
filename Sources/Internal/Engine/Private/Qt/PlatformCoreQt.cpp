@@ -1,6 +1,3 @@
-
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/Qt/PlatformCoreQt.h"
 
 #if defined(__DAVAENGINE_QT__)
@@ -8,7 +5,7 @@
 #include "Engine/Window.h"
 #include "Engine/Qt/RenderWidget.h"
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/WindowBackend.h"
+#include "Engine/Private/WindowImpl.h"
 
 #include <QTimer>
 #include <QApplication>
@@ -45,15 +42,15 @@ void PlatformCore::Run()
                      {
                          if (!EngineBackend::showingModalMessageBox)
                          {
-                             DVASSERT(primaryWindowBackend != nullptr);
-                             primaryWindowBackend->Update();
+                             DVASSERT(primaryWindowImpl != nullptr);
+                             primaryWindowImpl->Update();
                          }
                      });
 
-    // First of all we should init primaryWindowBackend, because in OnGameLoopStarted client code will try to get RenderWidget trough this pointer
-    primaryWindowBackend = EngineBackend::GetWindowBackend(engineBackend.GetPrimaryWindow());
+    // First of all we should init primaryWindowImpl, because in OnGameLoopStarted client code will try to get RenderWidget trough this pointer
+    primaryWindowImpl = EngineBackend::GetWindowImpl(engineBackend.GetPrimaryWindow());
     engineBackend.OnGameLoopStarted();
-    applicationFocusChanged.Connect(primaryWindowBackend, &WindowBackend::OnApplicationFocusChanged);
+    applicationFocusChanged.Connect(primaryWindowImpl, &WindowImpl::OnApplicationFocusChanged);
     if (engineBackend.IsStandaloneGUIMode())
     {
         // Force RenderWidget creation and show it on screen
@@ -99,11 +96,10 @@ QApplication* PlatformCore::GetApplication()
 
 RenderWidget* PlatformCore::GetRenderWidget()
 {
-    return primaryWindowBackend->GetRenderWidget();
+    return primaryWindowImpl->GetRenderWidget();
 }
 
 } // namespace Private
 } // namespace DAVA
 
 #endif // __DAVAENGINE_QT__
-#endif // __DAVAENGINE_COREV2__

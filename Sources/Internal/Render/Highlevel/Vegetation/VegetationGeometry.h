@@ -126,7 +126,6 @@ private:
                            Vector<VegetationVertex>& vertexData, Vector<VegetationIndex>& indexData, BufferData& bufferOffsets);
 
     static bool ClusterByMatrixCompareFunction(const ClusterResolutionData& a, const ClusterResolutionData& b);
-    static int32 RandomShuffleFunc(int32 limit);
 
     void Rotate(float32 angle, const Vector<Vector3>& sourcePositions, const Vector<Vector3>& sourceNormals, Vector<Vector3>& rotatedPositions, Vector<Vector3>& rotatedNormals);
     void Scale(const Vector3& clusterPivot, float32 scale, const Vector<Vector3>& sourcePositions, const Vector<Vector3>& sourceNormals, Vector<Vector3>& scaledPositions, Vector<Vector3>& scaledNormals);

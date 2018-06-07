@@ -52,13 +52,13 @@ public:
 		\param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str
 		\returns StringMetrics structure
 	 */
-    StringMetrics GetStringMetrics(const WideString& str, Vector<float32>* charSizes = NULL) const override;
+    StringMetrics GetStringMetrics(float32 size, const WideString& str, Vector<float32>* charSizes = NULL) const override;
 
     /**
 		\brief Get height of highest symbol in font.
 		\returns height in pixels
 	*/
-    uint32 GetFontHeight() const override;
+    uint32 GetFontHeight(float32 size) const override;
 
     /**
 		\brief Checks if symbol is present in font.
@@ -80,12 +80,9 @@ public:
 		\param[in] contentScaleIncluded - TODO
 		\returns bounding rect for string in pixels
 	*/
-    virtual StringMetrics DrawStringToBuffer(void* buffer, int32 bufWidth, int32 bufHeight, int32 offsetX, int32 offsetY, int32 justifyWidth, int32 spaceAddon, const WideString& str, bool contentScaleIncluded = false);
+    virtual StringMetrics DrawStringToBuffer(float32 size, void* buffer, int32 bufWidth, int32 bufHeight, int32 offsetX, int32 offsetY, int32 justifyWidth, int32 spaceAddon, const WideString& str, bool contentScaleIncluded = false);
 
-    bool IsTextSupportsSoftwareRendering() const override
-    {
-        return true;
-    };
+    bool IsTextSupportsSoftwareRendering() const override;
 
     //We need to return font path
     const FilePath& GetFontPath() const;
@@ -103,10 +100,10 @@ protected:
 
 private:
     FTFont(FTInternalFont* internalFont);
-    FTInternalFont* internalFont;
+    FTInternalFont* internalFont = nullptr;
 
-    float32 ascendScale;
-    float32 descendScale;
+    float32 ascendScale = 1.f;
+    float32 descendScale = 1.f;
 
     FilePath fontPath;
 };

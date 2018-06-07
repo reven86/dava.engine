@@ -1,17 +1,17 @@
 #pragma once
 
 #include "Compression/Compressor.h"
-#include <stdexcept>
+#include "Base/Exception.h"
 
 namespace DAVA
 {
 // catch this type of exception if you need to find situation when user
 // changed local resources inside resource archive
-class FileCrc32FromPackNotMatch : public std::runtime_error
+class FileCrc32FromPackNotMatch : public Exception
 {
 public:
-    explicit FileCrc32FromPackNotMatch(const String& msg)
-        : runtime_error(msg)
+    explicit FileCrc32FromPackNotMatch(const String& msg, const char* file, int line)
+        : Exception(msg, file, line)
     {
     }
 };

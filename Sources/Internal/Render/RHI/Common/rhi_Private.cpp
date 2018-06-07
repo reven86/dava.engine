@@ -20,7 +20,6 @@
 #include "../NullRenderer/rhi_NullRenderer.h"
 
 #include "Logger/Logger.h"
-#include "Core/Core.h"
 #include "Concurrency/Spinlock.h"
 #include "Concurrency/Thread.h"
 #include "MemoryManager/MemoryProfiler.h"
@@ -42,7 +41,7 @@ uint32 stat_SET_VB = DAVA::InvalidIndex;
 uint32 stat_SET_IB = DAVA::InvalidIndex;
 
 static Dispatch _Impl = {};
-static RenderDeviceCaps renderDeviceCaps = {};
+static RenderDeviceCaps renderDeviceCaps;
 
 void SetDispatchTable(const Dispatch& dispatch)
 {

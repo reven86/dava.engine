@@ -141,12 +141,6 @@ protected:
     std::size_t currentIndex = 0;
 };
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-
-uint64 EglGetCurrentContext();
-
-#endif
-
 // Open the URL in external browser.
 void OpenURL(const String& url);
 

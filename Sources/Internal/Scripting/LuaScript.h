@@ -59,6 +59,18 @@ public:
     int32 ExecStringSafe(const String& script);
 
     /**
+    Load script from file, run it and return number of results in the stack.
+    Throw LuaException on error.
+    */
+    int32 ExecScript(const FilePath& scriptPath);
+
+    /**
+    Load script from file, run it and return number of results in the stack.
+    Return -1 on error.
+    */
+    int32 ExecScriptSafe(const FilePath& scriptPath);
+
+    /**
     Run `fName(...)` function with arguments and return number of results in
     the stack.
     Throw LuaException on error.
@@ -69,10 +81,38 @@ public:
     /**
     Run `fName(...)` function with arguments and return number of results in
     the stack.
+    Throw LuaException on error.
+    */
+    int32 ExecFunction(const String& fName, const Vector<Any>& args);
+
+    /**
+    Run `fName(...)` function with arguments and return number of results in
+    the stack.
     Return -1 on error.
     */
     template <typename... T>
     int32 ExecFunctionSafe(const String& fName, T&&... args);
+
+    /**
+    Run `fName(...)` function with arguments and return number of results in
+    the stack.
+    Return -1 on error.
+    */
+    int32 ExecFunctionSafe(const String& fName, const Vector<Any>& args);
+
+    /**
+    Run `fName(...)` function with arguments and specified results types and 
+    return vector of results.
+    Throw LuaException on error.
+    */
+    Vector<Any> ExecFunctionWithResult(String fName, const Vector<Any>& args, const Vector<const Type*>& returnTypes);
+
+    /**
+    Run `fName(...)` function with arguments, specified results types and write 
+    results to specified vector.
+    Return false on error.
+    */
+    bool ExecFunctionWithResultSafe(String fName, const Vector<Any>& args, const Vector<const Type*>& returnTypes, Vector<Any>& returnValues);
 
     /**
     Return value at specified index on the stack as Any with specified type.
@@ -118,6 +158,16 @@ public:
     Set variable to global table with name `vName`
     */
     void SetGlobalVariable(const String& vName, const Any& value);
+
+    /**
+    Check variable in global table with name `vName`
+    */
+    bool HasGlobalVariable(const String& vName);
+
+    /**
+    Check function in global table with name `vName`
+    */
+    bool HasGlobalFunction(const String& vName);
 
     /**
     Dump current content of the stack to `ostream`.
@@ -182,7 +232,7 @@ inline int32 LuaScript::ExecFunctionSafe(const String& fName, T&&... args)
     }
     catch (const LuaException& e)
     {
-        DAVA::Logger::Info(Format("LuaException: %s", e.what()).c_str());
+        DAVA::Logger::Warning(Format("LuaException: %s", e.what()).c_str());
         return -1;
     }
 }

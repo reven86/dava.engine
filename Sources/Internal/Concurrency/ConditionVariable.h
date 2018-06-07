@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_CONDITION_VARIABLE_H__
-#define __DAVAENGINE_CONDITION_VARIABLE_H__
+#pragma once
 
 #include "Base/Platform.h"
 #include "Concurrency/Mutex.h"
@@ -105,5 +104,3 @@ inline void ConditionVariable::NotifyAll()
 #endif //  USE_CPP11_CONCURRENCY
 
 } //  namespace DAVA
-
-#endif //  __DAVAENGINE_CONDITION_VARIABLE_H__

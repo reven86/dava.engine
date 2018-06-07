@@ -25,11 +25,43 @@ _Metal_VertexAttribIndex(VertexSemantics s, uint32 i)
     switch (s)
     {
     case VS_POSITION:
-        attr_i = VATTR_POSITION;
-        break;
+    {
+        switch (i)
+        {
+        case 0:
+            attr_i = VATTR_POSITION_0;
+            break;
+        case 1:
+            attr_i = VATTR_POSITION_1;
+            break;
+        case 2:
+            attr_i = VATTR_POSITION_2;
+            break;
+        case 3:
+            attr_i = VATTR_POSITION_3;
+            break;
+        }
+    }
+    break;
     case VS_NORMAL:
-        attr_i = VATTR_NORMAL;
-        break;
+    {
+        switch (i)
+        {
+        case 0:
+            attr_i = VATTR_NORMAL_0;
+            break;
+        case 1:
+            attr_i = VATTR_NORMAL_1;
+            break;
+        case 2:
+            attr_i = VATTR_NORMAL_2;
+            break;
+        case 3:
+            attr_i = VATTR_NORMAL_3;
+            break;
+        }
+    }
+    break;
     case VS_TEXCOORD:
     {
         switch (i)
@@ -881,6 +913,10 @@ ResetRingBuffer()
 
 namespace PipelineStateMetal
 {
+void Init(uint32 maxCount)
+{
+    PipelineStateMetalPool::Reserve(maxCount);
+}
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_PipelineState_Create = &metal_PipelineState_Create;

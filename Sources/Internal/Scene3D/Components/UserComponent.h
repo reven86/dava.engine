@@ -15,8 +15,6 @@ protected:
     ~UserComponent(){};
 
 public:
-    IMPLEMENT_COMPONENT_TYPE(USER_COMPONENT);
-
     UserComponent();
 
     Component* Clone(Entity* toEntity) override;

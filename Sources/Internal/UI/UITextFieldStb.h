@@ -7,7 +7,7 @@
 namespace DAVA
 {
 class UITextField;
-class UIStaticText;
+class UITextComponent;
 class UIGeometricData;
 class Font;
 class Color;
@@ -24,12 +24,10 @@ public:
     static const uint32 INVALID_POS = uint32(-1);
 
     friend class UITextField;
-#if defined(__DAVAENGINE_COREV2__)
+
     TextFieldStbImpl(Window* w, UITextField* control);
-#else
-    TextFieldStbImpl(UITextField* control);
-#endif
     ~TextFieldStbImpl();
+    void PrepareTextComponent();
     void Initialize();
     void OwnerIsDying();
     void SetDelegate(UITextFieldDelegate*);
@@ -39,6 +37,7 @@ public:
     void SetRenderToTexture(bool);
     void SetIsPassword(bool);
     void SetFontSize(float32);
+    float32 GetFontSize() const;
     void SetText(const WideString& text);
     void UpdateRect(const Rect&);
     void SetAutoCapitalizationType(int32);
@@ -56,7 +55,10 @@ public:
     void SetInputEnabled(bool, bool hierarchic = true);
     void SetVisible(bool v);
     Font* GetFont() const;
+    void SetFontName(const String& presetName);
     void SetFont(Font* f);
+    void SetFontPath(const FilePath& path);
+    const FilePath& GetFontPath() const;
     void SetTextColor(const Color& c);
     void SetShadowOffset(const Vector2& v);
     void SetShadowColor(const Color& c);
@@ -97,7 +99,11 @@ private:
     void OnWindowSizeChanged(Window* w, Size2f windowSize, Size2f surfaceSize);
     void OnWindowDestroyed(Window* w);
 
-    UIStaticText* staticText = nullptr; // Control for displaying text
+    TextBlock* GetTextBlock() const;
+    Font* GetRealFont() const;
+    float32 GetRealFontSize() const;
+
+    RefPtr<UITextComponent> staticText; // Component for displaying text
     UITextField* control = nullptr; // Weak link to parent text field
     StbTextEditBridge* stb = nullptr;
     WideString text;
@@ -114,10 +120,7 @@ private:
     uint32 lastCursorPos = INVALID_POS;
     uint32 lastSelStart = INVALID_POS;
     uint32 lastSelEnd = INVALID_POS;
-
-#if defined(__DAVAENGINE_COREV2__)
     Window* window = nullptr;
-#endif
 };
 
 } // end namespace DAVA

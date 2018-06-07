@@ -3,17 +3,23 @@
 #include "Concurrency/Thread.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
+#include "Engine/Window.h"
 #include "Entity/Component.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/Layouts/LayoutFormula.h"
 #include "UI/Layouts/Private/Layouter.h"
 #include "UI/Layouts/UIAnchorComponent.h"
 #include "UI/Layouts/UIFlowLayoutComponent.h"
-#include "UI/Layouts/UISizePolicyComponent.h"
-#include "UI/Layouts/UILayoutSourceRectComponent.h"
 #include "UI/Layouts/UILayoutIsolationComponent.h"
+#include "UI/Layouts/UILayoutSourceRectComponent.h"
 #include "UI/Layouts/UILinearLayoutComponent.h"
-#include "UI/Layouts/LayoutFormula.h"
-#include "UI/Layouts/UILayoutSystemListener.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
+#include "UI/Text/UITextComponent.h"
+#include "UI/Text/UITextSystem.h"
 #include "UI/UIControl.h"
+#include "UI/UIControlSystem.h"
 #include "UI/UIScreen.h"
 #include "UI/UIScreenTransition.h"
 
@@ -22,27 +28,52 @@ namespace DAVA
 UILayoutSystem::UILayoutSystem()
     : sharedLayouter(std::make_unique<Layouter>())
 {
-    sharedLayouter->SetRtl(isRtl);
-    sharedLayouter->onFormulaProcessed = [this](UIControl* control, Vector2::eAxis axis, const LayoutFormula* formula)
-    {
-        for (UILayoutSystemListener* listener : listeners)
-        {
-            listener->OnFormulaProcessed(control, axis, formula);
-        }
+    sharedLayouter->onFormulaProcessed = [this](UIControl* control, Vector2::eAxis axis, const LayoutFormula* formula) {
+        formulaProcessed.Emit(control, axis, formula);
     };
 
-    sharedLayouter->onFormulaRemoved = [this](UIControl* control, Vector2::eAxis axis, const LayoutFormula* formula)
-    {
-        for (UILayoutSystemListener* listener : listeners)
-        {
-            listener->OnFormulaRemoved(control, axis, formula);
-        }
+    sharedLayouter->onFormulaRemoved = [this](UIControl* control, Vector2::eAxis axis, const LayoutFormula* formula) {
+        formulaRemoved.Emit(control, axis, formula);
     };
 }
 
 UILayoutSystem::~UILayoutSystem()
 {
-    DVASSERT(listeners.empty());
+}
+
+void UILayoutSystem::RegisterSystem()
+{
+    // Subscribe on visible frame changing only for primary window if it exists
+    if (GetPrimaryWindow())
+    {
+        visibleFrameChangedToken = GetPrimaryWindow()->visibleFrameChanged.Connect([&](Window* w, Rect rect) {
+            Rect vr = GetScene()->vcs->ConvertInputToVirtual(rect);
+            UpdateVisibilityRect(vr);
+        });
+        virtualSizeChangedToken = GetScene()->vcs->virtualSizeChanged.Connect([&](const Size2i& size) {
+            UpdateVisibilityRect(Rect(0.f, 0.f, static_cast<float32>(size.dx), static_cast<float32>(size.dy)));
+            SetPhysicalSafeAreaInsets(physicalLeftSafeAreaInset,
+                                      physicalTopSafeAreaInset,
+                                      physicalRightSafeAreaInset,
+                                      physicalBottomSafeAreaInset,
+                                      isLeftNotch,
+                                      isRightNotch);
+        });
+        inputSizeChangedToken = GetScene()->vcs->inputAreaSizeChanged.Connect([&](const Size2i& size) {
+            Vector2 s = GetScene()->vcs->ConvertInputToVirtual(Vector2(static_cast<float32>(size.dx), static_cast<float32>(size.dy)));
+            UpdateVisibilityRect(Rect(0.f, 0.f, s.x, s.y));
+        });
+    }
+}
+
+void UILayoutSystem::UnregisterSystem()
+{
+    if (GetPrimaryWindow())
+    {
+        GetPrimaryWindow()->visibleFrameChanged.Disconnect(visibleFrameChangedToken);
+        GetScene()->vcs->virtualSizeChanged.Disconnect(virtualSizeChangedToken);
+        GetScene()->vcs->inputAreaSizeChanged.Disconnect(inputSizeChangedToken);
+    }
 }
 
 void UILayoutSystem::Process(float32 elapsedTime)
@@ -59,11 +90,7 @@ void UILayoutSystem::Process(float32 elapsedTime)
     if (!needUpdate)
         return;
 
-    if (currentScreenTransition.Valid())
-    {
-        ProcessControlHierarhy(currentScreenTransition.Get());
-    }
-    else if (currentScreen.Valid())
+    if (currentScreen.Valid())
     {
         ProcessControlHierarhy(currentScreen.Get());
     }
@@ -85,10 +112,7 @@ void UILayoutSystem::UnregisterControl(UIControl* control)
             if (formula != nullptr)
             {
                 formula->MarkChanges();
-                for (UILayoutSystemListener* listener : listeners)
-                {
-                    listener->OnFormulaRemoved(control, static_cast<Vector2::eAxis>(axis), formula);
-                }
+                formulaRemoved.Emit(control, static_cast<Vector2::eAxis>(axis), formula);
             }
         }
     }
@@ -104,10 +128,7 @@ void UILayoutSystem::UnregisterComponent(UIControl* control, UIComponent* compon
             LayoutFormula* formula = sizePolicyComponent->GetFormula(axis);
             if (formula != nullptr)
             {
-                for (UILayoutSystemListener* listener : listeners)
-                {
-                    listener->OnFormulaRemoved(control, static_cast<Vector2::eAxis>(axis), formula);
-                }
+                formulaRemoved.Emit(control, static_cast<Vector2::eAxis>(axis), formula);
             }
         }
     }
@@ -128,11 +149,6 @@ void UILayoutSystem::SetCurrentScreen(const RefPtr<UIScreen>& screen)
     currentScreen = screen;
 }
 
-void UILayoutSystem::SetCurrentScreenTransition(const RefPtr<UIScreenTransition>& screenTransition)
-{
-    currentScreenTransition = screenTransition;
-}
-
 void UILayoutSystem::SetPopupContainer(const RefPtr<UIControl>& _popupContainer)
 {
     popupContainer = _popupContainer;
@@ -140,13 +156,63 @@ void UILayoutSystem::SetPopupContainer(const RefPtr<UIControl>& _popupContainer)
 
 bool UILayoutSystem::IsRtl() const
 {
-    return isRtl;
+    return sharedLayouter->IsRtl();
 }
 
 void UILayoutSystem::SetRtl(bool rtl)
 {
-    isRtl = rtl;
-    sharedLayouter->SetRtl(isRtl);
+    sharedLayouter->SetRtl(rtl);
+}
+
+void UILayoutSystem::SetPhysicalSafeAreaInsets(float32 left, float32 top, float32 right, float32 bottom, bool isLeftNotch_, bool isRightNotch_)
+{
+    physicalLeftSafeAreaInset = left;
+    physicalTopSafeAreaInset = top;
+    physicalRightSafeAreaInset = right;
+    physicalBottomSafeAreaInset = bottom;
+    isLeftNotch = isLeftNotch_;
+    isRightNotch = isRightNotch_;
+
+    VirtualCoordinatesSystem* vcs = GetScene()->vcs;
+    sharedLayouter->SetSafeAreaInsets(vcs->ConvertPhysicalToVirtualX(left),
+                                      vcs->ConvertPhysicalToVirtualY(top),
+                                      vcs->ConvertPhysicalToVirtualX(right),
+                                      vcs->ConvertPhysicalToVirtualY(bottom),
+                                      isLeftNotch,
+                                      isRightNotch);
+
+    if (currentScreen.Valid())
+    {
+        currentScreen->SetLayoutDirty();
+    }
+    if (popupContainer.Valid())
+    {
+        popupContainer->SetLayoutDirty();
+    }
+}
+
+float32 UILayoutSystem::GetSafeAreaLeftInset() const
+{
+    VirtualCoordinatesSystem* vcs = GetScene()->vcs;
+    return vcs->ConvertPhysicalToVirtualX(physicalLeftSafeAreaInset);
+}
+
+float32 UILayoutSystem::GetSafeAreaTopInset() const
+{
+    VirtualCoordinatesSystem* vcs = GetScene()->vcs;
+    return vcs->ConvertPhysicalToVirtualY(physicalTopSafeAreaInset);
+}
+
+float32 UILayoutSystem::GetSafeAreaRightInset() const
+{
+    VirtualCoordinatesSystem* vcs = GetScene()->vcs;
+    return vcs->ConvertPhysicalToVirtualX(physicalRightSafeAreaInset);
+}
+
+float32 UILayoutSystem::GetSafeAreaBottomInset() const
+{
+    VirtualCoordinatesSystem* vcs = GetScene()->vcs;
+    return vcs->ConvertPhysicalToVirtualY(physicalBottomSafeAreaInset);
 }
 
 void UILayoutSystem::ProcessControl(UIControl* control)
@@ -161,29 +227,33 @@ void UILayoutSystem::ProcessControl(UIControl* control)
         UIControl* container = FindNotDependentOnChildrenControl(control);
         sharedLayouter->ApplyLayout(container);
 
-        for (UILayoutSystemListener* listener : listeners)
-        {
-            listener->OnControlLayouted(container);
-        }
+        controlLayouted.Emit(container);
     }
     else if (positionDirty && HaveToLayoutAfterReposition(control))
     {
         UIControl* container = control->GetParent();
         sharedLayouter->ApplyLayoutNonRecursive(container);
-
-        for (UILayoutSystemListener* listener : listeners)
-        {
-            listener->OnControlLayouted(container);
-        }
+        controlLayouted.Emit(container);
     }
 }
 
 void UILayoutSystem::ManualApplyLayout(UIControl* control)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_LAYOUT_SYSTEM);
+    UIControlSystem* scene = control->GetScene();
+    if (scene)
+    {
+        scene->GetTextSystem()->ForceProcessControl(0.0f, control);
+    }
+    else
+    {
+        GetEngineContext()->uiControlSystem->GetTextSystem()->ForceProcessControl(0.0f, control);
+    }
 
     Layouter localLayouter;
-    localLayouter.SetRtl(isRtl);
+    localLayouter.SetRtl(sharedLayouter->IsRtl());
+    localLayouter.SetVisibilityRect(sharedLayouter->GetVisibilityRect());
+    localLayouter.SetSafeAreaInsets(sharedLayouter->GetSafeAreaInsets(), isLeftNotch, isRightNotch);
     localLayouter.ApplyLayout(control);
 }
 
@@ -195,32 +265,6 @@ bool UILayoutSystem::IsAutoupdatesEnabled() const
 void UILayoutSystem::SetAutoupdatesEnabled(bool enabled)
 {
     autoupdatesEnabled = enabled;
-}
-
-void UILayoutSystem::AddListener(UILayoutSystemListener* listener)
-{
-    auto it = std::find(listeners.begin(), listeners.end(), listener);
-    if (it == listeners.end())
-    {
-        listeners.push_back(listener);
-    }
-    else
-    {
-        DVASSERT(false);
-    }
-}
-
-void UILayoutSystem::RemoveListener(UILayoutSystemListener* listener)
-{
-    auto it = std::find(listeners.begin(), listeners.end(), listener);
-    if (it != listeners.end())
-    {
-        listeners.erase(it);
-    }
-    else
-    {
-        DVASSERT(false);
-    }
 }
 
 UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control) const
@@ -292,19 +336,32 @@ void UILayoutSystem::ProcessControlHierarhy(UIControl* control)
     // TODO: For now game has many places where changes in layouts can
     // change hierarchy of controls. In future client want fix this places,
     // after that this code should be replaced by simple for-each.
-    const List<UIControl*>& children = control->GetChildren();
+    const auto& children = control->GetChildren();
     auto it = children.begin();
     auto endIt = children.end();
     while (it != endIt)
     {
         control->isIteratorCorrupted = false;
-        ProcessControlHierarhy(*it);
+        ProcessControlHierarhy(it->Get());
         if (control->isIteratorCorrupted)
         {
             it = children.begin();
             continue;
         }
         ++it;
+    }
+}
+
+void UILayoutSystem::UpdateVisibilityRect(const Rect& visibilityRect)
+{
+    sharedLayouter->SetVisibilityRect(visibilityRect);
+    if (currentScreen.Valid())
+    {
+        currentScreen->SetLayoutDirty();
+    }
+    if (popupContainer.Valid())
+    {
+        popupContainer->SetLayoutDirty();
     }
 }
 }

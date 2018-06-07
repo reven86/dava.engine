@@ -13,6 +13,14 @@ struct IController
     // There should be a virtual destructor defined as objects may be deleted through this interface
     virtual ~IController();
 
+    enum Status
+    {
+        NOT_STARTED,
+        STARTED,
+        START_FAILED
+    };
+    virtual Status GetStatus() const = 0;
+
     virtual void Start() = 0;
     virtual void Stop(Function<void(IController*)> callback) = 0;
     virtual void Restart() = 0;

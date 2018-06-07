@@ -1,10 +1,9 @@
 #pragma once
 
-#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
-#include "Engine/Private/Qt/RenderWidgetBackend.h"
 
-#include <Base/BaseTypes.h>
+#include "Base/BaseTypes.h"
+#include "Engine/Private/Qt/RenderWidgetBackend.h"
 
 #include <QQuickWidget>
 #include <QEvent>
@@ -25,6 +24,7 @@ public:
     void ReleaseContext() override;
 
 protected:
+    void showEvent(QShowEvent* e) override;
     bool event(QEvent* e) override;
     bool eventFilter(QObject* object, QEvent* e) override;
     bool IsInFullScreen() const override;
@@ -56,4 +56,3 @@ private:
 } // namespace DAVA
 
 #endif // __DAVAENGINE_QT__
-#endif // __DAVAENGINE_COREV2__

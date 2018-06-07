@@ -2,7 +2,6 @@
 
 #include "Base/Platform.h"
 
-#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_WIN32__)
 
 #include <ShellScalingApi.h>
@@ -41,4 +40,3 @@ struct DllImport final
 } // namespace DAVA
 
 #endif // __DAVAENGINE_WIN32__
-#endif // __DAVAENGINE_COREV2__

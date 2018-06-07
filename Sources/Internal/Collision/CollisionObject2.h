@@ -32,7 +32,7 @@ public:
     /// NOTE! Polygon2 pointer must be valid as long as CollisionObject2 lives!
     void SetPolygon(Polygon2* p);
 
-    void Update(const Sprite::DrawState& state);
+    void Update(const SpriteDrawState& state);
     void DebugDraw();
 
     bool IsCollideWith(CollisionObject2* collObject);

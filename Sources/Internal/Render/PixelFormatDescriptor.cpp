@@ -1,4 +1,5 @@
 #include "Render/PixelFormatDescriptor.h"
+#include "Render/Image/Image.h"
 #include "Utils/Utils.h"
 #include "Render/Renderer.h"
 
@@ -116,5 +117,50 @@ bool PixelFormatDescriptor::IsFormatSizeByteDivisible(PixelFormat format)
 {
     PixelFormatDescriptor descriptor = GetPixelFormatDescriptor(format);
     return (descriptor.pixelSize % 8 == 0 && descriptor.blockSize == Size2i(1, 1));
+}
+
+bool PixelFormatDescriptor::IsFloatPixelFormat(PixelFormat fmt)
+{
+    return (fmt == PixelFormat::FORMAT_R16F) || (fmt == PixelFormat::FORMAT_R32F) ||
+    (fmt == PixelFormat::FORMAT_RG16F) || (fmt == PixelFormat::FORMAT_RG32F) ||
+    (fmt == PixelFormat::FORMAT_RGB16F) || (fmt == PixelFormat::FORMAT_RGB32F) ||
+    (fmt == PixelFormat::FORMAT_RGBA16F) || (fmt == PixelFormat::FORMAT_RGBA32F);
+}
+
+void PixelFormatDescriptor::GetFloatFormatInfo(uint32 width, PixelFormat format, uint32& channels, uint32& channelSize, uint32& pitch)
+{
+    static const DAVA::Map<DAVA::PixelFormat, std::pair<uint32, uint32>> mapping =
+    {
+      { FORMAT_R16F, { 1, 2 } },
+      { FORMAT_R32F, { 1, 4 } },
+      { FORMAT_RG16F, { 2, 2 } },
+      { FORMAT_RG32F, { 2, 4 } },
+      { FORMAT_RGB16F, { 3, 2 } },
+      { FORMAT_RGB32F, { 3, 4 } },
+      { FORMAT_RGBA16F, { 4, 2 } },
+      { FORMAT_RGBA32F, { 4, 4 } },
+    };
+    auto i = mapping.find(format);
+    DVASSERT(i != mapping.end(), "Unsupported input format supplied to GetFloatFormatInfo");
+    channels = i->second.first;
+    channelSize = i->second.second;
+    pitch = ImageUtils::GetPitchInBytes(width, format);
+}
+
+bool PixelFormatDescriptor::IsDxtFormat(PixelFormat format)
+{
+    return (format >= FORMAT_DXT1 && format <= FORMAT_DXT5NM);
+}
+
+bool PixelFormatDescriptor::IsAtcFormat(PixelFormat format)
+{
+    return (format == FORMAT_ATC_RGB ||
+            format == FORMAT_ATC_RGBA_EXPLICIT_ALPHA ||
+            format == FORMAT_ATC_RGBA_INTERPOLATED_ALPHA);
+}
+
+bool PixelFormatDescriptor::IsPVRFormat(PixelFormat format)
+{
+    return (format == FORMAT_PVR2 || format == FORMAT_PVR4 || format == FORMAT_ETC1);
 }
 }

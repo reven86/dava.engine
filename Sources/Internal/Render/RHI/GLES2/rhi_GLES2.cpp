@@ -279,6 +279,10 @@ static void gles_check_GL_extensions()
         }
     }
 
+#ifdef __DAVAENGINE_WIN32__
+    MutableDeviceCaps::Get().isInstancingSupported = (glVertexAttribDivisor != nullptr);
+#endif
+    
 #ifdef __DAVAENGINE_ANDROID__
     if (_GLES2_TimeStampQuerySupported)
     {
@@ -340,6 +344,14 @@ static void gles_check_GL_extensions()
         GL_CALL(glGetIntegerv(GL_MAX_SAMPLES, &maxSamples));
         DAVA::Logger::Info("GL_MAX_SAMPLES -> %d", maxSamples);
     }
+
+#ifdef __DAVAENGINE_MACOS__
+    if (strstr(renderer, "Radeon HD 2400") != nullptr ||
+        strstr(renderer, "Radeon HD 2600") != nullptr)
+    {
+        maxSamples = 1;
+    }
+#endif
 
     MutableDeviceCaps::Get().maxSamples = static_cast<uint32>(maxSamples);
 

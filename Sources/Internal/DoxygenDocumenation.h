@@ -284,11 +284,12 @@
 		gameScreen.Set(new GameScreen());
 		winScreen = newref(WinScreen);
 
-		UIScreenManager::Instance()->RegisterScreen(SCREEN_MAIN_MENU, mainMenuScreen.Get());
-		UIScreenManager::Instance()->RegisterScreen(SCREEN_GAME, gameScreen.Get());
-		UIScreenManager::Instance()->RegisterScreen(SCREEN_WIN, winScreen.Get());
+        
+		GetEngineContext()->uiScreenManager->RegisterScreen(SCREEN_MAIN_MENU, mainMenuScreen.Get());
+		GetEngineContext()->uiScreenManager->RegisterScreen(SCREEN_GAME, gameScreen.Get());
+		GetEngineContext()->uiScreenManager->RegisterScreen(SCREEN_WIN, winScreen.Get());
 
-		UIScreenManager::Instance()->SetFirst(SCREEN_GAME);
+		GetEngineContext()->uiScreenManager->SetFirst(SCREEN_GAME);
 	}
 
 	void GameCore::OnAppFinished()

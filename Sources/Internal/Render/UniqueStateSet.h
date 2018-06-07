@@ -1,8 +1,6 @@
-#ifndef __DAVAENGINE_UNIQUESTATESET_H__
-#define __DAVAENGINE_UNIQUESTATESET_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
-#include "Core/Core.h"
 
 const DAVA::uint32 InvalidUniqueHandle = -1;
 
@@ -150,6 +148,4 @@ int32 UniqueStateSet<T>::RetainUnique(UniqueHandle handle)
     refCounters[handle] += 1;
     return refCounters[handle];
 }
-};
-
-#endif /* defined(__DAVAENGINE_UNIQUESTATESET_H__) */
+}

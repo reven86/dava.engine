@@ -76,7 +76,23 @@ static const char* _reservedWords[] =
   "technique",
   "pass",
   "blending",
-  "color_mask"
+  "blending0",
+  "blending1",
+  "blending2",
+  "blending3",
+  "blending4",
+  "blending5",
+  "blending6",
+  "blending7",
+  "color_mask",
+  "color_mask0",
+  "color_mask1",
+  "color_mask2",
+  "color_mask3",
+  "color_mask4",
+  "color_mask5",
+  "color_mask6",
+  "color_mask7"
 };
 
 static bool GetIsSymbol(char c)
@@ -300,7 +316,7 @@ bool HLSLTokenizer::SkipWhitespace()
 bool HLSLTokenizer::SkipComment()
 {
     bool result = false;
-    if (m_buffer[0] == '/')
+    if (m_buffer && (m_buffer[0] == '/'))
     {
         if (m_buffer[1] == '/')
         {

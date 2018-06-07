@@ -19,6 +19,7 @@ public:
         STRING,
         IDENTIFIER,
         COMMA,
+        SEMICOLON,
         DOT,
         PLUS,
         MINUS,
@@ -32,9 +33,11 @@ public:
         LT,
         GE,
         GT,
+        ASSIGN,
         EQ,
         NOT_EQ,
-        ASSIGN_SIGN, // =
+        WHEN,
+        ARROW,
         OPEN_BRACKET, // (
         CLOSE_BRACKET, // )
         OPEN_CURLY_BRACKET, // {

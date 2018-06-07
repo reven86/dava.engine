@@ -21,12 +21,8 @@ ModuleManager::ModuleManager(Engine* engine)
 
 ModuleManager::~ModuleManager()
 {
-    for (auto it = rbegin(modules); it != rend(modules); ++it)
-    {
-        delete *it;
-    }
-    modules.clear();
-    searchIndex.clear();
+    DVASSERT(modules.empty());
+    DVASSERT(searchIndex.empty());
 }
 
 void ModuleManager::InitModules()
@@ -49,6 +45,7 @@ void ModuleManager::ShutdownModules()
         delete *it;
     }
     modules.clear();
+    searchIndex.clear();
 }
 
 DAVA::IModule* ModuleManager::GetModule(const String& permanentName) const

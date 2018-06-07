@@ -95,12 +95,7 @@ void UISoundSystem::SetupEventPan(SoundEvent* event, const UIEvent* uiEvent, con
             pointX = control->GetAbsoluteRect().GetCenter().x;
         }
 
-#if defined(__DAVAENGINE_COREV2__)
         pan = PAN_LEFT + PAN_RANGE * (pointX / GetPrimaryWindow()->GetVirtualSize().dx);
-#else
-        pan = PAN_LEFT + PAN_RANGE * (pointX / VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx);
-#endif
-
         event->SetParameterValue(UISoundSystemDetail::SOUND_PARAM_PAN, pan);
     }
 }
@@ -124,8 +119,6 @@ RefPtr<SoundEvent> UISoundSystem::GetEvent(const FastName& eventName)
         RefPtr<SoundEvent> event(SoundSystem::Instance()->CreateSoundEventByID(eventName, UISoundSystemDetail::SOUND_GROUP));
 
         soundEvents[eventName] = event;
-
-        event->SetVolume(volume);
 
         return event;
     }

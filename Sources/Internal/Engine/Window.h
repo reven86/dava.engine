@@ -1,20 +1,15 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-
-#if defined(__DAVAENGINE_COREV2__)
-
-#include <bitset>
-
+#include "Engine/EngineTypes.h"
+#include "Engine/Private/EnginePrivateFwd.h"
+#include "Engine/Private/EngineBackend.h"
 #include "Functional/Signal.h"
 #include "Math/Math2D.h"
 #include "Math/Rect.h"
 #include "Math/Vector.h"
 
-#include "Engine/EngineTypes.h"
-#include "Engine/PlatformApi.h"
-#include "Engine/Private/EnginePrivateFwd.h"
-#include "Engine/Private/EngineBackend.h"
+#include <bitset>
 
 namespace rhi
 {
@@ -26,6 +21,16 @@ namespace DAVA
 class InputSystem;
 class UIControlSystem;
 class VirtualCoordinatesSystem;
+
+/** Describes input handling modes for `Window` class */
+enum class eInputHandlingModes
+{
+    /** Window handles input only when focused */
+    HANDLE_ONLY_WHEN_FOCUSED,
+
+    /** Window handles input in both focused and unfocused states */
+    HANDLE_ALWAYS
+};
 
 /**
     \ingroup engine
@@ -50,7 +55,7 @@ class VirtualCoordinatesSystem;
 
     Window has special attribute denoting whether window is primary:
         - primary window is the first Window instance created by dava.engine.
-        - primary window become available to application after `Engine::Init` method has been invoked except `Engine` has been
+        - primary window becomes available to application after `Engine::Init` method has been invoked, except when `Engine` has been
           initialized to run in console mode (`eEngineRunMode::CONSOLE_MODE`).
         - closing primary window leads to application exit.
     Application can get primary window instance through `Engine::PrimaryWindow` method or throught freestanding `GetPrimaryWindow` function.
@@ -139,11 +144,20 @@ public:
         Request has no effect in these cases:
             - window does not support resizing, this is the case on mobile platforms.
             - the requested size is greater than the available work area which depends on system settings.
-            - the requested size is less than minimum size defined by aplication or system.
+            - the requested size is less than minimum size defined by application or system.
 
         Performed asynchronously, use `sizeChanged` signal to track window size changing.
     */
     void SetSizeAsync(Size2f size);
+
+    /**
+        Request to activate minimized or inactive window, i.e. put it at the top of window hierarchy to be visible by user.
+
+        Note that this method is supported only on desktop platforms except Win10.
+
+        Performed asynchronously, window activation state changes can be traced by `visibilityChanged` and `focusChanged` signals.
+    */
+    void ActivateAsync();
 
     /**
         Set the smallest size, in DIPs, of window client area.
@@ -284,6 +298,13 @@ public:
     */
     bool GetCursorVisibility() const;
 
+    /**
+        Set input handling mode.
+
+        By default, eInputHandlingModes::HANDLE_ONLY_WHEN_FOCUSED is used.
+    */
+    void SetInputHandlingMode(eInputHandlingModes mode);
+
     /** Get Window's UIControlSystem */
     UIControlSystem* GetUIControlSystem() const;
 
@@ -294,11 +315,13 @@ public:
     // Signals
     Signal<Window*, bool /*visible*/> visibilityChanged; //<! Emitted when window visibility has changed.
     Signal<Window*, bool /*hasFocus*/> focusChanged; //<! Emitted when window has gained or lost keyboard focus.
+    Signal<Window*, eCursorCapture /*cursorCapture*/> cursorCaptureChanged; //<!Emitted when window cursor capture mode has changed.
     Signal<Window*, float32> dpiChanged; //<! Emitted when DPI of the display where window is on has changed.
     Signal<Window*, Size2f /* windowSize*/, Size2f /* surfaceSize */> sizeChanged; //<! Emitted when window client ares size or surface size has changed.
     Signal<Window*, float32> update; //!< Emitted on each frame if window is visible.
     Signal<Window*> draw; //!< Emited after `update` signal after `UIControlSystem::Draw`
     Signal<Window*, Rect /*visibleFrameRect*/> visibleFrameChanged; //!< Emitted when window visible frame changed (showed virtual keyboard over window).
+    Signal<Window*> backNavigation; //!< Emitted when user presses a back button or its alternative (like Win + Backspace on UWP).
 
 private:
     /// Initialize platform specific render params, e.g. acquire/release context functions for Qt platform
@@ -307,7 +330,7 @@ private:
     void Draw();
 
     /// Process main dispatcher events targeting this window
-    void EventHandler(const Private::MainDispatcherEvent& e);
+    bool EventHandler(const Private::MainDispatcherEvent& e);
     /// Do some window specific tasks after all dispatcher events have been processed on current frame,
     /// e.g. initiate processing tasks on window UI thread
     void FinishEventHandlingOnCurrentFrame();
@@ -319,16 +342,10 @@ private:
     void HandleDpiChanged(const Private::MainDispatcherEvent& e);
     void HandleCancelInput(const Private::MainDispatcherEvent& e);
     void HandleVisibleFrameChanged(const Private::MainDispatcherEvent& e);
+    void HandleSafeAreaInsetsChanged(const Private::MainDispatcherEvent& e);
     void HandleFocusChanged(const Private::MainDispatcherEvent& e);
     void HandleVisibilityChanged(const Private::MainDispatcherEvent& e);
-    void HandleMouseClick(const Private::MainDispatcherEvent& e);
-    void HandleMouseWheel(const Private::MainDispatcherEvent& e);
-    void HandleMouseMove(const Private::MainDispatcherEvent& e);
-    void HandleTouchClick(const Private::MainDispatcherEvent& e);
-    void HandleTouchMove(const Private::MainDispatcherEvent& e);
     void HandleTrackpadGesture(const Private::MainDispatcherEvent& e);
-    void HandleKeyPress(const Private::MainDispatcherEvent& e);
-    void HandleKeyChar(const Private::MainDispatcherEvent& e);
     bool HandleInputActivation(const Private::MainDispatcherEvent& e);
 
     void MergeSizeChangedEvents(const Private::MainDispatcherEvent& e);
@@ -337,7 +354,7 @@ private:
 private:
     Private::EngineBackend* engineBackend = nullptr;
     Private::MainDispatcher* mainDispatcher = nullptr;
-    std::unique_ptr<Private::WindowBackend> windowBackend;
+    std::unique_ptr<Private::WindowImpl> windowImpl;
 
     InputSystem* inputSystem = nullptr;
     UIControlSystem* uiControlSystem = nullptr;
@@ -349,9 +366,6 @@ private:
     bool sizeEventsMerged = false; // Flag indicating that all size events are merged on current frame
     eFullscreen fullscreenMode = eFullscreen::Off;
 
-    // Shortcut for eMouseButtons::COUNT
-    static const size_t MOUSE_BUTTON_COUNT = static_cast<size_t>(eMouseButtons::COUNT);
-    std::bitset<MOUSE_BUTTON_COUNT> mouseButtonState;
     eCursorCapture cursorCapture = eCursorCapture::OFF;
     bool cursorVisible = false;
     bool waitInputActivation = false;
@@ -361,6 +375,8 @@ private:
     float32 surfaceWidth = 0.0f; //!< Window rendering surface width.
     float32 surfaceHeight = 0.0f; //!< Window rendering surface height.
     float32 surfaceScale = 1.0f; //!< Window rendering surface scale.
+
+    eInputHandlingModes inputHandlingMode = eInputHandlingModes::HANDLE_ONLY_WHEN_FOCUSED;
 };
 
 inline bool Window::IsPrimary() const
@@ -414,5 +430,3 @@ inline eFullscreen Window::GetFullscreen() const
 }
 
 } // namespace DAVA
-
-#endif // __DAVAENGINE_COREV2__

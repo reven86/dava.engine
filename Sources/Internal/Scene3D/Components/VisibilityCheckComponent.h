@@ -10,9 +10,6 @@ namespace DAVA
 class VisibilityCheckComponent : public Component
 {
 public:
-    IMPLEMENT_COMPONENT_TYPE(VISIBILITY_CHECK_COMPONENT);
-
-public:
     VisibilityCheckComponent();
     Component* Clone(Entity* toEntity) override;
 
@@ -75,22 +72,6 @@ private:
     bool shouldPlaceOnLandscape = true;
     bool shouldRebuildPointSet = true;
     bool debugDrawEnabled = false;
-
-public:
-    INTROSPECTION_EXTEND(VisibilityCheckComponent, Component,
-                         PROPERTY("Enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("Radius", "Radius", GetRadius, SetRadius, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("Distance Between Points", "Minimal distance between points", GetDistanceBetweenPoints, SetDistanceBetweenPoints, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("Maximum Distance", "Maximum distance to check", GetMaximumDistance, SetMaximumDistance, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("Up Angle", "Up Angle", GetUpAngle, SetUpAngle, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("Down Angle", "Down Angle", GetDownAngle, SetDownAngle, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("Vertical Variance", "Vertical Variance", GetVerticalVariance, SetVerticalVariance, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("Color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("Normalize Color", "If enabled scales overlay's color to match current color.", ShouldNormalizeColor, SetShouldNormalizeColor, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("Place on Landscape", "Snaps each point to landscape", ShouldPlaceOnLandscape, SetShouldPlaceOnLandscape, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("Height Above the Landscape", "Distance from landscape to each point", GetHeightAboveLandscape, SetHeightAboveLandscape, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("Debug draw", "Debug draw", GetDebugDrawEnabled, SetDebugDrawEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         )
 
     DAVA_VIRTUAL_REFLECTION(VisibilityCheckComponent, Component);
 };

@@ -1,24 +1,36 @@
-#ifndef __DAVAENGINE_FONTMANAGER_H__
-#define __DAVAENGINE_FONTMANAGER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
+#include "Base/RefPtr.h"
 #include "Base/Singleton.h"
+#include "Render/2D/FontPreset.h"
 
 namespace DAVA
 {
 class Font;
 class FTManager;
+class FilePath;
 
-class FontManager : public Singleton<FontManager>
+namespace FontManagerDetails
+{
+struct FontConfigDescriptor;
+}
+
+class FontManager final
 {
 public:
     FontManager();
-    virtual ~FontManager();
+    ~FontManager();
+
+    FontManager(const FontManager&) = delete;
+    FontManager& operator==(const FontManager&) = delete;
 
     FTManager* GetFT()
     {
         return ftmanager.get();
     }
+
+    RefPtr<Font> LoadFont(const FilePath& fontPath);
 
     /**
 	 \brief Register font.
@@ -28,49 +40,48 @@ public:
 	 \brief Unregister font.
 	 */
     void UnregisterFont(Font* font);
-    /**
-	 \brief Register all fonts.
-	 */
-    void RegisterFonts(const Map<String, Font*>& fonts);
-    /**
-	 \brief Unregister all fonts.
-	 */
-    void UnregisterFonts();
 
     /**
-	 \brief Set font name.
+	 \brief Register all fonts presets.
 	 */
-    void SetFontName(Font* font, const String& name);
+    void RegisterFontsPresets(const UnorderedMap<String, FontPreset>& presets);
+    /**
+	 \brief Unregister all fonts presets.
+	 */
+    void UnregisterFontsPresets();
 
     /**
-	 \brief Get traked font name. Add font to track list.
+	 \brief Set font preset name.
 	 */
-    String GetFontName(Font* font) const;
+    void SetFontPreset(const FontPreset& preset, const String& name);
+
+    /**
+     \brief Get font preset name by font preset.
+     */
+    String GetFontPresetName(const FontPreset& preset) const;
 
     /**
 	 \brief Get font by name.
 	 */
-    Font* GetFont(const String& name) const;
+    const FontPreset& GetFontPreset(const String& name) const;
 
     /**
 	 \brief Get registered fonts.
 	 */
-    const Map<Font*, String>& GetRegisteredFonts() const;
+    const UnorderedMap<Font*, String>& GetRegisteredFonts() const;
 
     /**
      \brief Get name->font map.
      */
-    const Map<String, Font*>& GetFontMap() const;
+    const UnorderedMap<String, FontPreset>& GetFontPresetMap() const;
 
 private:
     String GetFontHashName(Font* font) const;
 
 private:
-    Map<Font*, String> registeredFonts;
-    Map<String, Font*> fontMap;
+    UnorderedMap<Font*, String> registeredFonts;
+    UnorderedMap<String, FontPreset> fontPresetMap;
+    UnorderedMap<String, std::unique_ptr<FontManagerDetails::FontConfigDescriptor>> fontConfigs;
     std::unique_ptr<FTManager> ftmanager;
 };
 };
-
-
-#endif //__DAVAENGINE_FONTMANAGER_H__

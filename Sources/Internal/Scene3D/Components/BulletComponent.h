@@ -15,8 +15,6 @@ protected:
     virtual ~BulletComponent();
 
 public:
-    IMPLEMENT_COMPONENT_TYPE(BULLET_COMPONENT);
-
     BulletComponent();
 
     void SetBulletObject(BaseObject* bulletObject);
@@ -28,11 +26,6 @@ public:
 
 private:
     BaseObject* bulletObject;
-
-public:
-    INTROSPECTION_EXTEND(BulletComponent, Component,
-                         PROPERTY("bulletObject", "Bullet Object", GetBulletObject, SetBulletObject, I_SAVE | I_VIEW | I_EDIT)
-                         );
 
     DAVA_VIRTUAL_REFLECTION(BulletComponent, Component);
 };

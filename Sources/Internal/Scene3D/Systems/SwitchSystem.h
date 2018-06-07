@@ -15,6 +15,7 @@ public:
     void ImmediateEvent(Component* component, uint32 event) override;
     void AddEntity(Entity* entity) override;
     void RemoveEntity(Entity* entity) override;
+    void PrepareForRemove() override;
 
 private:
     Set<Entity*> updatableEntities;

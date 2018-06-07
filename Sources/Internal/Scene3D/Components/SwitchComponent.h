@@ -15,8 +15,6 @@ protected:
     ~SwitchComponent(){};
 
 public:
-    IMPLEMENT_COMPONENT_TYPE(SWITCH_COMPONENT);
-
     SwitchComponent();
 
     Component* Clone(Entity* toEntity) override;
@@ -31,11 +29,6 @@ private:
     int32 newSwitchIndex;
 
     friend class SwitchSystem;
-
-public:
-    INTROSPECTION_EXTEND(SwitchComponent, Component,
-                         PROPERTY("newSwitchIndex", "Switch index", GetSwitchIndex, SetSwitchIndex, I_VIEW | I_EDIT)
-                         );
     DAVA_VIRTUAL_REFLECTION(SwitchComponent, Component);
 };
 }

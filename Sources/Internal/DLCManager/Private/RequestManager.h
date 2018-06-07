@@ -1,9 +1,15 @@
 #pragma once
 
-#include "DLCManager/Private/PackRequest.h"
+#include "Base/String.h"
+#include "Base/Vector.h"
+#include "Base/UnordererSet.h"
+#include "Base/List.h"
 
 namespace DAVA
 {
+class DLCManagerImpl;
+class PackRequest;
+
 class RequestManager
 {
 public:
@@ -24,15 +30,20 @@ public:
     void Pop();
     void SetPriorityToRequest(PackRequest* request);
     void Remove(PackRequest* request);
-
     void SwapPointers(PackRequest* newPointer, PackRequest* oldInvalidPointer);
+    const Vector<PackRequest*>& GetRequests() const;
+    void Clear();
 
 private:
     void FireStartLoadingSignal(PackRequest& request, bool inBackground);
     void FireUpdateSignal(PackRequest& request, bool inBackground);
-
+    void OneUpdateIteration(bool inBackground);
     void FireStartLoadingWhileInactiveSignals();
     void FireUpdateWhileInactiveSignals();
+    bool IsQueueOrderChangedDuringLastIteration() const
+    {
+        return isQueueChanged;
+    }
 
     DLCManagerImpl& packManager;
     Vector<PackRequest*> requests;
@@ -41,6 +52,7 @@ private:
     // use List to preserve the order of incoming events
     List<String> requestStartedWhileInactive;
     List<String> requestUpdatedWhileInactive;
+    bool isQueueChanged = false;
 };
 
 inline bool RequestManager::IsInQueue(const String& packName) const

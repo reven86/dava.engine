@@ -1,16 +1,14 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/Android/PlatformCoreAndroid.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "Base/Exception.h"
 #include "Engine/Window.h"
-#include "Engine/Android/JNIBridge.h"
+#include "Engine/PlatformApiAndroid.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
 #include "Engine/Private/Android/AndroidBridge.h"
-#include "Engine/Private/Android/Window/WindowBackendAndroid.h"
+#include "Engine/Private/Android/WindowImplAndroid.h"
 
 #include "Debug/Backtrace.h"
 #include "Input/InputSystem.h"
@@ -116,11 +114,27 @@ void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
     androidBridge->SetScreenTimeoutEnabled(enabled);
 }
 
-WindowBackend* PlatformCore::ActivityOnCreate()
+WindowImpl* PlatformCore::ActivityOnCreate()
 {
     Window* primaryWindow = engineBackend->InitializePrimaryWindow();
-    WindowBackend* primaryWindowBackend = EngineBackend::GetWindowBackend(primaryWindow);
-    return primaryWindowBackend;
+    WindowImpl* primaryWindowImpl = EngineBackend::GetWindowImpl(primaryWindow);
+    return primaryWindowImpl;
+}
+
+void PlatformCore::ActivityOnFileIntent(String filename, bool onStartup)
+{
+    if (onStartup)
+    {
+        // Main thread is not running yet so we can safely add filenames without any synchronization
+        engineBackend->AddActivationFilename(std::move(filename));
+    }
+    else
+    {
+        RunOnMainThreadAsync([ this, filename = std::move(filename) ]() mutable {
+            engineBackend->AddActivationFilename(std::move(filename));
+            engineBackend->OnFileActivated();
+        });
+    }
 }
 
 void PlatformCore::ActivityOnResume()
@@ -157,6 +171,28 @@ void PlatformCore::ActivityOnDestroy()
     engineBackend->PostAppTerminate(true);
 }
 
+void PlatformCore::ActivityOnTrimMemory(int32 level)
+{
+    Logger::PlatformLog(Logger::LEVEL_INFO, Format("Trim memory lvl [%i].", level).c_str());
+
+    // https://developer.android.com/reference/android/content/ComponentCallbacks2.html
+    enum TrimLevel
+    {
+        TRIM_MEMORY_BACKGROUND = 40, // the process has gone on to the LRU list.
+        TRIM_MEMORY_COMPLETE = 80, // the process is nearing the end of the background LRU list, and if more memory isn't found soon it will be killed.
+        TRIM_MEMORY_MODERATE = 60, // the process is around the middle of the background LRU list; freeing memory can help the system keep other processes running later in the list for better overall performance.
+        TRIM_MEMORY_RUNNING_CRITICAL = 15, // the process is not an expendable background process, but the device is running extremely low on memory and is about to not be able to keep any background processes running.
+        TRIM_MEMORY_RUNNING_LOW = 10, // the process is not an expendable background process, but the device is running low on memory.
+        TRIM_MEMORY_RUNNING_MODERATE = 5, // the process is not an expendable background process, but the device is running moderately low on memory.
+        TRIM_MEMORY_UI_HIDDEN = 20, // the process had been showing a user interface, and is no longer doing so.
+    };
+
+    if ((level >= TRIM_MEMORY_RUNNING_MODERATE && level <= TRIM_MEMORY_RUNNING_CRITICAL) || level == TRIM_MEMORY_COMPLETE)
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::LOW_MEMORY));
+    }
+}
+
 void PlatformCore::GameThread()
 {
     try
@@ -168,13 +204,6 @@ void PlatformCore::GameThread()
         StringStream ss;
         ss << "!!! Unhandled DAVA::Exception \"" << e.what() << "\" at `" << e.file << "`: " << e.line << std::endl;
         ss << Debug::GetBacktraceString(e.callstack) << std::endl;
-        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
-        throw;
-    }
-    catch (const std::exception& e)
-    {
-        StringStream ss;
-        ss << "!!! Unhandled std::exception in DAVAMain: " << e.what() << std::endl;
         Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
         throw;
     }
@@ -194,4 +223,3 @@ void PlatformCore::OnGamepadRemoved(int32 deviceId)
 } // namespace DAVA
 
 #endif // __DAVAENGINE_ANDROID__
-#endif // __DAVAENGINE_COREV2__

@@ -1,6 +1,7 @@
 #ifndef __DAVAENGINE_UI_SIZE_POLICY_COMPONENT_H__
 #define __DAVAENGINE_UI_SIZE_POLICY_COMPONENT_H__
 
+#include "Math/Vector.h"
 #include "UI/Components/UIComponent.h"
 #include "Reflection/Reflection.h"
 
@@ -12,7 +13,7 @@ class LayoutFormula;
 class UISizePolicyComponent : public UIComponent
 {
     DAVA_VIRTUAL_REFLECTION(UISizePolicyComponent, UIComponent);
-    IMPLEMENT_UI_COMPONENT(UISizePolicyComponent);
+    DECLARE_UI_COMPONENT(UISizePolicyComponent);
 
 public:
     enum eSizePolicy

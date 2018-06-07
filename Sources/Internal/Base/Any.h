@@ -172,6 +172,34 @@ struct AnyCast
     static void RegisterDefault();
 };
 
+struct PointerValueAnyLess
+{
+    bool operator()(const Any& v1, const Any& v2) const
+    {
+        bool v1Empty = v1.IsEmpty();
+        bool v2Empty = v2.IsEmpty();
+
+        if (v1Empty == true && v2Empty == true)
+        {
+            return false;
+        }
+
+        if (v1Empty == true && v2Empty == false)
+        {
+            return false;
+        }
+
+        if (v1Empty == false && v2Empty == true)
+        {
+            return true;
+        }
+
+        DVASSERT(v1.GetType()->IsPointer() == true);
+        DVASSERT(v2.GetType()->IsPointer() == true);
+        return v1.Get<void*>() < v2.Get<void*>();
+    }
+};
+
 } // namespace DAVA
 
 #define __Dava_Any__

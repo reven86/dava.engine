@@ -1,5 +1,8 @@
 #include "WASDControllerSystem.h"
 
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
+
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 
@@ -9,9 +12,11 @@
 #include "Render/Highlevel/Camera.h"
 
 #include "Input/InputSystem.h"
-#include "Input/KeyboardDevice.h"
+#include "Input/Keyboard.h"
 
 #include "Utils/Utils.h"
+
+#include "DeviceManager/DeviceManager.h"
 
 namespace DAVA
 {
@@ -38,6 +43,11 @@ void WASDControllerSystem::RemoveEntity(Entity* entity)
     DVASSERT(removeResult);
 }
 
+void WASDControllerSystem::PrepareForRemove()
+{
+    entities.clear();
+}
+
 void WASDControllerSystem::Process(float32 timeElapsed)
 {
     float32 actualMoveSpeed = moveSpeed * timeElapsed;
@@ -46,8 +56,17 @@ void WASDControllerSystem::Process(float32 timeElapsed)
     if (0 == size)
         return;
 
-    KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-    if (keyboard.IsKeyPressed(Key::LSHIFT) || keyboard.IsKeyPressed(Key::LCTRL) || keyboard.IsKeyPressed(Key::LALT) || keyboard.IsKeyPressed(Key::RALT) || keyboard.IsKeyPressed(Key::RCTRL))
+    Keyboard* keyboard = GetEngineContext()->deviceManager->GetKeyboard();
+    if (keyboard == nullptr)
+    {
+        return;
+    }
+
+    if (keyboard->GetKeyState(eInputElements::KB_LSHIFT).IsPressed() ||
+        keyboard->GetKeyState(eInputElements::KB_RCTRL).IsPressed() ||
+        keyboard->GetKeyState(eInputElements::KB_LCTRL).IsPressed() ||
+        keyboard->GetKeyState(eInputElements::KB_RALT).IsPressed() ||
+        keyboard->GetKeyState(eInputElements::KB_LALT).IsPressed())
     {
         return;
     }
@@ -57,19 +76,19 @@ void WASDControllerSystem::Process(float32 timeElapsed)
         Camera* camera = GetCamera(entities[i]);
         if ((camera != nullptr) && (camera == GetScene()->GetDrawCamera()))
         {
-            if (keyboard.IsKeyPressed(Key::KEY_W) || keyboard.IsKeyPressed(Key::UP))
+            if (keyboard->GetKeyState(eInputElements::KB_W).IsPressed() || keyboard->GetKeyState(eInputElements::KB_UP).IsPressed())
             {
                 MoveForward(camera, actualMoveSpeed, DIRECTION_STRAIGHT);
             }
-            if (keyboard.IsKeyPressed(Key::KEY_S) || keyboard.IsKeyPressed(Key::DOWN))
+            if (keyboard->GetKeyState(eInputElements::KB_S).IsPressed() || keyboard->GetKeyState(eInputElements::KB_DOWN).IsPressed())
             {
                 MoveForward(camera, actualMoveSpeed, DIRECTION_INVERSE);
             }
-            if (keyboard.IsKeyPressed(Key::KEY_D) || keyboard.IsKeyPressed(Key::RIGHT))
+            if (keyboard->GetKeyState(eInputElements::KB_D).IsPressed() || keyboard->GetKeyState(eInputElements::KB_RIGHT).IsPressed())
             {
                 MoveRight(camera, actualMoveSpeed, DIRECTION_STRAIGHT);
             }
-            if (keyboard.IsKeyPressed(Key::KEY_A) || keyboard.IsKeyPressed(Key::LEFT))
+            if (keyboard->GetKeyState(eInputElements::KB_A).IsPressed() || keyboard->GetKeyState(eInputElements::KB_LEFT).IsPressed())
             {
                 MoveRight(camera, actualMoveSpeed, DIRECTION_INVERSE);
             }
@@ -80,7 +99,7 @@ void WASDControllerSystem::Process(float32 timeElapsed)
 void WASDControllerSystem::MoveForward(Camera* camera, float32 speed, eDirection direction)
 {
     Vector3 pos = camera->GetPosition();
-    const Vector3 dir = camera->GetDirection();
+    const Vector3& dir = camera->GetDirection();
 
     pos += (dir * speed * static_cast<float32>(direction));
 
@@ -91,10 +110,10 @@ void WASDControllerSystem::MoveForward(Camera* camera, float32 speed, eDirection
 void WASDControllerSystem::MoveRight(Camera* camera, float32 speed, eDirection direction)
 {
     Vector3 pos = camera->GetPosition();
-    const Vector3 dir = camera->GetDirection();
-    Vector3 left = camera->GetLeft();
+    Vector3 right = -camera->GetLeft();
+    const Vector3& dir = camera->GetDirection();
 
-    pos += (left * speed * static_cast<float32>(direction));
+    pos += (right * speed * static_cast<float32>(direction));
 
     camera->SetPosition(pos);
     camera->SetDirection(dir);

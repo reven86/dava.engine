@@ -22,7 +22,7 @@ inline void SceneNodeAnimationKey::GetMatrix(Matrix4& result) const
     Matrix4 localTransformRot;
     Matrix4 localTransformScale;
     localTransformRot = rotation.GetMatrix();
-    localTransformScale.CreateScale(scale);
+    localTransformScale.BuildScale(scale);
 
     result = localTransformRot * localTransformScale;
     result.SetTranslationVector(translation);

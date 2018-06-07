@@ -1,4 +1,5 @@
 #include "Animation/AnimationManager.h"
+#include "Engine/Engine.h"
 #include "Logger/Logger.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
@@ -9,33 +10,37 @@
 
 namespace DAVA
 {
+AnimationManager::~AnimationManager()
+{
+    DeleteAllFinishedAnimation();
+    DVASSERT(animations.empty());
+    DVASSERT(registeredAnimations.empty());
+}
+
 void AnimationManager::AddAnimation(Animation* animation)
 {
     Function<void()> fn = Bind(&AnimationManager::AddAnimationInternal, this, animation);
-    JobManager::Instance()->CreateMainJob(fn);
+    GetEngineContext()->jobManager->CreateMainJob(fn);
 }
 
 void AnimationManager::AddAnimationInternal(Animation* animation)
 {
-    animations.push_back(animation);
+    registeredAnimations.push_back(animation);
+    animations.push_back(RefPtr<Animation>(animation));
 }
 
-void AnimationManager::RemoveAnimation(Animation* animation)
+void AnimationManager::RemoveAnimation(const Animation* animation)
 {
     Function<void()> fn = Bind(&AnimationManager::RemoveAnimationInternal, this, animation);
-    JobManager::Instance()->CreateMainJob(fn);
+    GetEngineContext()->jobManager->CreateMainJob(fn);
 }
 
-void AnimationManager::RemoveAnimationInternal(Animation* animation)
+void AnimationManager::RemoveAnimationInternal(const Animation* animation)
 {
-    Vector<Animation*>::iterator endIt = animations.end();
-    for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
+    auto it = std::find(begin(registeredAnimations), end(registeredAnimations), animation);
+    if (it != registeredAnimations.end())
     {
-        if (*t == animation)
-        {
-            animations.erase(t);
-            break;
-        }
+        registeredAnimations.erase(it);
     }
 }
 
@@ -43,10 +48,10 @@ void AnimationManager::StopAnimations()
 {
     DVASSERT(Thread::IsMainThread());
 
-    Vector<Animation*>::iterator endIt = animations.end();
-    for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
+    auto endIt = animations.end();
+    for (auto it = animations.begin(); it != endIt; ++it)
     {
-        Animation* animation = *t;
+        Animation* animation = it->Get();
 
         animation->owner = 0; // zero owner to avoid any issues (it was a problem with DumpState, when animations was deleted before).
         animation->state &= ~Animation::STATE_IN_PROGRESS;
@@ -55,18 +60,18 @@ void AnimationManager::StopAnimations()
     }
 }
 
-void AnimationManager::DeleteAnimations(AnimatedObject* owner, int32 track)
+void AnimationManager::DeleteAnimations(const AnimatedObject* owner, int32 track)
 {
     Function<void()> fn = Bind(&AnimationManager::DeleteAnimationInternal, this, owner, track);
-    JobManager::Instance()->CreateMainJob(fn);
+    GetEngineContext()->jobManager->CreateMainJob(fn);
 }
 
-void AnimationManager::DeleteAnimationInternal(AnimatedObject* owner, int32 track)
+void AnimationManager::DeleteAnimationInternal(const AnimatedObject* owner, int32 track)
 {
-    Vector<Animation*>::iterator endIt = animations.end();
-    for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
+    auto endIt = animations.end();
+    for (auto it = animations.begin(); it != endIt; ++it)
     {
-        Animation* animation = *t;
+        Animation* animation = it->Get();
         if ((track != -1) && (animation->groupId != track))
         {
             continue;
@@ -82,14 +87,14 @@ void AnimationManager::DeleteAnimationInternal(AnimatedObject* owner, int32 trac
     }
 }
 
-Animation* AnimationManager::FindLastAnimation(AnimatedObject* _owner, int32 _groupId)
+Animation* AnimationManager::FindLastAnimation(const AnimatedObject* _owner, int32 _groupId) const
 {
     DVASSERT(Thread::IsMainThread());
 
-    Vector<Animation*>::iterator endIt = animations.end();
-    for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
+    auto endIt = animations.end();
+    for (auto it = animations.begin(); it != endIt; ++it)
     {
-        Animation* animation = *t;
+        Animation* animation = it->Get();
 
         if ((animation->owner == _owner) && (animation->groupId == _groupId))
         {
@@ -107,10 +112,10 @@ bool AnimationManager::IsAnimating(const AnimatedObject* owner, int32 track) con
 {
     DVASSERT(Thread::IsMainThread());
 
-    Vector<Animation*>::const_iterator endIt = animations.end();
-    for (Vector<Animation*>::const_iterator t = animations.begin(); t != endIt; ++t)
+    auto endIt = animations.end();
+    for (auto it = animations.begin(); it != endIt; ++it)
     {
-        Animation* animation = *t;
+        Animation* animation = it->Get();
 
         if ((track != -1) && (animation->groupId != track))
         {
@@ -125,14 +130,14 @@ bool AnimationManager::IsAnimating(const AnimatedObject* owner, int32 track) con
     return false;
 }
 
-Animation* AnimationManager::FindPlayingAnimation(AnimatedObject* owner, int32 _groupId)
+Animation* AnimationManager::FindPlayingAnimation(const AnimatedObject* owner, int32 _groupId) const
 {
     DVASSERT(Thread::IsMainThread());
 
-    Vector<Animation*>::iterator endIt = animations.end();
-    for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
+    auto endIt = animations.end();
+    for (auto it = animations.begin(); it != endIt; ++it)
     {
-        Animation* animation = *t;
+        Animation* animation = it->Get();
 
         if ((_groupId != -1) && (animation->groupId != _groupId))
         {
@@ -148,14 +153,14 @@ Animation* AnimationManager::FindPlayingAnimation(AnimatedObject* owner, int32 _
     return 0;
 }
 
-bool AnimationManager::HasActiveAnimations(AnimatedObject* owner) const
+bool AnimationManager::HasActiveAnimations(const AnimatedObject* owner) const
 {
     DVASSERT(Thread::IsMainThread());
 
-    Vector<Animation*>::const_iterator endIt = animations.end();
-    for (Vector<Animation*>::const_iterator t = animations.begin(); t != endIt; ++t)
+    auto endIt = animations.end();
+    for (auto it = animations.begin(); it != endIt; ++it)
     {
-        const Animation* animation = *t;
+        const Animation* animation = it->Get();
 
         if ((animation->owner == owner) && !(animation->state & Animation::STATE_FINISHED))
         {
@@ -175,7 +180,7 @@ void AnimationManager::Update(float32 timeElapsed)
         return;
 
     // update animations first
-    for (Animation* animation : animations)
+    for (const auto& animation : animations)
     {
         if (animation->state & Animation::STATE_IN_PROGRESS)
         {
@@ -193,7 +198,7 @@ void AnimationManager::Update(float32 timeElapsed)
     size_t size = animations.size();
     for (size_t k = 0; k < size; ++k)
     {
-        Animation* animation = animations[k];
+        Animation* animation = animations[k].Get();
 
         if (animation->state & Animation::STATE_FINISHED)
         {
@@ -202,13 +207,17 @@ void AnimationManager::Update(float32 timeElapsed)
     }
 
     //check all animation and process all callbacks on delete
-    for (Animation* animation : animations)
+    for (const auto& animation : animations)
     {
         if (animation->state & Animation::STATE_DELETE_ME)
         {
             if (!(animation->state & Animation::STATE_FINISHED))
             {
                 animation->OnCancel();
+            }
+            else
+            {
+                animation->state &= ~Animation::STATE_FINISHED;
             }
 
             if (animation->next && !(animation->next->state & Animation::STATE_DELETE_ME))
@@ -220,20 +229,25 @@ void AnimationManager::Update(float32 timeElapsed)
     }
 
     //we need physically remove animations only after process all callbacks
-    for (Animation* animation : animations)
+    DeleteAllFinishedAnimation();
+}
+
+void AnimationManager::DeleteAllFinishedAnimation()
+{
+    Vector<RefPtr<Animation>> finishedAnimations;
+    for (const auto& animation : animations)
     {
-        if (animation->state & Animation::STATE_DELETE_ME)
+        if ((animation->state & Animation::STATE_DELETE_ME))
         {
-            releaseCandidates.push_back(animation);
+            animation->state &= ~Animation::STATE_DELETE_ME;
+            DVASSERT(animation->state == 0);
+            animation->state |= Animation::STATE_DELETED;
+            finishedAnimations.push_back(animation);
         }
     }
 
-    //remove all release candidates animations
-    for (Animation* releaseAnimation : releaseCandidates)
-    {
-        SafeRelease(releaseAnimation);
-    }
-    releaseCandidates.clear();
+    auto newEndIt = std::remove_if(begin(animations), end(animations), [](const RefPtr<Animation>& animation) { return (animation->state & Animation::STATE_DELETED); });
+    animations.erase(newEndIt, animations.end());
 }
 
 void AnimationManager::DumpState()
@@ -241,11 +255,11 @@ void AnimationManager::DumpState()
     DVASSERT(Thread::IsMainThread());
 
     Logger::FrameworkDebug("============================================================");
-    Logger::FrameworkDebug("------------ Currently allocated animations - %2d ---------", animations.size());
+    Logger::FrameworkDebug("------------ Currently allocated animations - %2d ---------", registeredAnimations.size());
 
-    for (int k = 0, end = static_cast<int>(animations.size()); k < end; ++k)
+    for (size_t k = 0, end = registeredAnimations.size(); k < end; ++k)
     {
-        Animation* animation = animations[k];
+        Animation* animation = registeredAnimations[k];
 
         String ownerName = "no owner";
         if (animation->owner)
@@ -260,10 +274,10 @@ void AnimationManager::PauseAnimations(bool isPaused, int tag)
 {
     DVASSERT(Thread::IsMainThread());
 
-    Vector<Animation*>::iterator endIt = animations.end();
-    for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
+    auto endIt = animations.end();
+    for (auto it = animations.begin(); it != endIt; ++it)
     {
-        Animation*& a = *t;
+        Animation* a = it->Get();
 
         if (a->GetTagId() == tag)
         {
@@ -276,10 +290,10 @@ void AnimationManager::SetAnimationsMultiplier(float32 f, int tag)
 {
     DVASSERT(Thread::IsMainThread());
 
-    Vector<Animation*>::iterator endIt = animations.end();
-    for (Vector<Animation*>::iterator t = animations.begin(); t != endIt; ++t)
+    auto endIt = animations.end();
+    for (auto it = animations.begin(); it != endIt; ++it)
     {
-        Animation*& a = *t;
+        Animation* a = it->Get();
 
         if (a->GetTagId() == tag)
         {

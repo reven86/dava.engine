@@ -23,9 +23,9 @@ const float32 defaultFogHeight = 50.0f;
 const float32 defaultFogDensity = 0.005f;
 };
 
-void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMaterial* material, FastNameMap<PropData>& propsMap) const
+void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMaterial* material, PropDataMap& propsMap) const
 {
-    HashMap<FastName, int32> flags;
+    UnorderedMap<FastName, int32> flags;
     material->CollectMaterialFlags(flags);
 
     // shader data
@@ -50,7 +50,7 @@ void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMater
                         data.size = prop.arraySize;
                         data.type = prop.type;
                         data.defaultValue = prop.defaultValue;
-                        propsMap.insert(prop.uid, data);
+                        propsMap[prop.uid] = data;
                     }
                 }
             }
@@ -67,7 +67,7 @@ void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMater
             data.size = lp.second->arraySize;
             data.type = lp.second->type;
             data.defaultValue = nullptr;
-            propsMap.insert(lp.first, data);
+            propsMap[lp.first] = data;
         }
     }
 
@@ -77,10 +77,8 @@ void NMaterialStateDynamicPropertiesInsp::FindMaterialPropertiesRecursive(NMater
           { NMaterialParamName::PARAM_LIGHTMAP_SIZE, { 1, rhi::ShaderProp::TYPE_FLOAT1, &NMaterial::DEFAULT_LIGHTMAP_SIZE } },
         };
 
-        for (auto& prop : NOT_SHADER_PROPS)
-        {
-            propsMap.Insert(prop.first, prop.second);
-        }
+        // 'insert' with same key will not update value of the element, so do 'insert' in reverse order to allow overrides from code above.
+        propsMap.insert(NOT_SHADER_PROPS.rbegin(), NOT_SHADER_PROPS.rend());
     }
 
     if (material->GetParent())
@@ -113,14 +111,15 @@ Vector<FastName> NMaterialStateDynamicPropertiesInsp::MembersList(const DynamicD
 {
     Vector<FastName> ret;
 
-    FastNameMap<PropData>* members = static_cast<FastNameMap<PropData>*>(ddata.data.get());
+    UnorderedMap<FastName, PropData>* members = static_cast<UnorderedMap<FastName, PropData>*>(ddata.data.get());
+
     DVASSERT(members);
 
-    auto it = members->begin();
-    auto end = members->end();
-
     ret.reserve(members->size());
-    while (it != end)
+
+    auto it = members->cbegin();
+
+    while (it != members->cend())
     {
         ret.push_back(it->first);
         ++it;
@@ -156,14 +155,18 @@ VariantType NMaterialStateDynamicPropertiesInsp::MemberValueGet(const DynamicDat
     VariantType ret;
 
     NMaterial* material = static_cast<NMaterial*>(ddata.object);
+
     DVASSERT(material);
 
-    FastNameMap<PropData>* members = static_cast<FastNameMap<PropData>*>(ddata.data.get());
+    UnorderedMap<FastName, PropData>* members = static_cast<UnorderedMap<FastName, PropData>*>(ddata.data.get());
+
     DVASSERT(members);
 
-    if (members->count(key))
+    auto it = members->find(key);
+
+    if (it != members->end())
     {
-        const PropData& prop = members->at(key);
+        const PropData& prop = it->second;
         const float32* value = material->GetEffectivePropValue(key);
 
         if (nullptr == value)
@@ -227,14 +230,18 @@ bool NMaterialStateDynamicPropertiesInsp::IsColor(const FastName& propName) cons
 void NMaterialStateDynamicPropertiesInsp::MemberValueSet(const DynamicData& ddata, const FastName& key, const VariantType& value)
 {
     NMaterial* material = static_cast<NMaterial*>(ddata.object);
+
     DVASSERT(material);
 
-    FastNameMap<PropData>* members = static_cast<FastNameMap<PropData>*>(ddata.data.get());
+    UnorderedMap<FastName, PropData>* members = static_cast<UnorderedMap<FastName, PropData>*>(ddata.data.get());
+
     DVASSERT(members);
 
-    if (members->count(key))
+    auto it = members->find(key);
+
+    if (it != members->end())
     {
-        PropData prop = members->at(key);
+        PropData prop = it->second;
 
         if (value.GetType() == VariantType::TYPE_NONE /* && state->GetMaterialType() != NMaterial::MATERIALTYPE_GLOBAL */)
         {
@@ -323,20 +330,22 @@ void NMaterialStateDynamicPropertiesInsp::MemberValueSet(const DynamicData& ddat
 void NMaterialStateDynamicPropertiesInsp::FillGlobalMaterialMemebers(NMaterial* state, PropDataMap& data) const
 {
     auto checkAndAdd = [&data](const FastName& name, rhi::ShaderProp::Type type, uint32 size, const float32* defaultValue) {
-        if (0 == data.count(name))
+        auto it = data.find(name);
+
+        if (it == data.end())
         {
             PropData prop;
             prop.type = type;
             prop.defaultValue = defaultValue;
             prop.size = size;
 
-            data.insert(name, prop);
+            data[name] = prop;
         }
         else
         {
-            if (nullptr == data.at(name).defaultValue)
+            if (nullptr == it->second.defaultValue)
             {
-                data.at(name).defaultValue = defaultValue;
+                it->second.defaultValue = defaultValue;
             }
         }
     };
@@ -374,6 +383,7 @@ void NMaterialStateDynamicPropertiesInsp::FillGlobalMaterialMemebers(NMaterial* 
     checkAndAdd(NMaterialParamName::PARAM_DECAL_TILE_COLOR, rhi::ShaderProp::TYPE_FLOAT4, 1, Color::White.color);
     checkAndAdd(NMaterialParamName::PARAM_DETAIL_TILE_SCALE, rhi::ShaderProp::TYPE_FLOAT2, 1, DefaultValues::defaultVec2.data);
     checkAndAdd(NMaterialParamName::DEPRECATED_SHADOW_COLOR_PARAM, rhi::ShaderProp::TYPE_FLOAT4, 1, DefaultValues::defaultColor.color);
+    checkAndAdd(NMaterialParamName::FORCED_SHADOW_DIRECTION_PARAM, rhi::ShaderProp::TYPE_FLOAT3, 1, DefaultValues::defaultVec3.data);
     checkAndAdd(NMaterialParamName::WATER_CLEAR_COLOR, rhi::ShaderProp::TYPE_FLOAT4, 1, DefaultValues::blackColor.color);
 
     //checkAndAdd(NMaterialParamName::PARAM_NORMAL_SCALE, rhi::ShaderProp::TYPE_FLOAT1, 1, &DefaultValues::defaultFloat10);

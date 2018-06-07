@@ -342,6 +342,8 @@ bool NeedInvertProjection(const RenderPassConfig& passDesc)
     (passDesc.colorBuffer[1].texture != rhi::InvalidHandle) ||
     (passDesc.depthStencilBuffer.texture != rhi::InvalidHandle && passDesc.depthStencilBuffer.texture != rhi::DefaultDepthBuffer);
 
-    return (isRT && !DeviceCaps().isUpperLeftRTOrigin);
+    bool isCubemapRT = (passDesc.colorBuffer[0].textureFace != TEXTURE_FACE_NONE) || (passDesc.colorBuffer[1].textureFace != TEXTURE_FACE_NONE);
+
+    return isRT && ((!DeviceCaps().isUpperLeftRTOrigin && !isCubemapRT) || (isCubemapRT && DeviceCaps().isUpperLeftRTOrigin));
 }
 }

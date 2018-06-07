@@ -1,9 +1,8 @@
-#include "Engine/Private/iOS/AppDelegateiOS.h"
+#include "Engine/Private/Ios/AppDelegateIos.h"
 
-#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
-#include "Engine/Private/iOS/CoreNativeBridgeiOS.h"
+#include "Engine/Private/Ios/CoreNativeBridgeIos.h"
 
 namespace DAVA
 {
@@ -25,6 +24,16 @@ extern CoreNativeBridge* coreNativeBridge;
 {
     return bridge->ApplicationDidFinishLaunchingWithOptions(application, launchOptions);
 }
+
+// Apple recommends using `application:openURL:options:` selector to handle opening URLs but this selector
+// was introduced starting from iOS 9. But engine's client now uses deprecated but still usable
+// `application:openURL:sourceApplication:annotation:` selector and knows nothing about new selector.
+// So comment new handler and use old handler.
+// TODO: later make use of `application:openURL:options:`
+//- (BOOL)application:(UIApplication*)app openURL:(NSURL*)url options:(NSDictionary<UIApplicationOpenURLOptionsKey, id>*)options
+//{
+//    return bridge->ApplicationOpenUrl(url);
+//}
 
 - (void)applicationDidBecomeActive:(UIApplication*)application
 {
@@ -113,4 +122,3 @@ extern CoreNativeBridge* coreNativeBridge;
 @end
 
 #endif // __DAVAENGINE_IPHONE__
-#endif // __DAVAENGINE_COREV2__

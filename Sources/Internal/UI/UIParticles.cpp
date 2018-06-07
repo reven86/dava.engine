@@ -15,12 +15,12 @@ Camera* UIParticles::defaultCamera = nullptr;
 
 DAVA_VIRTUAL_REFLECTION_IMPL(UIParticles)
 {
-    ReflectionRegistrator<UIParticles>::Begin()
+    ReflectionRegistrator<UIParticles>::Begin()[M::DisplayName("Particles")]
     .ConstructorByPointer()
     .DestructorByPointer([](UIParticles* o) { o->Release(); })
-    .Field("effectPath", &UIParticles::GetEffectPath, &UIParticles::SetEffectPath)
-    .Field("autoStart", &UIParticles::IsAutostart, &UIParticles::SetAutostart)
-    .Field("startDelay", &UIParticles::GetStartDelay, &UIParticles::SetStartDelay)
+    .Field("effectPath", &UIParticles::GetEffectPath, &UIParticles::SetEffectPath)[M::DisplayName("Effect Path")]
+    .Field("autoStart", &UIParticles::IsAutostart, &UIParticles::SetAutostart)[M::DisplayName("Auto Start")]
+    .Field("startDelay", &UIParticles::GetStartDelay, &UIParticles::SetStartDelay)[M::DisplayName("Start Delay")]
     .End();
 }
 
@@ -209,18 +209,18 @@ void UIParticles::Draw(const UIGeometricData& geometricData)
 
     if (inheritControlTransform)
     {
-        matrix = Matrix4::MakeScale(Vector3(geometricData.scale.x, geometricData.scale.y, 1.f)) * Matrix4::MakeRotation(Vector3::UnitZ, -geometricData.angle);
+        matrix = Matrix4::MakeScale(Vector3(geometricData.scale.x, geometricData.scale.y, 1.f)) * Matrix4::MakeRotation(Vector3::UnitZ, geometricData.angle);
         matrix.SetTranslationVector(Vector3(geometricData.position.x, geometricData.position.y, 0));
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &matrix, reinterpret_cast<pointer_size>(&matrix));
 
-        effect->effectRenderObject->SetWorldTransformPtr(&Matrix4::IDENTITY);
+        effect->effectRenderObject->SetWorldMatrixPtr(&Matrix4::IDENTITY);
     }
     else
     {
-        matrix.CreateRotation(Vector3::UnitZ, -geometricData.angle);
+        matrix.BuildRotation(Vector3::UnitZ, geometricData.angle);
         matrix.SetTranslationVector(Vector3(geometricData.position.x, geometricData.position.y, 0));
-        effect->effectRenderObject->BindDynamicParameters(defaultCamera);
-        effect->effectRenderObject->SetWorldTransformPtr(&matrix);
+        effect->effectRenderObject->BindDynamicParameters(defaultCamera, nullptr);
+        effect->effectRenderObject->SetWorldMatrixPtr(&matrix);
     }
 
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_CAMERA_POS, &Vector3::Zero, reinterpret_cast<pointer_size>(&Vector3::Zero));
@@ -230,6 +230,7 @@ void UIParticles::Draw(const UIGeometricData& geometricData)
     for (int32 i = 0, sz = effect->effectRenderObject->GetActiveRenderBatchCount(); i < sz; ++i)
     {
         RenderBatch* batch = effect->effectRenderObject->GetActiveRenderBatch(i);
+
         NMaterial* material = batch->GetMaterial();
         material->PreBuildMaterial(PASS_FORWARD);
         material->BindParams(packet);

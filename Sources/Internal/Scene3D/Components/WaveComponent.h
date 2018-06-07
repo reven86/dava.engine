@@ -18,8 +18,6 @@ public:
     WaveComponent();
     WaveComponent(float32 waveAmlitude, float32 waveLenght, float32 waveSpeed, float32 dampingRatio, float32 influenceDistance);
 
-    IMPLEMENT_COMPONENT_TYPE(WAVE_COMPONENT);
-
     Component* Clone(Entity* toEntity) override;
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
@@ -43,15 +41,6 @@ protected:
     float32 speed;
     float32 damping;
     float32 infRadius;
-
-public:
-    INTROSPECTION_EXTEND(WaveComponent, Component,
-                         PROPERTY("amplitude", "amplitude", GetWaveAmplitude, SetWaveAmplitude, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("lenght", "lenght", GetWaveLenght, SetWaveLenght, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("speed", "speed", GetWaveSpeed, SetWaveSpeed, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("damping", "damping", GetDampingRatio, SetDampingRatio, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("infRadius", "infRadius", GetInfluenceRadius, SetInfluenceRadius, I_SAVE | I_VIEW | I_EDIT)
-                         );
 
     DAVA_VIRTUAL_REFLECTION(WaveComponent, Component);
 };

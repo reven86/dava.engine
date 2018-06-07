@@ -25,8 +25,6 @@ struct SoundComponentElement : public InspBase
     uint32 flags;
 
     bool operator==(const SoundComponentElement& other) const;
-
-    INTROSPECTION(SoundComponentElement, NULL);
     DAVA_VIRTUAL_REFLECTION(SoundComponentElement, InspBase);
 };
 
@@ -64,15 +62,8 @@ public:
     void SetLocalDirection(const DAVA::Vector3& direction);
     inline const Vector3& GetLocalDirection(uint32 eventIndex) const;
 
-    IMPLEMENT_COMPONENT_TYPE(SOUND_COMPONENT);
-
 protected:
     Vector<SoundComponentElement> events;
-
-public:
-    INTROSPECTION_EXTEND(SoundComponent, Component,
-                         COLLECTION(events, "events", I_SAVE | I_VIEW | I_EDIT)
-                         );
 
     DAVA_VIRTUAL_REFLECTION(SoundComponent, Component);
 };

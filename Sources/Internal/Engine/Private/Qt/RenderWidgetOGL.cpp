@@ -1,11 +1,12 @@
 #include "Engine/Private/Qt/RenderWidgetOGL.h"
 
-#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
+#include "Engine/Engine.h"
 #include "Engine/Qt/IClientDelegate.h"
 #include "Engine/Private/Qt/IWindowDelegate.h"
 #include "Input/InputSystem.h"
-#include "Input/KeyboardDevice.h"
+#include "Input/Keyboard.h"
+#include "DeviceManager/DeviceManager.h"
 #include "Logger/Logger.h"
 #include "Debug/DVAssert.h"
 
@@ -13,6 +14,7 @@
 #include <QQuickWindow>
 #include <QOpenGLContext>
 #include <QOpenGLFramebufferObject>
+#include <QPointer>
 
 namespace DAVA
 {
@@ -72,6 +74,18 @@ public:
         }
     }
 
+    void ReplaceContextIfNeed(QSurface* surface, QOpenGLContext* context)
+    {
+        if (davaContext.context != context)
+        {
+            DVASSERT(contextStack.size() == 1);
+            davaContext.context = context;
+            davaContext.surface = surface;
+            contextStack.pop();
+            contextStack.push(davaContext);
+        }
+    }
+
     static OGLContextBinder* binder;
 
 private:
@@ -84,7 +98,7 @@ private:
         }
 
         QSurface* surface = nullptr;
-        QOpenGLContext* context = nullptr;
+        QPointer<QOpenGLContext> context;
     };
 
     ContextNode davaContext;
@@ -153,7 +167,13 @@ void RenderWidgetOGL::OnFrame()
 
     QQuickWindow* wnd = quickWindow();
 
-    QVariant nativeHandle = wnd->openglContext()->nativeHandle();
+    QOpenGLContext* ctx = wnd->openglContext();
+    if (contextBinder != nullptr)
+    {
+        contextBinder->ReplaceContextIfNeed(ctx->surface(), ctx);
+    }
+
+    QVariant nativeHandle = ctx->nativeHandle();
     if (!nativeHandle.isValid())
     {
         DAVA::Logger::Error("GL context is not valid!");
@@ -205,7 +225,7 @@ void RenderWidgetOGL::InitCustomRenderParams(rhi::InitParam& params)
     params.threadedRenderFrameCount = 1;
     params.acquireContextFunc = &AcquireContextImpl;
     params.releaseContextFunc = &ReleaseContextImpl;
-    params.defaultFrameBuffer = reinterpret_cast<void*>(quickWindow()->renderTarget()->handle());
+    params.defaultFrameBuffer = reinterpret_cast<void*>(static_cast<intptr_t>(quickWindow()->renderTarget()->handle()));
 }
 
 void RenderWidgetOGL::AcquireContext()
@@ -227,8 +247,11 @@ void RenderWidgetOGL::OnActiveFocusItemChanged()
         item->installEventFilter(this);
     }
 
-    KeyboardDevice& kd = InputSystem::Instance()->GetKeyboard();
-    kd.ClearAllKeys(); //we need only reset keyboard status on focus changing
+    Keyboard* kb = GetEngineContext()->deviceManager->GetKeyboard();
+    if (kb != nullptr)
+    {
+        kb->ResetState(GetPrimaryWindow()); //we need only reset keyboard status on focus changing
+    }
 }
 
 void RenderWidgetOGL::OnSceneGraphInvalidated()
@@ -246,6 +269,11 @@ bool RenderWidgetOGL::event(QEvent* e)
     }
 
     return TBase::event(e);
+}
+
+void RenderWidgetOGL::showEvent(QShowEvent* e)
+{
+    TBase::showEvent(e);
 }
 
 bool RenderWidgetOGL::eventFilter(QObject* object, QEvent* e)
@@ -291,4 +319,3 @@ QWindow* RenderWidgetOGL::GetQWindow()
 } // namespace DAVA
 
 #endif // __DAVAENGINE_QT__
-#endif // __DAVAENGINE_COREV2__

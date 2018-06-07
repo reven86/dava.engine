@@ -12,11 +12,7 @@ class Window;
 class WebViewControl : public IWebViewControl
 {
 public:
-#if defined(__DAVAENGINE_COREV2__)
     WebViewControl(Window* w, UIWebView* uiWebView);
-#else
-    WebViewControl(UIWebView* uiWebView);
-#endif
     // Initialize the control.
     void Initialize(const Rect& rect) override;
 

@@ -10,7 +10,7 @@
 namespace DAVA
 {
 template <typename T>
-class StructureWrapperPtr final : public StructureWrapperDefault
+class StructureWrapperPtr : public StructureWrapperDefault
 {
 public:
     static_assert(std::is_pointer<T>::value, "StructureWrapperPtr should be used as structure wrapper only for pointer fields.");
@@ -152,7 +152,7 @@ public:
 protected:
     ValueWrapperDefault<T> ptrVW;
 
-    inline ReflectedObject Deref(const ReflectedObject& obj) const
+    virtual ReflectedObject Deref(const ReflectedObject& obj) const
     {
         if (obj.IsValid())
         {
@@ -163,7 +163,7 @@ protected:
         return ReflectedObject();
     }
 
-    inline const StructureWrapper* GetInternalWrapper(ReflectedObject& derefObj) const
+    virtual const StructureWrapper* GetInternalWrapper(ReflectedObject& derefObj) const
     {
         const StructureWrapper* sw = nullptr;
 
@@ -177,11 +177,36 @@ protected:
 };
 
 template <typename T>
+class StructureWrapperSharedPtr final : public StructureWrapperPtr<T*>
+{
+protected:
+    ReflectedObject Deref(const ReflectedObject& obj) const override
+    {
+        if (obj.IsValid())
+        {
+            std::shared_ptr<T>* sharedPtr = obj.GetPtr<std::shared_ptr<T>>();
+            return ReflectedObject(sharedPtr->get());
+        }
+
+        return ReflectedObject();
+    }
+};
+
+template <typename T>
 struct StructureWrapperCreator<T*>
 {
     static StructureWrapper* Create()
     {
         return new StructureWrapperPtr<T*>();
+    }
+};
+
+template <typename T>
+struct StructureWrapperCreator<std::shared_ptr<T>>
+{
+    static StructureWrapper* Create()
+    {
+        return new StructureWrapperSharedPtr<T>();
     }
 };
 

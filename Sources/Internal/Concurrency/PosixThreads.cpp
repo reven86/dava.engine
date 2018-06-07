@@ -1,6 +1,8 @@
 #include "Debug/DVAssert.h"
 #include "Concurrency/PosixThreads.h"
 
+#include <errno.h>
+
 #ifdef __DAVAENGINE_WINDOWS__
 
 namespace DAVA

@@ -40,14 +40,7 @@ namespace Debug
     ~~~~~~~~~ 
 */
 
-#if defined(__DAVAENGINE_COREV2__)
 int MessageBox(const String& title, const String& message, const Vector<String>& buttons, int defaultButton = 0);
-#else
-inline int MessageBox(const String& /*title*/, const String& /*message*/, const Vector<String>& /*buttons*/, int /*defaultButton*/ = 0)
-{
-    return -1;
-}
-#endif
 
 } // namespace Debug
 } // namespace DAVA

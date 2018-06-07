@@ -3,7 +3,6 @@
 #include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
-#if defined(__DAVAENGINE_COREV2__)
 
 #include <jni.h>
 #include <android/log.h>
@@ -55,10 +54,12 @@ struct AndroidBridge final
                           String cmdline);
     void ShutdownEngine();
 
-    WindowBackend* ActivityOnCreate(JNIEnv* env, jobject activityInstance);
+    WindowImpl* ActivityOnCreate(JNIEnv* env, jobject activityInstance);
+    void ActivityOnFileIntent(JNIEnv* env, jstring filename, jboolean onStartup);
     void ActivityOnResume();
     void ActivityOnPause();
     void ActivityOnDestroy(JNIEnv* env);
+    void ActivityOnTrimMemory(jint level);
 
     void GameThread();
 
@@ -93,5 +94,4 @@ struct AndroidBridge final
 } // namespace Private
 } // namespace DAVA
 
-#endif // __DAVAENGINE_COREV2__
 #endif // __DAVAENGINE_ANDROID__

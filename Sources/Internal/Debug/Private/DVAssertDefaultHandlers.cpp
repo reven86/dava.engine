@@ -1,5 +1,5 @@
 #include "Debug/DVAssertDefaultHandlers.h"
-#include "Debug/DVAssertMessage.h"
+#include "Debug/DebuggerDetection.h"
 #include "Debug/Backtrace.h"
 #include "Debug/MessageBox.h"
 #include "Logger/Logger.h"
@@ -47,7 +47,9 @@ FailBehaviour DefaultDialogBoxHandler(const AssertInfo& assertInfo)
     const int backtraceDepth = 0;
 #endif
 
-#if defined(__DAVAENGINE_COREV2__)
+    //'message' should be UTF-8, otherwise we have empty AlertDialog on iOS and NSException from
+    // NSAlert::setInformativeText on MacOS
+
     // clang-format off
     String message = Format("DVASSERT failed\n"
                             "Expression: %s\n"
@@ -64,20 +66,11 @@ FailBehaviour DefaultDialogBoxHandler(const AssertInfo& assertInfo)
     int choice = Debug::MessageBox("Assert", message, { "Break", "Continue" }, 1);
     // If by some reason MessageBox cannot be shown or is shown non-modal break execution
     return choice <= 0 ? FailBehaviour::Halt : FailBehaviour::Continue;
-#else
-    const bool halt = DVAssertMessage::ShowMessage(
-    DVAssertMessage::ALWAYS_MODAL,
-    "DVASSERT failed\n"
-    "Expression: %s\n"
-    "Message: %s\n"
-    "At %s:%d\n"
-    "Callstack:\n"
-    "%s",
-    assertInfo.expression, assertInfo.message, assertInfo.fileName, assertInfo.lineNumber,
-    Debug::GetBacktraceString(assertInfo.backtrace, backtraceDepth).c_str());
+}
 
-    return halt ? FailBehaviour::Halt : FailBehaviour::Continue;
-#endif
+FailBehaviour DefaultDebuggerBreakHandler(const AssertInfo& assertInfo)
+{
+    return (IsDebuggerPresent() == true) ? FailBehaviour::Halt : FailBehaviour::Continue;
 }
 
 void SetupDefaultHandlers()

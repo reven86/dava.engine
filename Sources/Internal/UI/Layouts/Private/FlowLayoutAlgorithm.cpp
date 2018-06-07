@@ -31,15 +31,12 @@ struct FlowLayoutAlgorithm::LineInfo
     }
 };
 
-FlowLayoutAlgorithm::FlowLayoutAlgorithm(Vector<ControlLayoutData>& layoutData_, bool isRtl_)
-    : layoutData(layoutData_)
-    , isRtl(isRtl_)
+FlowLayoutAlgorithm::FlowLayoutAlgorithm(Layouter& layouter_)
+    : layouter(layouter_)
 {
 }
 
-FlowLayoutAlgorithm::~FlowLayoutAlgorithm()
-{
-}
+FlowLayoutAlgorithm::~FlowLayoutAlgorithm() = default;
 
 void FlowLayoutAlgorithm::Apply(ControlLayoutData& data, Vector2::eAxis axis)
 {
@@ -47,18 +44,38 @@ void FlowLayoutAlgorithm::Apply(ControlLayoutData& data, Vector2::eAxis axis)
     DVASSERT(layout != nullptr);
 
     inverse = layout->GetOrientation() == UIFlowLayoutComponent::ORIENTATION_RIGHT_TO_LEFT;
-    if (isRtl && layout->IsUseRtl())
+    if (layouter.IsRtl() && layout->IsUseRtl())
         inverse = !inverse;
 
     skipInvisible = layout->IsSkipInvisibleControls();
 
-    horizontalPadding = layout->GetHorizontalPadding();
+    horizontalLeadingPadding = layout->GetHorizontalPadding();
+    horizontalTrailingPadding = layout->GetHorizontalPadding();
+    if (layout->IsHorizontalSafeAreaPaddingInset())
+    {
+        if (inverse)
+        {
+            horizontalLeadingPadding += layouter.GetSafeAreaInsets().right;
+            horizontalTrailingPadding += layouter.GetSafeAreaInsets().left;
+        }
+        else
+        {
+            horizontalLeadingPadding += layouter.GetSafeAreaInsets().left;
+            horizontalTrailingPadding += layouter.GetSafeAreaInsets().right;
+        }
+    }
     horizontalSpacing = layout->GetHorizontalSpacing();
     dynamicHorizontalPadding = layout->IsDynamicHorizontalPadding();
     dynamicHorizontalInLinePadding = layout->IsDynamicHorizontalInLinePadding();
     dynamicHorizontalSpacing = layout->IsDynamicHorizontalSpacing();
 
-    verticalPadding = layout->GetVerticalPadding();
+    topPadding = layout->GetVerticalPadding();
+    bottomPadding = layout->GetVerticalPadding();
+    if (layout->IsVerticalSafeAreaPaddingInset())
+    {
+        topPadding += layouter.GetSafeAreaInsets().top;
+        bottomPadding += layouter.GetSafeAreaInsets().bottom;
+    }
     verticalSpacing = layout->GetVerticalSpacing();
     dynamicVerticalPadding = layout->IsDynamicVerticalPadding();
     dynamicVerticalSpacing = layout->IsDynamicVerticalSpacing();
@@ -81,7 +98,7 @@ void FlowLayoutAlgorithm::Apply(ControlLayoutData& data, Vector2::eAxis axis)
         }
     }
 
-    AnchorLayoutAlgorithm anchorAlg(layoutData, isRtl);
+    AnchorLayoutAlgorithm anchorAlg(layouter);
     anchorAlg.Apply(data, axis, true, data.GetFirstChildIndex(), data.GetLastChildIndex());
 }
 
@@ -106,8 +123,12 @@ void FlowLayoutAlgorithm::CollectLinesInformation(ControlLayoutData& data, Vecto
     int32 firstIndex = data.GetFirstChildIndex();
 
     bool newLineBeforeNext = false;
-    int32 childrenInLine = 0;
+    bool stickItemBeforeNext = false;
+    bool stickHardBeforeNext = false;
+    BiDiHelper::Direction prevDirection = BiDiHelper::NEUTRAL;
+    int32 stickChildrenInLine = 0;
     float32 usedSize = 0.0f;
+    Vector<ControlLayoutData>& layoutData = layouter.GetLayoutData();
 
     for (int32 index = data.GetFirstChildIndex(); index <= data.GetLastChildIndex(); index++)
     {
@@ -121,13 +142,13 @@ void FlowLayoutAlgorithm::CollectLinesInformation(ControlLayoutData& data, Vecto
         UISizePolicyComponent* sizePolicy = childData.GetControl()->GetComponent<UISizePolicyComponent>();
         if (sizePolicy != nullptr && sizePolicy->GetHorizontalPolicy() == UISizePolicyComponent::PERCENT_OF_PARENT)
         {
-            childSize = sizePolicy->GetHorizontalValue() * (data.GetWidth() - horizontalPadding * 2.0f) / 100.0f;
+            childSize = sizePolicy->GetHorizontalValue() * (data.GetWidth() - horizontalLeadingPadding - horizontalTrailingPadding) / 100.0f;
             childSize = Clamp(childSize, sizePolicy->GetHorizontalMinValue(), sizePolicy->GetHorizontalMaxValue());
             childData.SetSize(Vector2::AXIS_X, childSize);
         }
         else if (sizePolicy != nullptr && sizePolicy->GetHorizontalPolicy() == UISizePolicyComponent::FORMULA)
         {
-            SizeMeasuringAlgorithm alg(layoutData, childData, Vector2::AXIS_X, sizePolicy);
+            SizeMeasuringAlgorithm alg(layouter, childData, Vector2::AXIS_X, sizePolicy);
             alg.SetParentSize(data.GetWidth());
             childSize = alg.Calculate();
             childData.SetSize(Vector2::AXIS_X, childSize);
@@ -135,56 +156,123 @@ void FlowLayoutAlgorithm::CollectLinesInformation(ControlLayoutData& data, Vecto
 
         bool newLineBeforeThis = newLineBeforeNext;
         newLineBeforeNext = false;
+        bool stickItemBeforeThis = stickItemBeforeNext;
+        stickItemBeforeNext = false;
+        bool stickHardBeforeThis = stickHardBeforeNext;
+        stickHardBeforeNext = false;
+        BiDiHelper::Direction direction = inverse ? BiDiHelper::RTL : BiDiHelper::LTR;
+
         UIFlowLayoutHintComponent* hint = childData.GetControl()->GetComponent<UIFlowLayoutHintComponent>();
         if (hint != nullptr)
         {
             newLineBeforeThis |= hint->IsNewLineBeforeThis();
             newLineBeforeNext = hint->IsNewLineAfterThis();
+            stickItemBeforeThis |= hint->IsStickItemBeforeThis();
+            stickItemBeforeNext = hint->IsStickItemAfterThis();
+            stickHardBeforeThis |= hint->IsStickHardBeforeThis();
+            stickHardBeforeNext = hint->IsStickHardAfterThis();
+            direction = hint->GetContentDirection();
+        }
+
+        if (direction != BiDiHelper::NEUTRAL && direction != prevDirection)
+        {
+            // Skip sticking if previous control's direction is different
+            stickItemBeforeThis = false;
+            stickHardBeforeThis = false;
+        }
+        prevDirection = direction;
+
+        if (stickItemBeforeThis)
+        {
+            childData.SetFlag(ControlLayoutData::FLAG_STICK_THIS);
+            if (stickHardBeforeThis)
+            {
+                childData.SetFlag(ControlLayoutData::FLAG_STICK_HARD);
+            }
+        }
+
+        if (direction == BiDiHelper::Direction::LTR)
+        {
+            childData.SetFlag(ControlLayoutData::FLAG_LTR);
+        }
+        else if (direction == BiDiHelper::Direction::RTL)
+        {
+            childData.SetFlag(ControlLayoutData::FLAG_RTL);
         }
 
         if (newLineBeforeThis && index > firstIndex)
         {
-            if (childrenInLine > 0)
+            if (stickChildrenInLine > 0)
             {
-                lines.emplace_back(LineInfo(firstIndex, index - 1, childrenInLine, usedSize));
+                lines.emplace_back(LineInfo(firstIndex, index - 1, stickChildrenInLine, usedSize));
             }
             firstIndex = index;
-            childrenInLine = 0;
+            stickChildrenInLine = 0;
             usedSize = 0.0f;
         }
 
         float32 restSize = data.GetWidth() - usedSize;
-        restSize -= horizontalPadding * 2.0f + horizontalSpacing * childrenInLine + childSize;
+        restSize -= horizontalLeadingPadding + horizontalTrailingPadding + horizontalSpacing * (stickChildrenInLine - 1) + childSize;
+        if (!stickItemBeforeThis)
+        {
+            restSize -= horizontalSpacing;
+        }
+
         if (restSize < -LayoutHelpers::EPSILON)
         {
+            if (stickItemBeforeThis && stickHardBeforeThis && index > firstIndex)
+            {
+                int32 i = index - 1;
+                while (i > firstIndex)
+                {
+                    ControlLayoutData& ld = layoutData[i];
+                    usedSize -= ld.GetWidth();
+                    if (!ld.HasFlag(ControlLayoutData::FLAG_STICK_HARD))
+                    {
+                        break;
+                    }
+                    i--;
+                }
+                index = i;
+                ControlLayoutData& ld = layoutData[index];
+                if (!ld.HasFlag(ControlLayoutData::FLAG_STICK_THIS))
+                {
+                    stickChildrenInLine--;
+                }
+                childSize = ld.GetWidth();
+            }
+
             if (index > firstIndex)
             {
-                if (childrenInLine > 0)
+                if (stickChildrenInLine > 0)
                 {
-                    lines.emplace_back(LineInfo(firstIndex, index - 1, childrenInLine, usedSize));
+                    lines.emplace_back(LineInfo(firstIndex, index - 1, stickChildrenInLine, usedSize));
                 }
                 firstIndex = index;
-                childrenInLine = 1;
+                stickChildrenInLine = 1;
                 usedSize = childSize;
             }
             else
             {
                 lines.emplace_back(LineInfo(firstIndex, index, 1, childSize));
                 firstIndex = index + 1;
-                childrenInLine = 0;
+                stickChildrenInLine = 0;
                 usedSize = 0.0f;
             }
         }
         else
         {
-            childrenInLine++;
+            if (!stickItemBeforeThis || index == firstIndex)
+            {
+                stickChildrenInLine++;
+            }
             usedSize += childSize;
         }
     }
 
-    if (firstIndex <= data.GetLastChildIndex() && childrenInLine > 0)
+    if (firstIndex <= data.GetLastChildIndex() && stickChildrenInLine > 0)
     {
-        lines.emplace_back(LineInfo(firstIndex, data.GetLastChildIndex(), childrenInLine, usedSize));
+        lines.emplace_back(LineInfo(firstIndex, data.GetLastChildIndex(), stickChildrenInLine, usedSize));
     }
 }
 
@@ -202,23 +290,25 @@ void FlowLayoutAlgorithm::FixHorizontalPadding(ControlLayoutData& data, Vector<L
     }
 
     float32 restSize = data.GetWidth() - maxUsedSize;
-    restSize -= horizontalPadding * 2.0f;
+    restSize -= horizontalLeadingPadding + horizontalTrailingPadding;
     if (restSize >= LayoutHelpers::EPSILON)
     {
-        horizontalPadding += restSize / 2.0f;
+        horizontalLeadingPadding += restSize / 2.0f;
+        horizontalTrailingPadding += restSize / 2.0f;
     }
 }
 
 void FlowLayoutAlgorithm::LayoutLine(ControlLayoutData& data, int32 firstIndex, int32 lastIndex, int32 childrenCount, float32 childrenSize)
 {
-    float32 padding = horizontalPadding;
+    float32 leadingPadding = horizontalLeadingPadding;
+    float32 trailingPadding = horizontalTrailingPadding;
     float32 spacing = horizontalSpacing;
-    CorrectPaddingAndSpacing(padding, spacing, dynamicHorizontalInLinePadding, dynamicHorizontalSpacing, data.GetWidth() - childrenSize, childrenCount);
+    CorrectPaddingAndSpacing(leadingPadding, trailingPadding, spacing, dynamicHorizontalInLinePadding, dynamicHorizontalSpacing, data.GetWidth() - childrenSize, childrenCount);
 
-    float32 position = padding;
+    float32 position = leadingPadding;
     if (inverse)
     {
-        position = data.GetWidth() - padding;
+        position = data.GetWidth() - leadingPadding;
     }
     int32 realLastIndex = -1;
 
@@ -227,20 +317,76 @@ void FlowLayoutAlgorithm::LayoutLine(ControlLayoutData& data, int32 firstIndex, 
     SortLineItemsByContentDirection(firstIndex, lastIndex, order, realLastIndex);
 
     // Layout controls in correct order
+    bool first = true;
+    bool prevSameDirection = true;
+    bool prevSpace = false;
+    bool stickNext = false;
+    Vector<ControlLayoutData>& layoutData = layouter.GetLayoutData();
+
     for (uint32 i : order)
     {
         ControlLayoutData& childData = layoutData[i];
+
+        // Current item sticks with previous
+        bool stickThis = childData.HasFlag(ControlLayoutData::FLAG_STICK_THIS);
+        // Curent item's direction same as layout direction
+        bool ltr = childData.HasFlag(ControlLayoutData::FLAG_LTR);
+        bool rtl = childData.HasFlag(ControlLayoutData::FLAG_RTL);
+        bool neutral = !rtl && !ltr;
+        bool sameDirection = neutral || (!inverse && ltr) || (inverse && rtl);
+        // Current item's direction same as previous item's direction
+        bool pairedDirection = sameDirection == prevSameDirection;
+
+        if (first)
+        {
+            if (stickThis && !sameDirection)
+            {
+                // Skip space
+                stickNext = true;
+            }
+        }
+        else
+        {
+            if (stickThis && sameDirection)
+            {
+                // Skip space
+                stickNext = false;
+            }
+            else
+            {
+                if (stickNext && pairedDirection)
+                {
+                    // Skip space
+                }
+                else
+                {
+                    if (inverse)
+                    {
+                        position -= spacing;
+                    }
+                    else
+                    {
+                        position += spacing;
+                    }
+                }
+                stickNext = stickThis && !sameDirection;
+            }
+        }
+
         float32 size = childData.GetWidth();
         childData.SetPosition(Vector2::AXIS_X, inverse ? position - size : position);
 
         if (inverse)
         {
-            position -= size + spacing;
+            position -= size;
         }
         else
         {
-            position += size + spacing;
+            position += size;
         }
+
+        first = false;
+        prevSameDirection = sameDirection;
     }
 
     DVASSERT(realLastIndex != -1);
@@ -252,11 +398,13 @@ void FlowLayoutAlgorithm::ProcessYAxis(ControlLayoutData& data)
     CalculateVerticalDynamicPaddingAndSpaces(data);
 
     float32 lineHeight = 0.0f;
-    float32 y = verticalPadding;
+    float32 y = topPadding;
     int32 firstIndex = data.GetFirstChildIndex();
+    const Vector<ControlLayoutData>& layoutData = layouter.GetLayoutData();
+
     for (int32 index = data.GetFirstChildIndex(); index <= data.GetLastChildIndex(); index++)
     {
-        ControlLayoutData& childData = layoutData[index];
+        const ControlLayoutData& childData = layoutData[index];
         if (childData.HaveToSkipControl(skipInvisible))
         {
             continue;
@@ -281,10 +429,11 @@ void FlowLayoutAlgorithm::CalculateVerticalDynamicPaddingAndSpaces(ControlLayout
         int32 linesCount = 0;
         float32 contentSize = 0.0f;
         float32 lineHeight = 0.0f;
+        const Vector<ControlLayoutData>& layoutData = layouter.GetLayoutData();
 
         for (int32 index = data.GetFirstChildIndex(); index <= data.GetLastChildIndex(); index++)
         {
-            ControlLayoutData& childData = layoutData[index];
+            const ControlLayoutData& childData = layoutData[index];
             if (childData.HaveToSkipControl(skipInvisible))
             {
                 continue;
@@ -301,12 +450,13 @@ void FlowLayoutAlgorithm::CalculateVerticalDynamicPaddingAndSpaces(ControlLayout
         }
 
         float32 restSize = data.GetHeight() - contentSize;
-        CorrectPaddingAndSpacing(verticalPadding, verticalSpacing, dynamicVerticalPadding, dynamicVerticalSpacing, restSize, linesCount);
+        CorrectPaddingAndSpacing(topPadding, bottomPadding, verticalSpacing, dynamicVerticalPadding, dynamicVerticalSpacing, restSize, linesCount);
     }
 }
 
 void FlowLayoutAlgorithm::LayoutLineVertically(ControlLayoutData& data, int32 firstIndex, int32 lastIndex, float32 top, float32 bottom)
 {
+    Vector<ControlLayoutData>& layoutData = layouter.GetLayoutData();
     for (int32 index = firstIndex; index <= lastIndex; index++)
     {
         ControlLayoutData& childData = layoutData[index];
@@ -326,7 +476,7 @@ void FlowLayoutAlgorithm::LayoutLineVertically(ControlLayoutData& data, int32 fi
             }
             else if (sizePolicy != nullptr && sizePolicy->GetVerticalPolicy() == UISizePolicyComponent::FORMULA)
             {
-                SizeMeasuringAlgorithm alg(layoutData, childData, Vector2::AXIS_Y, sizePolicy);
+                SizeMeasuringAlgorithm alg(layouter, childData, Vector2::AXIS_Y, sizePolicy);
                 alg.SetParentSize(data.GetHeight());
                 alg.SetParentLineSize(bottom - top);
                 childData.SetSize(Vector2::AXIS_Y, alg.Calculate());
@@ -334,16 +484,16 @@ void FlowLayoutAlgorithm::LayoutLineVertically(ControlLayoutData& data, int32 fi
         }
 
         childData.SetPosition(Vector2::AXIS_Y, top);
-        AnchorLayoutAlgorithm::ApplyAnchor(childData, Vector2::AXIS_Y, top, bottom, false);
+        AnchorLayoutAlgorithm::ApplyAnchor(childData, Vector2::AXIS_Y, top, bottom, false, layouter);
     }
 }
 
-void FlowLayoutAlgorithm::CorrectPaddingAndSpacing(float32& padding, float32& spacing, bool dynamicPadding, bool dynamicSpacing, float32 restSize, int32 childrenCount)
+void FlowLayoutAlgorithm::CorrectPaddingAndSpacing(float32& leadingPadding, float32& trailingPadding, float32& spacing, bool dynamicPadding, bool dynamicSpacing, float32 restSize, int32 childrenCount)
 {
     if (childrenCount > 0)
     {
         int32 spacesCount = childrenCount - 1;
-        restSize -= padding * 2.0f;
+        restSize -= leadingPadding + trailingPadding;
         restSize -= spacing * spacesCount;
         if (restSize > LayoutHelpers::EPSILON)
         {
@@ -363,7 +513,8 @@ void FlowLayoutAlgorithm::CorrectPaddingAndSpacing(float32& padding, float32& sp
                 float32 delta = restSize / cnt;
                 if (dynamicPadding)
                 {
-                    padding += delta;
+                    leadingPadding += delta;
+                    trailingPadding += delta;
                 }
 
                 if (dynamicSpacing)
@@ -380,20 +531,23 @@ void FlowLayoutAlgorithm::SortLineItemsByContentDirection(int32 firstIndex, int3
     order.clear();
     auto lastIt = order.end();
     BiDiHelper::Direction lastDir = BiDiHelper::Direction::NEUTRAL;
+    const Vector<ControlLayoutData>& layoutData = layouter.GetLayoutData();
     for (int32 i = firstIndex; i <= lastIndex; i++)
     {
-        ControlLayoutData& childData = layoutData[i];
+        const ControlLayoutData& childData = layoutData[i];
         if (childData.HaveToSkipControl(skipInvisible))
         {
             continue;
         }
 
-        UIControl* ctrl = childData.GetControl();
         BiDiHelper::Direction dir = BiDiHelper::Direction::NEUTRAL;
-        UIFlowLayoutHintComponent* hint = ctrl->GetComponent<UIFlowLayoutHintComponent>();
-        if (hint)
+        if (childData.HasFlag(ControlLayoutData::FLAG_LTR))
         {
-            dir = hint->GetContentDirection();
+            dir = BiDiHelper::Direction::LTR;
+        }
+        else if (childData.HasFlag(ControlLayoutData::FLAG_RTL))
+        {
+            dir = BiDiHelper::Direction::RTL;
         }
 
         if (!order.empty() && lastDir == dir)

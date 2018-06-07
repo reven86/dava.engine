@@ -22,7 +22,7 @@ UIControl* TabTraversalAlgorithm::GetNextControl(UIControl* focusedControl, UITa
 
         if (parent != nullptr)
         {
-            Vector<UIControl*> children;
+            Vector<RefPtr<UIControl>> children;
             PrepareChildren(parent, children);
 
             UIControl* res = nullptr;
@@ -73,7 +73,7 @@ UIControl* TabTraversalAlgorithm::FindNextControl(UIControl* focusedControl, It 
 
     for (; it != end; ++it)
     {
-        UIControl* res = FindFirstControl(*it, dir);
+        UIControl* res = FindFirstControl(it->Get(), dir);
         if (res != nullptr)
         {
             return res;
@@ -90,7 +90,7 @@ UIControl* TabTraversalAlgorithm::FindFirstControl(UIControl* control, UITabOrde
         return control;
     }
 
-    Vector<UIControl*> children;
+    Vector<RefPtr<UIControl>> children;
     PrepareChildren(control, children);
 
     if (dir == UITabOrderComponent::FORWARD)
@@ -108,7 +108,7 @@ UIControl* TabTraversalAlgorithm::FindFirstControlRecursive(It begin, It end, UI
 {
     for (auto it = begin; it != end; ++it)
     {
-        UIControl* res = FindFirstControl(*it, dir);
+        UIControl* res = FindFirstControl(it->Get(), dir);
         if (res)
         {
             return res;
@@ -117,14 +117,14 @@ UIControl* TabTraversalAlgorithm::FindFirstControlRecursive(It begin, It end, UI
     return nullptr;
 }
 
-void TabTraversalAlgorithm::PrepareChildren(UIControl* control, Vector<UIControl*>& children)
+void TabTraversalAlgorithm::PrepareChildren(UIControl* control, Vector<RefPtr<UIControl>>& children)
 {
     DVASSERT(children.empty());
 
     children.reserve(control->GetChildren().size());
     children.insert(children.end(), control->GetChildren().begin(), control->GetChildren().end());
 
-    std::stable_sort(children.begin(), children.end(), [](UIControl* c1, UIControl* c2) {
+    std::stable_sort(children.begin(), children.end(), [](const RefPtr<UIControl>& c1, const RefPtr<UIControl>& c2) {
         UITabOrderComponent* f1 = c1->GetComponent<UITabOrderComponent>();
         if (f1 == nullptr)
         {

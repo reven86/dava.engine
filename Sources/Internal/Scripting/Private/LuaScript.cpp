@@ -1,8 +1,10 @@
+#include "Base/ScopedPtr.h"
+#include "Debug/DVAssert.h"
+#include "Engine/Engine.h"
+#include "FileSystem/File.h"
 #include "Scripting/LuaScript.h"
 #include "Scripting/LuaException.h"
-#include "Debug/DVAssert.h"
-#include "LuaBridge.h"
-#include "Engine/Engine.h"
+#include "Scripting/Private/LuaBridge.h"
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 #include "MemoryManager/MemoryProfiler.h"
@@ -71,7 +73,11 @@ LuaScript::LuaScript(bool initDefaultLibs)
     if (initDefaultLibs)
     {
         luaL_openlibs(state->lua); // Load standard libs
+
+        // Register in lua::package library our modules loader
+        LuaBridge::RegisterModulesLoader(state->lua);
     }
+
     LuaBridge::RegisterDava(state->lua);
     LuaBridge::RegisterAny(state->lua);
     LuaBridge::RegisterAnyFn(state->lua);
@@ -130,8 +136,124 @@ int32 LuaScript::ExecStringSafe(const String& script)
     }
     catch (const LuaException& e)
     {
-        Logger::Info("LuaException: %s", e.what());
+        Logger::Warning("LuaException: %s", e.what());
         return -1;
+    }
+}
+
+int32 LuaScript::ExecScript(const FilePath& scriptPath)
+{
+    ScopedPtr<File> scriptFile(File::Create(scriptPath, File::OPEN | File::READ));
+    if (!scriptFile)
+    {
+        DAVA_THROW(LuaException, LUA_ERRFILE, Format("Can't open file %s", scriptPath.GetStringValue().c_str()).c_str());
+    }
+
+    Vector<char8> buffer(static_cast<size_t>(scriptFile->GetSize()));
+    int32 readed = scriptFile->Read(buffer.data(), static_cast<uint32>(buffer.size()));
+    if (readed != buffer.size())
+    {
+        DAVA_THROW(LuaException, LUA_ERRFILE, Format("Error while reading file %s", scriptPath.GetStringValue().c_str()).c_str());
+    }
+
+    int32 res = luaL_loadbuffer(state->lua, buffer.data(), buffer.size(), scriptPath.GetStringValue().c_str());
+    if (res != 0)
+    {
+        DAVA_THROW(LuaException, res, LuaBridge::PopString(state->lua)); // stack -1
+    }
+
+    int32 base = lua_gettop(state->lua); // store current stack size
+    DVASSERT(base >= 1, "Lua stack corrupted!");
+
+    int32 errfunc = PushErrorHandler(base); // stack +1: insert error handler function before function
+    res = lua_pcall(state->lua, 0, LUA_MULTRET, errfunc); // stack -1: run function/chunk on stack top and pop it
+    int32 top = lua_gettop(state->lua); // store current stack size
+
+    if (errfunc)
+    {
+        DVASSERT(top >= base, "Lua stack corrupted!");
+        lua_remove(state->lua, base); // stack -1: remove error hander function
+    }
+
+    if (res != 0)
+    {
+        DAVA_THROW(LuaException, res, LuaBridge::PopString(state->lua)); // stack -1
+    }
+
+    return top - base; // calculate number of function results
+}
+
+int32 LuaScript::ExecScriptSafe(const FilePath& scriptPath)
+{
+    try
+    {
+        return ExecScript(scriptPath);
+    }
+    catch (const LuaException& e)
+    {
+        Logger::Warning("LuaException: %s", e.what());
+        return -1;
+    }
+}
+
+int32 LuaScript::ExecFunction(const String& fName, const Vector<Any>& args)
+{
+    BeginCallFunction(fName);
+    for (const Any& arg : args)
+    {
+        PushArg(arg);
+    }
+    return EndCallFunction(static_cast<int32>(args.size()));
+}
+
+int32 LuaScript::ExecFunctionSafe(const String& fName, const Vector<Any>& args)
+{
+    try
+    {
+        return ExecFunction(fName, args);
+    }
+    catch (const LuaException& e)
+    {
+        Logger::Warning(Format("LuaException: %s", e.what()).c_str());
+        return -1;
+    }
+}
+
+Vector<Any> LuaScript::ExecFunctionWithResult(String fName, const Vector<Any>& args, const Vector<const Type*>& returnTypes)
+{
+    BeginCallFunction(fName);
+    for (const Any& arg : args)
+    {
+        PushArg(arg);
+    }
+    int32 count = EndCallFunction(static_cast<int32>(args.size()));
+    Vector<Any> results;
+    if (count != static_cast<int32>(returnTypes.size()))
+    {
+        DAVA_THROW(LuaException, -1, "Return values count not equals count of specified return types");
+    }
+    if (count > 0)
+    {
+        for (int32 i = 0; i < count; ++i)
+        {
+            results.push_back(GetResult(i + 1, returnTypes[i]));
+        }
+        Pop(count);
+    }
+    return results;
+}
+
+bool LuaScript::ExecFunctionWithResultSafe(String fName, const Vector<Any>& args, const Vector<const Type*>& returnTypes, Vector<Any>& returnValues)
+{
+    try
+    {
+        returnValues = ExecFunctionWithResult(fName, args, returnTypes);
+        return true;
+    }
+    catch (const LuaException& e)
+    {
+        Logger::Warning(Format("LuaException: %s", e.what()).c_str());
+        return false;
     }
 }
 
@@ -149,7 +271,7 @@ bool LuaScript::GetResultSafe(int32 index, Any& any, const Type* preferredType /
     }
     catch (const LuaException& e)
     {
-        Logger::Info("LuaException: %s", e.what());
+        Logger::Warning("LuaException: %s", e.what());
         return false;
     }
 }
@@ -166,6 +288,22 @@ void LuaScript::SetGlobalVariable(const String& vName, const Any& value)
 {
     LuaBridge::AnyToLua(state->lua, value); // stack +1
     lua_setglobal(state->lua, vName.c_str()); // stack -1
+}
+
+bool LuaScript::HasGlobalVariable(const String& vName)
+{
+    lua_getglobal(state->lua, vName.c_str());
+    bool found = !lua_isnone(state->lua, lua_gettop(state->lua));
+    lua_pop(state->lua, 1);
+    return found;
+}
+
+bool LuaScript::HasGlobalFunction(const String& fName)
+{
+    lua_getglobal(state->lua, fName.c_str());
+    bool found = lua_isfunction(state->lua, lua_gettop(state->lua));
+    lua_pop(state->lua, 1);
+    return found;
 }
 
 void LuaScript::DumpStack(std::ostream& os) const

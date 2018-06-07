@@ -2,9 +2,7 @@
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_COREV2__)
-
-#include "Engine/Dispatcher.h"
+#include "Concurrency/Dispatcher.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
 
 namespace DAVA
@@ -15,5 +13,3 @@ using MainDispatcher = Dispatcher<MainDispatcherEvent>;
 
 } // namespace Private
 } // namespace DAVA
-
-#endif // __DAVAENGINE_COREV2__

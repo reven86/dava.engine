@@ -3,8 +3,6 @@ package com.dava.engine;
 import javax.microedition.khronos.egl.EGLConfig;
 import javax.microedition.khronos.opengles.GL10;
 
-import com.dava.framework.JNIDeviceInfo;
-
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -278,14 +276,14 @@ public class DavaSplashView extends GLSurfaceView
         {
             int[] params = new int[1];
             gl.glGetIntegerv(GL10.GL_DEPTH_BITS, params, 0);
-            JNIDeviceInfo.zBufferSize = params[0];
+            DeviceInfo.zBufferSize = params[0];
         }
 
         private void getGPUFamily(GL10 gl)
         {
             String extensions = gl.glGetString(GL10.GL_EXTENSIONS);
             byte gpuArchitecture = getSupportedTextures(extensions);
-            JNIDeviceInfo.gpuFamily = gpuArchitecture;
+            DeviceInfo.gpuFamily = gpuArchitecture;
         }
         
         private byte getSupportedTextures(String ext)

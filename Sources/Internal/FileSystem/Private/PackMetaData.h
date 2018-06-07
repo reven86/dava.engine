@@ -1,10 +1,29 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Functional/Function.h"
 
 namespace DAVA
 {
 class FilePath;
+
+class FileNamesTree
+{
+public:
+    FileNamesTree() = default;
+    void Add(const String& relativeFilePath);
+    bool Find(const String& relativeFilePath) const;
+
+private:
+    static Vector<String> GetPathElements(const String& relativeFilePath);
+
+    struct Node
+    {
+        Map<String, Node> children;
+    };
+
+    Node treeRoot;
+};
 
 class PackMetaData
 {
@@ -17,11 +36,11 @@ public:
     /** Create meta from serialized bytes
 		    Throw exception on error
 		*/
-    PackMetaData(const void* ptr, std::size_t size);
+    PackMetaData(const void* ptr, std::size_t size, const String& fileNames);
 
     uint32 GetPackIndex(const String& requestedPackName) const;
 
-    Vector<uint32> GetPackDependencyIndexes(const String& requestedPackName) const;
+    const Vector<uint32>& GetPackDependencyIndexes(const String& requestedPackName) const;
 
     Vector<uint32> GetFileIndexes(const String& requestedPackName) const;
 
@@ -33,24 +52,38 @@ public:
 
     struct PackInfo
     {
+        PackInfo(String n, Vector<uint32> dep)
+            : packName(std::move(n))
+            , packDependencies(std::move(dep))
+        {
+        }
         String packName;
-        String packDependencies;
+        Vector<uint32> packDependencies;
     };
-    /**
-	    Return tuple (packName, packDependencies)
-	*/
+
     const PackInfo& GetPackInfo(const uint32 packIndex) const;
     const PackInfo& GetPackInfo(const String& packName) const;
+
+    const FileNamesTree& GetFileNamesTree() const;
 
     Vector<uint8> Serialize() const;
     void Deserialize(const void* ptr, size_t size);
 
-    bool IsChild(uint32 parentPackIndex, uint32 childPackIndex) const;
+    bool HasDependency(uint32 packWithDependency, uint32 dependency) const;
+
+    bool HasPack(const String& packName) const;
+    /**
+        Sorted vector of unique pack indexes, includes full list of all dependent packs indexes
+     */
+    using Dependencies = Vector<uint32>;
+
+    const Dependencies& GetDependencies(uint32 packIndex) const;
 
 private:
-    using Children = Vector<uint32>;
-
-    void CollectDependencies(uint32 packIndex, Children& out) const;
+    void GenerateDependencyMatrix(size_t numPacks);
+    void GenerateDependencyMatrixRow(uint32 packIndex, Dependencies& out) const;
+    static void SortAndEraseDuplicates(Dependencies& c);
+    Vector<uint32> ConvertStringWithNumbersToVector(const String& str) const;
     // fileNames already in DVPK format
     // table 1.
     // fileName -> fileIndex(0-NUM_FILES) -> packIndex(0-NUM_PACKS)
@@ -60,10 +93,13 @@ private:
     Vector<PackInfo> packDependencies;
 
     // packIndex(0-NUM_PACKS) -> Vector of child indexes
-    Vector<Children> children;
+    Vector<Dependencies> dependenciesMatrix;
 
     // packName -> packIndex (auto generated during deserializing)
     UnorderedMap<String, uint32> mapPackNameToPackIndex;
+
+    // all file names to check if file belong to this meta
+    FileNamesTree namesTree;
 };
 
 inline size_t PackMetaData::GetFileCount() const

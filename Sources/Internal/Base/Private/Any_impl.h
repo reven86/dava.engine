@@ -115,6 +115,12 @@ inline bool Any::CanGet<Any>() const
 }
 
 template <>
+inline bool Any::CanGet<const Any&>() const
+{
+    return true;
+}
+
+template <>
 inline const Any& Any::Get<Any>() const
 {
     return *this;
@@ -122,6 +128,18 @@ inline const Any& Any::Get<Any>() const
 
 template <>
 inline const Any& Any::Get<Any>(const Any& defaultValue) const
+{
+    return Get<Any>();
+}
+
+template <>
+inline const Any& Any::Get<const Any&>() const
+{
+    return *this;
+}
+
+template <>
+inline const Any& Any::Get<const Any&>(const Any& defaultValue) const
 {
     return Get<Any>();
 }
@@ -199,6 +217,12 @@ T Any::Cast(const T& defaultValue) const
 }
 
 template <>
+inline bool Any::CanCast<const Any&>() const
+{
+    return true;
+}
+
+template <>
 inline bool Any::CanCast<Any>() const
 {
     return true;
@@ -212,6 +236,18 @@ inline Any Any::Cast<Any>() const
 
 template <>
 inline Any Any::Cast<Any>(const Any& defaultValue) const
+{
+    return *this;
+}
+
+template <>
+inline const Any& Any::Cast<const Any&>() const
+{
+    return *this;
+}
+
+template <>
+inline const Any& Any::Cast<const Any&>(const Any& defaultValue) const
 {
     return *this;
 }

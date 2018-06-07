@@ -1,5 +1,7 @@
 #include "UIAnchorComponent.h"
 
+#include "Engine/Engine.h"
+#include "Entity/ComponentManager.h"
 #include "UI/UIControl.h"
 #include "Reflection/ReflectionRegistrator.h"
 
@@ -7,25 +9,27 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(UIAnchorComponent)
 {
-    ReflectionRegistrator<UIAnchorComponent>::Begin()
+    ReflectionRegistrator<UIAnchorComponent>::Begin()[M::DisplayName("Anchor"), M::Group("Layout")]
     .ConstructorByPointer()
     .DestructorByPointer([](UIAnchorComponent* o) { o->Release(); })
-    .Field("enabled", &UIAnchorComponent::IsEnabled, &UIAnchorComponent::SetEnabled)
-    .Field("leftAnchorEnabled", &UIAnchorComponent::IsLeftAnchorEnabled, &UIAnchorComponent::SetLeftAnchorEnabled)
-    .Field("leftAnchor", &UIAnchorComponent::GetLeftAnchor, &UIAnchorComponent::SetLeftAnchor)
-    .Field("hCenterAnchorEnabled", &UIAnchorComponent::IsHCenterAnchorEnabled, &UIAnchorComponent::SetHCenterAnchorEnabled)
-    .Field("hCenterAnchor", &UIAnchorComponent::GetHCenterAnchor, &UIAnchorComponent::SetHCenterAnchor)
-    .Field("rightAnchorEnabled", &UIAnchorComponent::IsRightAnchorEnabled, &UIAnchorComponent::SetRightAnchorEnabled)
-    .Field("rightAnchor", &UIAnchorComponent::GetRightAnchor, &UIAnchorComponent::SetRightAnchor)
-    .Field("topAnchorEnabled", &UIAnchorComponent::IsTopAnchorEnabled, &UIAnchorComponent::SetTopAnchorEnabled)
-    .Field("topAnchor", &UIAnchorComponent::GetTopAnchor, &UIAnchorComponent::SetTopAnchor)
-    .Field("vCenterAnchorEnabled", &UIAnchorComponent::IsVCenterAnchorEnabled, &UIAnchorComponent::SetVCenterAnchorEnabled)
-    .Field("vCenterAnchor", &UIAnchorComponent::GetVCenterAnchor, &UIAnchorComponent::SetVCenterAnchor)
-    .Field("bottomAnchorEnabled", &UIAnchorComponent::IsBottomAnchorEnabled, &UIAnchorComponent::SetBottomAnchorEnabled)
-    .Field("bottomAnchor", &UIAnchorComponent::GetBottomAnchor, &UIAnchorComponent::SetBottomAnchor)
-    .Field("useRtl", &UIAnchorComponent::IsUseRtl, &UIAnchorComponent::SetUseRtl)
+    .Field("enabled", &UIAnchorComponent::IsEnabled, &UIAnchorComponent::SetEnabled)[M::DisplayName("Enabled")]
+    .Field("leftAnchorEnabled", &UIAnchorComponent::IsLeftAnchorEnabled, &UIAnchorComponent::SetLeftAnchorEnabled)[M::DisplayName("Left")]
+    .Field("leftAnchor", &UIAnchorComponent::GetLeftAnchor, &UIAnchorComponent::SetLeftAnchor)[M::DisplayName("Left Distance")]
+    .Field("hCenterAnchorEnabled", &UIAnchorComponent::IsHCenterAnchorEnabled, &UIAnchorComponent::SetHCenterAnchorEnabled)[M::DisplayName("H. Center")]
+    .Field("hCenterAnchor", &UIAnchorComponent::GetHCenterAnchor, &UIAnchorComponent::SetHCenterAnchor)[M::DisplayName("H. Distance")]
+    .Field("rightAnchorEnabled", &UIAnchorComponent::IsRightAnchorEnabled, &UIAnchorComponent::SetRightAnchorEnabled)[M::DisplayName("Right")]
+    .Field("rightAnchor", &UIAnchorComponent::GetRightAnchor, &UIAnchorComponent::SetRightAnchor)[M::DisplayName("Right Distance")]
+    .Field("topAnchorEnabled", &UIAnchorComponent::IsTopAnchorEnabled, &UIAnchorComponent::SetTopAnchorEnabled)[M::DisplayName("Top")]
+    .Field("topAnchor", &UIAnchorComponent::GetTopAnchor, &UIAnchorComponent::SetTopAnchor)[M::DisplayName("Top Distance")]
+    .Field("vCenterAnchorEnabled", &UIAnchorComponent::IsVCenterAnchorEnabled, &UIAnchorComponent::SetVCenterAnchorEnabled)[M::DisplayName("V. Center")]
+    .Field("vCenterAnchor", &UIAnchorComponent::GetVCenterAnchor, &UIAnchorComponent::SetVCenterAnchor)[M::DisplayName("V. Distance")]
+    .Field("bottomAnchorEnabled", &UIAnchorComponent::IsBottomAnchorEnabled, &UIAnchorComponent::SetBottomAnchorEnabled)[M::DisplayName("Bottom")]
+    .Field("bottomAnchor", &UIAnchorComponent::GetBottomAnchor, &UIAnchorComponent::SetBottomAnchor)[M::DisplayName("Bottom Distance")]
+    .Field("useRtl", &UIAnchorComponent::IsUseRtl, &UIAnchorComponent::SetUseRtl)[M::DisplayName("Use RTL")]
     .End();
 }
+
+IMPLEMENT_UI_COMPONENT(UIAnchorComponent);
 
 UIAnchorComponent::UIAnchorComponent()
 {

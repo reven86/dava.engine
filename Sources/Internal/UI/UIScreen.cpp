@@ -1,10 +1,11 @@
 #include "UI/UIScreen.h"
-#include "UI/UIControlSystem.h"
-#include "Render/RenderHelper.h"
-#include "Render/2D/Systems/RenderSystem2D.h"
-#include "Render/RHI/Common/PreProcess.h"
+#include "Engine/Engine.h"
 #include "Reflection/ReflectionRegistrator.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/RenderHelper.h"
 #include "Time/SystemTimer.h"
+#include "UI/UIControlSystem.h"
 
 namespace DAVA
 {
@@ -27,6 +28,13 @@ UIScreen::UIScreen(const Rect& rect)
     appScreens.push_back(this);
     groupIdCounter--;
     isLoaded = false;
+}
+
+UIScreen::UIScreen()
+    : UIScreen(Rect(0.0f, 0.0f,
+                    static_cast<float32>(GetEngineContext()->uiControlSystem->vcs->GetVirtualScreenSize().dx),
+                    static_cast<float32>(GetEngineContext()->uiControlSystem->vcs->GetVirtualScreenSize().dy)))
+{
 }
 
 UIScreen::~UIScreen()
@@ -52,7 +60,6 @@ void UIScreen::LoadGroup()
 {
     //Logger::FrameworkDebug("load group started");
     //uint64 loadGroupStart = SystemTimer::GetMs();
-    ShaderPreprocessScope preprocessScope;
 
     if (groupId < 0)
     {

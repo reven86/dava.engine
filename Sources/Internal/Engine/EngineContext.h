@@ -2,8 +2,6 @@
 
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_COREV2__)
-
 namespace DAVA
 {
 class Logger;
@@ -12,13 +10,16 @@ class AllocatorFactory;
 class Random;
 class PerformanceSettings;
 class VersionInfo;
+class ObjectFactory;
 
 class JobManager;
 class LocalizationSystem;
 class DownloadManager;
 
 class InputSystem;
+class ActionSystem;
 class UIControlSystem;
+class DynamicAtlasSystem;
 
 class SoundSystem;
 class AnimationManager;
@@ -35,12 +36,17 @@ class EngineSettings;
 
 class DeviceManager;
 
+class InputBindingListener;
+
 class AutotestingSystem;
 class ComponentManager;
 
 class TypeDB;
 class FastNameDB;
 class ReflectedTypeDB;
+
+class DebugOverlay;
+class ImageConverter;
 
 namespace Net
 {
@@ -71,8 +77,10 @@ public:
     VersionInfo* versionInfo = nullptr;
 
     InputSystem* inputSystem = nullptr;
+    ActionSystem* actionSystem = nullptr;
     // TODO: move UI control system to Window
     UIControlSystem* uiControlSystem = nullptr;
+    DynamicAtlasSystem* dynamicAtlasSystem = nullptr;
 
     AnimationManager* animationManager = nullptr;
     FontManager* fontManager = nullptr;
@@ -94,14 +102,31 @@ public:
 
     DeviceManager* deviceManager = nullptr;
 
+    InputBindingListener* inputListener = nullptr;
+
     AutotestingSystem* autotestingSystem = nullptr;
     ComponentManager* componentManager = nullptr;
 
     TypeDB* typeDB = nullptr;
     FastNameDB* fastNameDB = nullptr;
     ReflectedTypeDB* reflectedTypeDB = nullptr;
+
+    ObjectFactory* objectFactory = nullptr;
+
+    DebugOverlay* debugOverlay = nullptr;
+    ImageConverter* imageConverter = nullptr;
 };
 
-} // namespace DAVA
+// TODO: this is temporary solution
+// we are going to think on how to add functions like CurlGlobalInit()
+// into engine context, to be able to call them in such way:
+//   DAVA::Context::CurlGlobalInit()
+//   DAVA::Context::GetKeyboard()
+//   etc.
+namespace Context
+{
+void CurlGlobalInit();
+void CurlGlobalDeinit();
+}
 
-#endif // __DAVAENGINE_COREV2__
+} // namespace DAVA

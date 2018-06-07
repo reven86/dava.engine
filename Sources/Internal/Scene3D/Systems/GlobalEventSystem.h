@@ -2,7 +2,6 @@
 #define __DAVAENGINE_SCENE3D_GLOBALEVENTSYSTEM_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/HashMap.h"
 #include "Base/StaticSingleton.h"
 
 namespace DAVA

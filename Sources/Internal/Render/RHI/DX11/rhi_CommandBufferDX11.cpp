@@ -1293,6 +1293,11 @@ void CommandBufferDX11::BindHardwareCommandBufferDispatch(Dispatch* dispatch)
 #endif
 }
 
+void CommandBufferDX11::Init(uint32 maxCount)
+{
+    CommandBufferPoolDX11::Reserve(maxCount);
+}
+
 Handle CommandBufferDX11::Allocate(const RenderPassConfig& passDesc, bool isFirstInPass, bool isLastInPass)
 {
     Handle handle = CommandBufferPoolDX11::Alloc();
@@ -1687,6 +1692,11 @@ static void dx11_RenderPass_Begin(Handle pass)
 
 static void dx11_RenderPass_End(Handle pass)
 {
+}
+
+void RenderPassDX11::Init(uint32 maxCount)
+{
+    RenderPassPoolDX11::Reserve(maxCount);
 }
 
 void RenderPassDX11::SetupDispatch(Dispatch* dispatch)

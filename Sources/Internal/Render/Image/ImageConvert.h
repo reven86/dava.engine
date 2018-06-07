@@ -20,6 +20,8 @@ using RGBA16161616 = RGBA_PIXEL(uint16, r, g, b, a);
 using ABGR16161616 = RGBA_PIXEL(uint16, a, b, g, r);
 using RGBA32323232 = RGBA_PIXEL(uint32, r, g, b, a);
 using ABGR32323232 = RGBA_PIXEL(uint32, a, b, g, r);
+using RGB16F = RGB_PIXEL(uint16, r, g, b);
+using RGB32F = RGB_PIXEL(float32, r, g, b);
 using RGBA16F = RGBA_PIXEL(uint16, r, g, b, a);
 using ABGR16F = RGBA_PIXEL(uint16, a, b, g, r);
 using RGBA32F = RGBA_PIXEL(float32, r, g, b, a);
@@ -744,6 +746,63 @@ struct NormalizeRGBA8888
     }
 };
 
+struct NormalizeRGB16F
+{
+    inline void operator()(const RGB16F* input, RGB16F* output)
+    {
+        Vector3 nrm;
+        nrm.x = Float16Compressor::Decompress(input->r);
+        nrm.y = Float16Compressor::Decompress(input->g);
+        nrm.z = Float16Compressor::Decompress(input->b);
+        nrm.Normalize();
+        output->r = Float16Compressor::Compress(nrm.x);
+        output->g = Float16Compressor::Compress(nrm.y);
+        output->b = Float16Compressor::Compress(nrm.z);
+    }
+};
+
+struct NormalizeRGB32F
+{
+    inline void operator()(const RGB32F* input, RGB32F* output)
+    {
+        Vector3 nrm(input->r, input->g, input->b);
+        nrm.Normalize();
+        output->r = nrm.x;
+        output->g = nrm.y;
+        output->b = nrm.z;
+    }
+};
+
+struct NormalizeRGBA16F
+{
+    inline void operator()(const RGBA16F* input, RGBA16F* output)
+    {
+        Vector4 nrm;
+        nrm.x = Float16Compressor::Decompress(input->r);
+        nrm.y = Float16Compressor::Decompress(input->g);
+        nrm.z = Float16Compressor::Decompress(input->b);
+        nrm.w = Float16Compressor::Decompress(input->a);
+        nrm.Normalize();
+        output->r = Float16Compressor::Compress(nrm.x);
+        output->g = Float16Compressor::Compress(nrm.y);
+        output->b = Float16Compressor::Compress(nrm.z);
+        output->a = Float16Compressor::Compress(nrm.w);
+    }
+};
+
+struct NormalizeRGBA32F
+{
+    inline void operator()(const RGBA32F* input, RGBA32F* output)
+    {
+        Vector4 nrm(input->r, input->g, input->b, input->a);
+        nrm.Normalize();
+        output->r = nrm.x;
+        output->g = nrm.y;
+        output->b = nrm.z;
+        output->a = nrm.w;
+    }
+};
+
 template <class TYPE_IN, class TYPE_OUT, typename CONVERT_FUNC>
 class ConvertDirect
 {
@@ -887,5 +946,7 @@ bool DownscaleTwiceBillinear(PixelFormat inFormat, PixelFormat outFormat,
                              void* outData, uint32 outWidth, uint32 outHeight, uint32 outPitch, bool normalize);
 
 void ResizeRGBA8Billinear(const uint32* inPixels, uint32 w, uint32 h, uint32* outPixels, uint32 w2, uint32 h2);
+
+bool ConvertFloatFormats(uint32 width, uint32 height, PixelFormat inFormat, PixelFormat outFormat, void* inData, void* outData);
 };
 };

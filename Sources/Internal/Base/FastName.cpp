@@ -37,10 +37,11 @@ void FastName::Init(const char* name)
     LockGuard<FastNameDB::MutexT> guard(db->mutex);
 
     // search if that name is already in hash
-    if (db->namesHash.find(name) != db->namesHash.end())
+    auto it = db->nameToIndexMap.find(name);
+    if (it != db->nameToIndexMap.end())
     {
         // already exist, so we just need to set the same index to this object
-        index = db->namesHash[name];
+        str = db->namesTable[it->second];
     }
     else
     {
@@ -53,17 +54,13 @@ void FastName::Init(const char* name)
         db->sizeOfNames += (nameLen * sizeof(FastNameDB::CharT));
 
         // index will be a new row in names table
-        index = static_cast<int32>(db->namesTable.size());
+        size_t index = db->namesTable.size();
 
         db->namesTable.push_back(nameCopy);
-        db->namesHash.emplace(nameCopy, index);
+        db->nameToIndexMap.emplace(nameCopy, index);
+
+        str = nameCopy;
     }
-
-    DVASSERT(index != -1);
-
-#ifdef __DAVAENGINE_DEBUG__
-    debug_str = c_str();
-#endif
 }
 
 template <>

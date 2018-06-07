@@ -90,9 +90,10 @@ void StaticOcclusionSystem::Process(float32 timeElapsed)
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_STATIC_OCCLUSION_SYSTEM)
 
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+
     for (auto& pair : tsc->worldTransformChanged.map)
     {
-        if (pair.first->GetComponentsCount(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT) > 0)
+        if (pair.first->GetComponentsCount(Type::Instance<StaticOcclusionDebugDrawComponent>()) > 0)
         {
             for (Entity* entity : pair.second)
             {
@@ -101,8 +102,8 @@ void StaticOcclusionSystem::Process(float32 timeElapsed)
                 {
                     RenderObject* object = debugDrawComponent->GetRenderObject();
                     // Update new transform pointer, and mark that transform is changed
-                    Matrix4* worldTransformPointer = static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
-                    object->SetWorldTransformPtr(worldTransformPointer);
+                    Matrix4* worldTransformPointer = entity->GetComponent<TransformComponent>()->GetWorldMatrixPtr();
+                    object->SetWorldMatrixPtr(worldTransformPointer);
                     GetScene()->renderSystem->MarkForUpdate(object);
                 }
             }
@@ -203,7 +204,7 @@ void StaticOcclusionSystem::RegisterComponent(Entity* entity, Component* compone
 {
     SceneSystem::RegisterComponent(entity, component);
 
-    if (component->GetType() == Component::RENDER_COMPONENT)
+    if (component->GetType()->Is<RenderComponent>())
     {
         RenderObject* ro = GetRenderObject(entity);
         if (ro)
@@ -215,7 +216,7 @@ void StaticOcclusionSystem::RegisterComponent(Entity* entity, Component* compone
 
 void StaticOcclusionSystem::UnregisterComponent(Entity* entity, Component* component)
 {
-    if (component->GetType() == Component::RENDER_COMPONENT)
+    if (component->GetType()->Is<RenderComponent>())
     {
         RenderObject* ro = GetRenderObject(entity);
         if (ro)
@@ -228,7 +229,7 @@ void StaticOcclusionSystem::UnregisterComponent(Entity* entity, Component* compo
 
 void StaticOcclusionSystem::AddEntity(Entity* entity)
 {
-    staticOcclusionComponents.push_back(static_cast<StaticOcclusionDataComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT)));
+    staticOcclusionComponents.push_back(entity->GetComponent<StaticOcclusionDataComponent>());
 }
 
 void StaticOcclusionSystem::AddRenderObjectToOcclusion(RenderObject* renderObject)
@@ -262,7 +263,7 @@ void StaticOcclusionSystem::RemoveEntity(Entity* entity)
     for (uint32 k = 0; k < static_cast<uint32>(staticOcclusionComponents.size()); ++k)
     {
         StaticOcclusionDataComponent* component = staticOcclusionComponents[k];
-        if (component == entity->GetComponent(Component::STATIC_OCCLUSION_DATA_COMPONENT))
+        if (component == entity->GetComponent<StaticOcclusionDataComponent>())
         {
             UndoOcclusionVisibility();
 
@@ -271,6 +272,13 @@ void StaticOcclusionSystem::RemoveEntity(Entity* entity)
             break;
         }
     }
+}
+
+void StaticOcclusionSystem::PrepareForRemove()
+{
+    ClearOcclusionObjects();
+    indexedRenderObjects.clear();
+    staticOcclusionComponents.clear();
 }
 
 void StaticOcclusionSystem::ClearOcclusionObjects()
@@ -326,12 +334,12 @@ StaticOcclusionDebugDrawSystem::StaticOcclusionDebugDrawSystem(Scene* scene)
     Color coverColor(0.1f, 0.5f, 0.1f, 0.3f);
 
     gridMaterial = new NMaterial();
-    gridMaterial->SetMaterialName(FastName("DebugQcclusionGridMaterial"));
+    gridMaterial->SetMaterialName(FastName("DebugOcclusionGridMaterial"));
     gridMaterial->SetFXName(NMaterialName::DEBUG_DRAW_ALPHABLEND);
     gridMaterial->AddProperty(FastName("color"), gridColor.color, rhi::ShaderProp::TYPE_FLOAT4);
 
     coverMaterial = new NMaterial();
-    coverMaterial->SetMaterialName(FastName("DebugQcclusionCoverMaterial"));
+    coverMaterial->SetMaterialName(FastName("DebugOcclusionCoverMaterial"));
     coverMaterial->SetFXName(NMaterialName::DEBUG_DRAW_ALPHABLEND);
     coverMaterial->AddProperty(FastName("color"), coverColor.color, rhi::ShaderProp::TYPE_FLOAT4);
 
@@ -347,6 +355,7 @@ StaticOcclusionDebugDrawSystem::~StaticOcclusionDebugDrawSystem()
     SetScene(nullptr);
     SafeRelease(gridMaterial);
     SafeRelease(coverMaterial);
+    DVASSERT(entities.empty() == true);
 }
 
 void StaticOcclusionDebugDrawSystem::SetScene(Scene* scene)
@@ -367,10 +376,10 @@ void StaticOcclusionDebugDrawSystem::SetScene(Scene* scene)
 
 void StaticOcclusionDebugDrawSystem::AddEntity(Entity* entity)
 {
-    Matrix4* worldTransformPointer = GetTransformComponent(entity)->GetWorldTransformPtr();
+    Matrix4* worldTransformPointer = GetTransformComponent(entity)->GetWorldMatrixPtr();
     //create render object
     ScopedPtr<RenderObject> debugRenderObject(new RenderObject());
-    debugRenderObject->SetWorldTransformPtr(worldTransformPointer);
+    debugRenderObject->SetWorldMatrixPtr(worldTransformPointer);
     ScopedPtr<RenderBatch> gridBatch(new RenderBatch());
     ScopedPtr<RenderBatch> coverBatch(new RenderBatch());
     gridBatch->SetMaterial(gridMaterial);
@@ -387,14 +396,15 @@ void StaticOcclusionDebugDrawSystem::AddEntity(Entity* entity)
     UpdateGeometry(debugDrawComponent);
 
     GetScene()->GetRenderSystem()->RenderPermanent(debugRenderObject);
+
+    entities.push_back(entity);
 }
 
 void StaticOcclusionDebugDrawSystem::RemoveEntity(Entity* entity)
 {
-    StaticOcclusionDebugDrawComponent* debugDrawComponent = GetStaticOcclusionDebugDrawComponent(entity);
-    DVASSERT(debugDrawComponent != nullptr);
-    GetScene()->GetRenderSystem()->RemoveFromRender(debugDrawComponent->GetRenderObject());
-    entity->RemoveComponent(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT);
+    RemoveComponentFromEntity(entity);
+    bool removeSuccessful = FindAndRemoveExchangingWithLast(entities, entity);
+    DVASSERT(removeSuccessful == true);
 }
 
 void StaticOcclusionDebugDrawSystem::ImmediateEvent(Component* component, uint32 event)
@@ -409,10 +419,27 @@ void StaticOcclusionDebugDrawSystem::ImmediateEvent(Component* component, uint32
     }
 }
 
+void StaticOcclusionDebugDrawSystem::PrepareForRemove()
+{
+    for (Entity* entity : entities)
+    {
+        RemoveComponentFromEntity(entity);
+    }
+    entities.clear();
+}
+
+void StaticOcclusionDebugDrawSystem::RemoveComponentFromEntity(Entity* entity)
+{
+    StaticOcclusionDebugDrawComponent* debugDrawComponent = GetStaticOcclusionDebugDrawComponent(entity);
+    DVASSERT(debugDrawComponent != nullptr);
+    GetScene()->GetRenderSystem()->RemoveFromRender(debugDrawComponent->GetRenderObject());
+    entity->RemoveComponent<StaticOcclusionDebugDrawComponent>();
+}
+
 void StaticOcclusionDebugDrawSystem::UpdateGeometry(StaticOcclusionDebugDrawComponent* component)
 {
     Entity* entity = component->GetEntity();
-    StaticOcclusionComponent* staticOcclusionComponent = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
+    StaticOcclusionComponent* staticOcclusionComponent = entity->GetComponent<StaticOcclusionComponent>();
     DVASSERT(staticOcclusionComponent);
 
     CreateStaticOcclusionDebugDrawVertices(component, staticOcclusionComponent);

@@ -1,5 +1,3 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #pragma once
 
 #include "Base/BaseTypes.h"
@@ -36,7 +34,7 @@ public:
 
 private:
     EngineBackend& engineBackend;
-    WindowBackend* primaryWindowBackend = nullptr;
+    WindowImpl* primaryWindowImpl = nullptr;
 
     Signal<bool> applicationFocusChanged;
 };
@@ -45,4 +43,3 @@ private:
 } // namespace DAVA
 
 #endif // __DAVAENGINE_QT__
-#endif // __DAVAENGINE_COREV2__

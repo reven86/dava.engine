@@ -100,9 +100,9 @@ void UIScrollSystem::ForceProcessControl(float32 elapsedTime, UIControl* control
 
 void UIScrollSystem::PrepareForScreenshotImpl(UIControl* control)
 {
-    for (UIControl* c : control->GetChildren())
+    for (const auto& c : control->GetChildren())
     {
-        PrepareForScreenshotImpl(c);
+        PrepareForScreenshotImpl(c.Get());
         if (c->GetComponent<UIScrollComponent>() != nullptr)
         {
             c->Update(0);

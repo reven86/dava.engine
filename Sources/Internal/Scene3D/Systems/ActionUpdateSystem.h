@@ -16,6 +16,7 @@ public:
 
     void AddEntity(Entity* entity) override;
     void RemoveEntity(Entity* entity) override;
+    void PrepareForRemove() override;
 
     void Watch(ActionComponent* component);
     void UnWatch(ActionComponent* component);

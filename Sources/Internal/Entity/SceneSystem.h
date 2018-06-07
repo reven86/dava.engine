@@ -2,21 +2,28 @@
 
 #include "Base/BaseTypes.h"
 
+/**
+    \defgroup systems Systems
+*/
+
 namespace DAVA
 {
 class Entity;
 class Scene;
 class Component;
 class UIEvent;
-
+/**
+    \ingroup systems
+    \brief Base class of systems.
+*/
 class SceneSystem
 {
 public:
     SceneSystem(Scene* scene);
     virtual ~SceneSystem() = default;
 
-    inline void SetRequiredComponents(uint64 requiredComponents);
-    inline uint64 GetRequiredComponents() const;
+    inline void SetRequiredComponents(const ComponentMask& requiredComponents);
+    inline const ComponentMask& GetRequiredComponents() const;
 
     /**
         \brief  This function is called when any entity registered to scene.
@@ -78,6 +85,12 @@ public:
     virtual void SceneDidLoaded();
 
     /**
+        /brief This function is called before system will be removed from scene
+               instead of unregister all scene's entities.
+    */
+    virtual void PrepareForRemove() = 0;
+
+    /**
         \brief This function is called when event is fired to this system.
         \param[in] entity entity fired an event.
         \param[in] event event id for this event.
@@ -89,16 +102,13 @@ public:
      */
     virtual void Process(float32 timeElapsed);
 
-#if defined(__DAVAENGINE_COREV2__)
+    /** Similar to 'Process' but called with fixed 'timeElapsed'. Could be called from zero to several times per frame. */
+    virtual void ProcessFixed(float32 timeElapsed){};
+
     virtual bool Input(UIEvent* uie)
     {
         return false;
     }
-#else
-    virtual void Input(UIEvent* event)
-    {
-    }
-#endif
 
     virtual void InputCancelled(UIEvent* event);
 
@@ -122,7 +132,7 @@ protected:
     virtual void SetScene(Scene* scene);
 
 private:
-    uint64 requiredComponents = 0;
+    ComponentMask requiredComponents;
     Scene* scene = nullptr;
 
     bool locked = false;
@@ -134,12 +144,12 @@ inline Scene* SceneSystem::GetScene() const
     return scene;
 }
 
-inline void SceneSystem::SetRequiredComponents(uint64 _requiredComponents)
+inline void SceneSystem::SetRequiredComponents(const ComponentMask& requiredComponents_)
 {
-    requiredComponents = _requiredComponents;
+    requiredComponents = requiredComponents_;
 }
 
-inline uint64 SceneSystem::GetRequiredComponents() const
+inline const ComponentMask& SceneSystem::GetRequiredComponents() const
 {
     return requiredComponents;
 }

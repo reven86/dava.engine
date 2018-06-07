@@ -1,11 +1,10 @@
-#ifndef __DAVAENGINE_UI_INPUT_SYSTEM_H__
-#define __DAVAENGINE_UI_INPUT_SYSTEM_H__
+#pragma once 
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Math/Vector.h"
-#include "UI/Input/UIActionMap.h"
-#include "UI/Input/UIInputMap.h"
+#include "UI/Events/UIActionMap.h"
+#include "UI/Events/UIInputMap.h"
 #include "Functional/Signal.h"
 #include "UI/UISystem.h"
 
@@ -39,26 +38,28 @@ public:
     void SwitchInputToControl(uint32 eventID, UIControl* targetControl);
 
     const Vector<UIEvent>& GetAllInputs() const;
+    bool IsAnyInputLockedByControl(const UIControl* control) const;
 
     void SetExclusiveInputLocker(UIControl* locker, uint32 lockEventId);
     UIControl* GetExclusiveInputLocker() const;
     void SetHoveredControl(UIControl* newHovered);
     UIControl* GetHoveredControl() const;
+    UIControl* GetModalControl() const;
 
     UIFocusSystem* GetFocusSystem() const;
 
-    void MoveFocusLeft();
-    void MoveFocusRight();
-    void MoveFocusUp();
-    void MoveFocusDown();
+    void MoveFocusLeft(const Any& data);
+    void MoveFocusRight(const Any& data);
+    void MoveFocusUp(const Any& data);
+    void MoveFocusDown(const Any& data);
 
-    void MoveFocusForward();
-    void MoveFocusBackward();
+    void MoveFocusForward(const Any& data);
+    void MoveFocusBackward(const Any& data);
 
-    void BindGlobalShortcut(const KeyboardShortcut& shortcut, const FastName& actionName);
-    void BindGlobalAction(const FastName& actionName, const UIActionMap::Action& action);
-    void PerformActionOnControl(UIControl* control);
-    void PerformActionOnFocusedControl();
+    /** \deprecated use UIEventsSystem method instead \sa UIEventsSystem */
+    DAVA_DEPRECATED(void BindGlobalShortcut(const KeyboardShortcut& shortcut, const FastName& eventName));
+    /** \deprecated use UIEventsSystem method instead \sa UIEventsSystem */
+    DAVA_DEPRECATED(void BindGlobalAction(const FastName& eventName, const UIActionMap::SimpleAction& action));
 
     static const FastName ACTION_FOCUS_LEFT;
     static const FastName ACTION_FOCUS_RIGHT;
@@ -90,17 +91,11 @@ private:
 
     UIFocusSystem* focusSystem = nullptr;
 
-    UIControl* hovered = nullptr;
+    RefPtr<UIControl> hovered;
 
     Vector<UIEvent> touchEvents;
     UIControl* focusedControlWhenTouchBegan = nullptr;
     Vector2 positionOfTouchWhenTouchBegan;
-    UIControl* exclusiveInputLocker = nullptr;
-
-    UIActionMap globalActions;
-    UIInputMap globalInputMap;
+    RefPtr<UIControl> exclusiveInputLocker;
 };
 }
-
-
-#endif //__DAVAENGINE_UI_KEY_INPUT_SYSTEM_H__

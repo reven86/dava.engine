@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
 
-class MessageBox extends DialogFragment
+public class MessageBox extends DialogFragment
                  implements DialogInterface.OnClickListener,
                             DialogInterface.OnDismissListener
 {

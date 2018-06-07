@@ -1,7 +1,6 @@
 #include "DynamicBindings.h"
 
 #include "Math/AABBox3.h"
-#include "Core/Core.h"
 #include "Time/SystemTimer.h"
 #include "Render/RenderBase.h"
 
@@ -11,68 +10,76 @@ namespace DAVA
 {
 namespace
 {
-const FastName DYNAMIC_PARAM_NAMES[DynamicBindings::DYNAMIC_PARAMETERS_COUNT] =
+Array<FastName, DynamicBindings::DYNAMIC_PARAMETERS_COUNT> DYNAMIC_PARAM_NAMES;
+
+void InitDynamicParamNames()
 {
-  FastName("unknownSemantic"),
-  FastName("worldMatrix"), //PARAM_WORLD,
-  FastName("invWorldMatrix"), //PARAM_INV_WORLD,
-  FastName("worldInvTransposeMatrix"), //PARAM_WORLD_INV_TRANSPOSE,
+    if (DYNAMIC_PARAM_NAMES[0].IsValid() == false)
+    {
+        DYNAMIC_PARAM_NAMES = {
+            FastName("unknownSemantic"),
+            FastName("worldMatrix"), //PARAM_WORLD,
+            FastName("invWorldMatrix"), //PARAM_INV_WORLD,
+            FastName("worldInvTransposeMatrix"), //PARAM_WORLD_INV_TRANSPOSE,
 
-  FastName("viewMatrix"), //PARAM_VIEW,
-  FastName("invViewMatrix"), //PARAM_INV_VIEW,
-  FastName("projMatrix"), //PARAM_PROJ,
-  FastName("invProjMatrix"), //PARAM_INV_PROJ,
+            FastName("viewMatrix"), //PARAM_VIEW,
+            FastName("invViewMatrix"), //PARAM_INV_VIEW,
+            FastName("projMatrix"), //PARAM_PROJ,
+            FastName("invProjMatrix"), //PARAM_INV_PROJ,
 
-  FastName("worldViewMatrix"), //PARAM_WORLD_VIEW,
-  FastName("invWorldViewMatrix"), //PARAM_INV_WORLD_VIEW,
-  FastName("worldViewInvTransposeMatrix"), //PARAM_NORMAL, // NORMAL MATRIX
+            FastName("worldViewMatrix"), //PARAM_WORLD_VIEW,
+            FastName("invWorldViewMatrix"), //PARAM_INV_WORLD_VIEW,
+            FastName("worldViewInvTransposeMatrix"), //PARAM_NORMAL, // NORMAL MATRIX
 
-  FastName("viewProjMatrix"), //PARAM_VIEW_PROJ,
-  FastName("invViewProjMatrix"), //PARAM_INV_VIEW_PROJ,
+            FastName("viewProjMatrix"), //PARAM_VIEW_PROJ,
+            FastName("invViewProjMatrix"), //PARAM_INV_VIEW_PROJ,
 
-  FastName("worldViewProjMatrix"), //PARAM_WORLD_VIEW_PROJ,
-  FastName("invWorldViewProjMatrix"), //PARAM_INV_WORLD_VIEW_PROJ,
+            FastName("worldViewProjMatrix"), //PARAM_WORLD_VIEW_PROJ,
+            FastName("invWorldViewProjMatrix"), //PARAM_INV_WORLD_VIEW_PROJ,
 
-  FastName("globalTime"),
-  FastName("worldScale"),
+            FastName("globalTime"),
+            FastName("worldScale"),
 
-  FastName("cameraPosition"), // PARAM_CAMERA_POS,
-  FastName("cameraDirection"), // PARAM_CAMERA_DIR,
-  FastName("cameraUp"), // PARAM_CAMERA_UP,
+            FastName("cameraPosition"), // PARAM_CAMERA_POS,
+            FastName("cameraDirection"), // PARAM_CAMERA_DIR,
+            FastName("cameraUp"), // PARAM_CAMERA_UP,
 
-  FastName("lightPosition0"),
-  FastName("lightColor0"),
-  FastName("lightAmbientColor0"),
+            FastName("lightPosition0"),
+            FastName("lightColor0"),
+            FastName("lightAmbientColor0"),
 
-  FastName("localBoundingBox"),
-  FastName("worldViewObjectCenter"),
-  FastName("boundingBoxSize"),
+            FastName("localBoundingBox"),
+            FastName("worldViewObjectCenter"),
+            FastName("boundingBoxSize"),
 
-  FastName("trunkOscillationParams"),
-  FastName("leafOscillationParams"),
-  FastName("speedTreeLightSmoothing"),
+            FastName("trunkOscillationParams"),
+            FastName("leafOscillationParams"),
+            FastName("speedTreeLightSmoothing"),
 
-  FastName("sphericalHarmonics"),
+            FastName("sphericalHarmonics"),
 
-  FastName("jointPositions"),
-  FastName("jointQuaternions"),
-  FastName("jointsCount"),
+            FastName("jointPositions"),
+            FastName("jointQuaternions"),
+            FastName("jointsCount"),
 
-  FastName("viewportSize"),
-  FastName("rcpViewportSize"),
-  FastName("viewportOffset"),
+            FastName("viewportSize"),
+            FastName("rcpViewportSize"),
+            FastName("viewportOffset"),
 
-  FastName("heightmapTextureSize"),
+            FastName("heightmapTextureSize"),
 
-  FastName("shadowColor"),
-  FastName("waterClearColor"),
+            FastName("shadowColor"),
+            FastName("waterClearColor"),
 
-  FastName("projectionFlip")
-};
+            FastName("projectionFlip")
+        };
+    }
+}
 }
 
 DynamicBindings::eUniformSemantic DynamicBindings::GetUniformSemanticByName(const FastName& name)
 {
+    InitDynamicParamNames();
     for (int32 k = 0; k < DYNAMIC_PARAMETERS_COUNT; ++k)
         if (name == DYNAMIC_PARAM_NAMES[k])
             return static_cast<eUniformSemantic>(k);
@@ -216,13 +223,14 @@ inline void DynamicBindings::ComputeWorldInvTransposeMatrixIfRequired()
     }
 }
 
-int32 DynamicBindings::GetDynamicParamArraySize(DynamicBindings::eUniformSemantic shaderSemantic, int32 defaultValue)
+uint32 DynamicBindings::GetDynamicParamArraySize(DynamicBindings::eUniformSemantic shaderSemantic, uint32 defaultValue)
 {
     if ((shaderSemantic == PARAM_JOINT_POSITIONS) || (shaderSemantic == PARAM_JOINT_QUATERNIONS))
-        return *(reinterpret_cast<const int32*>(GetDynamicParam(PARAM_JOINTS_COUNT)));
+        return *(reinterpret_cast<const uint32*>(GetDynamicParam(PARAM_JOINTS_COUNT)));
     else
         return defaultValue;
 }
+
 const void* DynamicBindings::GetDynamicParam(eUniformSemantic shaderSemantic)
 {
     switch (shaderSemantic)

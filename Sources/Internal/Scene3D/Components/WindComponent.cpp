@@ -72,7 +72,7 @@ Vector3 WindComponent::GetDirection() const
     DVASSERT(entity);
     DVASSERT(GetTransformComponent(entity));
 
-    const Matrix4& wtMx = GetTransformComponent(entity)->GetWorldTransform();
+    const Matrix4& wtMx = GetTransformComponent(entity)->GetWorldMatrix();
 
     return Vector3(wtMx._00, wtMx._01, wtMx._02); //Get world direction only: wtMx * Vec3(1, 0, 0)
 }

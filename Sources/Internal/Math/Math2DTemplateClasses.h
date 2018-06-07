@@ -55,7 +55,15 @@ inline TYPE LineLength(Point2Base<TYPE> p1, Point2Base<TYPE> p2);
 template <class TYPE>
 struct Size2Base
 {
-    TYPE dx, dy;
+    union
+    {
+        struct
+        {
+            TYPE dx, dy;
+        };
+        TYPE data[2];
+    };
+
     inline Size2Base();
     inline Size2Base(TYPE _dx, TYPE _dy);
     inline Size2Base(const Size2Base<TYPE>& Size);

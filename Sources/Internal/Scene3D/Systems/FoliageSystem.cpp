@@ -38,10 +38,10 @@ void FoliageSystem::AddEntity(Entity* entity)
         SyncFoliageWithLandscape();
     }
 
-    if (std::find(foliageEntities.begin(), foliageEntities.end(), entity) == foliageEntities.end())
+    VegetationRenderObject* vegetationRO = GetVegetation(entity);
+    if (vegetationRO != nullptr)
     {
-        VegetationRenderObject* vegetationRO = GetVegetation(entity);
-        if (vegetationRO != nullptr)
+        if (std::find(foliageEntities.begin(), foliageEntities.end(), entity) == foliageEntities.end())
         {
             foliageEntities.push_back(SafeRetain(entity));
             SyncFoliageWithLandscape();
@@ -62,6 +62,16 @@ void FoliageSystem::RemoveEntity(Entity* entity)
     {
         SafeRelease(landscapeEntity);
     }
+}
+
+void FoliageSystem::PrepareForRemove()
+{
+    for (Entity* e : foliageEntities)
+    {
+        SafeRelease(e);
+    }
+    SafeRelease(landscapeEntity);
+    foliageEntities.clear();
 }
 
 void FoliageSystem::Process(float32 timeElapsed)

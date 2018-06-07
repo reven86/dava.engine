@@ -171,7 +171,7 @@ public:
 
 protected:
     File() = default;
-    virtual ~File();
+    ~File() override;
 
     FilePath filename;
 

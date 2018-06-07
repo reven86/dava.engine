@@ -1,101 +1,13 @@
-#ifndef __DAVAENGINE_UI_TEXT_FIELD_H__
-#define __DAVAENGINE_UI_TEXT_FIELD_H__
+#pragma once
 
 #include "UI/UIControl.h"
 #include "Render/2D/TextBlock.h"
 
 namespace DAVA
 {
-class UITextField;
+class FilePath;
 class TextFieldPlatformImpl;
-/**
-    \brief  The UITextFieldDelegate interface defines the messages sent to a text field delegate as part of the sequence of editing its text. 
-            All the methods of the interface is optional.
- */
-class UITextFieldDelegate
-{
-public:
-    enum class eReason
-    {
-        USER = 0,
-        CODE = 1,
-    };
-
-    virtual ~UITextFieldDelegate() = default;
-
-    /**
-        \brief Asks the delegate if the text field should process the pressing of the return button.
-        In this function you can check what you want to do with UITextField when return button pressed.
-        Works only in single line mode.
-     */
-    virtual void TextFieldShouldReturn(UITextField* /*textField*/)
-    {
-    }
-
-    /**
-        \brief Asks the delegate if the text field should process the pressing of the ESC button.
-        In this function you can check what you want to do with UITextField when ESC button pressed.
-        Doesn't work on iOS for now.
-     */
-    virtual void TextFieldShouldCancel(UITextField* /*textField*/)
-    {
-    }
-    virtual void TextFieldLostFocus(UITextField* /*textField*/)
-    {
-    }
-
-    /**
-        \brief Asks the delegate if the specified text should be changed.
-        \param[in] textField The text field containing the text.
-        \param[in] replacementLocation starting position of range of characters to be replaced
-        \param[in] replacementLength ending position of range of characters to be replaced
-        \param[in] replacementString the replacement string.
-        \returns true if the specified text range should be replaced; otherwise, false to keep the old text. Default implementation returns true.
-     */
-    virtual bool TextFieldKeyPressed(UITextField* /*textField*/, int32 /*replacementLocation*/, int32 /*replacementLength*/, WideString& /*replacementString*/)
-    {
-        return true;
-    }
-
-    DAVA_DEPRECATED(virtual void TextFieldOnTextChanged(UITextField* /*textField*/, const WideString& /*newText*/, const WideString& /*oldText*/)
-                    {
-                    });
-
-    virtual void TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& oldText, eReason type)
-    {
-        DVASSERT(newText != oldText);
-        TextFieldOnTextChanged(textField, newText, oldText);
-    }
-
-    /*
-        \brief Called when device keyboard is displayed/hidden.
-        */
-    virtual void OnKeyboardShown(const Rect& keyboardRect)
-    {
-    }
-
-    virtual void OnKeyboardHidden()
-    {
-    }
-
-    DAVA_DEPRECATED(virtual void OnStartEditing())
-    {
-    }
-
-    DAVA_DEPRECATED(virtual void OnStopEditing())
-    {
-    }
-
-    virtual void OnStartEditing(UITextField* textField)
-    {
-        OnStartEditing();
-    }
-
-    virtual void OnStopEditing(UITextField* textField)
-    {
-        OnStopEditing();
-    }
-};
+class UITextFieldDelegate;
 
 /**
     \brief  A UITextField object is a control that displays editable text and sends an action message to a target object when the user presses the return button. 
@@ -200,8 +112,6 @@ public:
     void StartEdit();
     void StopEdit();
 
-    void SetSpriteAlign(int32 align) override;
-
     DAVA_DEPRECATED(const WideString& GetText());
     DAVA_DEPRECATED(virtual void SetText(const WideString& text));
 
@@ -221,6 +131,11 @@ public:
      \returns Font font of the control
      */
     Font* GetFont() const;
+    /**
+     \brief Returns the font's size of control
+     \returns Font's size of the control
+     */
+    float32 GetFontSize() const;
     /**
      \brief Returns the text color of control.
      \returns Color color of control's text
@@ -251,6 +166,13 @@ public:
      \param[in] font font used for text draw of the states.
      */
     void SetFont(Font* font);
+
+    /** Set path to font. */
+    void SetFontPath(const FilePath& fontPath);
+
+    /** Return path to font. */
+    const FilePath& GetFontPath() const;
+
     /**
      \brief Sets the color of the text.
      \param[in] fontColor font used for text draw of the states.
@@ -285,9 +207,6 @@ public:
      \param[in] useRrlAlign flag of support RTL align
      */
     void SetTextUseRtlAlign(TextBlock::eUseRtlAlign useRtlAlign);
-
-    void SetTextUseRtlAlignFromInt(int32 value);
-    int32 GetTextUseRtlAlignAsInt() const;
 
     void SetSize(const DAVA::Vector2& newSize) override;
     void SetPosition(const Vector2& position) override;
@@ -367,7 +286,7 @@ public:
     void SetMaxLength(int32 maxLength);
     int32 GetMaxLength() const;
 
-    String GetFontPresetName() const;
+    const String& GetFontPresetName() const;
 
     void SetFontByPresetName(const String& presetName);
 
@@ -402,7 +321,9 @@ private:
     void SetStopEditPolicyFromInt(int32 policy);
 
     WideString text;
+    String fontPresetName;
     UITextFieldDelegate* delegate = nullptr;
+    float32 fontSize = 0.f; // Font size for native text fields
     float32 cursorBlinkingTime = 0.0f;
 
     // Keyboard customization params.
@@ -429,5 +350,3 @@ private:
 };
 
 } // namespace DAVA
-
-#endif // __DAVAENGINE_UI_TEXT_FIELD_H__

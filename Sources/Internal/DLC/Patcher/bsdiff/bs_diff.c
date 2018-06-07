@@ -37,7 +37,9 @@
 #pragma clang diagnostic ignored "-Wold-style-cast"
 #endif
 
+#ifndef MIN
 #define MIN(x, y) (((x) < (y)) ? (x) : (y))
+#endif
 
 static void split(int64_t* I, int64_t* V, int64_t start, int64_t len, int64_t h)
 {

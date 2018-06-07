@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE__CRC32__
-#define __DAVAENGINE__CRC32__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
@@ -16,11 +15,19 @@ public:
     // Calculate the CRC32 for the in-memory buffer.
     static uint32 ForBuffer(const void* data, size_t size);
 
+    template <typename Container>
+    static uint32 ForBuffer(const Container& c)
+    {
+        return ForBuffer(c.data(), c.size());
+    }
+
     // Calculate CRC32 for the whole file.
     static uint32 ForFile(const FilePath& pathName);
+
+    // Calculate CRC32 for content of file without DVPL Footer
+    static uint32 ForDVPLFileContent(const FilePath& pathName);
 
 private:
     uint32 crc32;
 };
 }
-#endif /* defined(__DAVAENGINE__CRC32__) */

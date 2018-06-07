@@ -1,9 +1,12 @@
 #ifndef __DAVEAENGINE_UI_SCREENSHOTER__
 #define __DAVEAENGINE_UI_SCREENSHOTER__
 
-#include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
-#include "UI/UIControl.h"
+#include "Base/BaseTypes.h"
+#include "Base/RefPtr.h"
+#include "Functional/Function.h"
+#include "Render/RHI/rhi_Public.h"
+#include "Render/RenderBase.h"
 
 namespace DAVA
 {

@@ -1,7 +1,5 @@
-#ifndef __DAVAENGINE_H__
-#define __DAVAENGINE_H__
+#pragma once
 
-#include "DAVAVersion.h"
 #include "DAVAConfig.h"
 #include "MemoryManager/MemoryProfiler.h"
 
@@ -35,7 +33,6 @@
 
 #include "Base/ObjectFactory.h"
 #include "Base/FixedSizePoolAllocator.h"
-#include "Base/HashMap.h"
 
 // ptrs
 #include "Base/RefPtr.h"
@@ -48,8 +45,7 @@
 #include "Input/Accelerometer.h"
 
 #include "Input/InputSystem.h"
-#include "Input/KeyboardDevice.h"
-#include "Input/GamepadDevice.h"
+#include "Input/Gamepad.h"
 
 // Localization
 #include "FileSystem/LocalizationSystem.h"
@@ -145,8 +141,6 @@
 
 #include "UI/UIScreenManager.h"
 
-#include "UI/TheoraPlayer.h"
-
 #include "UI/UIScrollViewContainer.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/UIScreenshoter.h"
@@ -220,19 +214,19 @@
 #include "Scene3D/Components/UserComponent.h"
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/SoundComponent.h"
+#include "Scene3D/Components/CustomPropertiesComponent.h"
 #include "Scene3D/Components/StaticOcclusionComponent.h"
 #include "Scene3D/Components/QualitySettingsComponent.h"
 #include "Scene3D/Components/SpeedTreeComponent.h"
 #include "Scene3D/Components/WindComponent.h"
 #include "Scene3D/Components/WaveComponent.h"
+#include "Scene3D/Components/SlotComponent.h"
+#include "Scene3D/Components/TextComponent.h"
 #include "Scene3D/Components/Waypoint/PathComponent.h"
+#include "Scene3D/Components/GeoDecalComponent.h"
 #include "Scene3D/Components/Controller/WASDControllerComponent.h"
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
 #include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
-
-// Application core 
-#include "Core/Core.h"
-#include "Core/ApplicationCore.h"
 
 #include "Job/JobManager.h"
 
@@ -242,5 +236,3 @@
 #include "Notification/LocalNotificationProgress.h"
 #include "Notification/LocalNotificationDelayed.h"
 #include "Notification/LocalNotificationController.h"
-
-#endif // __DAVAENGINE_H__

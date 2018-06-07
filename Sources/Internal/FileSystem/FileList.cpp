@@ -1,16 +1,8 @@
 #include "FileSystem/FileList.h"
-#include "Utils/UTF8Utils.h"
-#include "Logger/Logger.h"
-#if defined(__DAVAENGINE_COREV2__)
-#include "Engine/Engine.h"
-#else
-#include "Core/Core.h"
-#endif
 
-#if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
-#include "Engine/EngineContext.h"
-#endif
+#include "Logger/Logger.h"
+#include "Utils/UTF8Utils.h"
 
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__)
 #include <dirent.h>
@@ -23,8 +15,7 @@
 #include <io.h>
 #include <direct.h>
 #elif defined(__DAVAENGINE_ANDROID__)
-#include "Platform/TemplateAndroid/FileListAndroid.h"
-#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#include "Engine/Private/Android/AssetsManagerAndroid.h"
 #include <dirent.h>
 #include <sys/stat.h>
 #elif defined(__DAVAENGINE_LINUX__)
@@ -95,7 +86,6 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
             entry.path = path + namelist[n]->d_name;
             entry.name = namelist[n]->d_name;
 
-#if defined(__DAVAENGINE_MACOS__)
             struct stat entry_stat;
             stat(entry.path.GetAbsolutePathname().c_str(), &entry_stat);
 
@@ -109,11 +99,6 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
             }
 
             entry.size = entry_stat.st_size;
-
-#elif defined(__DAVAENGINE_IPHONE__)
-            entry.isDirectory = (DT_DIR == namelist[n]->d_type);
-            entry.size = 0;
-#endif
 
             if (entry.name != "." && entry.name != "..")
             {

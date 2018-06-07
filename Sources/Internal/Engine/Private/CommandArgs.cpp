@@ -1,7 +1,5 @@
 #include "Base/BaseTypes.h"
 
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Base/Platform.h"
 #include "Utils/Utils.h"
 #include "Utils/UTF8Utils.h"
@@ -104,5 +102,3 @@ Vector<String> GetCommandArgs()
 
 } // namespace Private
 } // namespace DAVA
-
-#endif // __DAVAENGINE_COREV2__

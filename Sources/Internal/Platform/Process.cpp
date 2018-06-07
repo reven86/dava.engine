@@ -369,7 +369,7 @@ void Process::Wait()
     {
         status = 0;
         pd = wait(&status);
-    } while (pd != pid);
+    } while (pd != pid && pd != -1);
 
     exitCode = WEXITSTATUS(status);
     if (WIFEXITED(status) == 0)

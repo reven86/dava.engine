@@ -2,11 +2,12 @@
 #define __DAVAENGINE_UIWEBVIEW_H__
 
 #include "UIControl.h"
-#include "IWebViewControl.h"
 #include "Reflection/Reflection.h"
 
 namespace DAVA
 {
+class IWebViewControl;
+class IUIWebViewDelegate;
 // The purpose of UIWebView class is displaying embedded Web Page Controls.
 class UIWebView : public UIControl
 {

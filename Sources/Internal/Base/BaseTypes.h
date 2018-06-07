@@ -56,6 +56,8 @@
 
 namespace DAVA
 {
+using ComponentMask = Bitset<128>;
+
 //Platform-independent signed and unsigned integer type
 using uint8 = uint8_t;
 using uint16 = uint16_t;
@@ -116,6 +118,12 @@ inline T Clamp(T val, T a, T b)
     return Min(b, Max(val, a));
 }
 
+template <class T>
+inline T Saturate(T val)
+{
+    return Clamp(val, static_cast<T>(0), static_cast<T>(1));
+}
+
 #define Memcmp std::memcmp
 #define Memcpy std::memcpy
 #define Memset std::memset
@@ -123,9 +131,16 @@ inline T Clamp(T val, T a, T b)
 
 #if defined(__DAVAENGINE_WINDOWS__)
 #define Snprintf _snprintf
-#define vsnprintf _vsnprintf
 #else
 #define Snprintf snprintf
+#endif
+
+
+#if defined(__DAVAENGINE_WINDOWS__)
+#define strnicmp _strnicmp 
+#elif defined(__DAVAENGINE_POSIX__)
+#define strnicmp strncasecmp 
+#else
 #endif
 
 template <class TYPE>
@@ -226,3 +241,5 @@ enum class eErrorCode
 #else
 #define DAVA_FORWARD_DECLARE_OBJC_CLASS(classname) typedef struct objc_object classname
 #endif
+
+#define DAVA_MAKEFOURCC(ch0, ch1, ch2, ch3) (static_cast<uint32>(static_cast<uint8>(ch0)) | (static_cast<uint32>(static_cast<uint8>(ch1)) << 8) | (static_cast<uint32>(static_cast<uint8>(ch2)) << 16) | (static_cast<uint32>(static_cast<uint8>(ch3)) << 24))

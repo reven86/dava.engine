@@ -4,6 +4,7 @@
 #include <typeindex>
 #include <type_traits>
 #include <bitset>
+#include <array>
 
 namespace DAVA
 {
@@ -39,12 +40,18 @@ public:
     Type(const Type&) = delete;
     Type& operator=(const Type&) = delete;
 
-    size_t GetSize() const;
+    uint32_t GetSize() const;
     const char* GetName() const;
     std::type_index GetTypeIndex() const;
     const TypeInheritance* GetInheritance() const;
     unsigned long GetTypeFlags() const;
     SeedCastOP GetSeedCastOP() const;
+
+    void SetUserData(uint32_t index, void* data) const;
+    void* GetUserData(uint32_t index) const;
+
+    template <typename T>
+    bool Is() const;
 
     bool IsConst() const;
     bool IsPointer() const;
@@ -54,6 +61,7 @@ public:
     bool IsIntegral() const;
     bool IsFloatingPoint() const;
     bool IsEnum() const;
+    bool IsAbstract() const;
 
     const Type* Decay() const;
     const Type* Deref() const;
@@ -61,6 +69,8 @@ public:
 
     template <typename T>
     static const Type* Instance();
+
+    static uint32_t AllocUserData();
 
 private:
     enum eTypeFlag
@@ -74,10 +84,11 @@ private:
         isTrivial,
         isIntegral,
         isFloatingPoint,
-        isEnum
+        isEnum,
+        isAbstract
     };
 
-    size_t size = 0;
+    uint32_t size = 0;
     const char* name = nullptr;
     const std::type_info* stdTypeInfo = &typeid(void);
     SeedCastOP seedCastOP = nullptr;
@@ -88,6 +99,9 @@ private:
 
     std::bitset<sizeof(int) * 8> flags;
     std::unique_ptr<TypeInheritance, void (*)(TypeInheritance*)> inheritance;
+
+    static const size_t userDataStorageSize = 16;
+    mutable std::array<void*, userDataStorageSize> userDataStorage = {};
 
     Type();
     TypeInheritance* EditInheritance() const;

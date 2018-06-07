@@ -290,12 +290,7 @@ public:
 		\param[in] value we want to set for this key
 	 */
     void SetVariant(const String& key, const VariantType& value);
-    /**
-        /brief Function to set variable in archive. Existing key isn't deleting, but replacing.
-        Used in property panel.
-        TODO : This method should be removed after KeyedArchive starts store VariantType by value
-    */
-    void SetVariantWithoutRealloc(const String& key, const VariantType& value);
+    void SetVariant(const String& key, VariantType&& value);
     /**
         \brief Function to set another keyed archive as key for this archive.
         \param[in] key string key
@@ -473,12 +468,31 @@ public:
 
     static const char* GenKeyFromIndex(uint32 index);
 
+    /**
+     \brief Assignment operator
+     \returns Returns reference to this
+     */
+    KeyedArchive& operator=(const KeyedArchive& arc);
+
+    INTROSPECTION(KeyedArchive, nullptr)
+
 private:
+    template <typename T, typename M>
+    void SetVariant(const String& key, const T& value, M setVariantMethod)
+    {
+        auto iter = objectMap.find(key);
+        if (iter != objectMap.end())
+        {
+            (iter->second->*setVariantMethod)(value);
+        }
+        else
+        {
+            objectMap[key] = new VariantType(value);
+        }
+    }
+
     friend class KeyedArchiveStructureWrapper;
     UnderlyingMap objectMap;
-
-public:
-    INTROSPECTION_EXTEND(KeyedArchive, BaseObject, NULL);
 
     DAVA_VIRTUAL_REFLECTION(KeyedArchive, BaseObject);
 };

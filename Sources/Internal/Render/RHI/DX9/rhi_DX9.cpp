@@ -4,7 +4,7 @@
 
 #include "Debug/DVAssert.h"
 #include "Logger/Logger.h"
-#include "Core/Core.h"
+
 using DAVA::Logger;
 
 #include "_dx9.h"
@@ -64,8 +64,11 @@ dx9_TextureFormatSupported(TextureFormat format, ProgType progType)
     case TEXTURE_FORMAT_DXT3:
     case TEXTURE_FORMAT_DXT5:
     case TEXTURE_FORMAT_R32F:
+    case TEXTURE_FORMAT_RG32F:
     case TEXTURE_FORMAT_RGBA32F:
         supported = true;
+        break;
+    default:
         break;
     }
 
@@ -92,26 +95,26 @@ static bool IsValidIntelCardDX9(unsigned vendor_id, unsigned device_id)
 
             // These guys are prehistoric :)
 
-            (device_id == 0x2572) || // 865G
-            (device_id == 0x3582) || // 855GM
-            (device_id == 0x2562) || // 845G
-            (device_id == 0x3577) || // 830M
+            ((device_id == 0x2572) || // 865G
+             (device_id == 0x3582) || // 855GM
+             (device_id == 0x2562) || // 845G
+             (device_id == 0x3577) || // 830M
 
-            // These are from 2005 and later
+             // These are from 2005 and later
 
-            (device_id == 0x2A02) || // GM965 Device 0
-            (device_id == 0x2A03) || // GM965 Device 1
-            (device_id == 0x29A2) || // G965 Device 0
-            (device_id == 0x29A3) || // G965 Device 1
-            (device_id == 0x27A2) || // 945GM Device 0
-            (device_id == 0x27A6) || // 945GM Device 1
-            (device_id == 0x2772) || // 945G Device 0
-            (device_id == 0x2776) || // 945G Device 1
-            (device_id == 0x2592) || // 915GM Device 0
-            (device_id == 0x2792) || // 915GM Device 1
-            (device_id == 0x2582) || // 915G Device 0
-            (device_id == 0x2782) // 915G Device 1
-            );
+             (device_id == 0x2A02) || // GM965 Device 0
+             (device_id == 0x2A03) || // GM965 Device 1
+             (device_id == 0x29A2) || // G965 Device 0
+             (device_id == 0x29A3) || // G965 Device 1
+             (device_id == 0x27A2) || // 945GM Device 0
+             (device_id == 0x27A6) || // 945GM Device 1
+             (device_id == 0x2772) || // 945G Device 0
+             (device_id == 0x2776) || // 945G Device 1
+             (device_id == 0x2592) || // 915GM Device 0
+             (device_id == 0x2792) || // 915GM Device 1
+             (device_id == 0x2582) || // 915G Device 0
+             (device_id == 0x2782) // 915G Device 1
+             ));
 }
 
 //------------------------------------------------------------------------------
@@ -127,20 +130,37 @@ static void dx9_Uninitialize()
 static void dx9_Reset(const ResetParam& param)
 {
     bool paramsChanged = false;
-    _DX9_ResetParamsMutex.Lock();
-    UINT interval = (param.vsyncEnabled) ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
-    if (param.width != _DX9_PresentParam.BackBufferWidth
-        || param.height != _DX9_PresentParam.BackBufferHeight
-        || param.fullScreen != !_DX9_PresentParam.Windowed
-        || interval != _DX9_PresentParam.PresentationInterval
-        )
-    {
-        _DX9_PresentParam.BackBufferWidth = param.width;
-        _DX9_PresentParam.BackBufferHeight = param.height;
-        _DX9_PresentParam.Windowed = !param.fullScreen;
-        _DX9_PresentParam.PresentationInterval = interval;
 
-        paramsChanged = true;
+    _DX9_ResetParamsMutex.Lock();
+    if (_DX9_PresentRectPtr)
+    {
+        _DX9_PresentRectPtr->right = param.width;
+        _DX9_PresentRectPtr->bottom = param.height;
+
+        if (param.width > _DX9_PresentParam.BackBufferWidth || param.height > _DX9_PresentParam.BackBufferHeight)
+        {
+            _DX9_PresentParam.BackBufferWidth = DAVA::Max(UINT(param.width), _DX9_PresentParam.BackBufferWidth);
+            _DX9_PresentParam.BackBufferHeight = DAVA::Max(UINT(param.height), _DX9_PresentParam.BackBufferHeight);
+
+            paramsChanged = true;
+        }
+    }
+    else
+    {
+        UINT interval = (param.vsyncEnabled) ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
+        if (param.width != _DX9_PresentParam.BackBufferWidth
+            || param.height != _DX9_PresentParam.BackBufferHeight
+            || param.fullScreen != !_DX9_PresentParam.Windowed
+            || interval != _DX9_PresentParam.PresentationInterval
+            )
+        {
+            _DX9_PresentParam.BackBufferWidth = param.width;
+            _DX9_PresentParam.BackBufferHeight = param.height;
+            _DX9_PresentParam.Windowed = !param.fullScreen;
+            _DX9_PresentParam.PresentationInterval = interval;
+
+            paramsChanged = true;
+        }
     }
     _DX9_ResetParamsMutex.Unlock();
 
@@ -172,7 +192,7 @@ static void dx9_SynchronizeCPUGPU(uint64* cpuTimestamp, uint64* gpuTimestamp)
 
 //------------------------------------------------------------------------------
 
-void DX9CheckMultisampleSupport()
+void DX9CheckMultisampleSupport(UINT adapter)
 {
     const _D3DFORMAT formatsToCheck[] = { D3DFMT_A8R8G8B8, D3DFMT_D24S8 };
     const D3DMULTISAMPLE_TYPE samplesToCheck[] = { D3DMULTISAMPLE_2_SAMPLES, D3DMULTISAMPLE_4_SAMPLES, D3DMULTISAMPLE_8_SAMPLES };
@@ -184,7 +204,7 @@ void DX9CheckMultisampleSupport()
         DWORD qualityLevels = 0;
         for (uint32 f = 0; f < countof(formatsToCheck); ++f)
         {
-            HRESULT hr = _D3D9->CheckDeviceMultiSampleType(_D3D9_Adapter, D3DDEVTYPE_HAL, formatsToCheck[f], TRUE, samplesToCheck[s], &qualityLevels);
+            HRESULT hr = _D3D9->CheckDeviceMultiSampleType(adapter, D3DDEVTYPE_HAL, formatsToCheck[f], TRUE, samplesToCheck[s], &qualityLevels);
             if (FAILED(hr))
             {
                 break;
@@ -266,7 +286,7 @@ void dx9_InitCaps(const AdapterInfo& adapterInfo)
         MutableDeviceCaps::Get().isInstancingSupported = false;
     }
 
-    DX9CheckMultisampleSupport();
+    DX9CheckMultisampleSupport(adapterInfo.index);
 }
 
 const char* dx9_AdapterInfo(const D3DADAPTER_IDENTIFIER9& info)
@@ -275,7 +295,8 @@ const char* dx9_AdapterInfo(const D3DADAPTER_IDENTIFIER9& info)
     memset(buffer, 0, sizeof(buffer));
 
     sprintf(buffer, "`%s` at `%s` (vendor: 0x%04x, subsystem: 0x%04x, driver: %u.%u.%u.%u)",
-            info.Description, info.DeviceName, info.VendorId, info.SubSysId,
+            info.Description, info.DeviceName, static_cast<unsigned int>(info.VendorId),
+            static_cast<unsigned int>(info.SubSysId),
             HIWORD(info.DriverVersion.HighPart), LOWORD(info.DriverVersion.HighPart),
             HIWORD(info.DriverVersion.LowPart), LOWORD(info.DriverVersion.LowPart));
 
@@ -354,14 +375,12 @@ bool dx9_SelectAdapter(DAVA::Vector<AdapterInfo>& adapters, DWORD& vertex_proces
         {
             DAVA::Logger::Info("[RHI-D3D9] Selecting adapter %s with D3DCREATE_HARDWARE_VERTEXPROCESSING", dx9_AdapterInfo(adapter.info));
             vertex_processing = D3DCREATE_HARDWARE_VERTEXPROCESSING;
-            _D3D9_Adapter = adapter.index;
             return true;
         }
         else if (IsValidIntelCardDX9(adapter.info.VendorId, adapter.info.DeviceId))
         {
             DAVA::Logger::Info("[RHI-D3D9] Selecting valid Intel adapter %s with D3DCREATE_SOFTWARE_VERTEXPROCESSING", dx9_AdapterInfo(adapter.info));
             vertex_processing = D3DCREATE_SOFTWARE_VERTEXPROCESSING;
-            _D3D9_Adapter = adapter.index;
         }
         else
         {
@@ -406,13 +425,33 @@ void dx9_InitContext()
         _DX9_PresentParam.AutoDepthStencilFormat = D3DFMT_D24S8;
         _DX9_PresentParam.PresentationInterval = (_DX9_InitParam.vsyncEnabled) ? D3DPRESENT_INTERVAL_ONE : D3DPRESENT_INTERVAL_IMMEDIATE;
 
+        if (_DX9_InitParam.useBackBufferExtraSize)
+        {
+            DVASSERT(!_DX9_InitParam.fullScreen);
+
+            D3DDISPLAYMODE displayMode;
+            _D3D9->GetAdapterDisplayMode(adapter.index, &displayMode);
+
+            _DX9_PresentRect.left = 0;
+            _DX9_PresentRect.top = 0;
+            _DX9_PresentRect.right = _DX9_InitParam.width;
+            _DX9_PresentRect.bottom = _DX9_InitParam.height;
+            _DX9_PresentRectPtr = &_DX9_PresentRect;
+
+            _DX9_PresentParam.BackBufferWidth = displayMode.Width;
+            _DX9_PresentParam.BackBufferHeight = displayMode.Height;
+            _DX9_PresentParam.SwapEffect = D3DSWAPEFFECT_COPY;
+            _DX9_PresentParam.BackBufferCount = 1;
+            _DX9_PresentParam.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
+        }
+
         // TODO: check z-buf formats and create most suitable
 
-        HRESULT hr = _D3D9->CreateDevice(_D3D9_Adapter, D3DDEVTYPE_HAL, wnd, vertex_processing, &_DX9_PresentParam, &_D3D9_Device);
+        HRESULT hr = _D3D9->CreateDevice(adapter.index, D3DDEVTYPE_HAL, wnd, vertex_processing, &_DX9_PresentParam, &_D3D9_Device);
         if (FAILED(hr))
         {
             //try second time, cause CreateDevice can change present params struct to valid values
-            hr = _D3D9->CreateDevice(_D3D9_Adapter, D3DDEVTYPE_HAL, wnd, vertex_processing, &_DX9_PresentParam, &_D3D9_Device);
+            hr = _D3D9->CreateDevice(adapter.index, D3DDEVTYPE_HAL, wnd, vertex_processing, &_DX9_PresentParam, &_D3D9_Device);
         }
 
         if (SUCCEEDED(hr))
@@ -483,6 +522,17 @@ void dx9_Initialize(const InitParam& param)
         ConstBufferDX9::Init(param.maxConstBufferCount);
     if (param.maxTextureCount)
         TextureDX9::Init(param.maxTextureCount);
+
+    if (param.maxSamplerStateCount)
+        SamplerStateDX9::Init(param.maxSamplerStateCount);
+    if (param.maxPipelineStateCount)
+        PipelineStateDX9::Init(param.maxPipelineStateCount);
+    if (param.maxDepthStencilStateCount)
+        DepthStencilStateDX9::Init(param.maxDepthStencilStateCount);
+    if (param.maxRenderPassCount)
+        RenderPassDX9::Init(param.maxRenderPassCount);
+    if (param.maxCommandBuffer)
+        CommandBufferDX9::Init(param.maxCommandBuffer);
 
     uint32 ringBufferSize = 4 * 1024 * 1024;
     if (param.shaderConstRingBufferSize)

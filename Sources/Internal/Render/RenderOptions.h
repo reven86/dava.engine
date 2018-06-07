@@ -14,8 +14,6 @@ public:
     {
         TEST_OPTION = 0,
 
-        PREVIEW_METAL_ON_GL,
-
         LANDSCAPE_DRAW,
         WATER_REFLECTION_REFRACTION_DRAW,
         OPAQUE_DRAW,
@@ -54,6 +52,7 @@ public:
 #endif
         DRAW_NONDEF_GLYPH,
         HIGHLIGHT_HARD_CONTROLS,
+        DEBUG_DRAW_RICH_ITEMS,
 
         DEBUG_DRAW_PARTICLES,
 

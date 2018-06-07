@@ -40,7 +40,7 @@ void ReflectedType::Destroy(Any&& v) const
 
         if (nullptr != dtor)
         {
-            dtor->Invoke(v);
+            dtor->InvokeWithCast(v);
         }
         else
         {

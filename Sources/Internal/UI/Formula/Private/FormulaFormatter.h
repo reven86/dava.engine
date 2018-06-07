@@ -25,6 +25,7 @@ private:
     void Visit(FormulaValueExpression* exp) override;
     void Visit(FormulaNegExpression* exp) override;
     void Visit(FormulaNotExpression* exp) override;
+    void Visit(FormulaWhenExpression* exp) override;
     void Visit(FormulaBinaryOperatorExpression* exp) override;
     void Visit(FormulaFunctionExpression* exp) override;
     void Visit(FormulaFieldAccessExpression* exp) override;

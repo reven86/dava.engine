@@ -7,11 +7,11 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(EdgeComponent)
 {
-    ReflectionRegistrator<EdgeComponent>::Begin()[M::CantBeCreatedManualyComponent(), M::CantBeDeletedManualyComponent()]
+    ReflectionRegistrator<EdgeComponent>::Begin()
+    [M::CantBeCreatedManualyComponent(), M::CantBeDeletedManualyComponent(), M::NonExportableComponent(), M::NonSerializableComponent()]
     .ConstructorByPointer()
     .Field("properties", &EdgeComponent::GetProperties, &EdgeComponent::SetProperties)[M::DisplayName("Edge properties")]
     .Field("nextEntityName", &EdgeComponent::GetNextEntityName, &EdgeComponent::SetNextEntityName)[M::ReadOnly(), M::DisplayName("Next Entity Name")]
-    .Field("nextEntityTag", &EdgeComponent::GetNextEntityTag, &EdgeComponent::SetNextEntityTag)[M::ReadOnly(), M::DisplayName("Next Entity Tag")]
     .End();
 }
 
@@ -93,21 +93,5 @@ const FastName EdgeComponent::GetNextEntityName() const
     }
 
     return nextEntityName;
-}
-
-void EdgeComponent::SetNextEntityTag(int32 tag)
-{
-    DVASSERT(false);
-}
-
-int32 EdgeComponent::GetNextEntityTag() const
-{
-    int32 tag = 0;
-    if (nextEntity)
-    {
-        tag = nextEntity->GetTag();
-    }
-
-    return tag;
 }
 }

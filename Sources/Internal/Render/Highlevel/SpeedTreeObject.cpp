@@ -71,9 +71,9 @@ const float32& SpeedTreeObject::GetLightSmoothing() const
     return lightSmoothing;
 }
 
-void SpeedTreeObject::BindDynamicParameters(Camera* camera)
+void SpeedTreeObject::BindDynamicParameters(Camera* camera, RenderBatch* batch)
 {
-    RenderObject::BindDynamicParameters(camera);
+    RenderObject::BindDynamicParameters(camera, batch);
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SPEED_TREE_TRUNK_OSCILLATION, &trunkOscillation, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SPEED_TREE_LEAFS_OSCILLATION, &leafOscillation, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SPEED_TREE_LIGHT_SMOOTHING, &lightSmoothing, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);

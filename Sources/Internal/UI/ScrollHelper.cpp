@@ -123,17 +123,27 @@ float32 ScrollHelper::GetCurrentSpeed() const
     return speed;
 }
 
-void ScrollHelper::SetSlowDownTime(float newValue)
+void ScrollHelper::SetSlowDownTime(float32 newValue)
 {
     slowDown = newValue;
 }
 
-void ScrollHelper::SetBorderMoveModifer(float newValue)
+float32 ScrollHelper::GetSlowDownTime() const
+{
+    return slowDown;
+}
+
+void ScrollHelper::SetBorderMoveModifer(float32 newValue)
 {
     backward = newValue;
 }
 
-void ScrollHelper::Impulse(float impulseSpeed)
+float32 ScrollHelper::GetBorderMoveModifer() const
+{
+    return backward;
+}
+
+void ScrollHelper::Impulse(float32 impulseSpeed)
 {
     if ((position > 0.f && impulseSpeed > 0.f) || (position + elementSize < virtualViewSize && impulseSpeed < 0.f))
     {
@@ -142,7 +152,7 @@ void ScrollHelper::Impulse(float impulseSpeed)
     speed = impulseSpeed;
 }
 
-float ScrollHelper::GetPosition(float positionDelta, float timeDelta, bool isPositionLocked)
+float ScrollHelper::GetPosition(float32 positionDelta, float32 timeDelta, bool isPositionLocked)
 {
     if (virtualViewSize == 0.0f)
     {
@@ -291,7 +301,7 @@ float ScrollHelper::GetPosition(float positionDelta, float timeDelta, bool isPos
 
 void ScrollHelper::ScrollToPosition(float32 newPos, float32 scrollTimeSec /* = 0.3f*/)
 {
-    if (FLOAT_EQUAL_EPS(newPos, position, 1.f))
+    if (FLOAT_EQUAL_EPS(newPos, position, 1.f) && FLOAT_EQUAL_EPS(newPos, scrollToPos, 1.f))
     {
         return;
     }

@@ -1,41 +1,22 @@
 #pragma once
+
 #include "DLCManager/DLCDownloader.h"
 #include "Concurrency/Thread.h"
 #include "Concurrency/Semaphore.h"
+#include "Debug/ProfilerCPU.h"
 
+#define CURL_STATICLIB
 #include <curl/curl.h>
 
 namespace DAVA
 {
-/**
-  We have to share curl global initialization and cleanup
-  cause it is not thread safe and is using in several modules
-*/
-void CurlGlobalInit();
-void CurlGlobalDeinit();
-
 struct Buffer
 {
     void* ptr = nullptr;
     size_t size = 0;
 };
 
-struct IDownloaderSubTask
-{
-    DLCDownloader::Task& task;
-    int downloadOrderIndex = 0;
-
-    explicit IDownloaderSubTask(DLCDownloader::Task& t)
-        : task(t)
-    {
-    }
-    virtual ~IDownloaderSubTask();
-    virtual void OnDone(CURLMsg* msg) = 0;
-    virtual DLCDownloader::Task& GetTask() = 0;
-    virtual CURL* GetEasyHandle() = 0;
-    virtual DLCDownloader::IWriter& GetIWriter() = 0;
-    virtual Buffer GetBuffer() = 0;
-};
+struct IDownloaderSubTask;
 
 struct ICurlEasyStorage
 {
@@ -50,79 +31,38 @@ struct ICurlEasyStorage
     virtual int GetChunkSize() = 0;
 };
 
-struct DLCDownloader::Task
-{
-    TaskInfo info;
-    TaskStatus status;
-    List<IDownloaderSubTask*> subTasksWorking;
-    List<IDownloaderSubTask*> subTasksReadyToWrite; // sorted list by subTaskIndex
-    int lastCreateSubTaskIndex = -1;
-    int lastWritenSubTaskIndex = -1;
-    std::unique_ptr<IWriter> writer;
-    bool userWriter = false;
-    ICurlEasyStorage& curlStorage;
-
-    int64 restOffset = -1;
-    int64 restSize = -1;
-
-    Task(ICurlEasyStorage& storage,
-         const String& srcUrl,
-         const String& dstPath,
-         TaskType taskType,
-         IWriter* dstWriter,
-         int64 rangeOffset,
-         int64 rangeSize,
-         int32 timeout);
-    ~Task();
-
-    void FlushWriterAndReset();
-    void PrepareForDownloading();
-    bool IsDone() const;
-    bool NeedDownloadMoreData() const;
-    void OnSubTaskDone();
-    void GenerateChunkSubRequests(const int chankSize);
-    void CorrectRangeToResumeDownloading();
-    void SetupFullDownload();
-    void SetupResumeDownload();
-    void SetupGetSizeDownload();
-
-    // error handles
-    static void OnErrorCurlMulti(int32 multiCode, Task& task, int32 line);
-    static void OnErrorCurlEasy(int32 easyCode, Task& task, int32 line);
-    static void OnErrorCurlErrno(int32 errnoVal, Task& task, int32 line);
-    static void OnErrorHttpCode(long httpCode, Task& task, int32 line);
-};
-
 class DLCDownloaderImpl : public DLCDownloader, public ICurlEasyStorage
 {
 public:
-    DLCDownloaderImpl();
+    explicit DLCDownloaderImpl(const Hints& hints_);
     ~DLCDownloaderImpl();
 
     DLCDownloaderImpl(const DLCDownloaderImpl&) = delete;
     DLCDownloaderImpl(DLCDownloaderImpl&&) = delete;
     DLCDownloaderImpl& operator=(const DLCDownloader&) = delete;
 
-    Task* StartGetContentSize(const String& srcUrl) override;
+    ITask* StartGetContentSize(const String& srcUrl) override;
 
-    Task* StartTask(const String& srcUrl, const String& dstPath, Range range = EmptyRange) override;
+    ITask* StartTask(const String& srcUrl, const String& dstPath, Range range = EmptyRange) override;
 
-    Task* StartTask(const String& srcUrl, IWriter& customWriter, Range range = EmptyRange) override;
+    ITask* StartTask(const String& srcUrl, std::shared_ptr<IWriter> customWriter, Range range = EmptyRange) override;
 
-    Task* ResumeTask(const String& srcUrl, const String& dstPath, Range range = EmptyRange) override;
+    ITask* ResumeTask(const String& srcUrl, const String& dstPath, Range range = EmptyRange) override;
 
-    Task* ResumeTask(const String& srcUrl, IWriter& customWriter, Range range = EmptyRange) override;
+    ITask* ResumeTask(const String& srcUrl, std::shared_ptr<IWriter> customWriter, Range range = EmptyRange) override;
 
     // Cancel download by ID (works for scheduled and current)
-    void RemoveTask(Task* task) override;
+    void RemoveTask(ITask* task) override;
 
     // wait for task status = finished
-    void WaitTask(Task* task) override;
+    void WaitTask(ITask* task) override;
 
-    const TaskInfo& GetTaskInfo(Task* task) override;
-    const TaskStatus& GetTaskStatus(Task* task) override;
+    const TaskInfo& GetTaskInfo(ITask* task) override;
+    const TaskStatus& GetTaskStatus(ITask* task) override;
 
     void SetHints(const Hints& h) override;
+
+    struct Task;
 
 private:
     void Initialize();
@@ -134,11 +74,11 @@ private:
     void ProcessMessagesFromMulti();
     void BalancingHandles();
 
-    Task* StartAnyTask(const String& srcUrl,
-                       const String& dsrPath,
-                       TaskType taskType,
-                       IWriter* dstWriter = nullptr,
-                       Range range = EmptyRange);
+    ITask* StartAnyTask(const String& srcUrl,
+                        const String& dsrPath,
+                        TaskType taskType,
+                        std::shared_ptr<IWriter> dstWriter,
+                        Range range = EmptyRange);
 
     // [start] implement ICurlEasyStorage interface
     CURL* CurlCreateHandle() override;
@@ -152,7 +92,7 @@ private:
     // [end] implement ICurlEasyStorage interface
 
     void DownloadThreadFunc();
-    void DeleteTask(Task* task);
+    void DeleteTask(ITask* task);
     void RemoveDeletedTasks();
     Task* AddOneMoreTask();
     int CurlPerform();
@@ -167,7 +107,7 @@ private:
     Mutex mutexInputList; // to protect access to taskQueue
     List<WaitingDescTask> waitingTaskList;
     Mutex mutexWaitingList;
-    List<Task*> removedList;
+    List<ITask*> removedList;
     Mutex mutexRemovedList;
 
     Thread::Id downloadThreadId = 0;
@@ -179,10 +119,13 @@ private:
     CURLM* multiHandle = nullptr;
     Thread* downloadThread = nullptr;
     int numOfRunningSubTasks = 0;
+    int multiWaitRepeats = 0;
     // [end] variables
 
     Semaphore downloadSem; // to resume download thread
 
     Hints hints; // read only params
+    ProfilerCPU unusedProfiler;
 };
+
 } // end namespace DAVA

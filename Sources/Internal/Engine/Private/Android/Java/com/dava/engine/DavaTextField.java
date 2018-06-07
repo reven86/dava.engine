@@ -533,14 +533,25 @@ final class DavaTextField implements TextWatcher,
         {
             createNativeControl();
         }
-        if (props.anyPropertyChanged)
-        {
-            applyChangedProperties(props);
-        }
 
-        if (!multiline && !nativeTextField.hasFocus())
+        if (nativeTextField != null)
         {
-            renderToTexture();
+            if (props.anyPropertyChanged)
+            {
+                applyChangedProperties(props);
+            }
+
+            if (!multiline && !nativeTextField.hasFocus())
+            {
+                // We need make deferred rendering because updating layout of native field
+                // will been applied on handler's next tick.
+                DavaActivity.commandHandler().post(new Runnable() {
+                    @Override public void run()
+                    {
+                        renderToTexture();
+                    }
+                });
+            }
         }
     }
 
@@ -883,7 +894,7 @@ final class DavaTextField implements TextWatcher,
 
     void setNativeFontSize(float fontSize)
     {
-        nativeTextField.setTextSize(TypedValue.COMPLEX_UNIT_PX, (int)fontSize);
+        nativeTextField.setTextSize(TypedValue.COMPLEX_UNIT_PX, fontSize);
     }
 
     void setNativeTextColor(int color)
@@ -905,10 +916,11 @@ final class DavaTextField implements TextWatcher,
 
     void setNativeTextAlign(int align, boolean rtlAlign)
     {
+        boolean isCenter = (nativeTextField.getGravity() & Gravity.CENTER_HORIZONTAL) != 0;
         boolean isRelative = (nativeTextField.getGravity() & Gravity.RELATIVE_HORIZONTAL_GRAVITY_MASK) != 0;
 
         int gravity = align;
-        if (isRelative || rtlAlign)
+        if (!isCenter && (isRelative || rtlAlign))
         {
             gravity |= Gravity.RELATIVE_LAYOUT_DIRECTION;
         }
@@ -1048,13 +1060,18 @@ final class DavaTextField implements TextWatcher,
 
     void renderToTexture()
     {
+        if (nativeTextField == null)
+        {
+            return;
+        }
+
         nativeTextField.setDrawingCacheEnabled(true);
         nativeTextField.buildDrawingCache();
+
         Bitmap bitmap = nativeTextField.getDrawingCache();
-        if (bitmap == null)
-        {
-            int specWidth = View.MeasureSpec.makeMeasureSpec((int)width, View.MeasureSpec.EXACTLY);
-            int specHeight = View.MeasureSpec.makeMeasureSpec((int)height, View.MeasureSpec.EXACTLY);
+        if (bitmap == null) {
+            int specWidth = View.MeasureSpec.makeMeasureSpec((int) width, View.MeasureSpec.EXACTLY);
+            int specHeight = View.MeasureSpec.makeMeasureSpec((int) height, View.MeasureSpec.EXACTLY);
             nativeTextField.measure(specWidth, specHeight);
             int measuredWidth = nativeTextField.getMeasuredWidth();
             int measuredHeight = nativeTextField.getMeasuredHeight();
@@ -1069,6 +1086,8 @@ final class DavaTextField implements TextWatcher,
         int h = bitmap.getHeight();
         int[] pixels = new int[w * h];
         bitmap.getPixels(pixels, 0, w, 0, 0, w, h);
+
+        nativeTextField.destroyDrawingCache();
         nativeTextField.setDrawingCacheEnabled(false);
 
         nativeOnTextureReady(textfieldBackendPointer, pixels, w, h);

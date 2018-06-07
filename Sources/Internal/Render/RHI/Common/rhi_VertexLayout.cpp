@@ -18,8 +18,8 @@ namespace rhi
 //==============================================================================
 
 VertexLayout::VertexLayout()
-    : _elem_count(0)
-    , _stream_count(0)
+    : _stream_count(0)
+    , _elem_count(0)
 {
 }
 
@@ -205,14 +205,12 @@ void VertexLayout::Dump() const
 {
     for (uint32 s = 0; s != _stream_count; ++s)
     {
-        Logger::Info("stream[%u]  stride= %u", s, Stride(s));
+        Logger::Info("Stream %02u (stride = %u). Elements:", s, Stride(s));
         for (uint32 a = _stream[s].first_elem, a_end = _stream[s].first_elem + _stream[s].elem_count; a != a_end; ++a)
         {
-            Logger::Info(
-            "  [%u] +%02u  %s%u  %s x%u",
-            a, ElementOffset(a),
-            VertexSemanticsName(VertexSemantics(_elem[a].usage)), _elem[a].usage_index,
-            VertexDataTypeName(VertexDataType(_elem[a].data_type)), _elem[a].data_count);
+            Logger::Info("- %02u, offset: %02u, semantic: %s%u, type: %s, count: %u", a, ElementOffset(a),
+                         VertexSemanticsName(VertexSemantics(_elem[a].usage)), _elem[a].usage_index,
+                         VertexDataTypeName(VertexDataType(_elem[a].data_type)), _elem[a].data_count);
         }
     }
 }

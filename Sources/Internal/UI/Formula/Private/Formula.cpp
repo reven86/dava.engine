@@ -43,7 +43,7 @@ bool Formula::IsValid() const
     return exp.get() != nullptr;
 }
 
-Any Formula::Calculate(FormulaContext* context)
+Any Formula::Calculate(const std::shared_ptr<FormulaContext>& context)
 {
     calculationError = "";
 
@@ -71,8 +71,8 @@ Any Formula::Calculate(const Reflection& ref)
     {
         try
         {
-            FormulaReflectionContext context(ref, nullptr);
-            return Calculate(&context);
+            std::shared_ptr<FormulaReflectionContext> context = std::make_shared<FormulaReflectionContext>(ref, nullptr);
+            return Calculate(context);
         }
         catch (const FormulaException& error)
         {

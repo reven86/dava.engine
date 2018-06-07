@@ -26,8 +26,8 @@ protected:
     virtual ~GameObject();
     GameObject();
 
-    Sprite::DrawState localDrawState;
-    Sprite::DrawState globalDrawState;
+    SpriteDrawState localDrawState;
+    SpriteDrawState globalDrawState;
     Color color;
     eBlending blending;
 
@@ -95,8 +95,8 @@ public:
     inline void SetUserData(void* userData);
     inline void* GetUserData() const;
 
-    inline const Sprite::DrawState& GetGlobalDrawState() const;
-    inline const Sprite::DrawState& GetLocalDrawState() const;
+    inline const SpriteDrawState& GetGlobalDrawState() const;
+    inline const SpriteDrawState& GetLocalDrawState() const;
 
     void ChangeManager(GameObjectManager* newManager);
     inline GameObjectManager* GetManager();
@@ -173,7 +173,7 @@ public:
 		It called every frame after update and process whole hierarchy
 		\param[in] parentDrawState pass the calculated parentDrawState 
 	 */
-    virtual void RecalcHierarchy(const Sprite::DrawState& parentDrawState);
+    virtual void RecalcHierarchy(const SpriteDrawState& parentDrawState);
     /**
 		\brief Here you can check all collisions and make all collision responses. 
 		If you'll update position, scale or rotate in this function you should manually call RecalcHierarchy after that 
@@ -416,12 +416,12 @@ inline bool GameObject::IsDead() const
     return dead;
 }
 
-inline const Sprite::DrawState& GameObject::GetGlobalDrawState() const
+inline const SpriteDrawState& GameObject::GetGlobalDrawState() const
 {
     return globalDrawState;
 }
 
-inline const Sprite::DrawState& GameObject::GetLocalDrawState() const
+inline const SpriteDrawState& GameObject::GetLocalDrawState() const
 {
     return localDrawState;
 }

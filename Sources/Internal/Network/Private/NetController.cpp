@@ -47,11 +47,10 @@ NetController::~NetController()
     }
     else
     {
-        for (List<ClientEntry>::iterator i = clients.begin(), e = clients.end(); i != e; ++i)
+        for (ClientEntry& entry : clients)
         {
-            ClientEntry& entry = *i;
-            delete entry.driver;
-            delete entry.client;
+            SafeDelete(entry.driver);
+            SafeDelete(entry.client);
         }
     }
 }
@@ -117,10 +116,28 @@ void NetController::Restart()
 
 void NetController::DoStartServers()
 {
+    size_t failedCount = 0;
     runningObjects = servers.size();
-    for (size_t i = 0, n = servers.size(); i < n; ++i)
+    for (IServerTransport* server : servers)
     {
-        servers[i]->Start(this);
+        int32 res = server->Start(this);
+        if (res != 0)
+        {
+            ++failedCount;
+        }
+    }
+
+    if (!runningObjects)
+    {
+        status = NOT_STARTED;
+    }
+    else if (failedCount == 0)
+    {
+        status = STARTED;
+    }
+    else
+    {
+        status = START_FAILED;
     }
 }
 
@@ -128,7 +145,8 @@ void NetController::DoStartClients()
 {
     // For now there is always one transport in client role
     runningObjects = 1;
-    clients.front().client->Start(this);
+    int res = clients.front().client->Start(this);
+    status = (res == 0 ? STARTED : START_FAILED);
 }
 
 void NetController::DoRestart()
@@ -144,6 +162,7 @@ void NetController::DoRestart()
 
 void NetController::DoStopServers()
 {
+    status = NOT_STARTED;
     if (true == clients.empty())
     {
         for (size_t i = 0, n = servers.size(); i < n; ++i)
@@ -157,6 +176,7 @@ void NetController::DoStopServers()
 
 void NetController::DoStopClients()
 {
+    status = NOT_STARTED;
     for (List<ClientEntry>::iterator i = clients.begin(), e = clients.end(); i != e; ++i)
     {
         ClientEntry& entry = *i;
@@ -195,7 +215,7 @@ void NetController::OnTransportTerminated(IClientTransport* tr)
     if (SERVER_ROLE == role)
     {
         entry.parent->ReclaimClient(entry.client);
-        delete entry.driver;
+        SafeDelete(entry.driver);
         clients.erase(i);
 
         if (true == isTerminating && true == clients.empty())

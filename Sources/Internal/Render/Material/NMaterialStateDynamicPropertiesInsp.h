@@ -2,8 +2,6 @@
 #define __DAVAENGINE_NMATERIALSTATEDYNAMICPROPERTYSINSP_NAMES_H__
 
 #include "Base/BaseTypes.h"
-#include "Base/HashMap.h"
-#include "Base/FastNameMap.h"
 #include "Base/Introspection.h"
 #include "Render/RHI/rhi_ShaderSource.h"
 
@@ -28,7 +26,7 @@ private:
         rhi::ShaderProp::Type type;
         const float32* defaultValue;
     };
-    using PropDataMap = FastNameMap<PropData>;
+    using PropDataMap = UnorderedMap<FastName, PropData>;
     bool IsColor(const FastName& key) const;
     void FindMaterialPropertiesRecursive(NMaterial* state, PropDataMap& props) const;
     void FillGlobalMaterialMemebers(NMaterial* state, PropDataMap& props) const;

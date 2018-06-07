@@ -1,9 +1,11 @@
 #include "Render/2D/TextBlockGraphicRender.h"
-#include "Core/Core.h"
-#include "Render/ShaderCache.h"
+#include "Engine/Engine.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
-#include "UI/UIControlSystem.h"
+#include "Render/Material/NMaterial.h"
 #include "Render/Renderer.h"
+#include "Render/ShaderCache.h"
+#include "UI/UIControlSystem.h"
 
 namespace DAVA
 {
@@ -28,15 +30,15 @@ uint16* TextBlockGraphicRender::indexBuffer = InitIndexBuffer();
 
 TextBlockGraphicRender::TextBlockGraphicRender(TextBlock* textBlock)
     : TextBlockRender(textBlock)
-    , cachedSpread(0)
-    , charDrawed(0)
     , dfMaterial(SafeRetain(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL))
+    , charDrawed(0)
+    , cachedSpread(0)
 {
     graphicFont = static_cast<GraphicFont*>(textBlock->GetFont());
 
     if (graphicFont->GetFontType() == Font::TYPE_DISTANCE)
     {
-        cachedSpread = graphicFont->GetSpread();
+        cachedSpread = graphicFont->GetSpread(textBlock->renderSize);
         dfMaterial = new NMaterial();
         dfMaterial->SetFXName(FastName("~res:/Materials/2d.DistanceFont.material"));
         dfMaterial->SetMaterialName(FastName("DistanceFontMaterial"));
@@ -122,24 +124,24 @@ void TextBlockGraphicRender::Draw(const Color& textColor, const Vector2* offset)
 
     //NOTE: correct affine transformations
     Matrix4 offsetMatrix;
-    offsetMatrix.glTranslate(float32(xOffset) - textBlock->pivot.x, float32(yOffset) - textBlock->pivot.y, 0.f);
+    offsetMatrix.BuildTranslation(Vector3(float32(xOffset) - textBlock->pivot.x, float32(yOffset) - textBlock->pivot.y, 0.f));
 
     Matrix4 rotateMatrix;
-    rotateMatrix.glRotate(RadToDeg(textBlock->angle), 0.f, 0.f, 1.f);
+    rotateMatrix.BuildRotation(Vector3(0.f, 0.f, 1.f), -textBlock->angle);
 
     Matrix4 scaleMatrix;
     //recalculate x scale - for non-uniform scale
     const float difX = 1.0f - (textBlock->scale.dy - textBlock->scale.dx);
-    scaleMatrix.glScale(difX, 1.f, 1.0f);
+    scaleMatrix.BuildScale(Vector3(difX, 1.f, 1.0f));
 
     Matrix4 worldMatrix;
-    worldMatrix.glTranslate(textBlock->position.x, textBlock->position.y, 0.f);
+    worldMatrix.BuildTranslation(Vector3(textBlock->position.x, textBlock->position.y, 0.f));
 
     offsetMatrix = (scaleMatrix * offsetMatrix * rotateMatrix) * worldMatrix;
 
     if (graphicFont->GetFontType() == Font::TYPE_DISTANCE)
     {
-        float32 spread = graphicFont->GetSpread();
+        float32 spread = graphicFont->GetSpread(textBlock->renderSize);
         if (!FLOAT_EQUAL(cachedSpread, spread))
         {
             cachedSpread = spread;
@@ -147,7 +149,7 @@ void TextBlockGraphicRender::Draw(const Color& textColor, const Vector2* offset)
         }
     }
 
-    RenderSystem2D::BatchDescriptor batch;
+    BatchDescriptor2D batch;
     batch.material = dfMaterial; // RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL;
     batch.singleColor = textColor;
     batch.vertexStride = TextVerticesDefaultStride;
@@ -173,7 +175,7 @@ Font::StringMetrics TextBlockGraphicRender::DrawTextML(const WideString& drawTex
                                                        int32 xOffset, uint32 yOffset,
                                                        int32 lineSize)
 {
-    return InternalDrawText(drawText, xOffset, yOffset, int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(w)))), lineSize);
+    return InternalDrawText(drawText, xOffset, yOffset, int32(std::ceil(GetEngineContext()->uiControlSystem->vcs->ConvertVirtualToPhysicalX(float32(w)))), lineSize);
 }
 
 Font::StringMetrics TextBlockGraphicRender::InternalDrawText(const WideString& drawText, int32 x, int32 y, int32 w, int32 lineSize)
@@ -183,7 +185,7 @@ Font::StringMetrics TextBlockGraphicRender::InternalDrawText(const WideString& d
 
     int32 lastDrawed = 0;
 
-    Font::StringMetrics metrics = graphicFont->DrawStringToBuffer(drawText, x, y, &vertexBuffer[0] + (charDrawed * 4), lastDrawed, NULL, w, lineSize);
+    Font::StringMetrics metrics = graphicFont->DrawStringToBuffer(textBlock->renderSize, drawText, x, y, &vertexBuffer[0] + (charDrawed * 4), lastDrawed, NULL, w, lineSize);
     if (metrics.drawRect.dx <= 0 && metrics.drawRect.dy <= 0)
         return metrics;
 

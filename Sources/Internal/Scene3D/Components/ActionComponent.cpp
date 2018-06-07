@@ -2,16 +2,20 @@
 #include "Particles/ParticleEmitter.h"
 #include "Sound/SoundEvent.h"
 #include "Scene3D/Components/ActionComponent.h"
-#include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/AnimationComponent.h"
-#include "Scene3D/Components/WaveComponent.h"
+#include "Scene3D/Components/MotionComponent.h"
+#include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/SoundComponent.h"
+#include "Scene3D/Components/WaveComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/SingleComponents/MotionSingleComponent.h"
 #include "Scene3D/Systems/ActionUpdateSystem.h"
 #include "Reflection/ReflectionRegistrator.h"
 #include "Reflection/ReflectedMeta.h"
 
 #include "Utils/Random.h"
+#include "Engine/EngineContext.h"
+#include "Engine/Engine.h"
 
 namespace DAVA
 {
@@ -63,7 +67,7 @@ bool ActionComponent::Action::operator==(const Action& other) const
 
 void ActionComponent::Action::actualizeDelay()
 {
-    actualDelay = static_cast<float32>(delay + Random::Instance()->RandFloat(delayVariation));
+    actualDelay = static_cast<float32>(delay + GetEngineContext()->random->RandFloat(delayVariation));
 }
 
 const FastName ActionComponent::ACTION_COMPONENT_SELF_ENTITY_NAME("*** Self ***");
@@ -501,7 +505,7 @@ void ActionComponent::OnActionParticleEffectStart(const Action& action)
 
     if (target != NULL)
     {
-        ParticleEffectComponent* component = static_cast<ParticleEffectComponent*>(target->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
+        ParticleEffectComponent* component = target->GetComponent<ParticleEffectComponent>();
         if (component)
         {
             component->StopAfterNRepeats(action.stopAfterNRepeats);
@@ -518,7 +522,7 @@ void ActionComponent::OnActionParticleEffectStop(const Action& action)
 
     if (target != NULL)
     {
-        ParticleEffectComponent* component = static_cast<ParticleEffectComponent*>(target->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
+        ParticleEffectComponent* component = target->GetComponent<ParticleEffectComponent>();
         if (component)
         {
             component->Stop(!action.stopWhenEmpty);
@@ -538,6 +542,15 @@ void ActionComponent::OnActionAnimationStart(const Action& action)
             component->Stop();
             component->Start();
         }
+
+        MotionComponent* motionComponent = GetMotionComponent(target);
+        if (motionComponent)
+        {
+            MotionSingleComponent* msc = target->GetScene()->motionSingleComponent;
+            motionComponent->SetSingleAnimationRepeatsCount((action.stopAfterNRepeats == -1) ? 0u : uint32(action.stopAfterNRepeats));
+            msc->stopSimpleMotion.push_back(motionComponent);
+            msc->startSimpleMotion.push_back(motionComponent);
+        }
     }
 }
 
@@ -552,6 +565,13 @@ void ActionComponent::OnActionAnimationStop(const Action& action)
             component->StopAfterNRepeats(action.stopAfterNRepeats);
             component->Stop();
         }
+
+        MotionComponent* motionComponent = GetMotionComponent(target);
+        if (motionComponent)
+        {
+            motionComponent->SetSingleAnimationRepeatsCount((action.stopAfterNRepeats == -1) ? 0u : uint32(action.stopAfterNRepeats));
+            target->GetScene()->motionSingleComponent->stopSimpleMotion.push_back(motionComponent);
+        }
     }
 }
 
@@ -561,7 +581,7 @@ void ActionComponent::OnActionSoundStart(const Action& action)
 
     if (target != NULL)
     {
-        SoundComponent* component = static_cast<SoundComponent*>(target->GetComponent(Component::SOUND_COMPONENT));
+        SoundComponent* component = target->GetComponent<SoundComponent>();
         if (component)
         {
             component->Trigger();
@@ -575,7 +595,7 @@ void ActionComponent::OnActionSoundStop(const Action& action)
 
     if (target != NULL)
     {
-        SoundComponent* component = static_cast<SoundComponent*>(target->GetComponent(Component::SOUND_COMPONENT));
+        SoundComponent* component = target->GetComponent<SoundComponent>();
         if (component)
         {
             component->Stop();

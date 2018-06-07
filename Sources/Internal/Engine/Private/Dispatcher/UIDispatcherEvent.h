@@ -1,11 +1,8 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-
-#if defined(__DAVAENGINE_COREV2__)
-
-#include "Functional/Function.h"
 #include "Engine/EngineTypes.h"
+#include "Functional/Function.h"
 
 namespace DAVA
 {
@@ -17,6 +14,7 @@ struct UIDispatcherEvent final
     {
         DUMMY = 0,
         RESIZE_WINDOW,
+        ACTIVATE_WINDOW,
         CREATE_WINDOW,
         CLOSE_WINDOW,
         SET_TITLE,
@@ -78,6 +76,7 @@ struct UIDispatcherEvent final
     };
 
     static UIDispatcherEvent CreateResizeEvent(float32 width, float32 height);
+    static UIDispatcherEvent CreateActivateEvent();
     static UIDispatcherEvent CreateMinimumSizeEvent(float32 width, float32 height);
     static UIDispatcherEvent CreateCloseEvent();
     static UIDispatcherEvent CreateSetTitleEvent(const String& title);
@@ -90,5 +89,3 @@ struct UIDispatcherEvent final
 
 } // namespace Private
 } // namespace DAVA
-
-#endif // __DAVAENGINE_COREV2__

@@ -1,26 +1,23 @@
 #include "FileSystem/LocalizationSystem.h"
-#include "Utils/Utils.h"
-#include "Utils/StringFormat.h"
-#include "Logger/Logger.h"
-#include "yaml/yaml.h"
-#include "Utils/UTF8Utils.h"
+
 #include "Debug/DVAssert.h"
+#include "Engine/Engine.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
-#include "FileSystem/YamlNode.h"
 #include "FileSystem/YamlEmitter.h"
-#include "Sound/SoundSystem.h"
+#include "FileSystem/YamlNode.h"
+#include "Logger/Logger.h"
 #include "Platform/DeviceInfo.h"
+#include "Sound/SoundSystem.h"
+#include "Utils/StringFormat.h"
+#include "Utils/UTF8Utils.h"
+#include "Utils/Utils.h"
 
-#if defined(__DAVAENGINE_COREV2__)
-#include "Engine/Engine.h"
-#else
-#include "Core/Core.h"
-#endif
+#define YAML_DECLARE_STATIC
+#include "yaml/yaml.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
-#include "Engine/Android/JNIBridge.h"
-#include "Platform/TemplateAndroid/ExternC/AndroidLayer.h"
+#include "Engine/PlatformApiAndroid.h"
 #endif
 
 namespace DAVA
@@ -43,11 +40,7 @@ const char* LocalizationSystem::DEFAULT_LOCALE = "en";
 
 const KeyedArchive* GetOptions()
 {
-#if defined(__DAVAENGINE_COREV2__)
     return Engine::Instance()->GetOptions();
-#else
-    return Core::Instance()->GetOptions();
-#endif
 }
 
 LocalizationSystem::LocalizationSystem()
@@ -110,7 +103,7 @@ String LocalizationSystem::GetDeviceLocale(void) const
         return overridenLangId;
     }
 
-    JNI::JavaClass jniLocalisation("com/dava/framework/JNILocalization");
+    JNI::JavaClass jniLocalisation("com/dava/engine/Localization");
     Function<jstring()> jgetLocale = jniLocalisation.GetStaticMethod<jstring>("GetLocale");
 
     return JNI::JavaStringToString(JNI::LocalRef<jstring>(jgetLocale()));
@@ -215,7 +208,7 @@ bool LocalizationSystem::SetCurrentLocale(const String& requestedLangId)
     //TODO: add reloading strings data on langId changing
     Logger::FrameworkDebug("LocalizationSystem requested locale: %s, set locale: %s", requestedLangId.c_str(), actualLangId.c_str());
     langId = actualLangId;
-    //SoundSystem::Instance()->SetCurrentLocale(langId);
+    SoundSystem::Instance()->SetCurrentLocale(langId);
     return requestedLocaleFound;
 }
 
@@ -340,15 +333,14 @@ bool LocalizationSystem::SaveToYamlFile(const StringFile* stringFile)
         return false;
     }
 
-    YamlNode* node = YamlNode::CreateMapNode(true, YamlNode::MR_BLOCK_REPRESENTATION, YamlNode::SR_DOUBLE_QUOTED_REPRESENTATION);
+    RefPtr<YamlNode> node = YamlNode::CreateMapNode(true, YamlNode::MR_BLOCK_REPRESENTATION, YamlNode::SR_DOUBLE_QUOTED_REPRESENTATION);
     for (auto iter = stringFile->strings.begin(); iter != stringFile->strings.end(); ++iter)
     {
         node->Add(iter->first, iter->second);
     }
 
-    bool result = YamlEmitter::SaveToYamlFile(stringFile->pathName, node);
+    bool result = YamlEmitter::SaveToYamlFile(stringFile->pathName, node.Get());
 
-    SafeRelease(node);
     return result;
 }
 

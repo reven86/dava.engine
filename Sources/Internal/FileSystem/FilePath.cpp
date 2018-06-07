@@ -1,20 +1,23 @@
 #include "FileSystem/FilePath.h"
 #include "FileSystem/FileSystem.h"
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
 #include "Utils/UTF8Utils.h"
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
 #include "Utils/UTF8Utils.h"
 #include "Logger/Logger.h"
+#include "Engine/Engine.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include <pwd.h>
 #include <unistd.h>
 #endif
 
+// #define USE_LOCAL_RESOURCES
+
 namespace DAVA
 {
-Vector<FilePath> FilePath::resourceFolders;
-
 void FilePath::SetBundleName(const FilePath& newBundlePath)
 {
     FilePath virtualBundlePath = newBundlePath;
@@ -26,18 +29,20 @@ void FilePath::SetBundleName(const FilePath& newBundlePath)
 
     virtualBundlePath.pathType = PATH_IN_RESOURCES;
 
-    if (!resourceFolders.empty())
+    const EngineContext* ctx = GetEngineContext();
+    if (!ctx->fileSystem->resourceFolders.empty())
     {
-        resourceFolders.erase(begin(resourceFolders));
+        ctx->fileSystem->resourceFolders.erase(begin(ctx->fileSystem->resourceFolders));
     }
 
-    resourceFolders.insert(begin(resourceFolders), virtualBundlePath);
+    ctx->fileSystem->resourceFolders.insert(begin(ctx->fileSystem->resourceFolders), virtualBundlePath);
 }
 
 const FilePath& FilePath::GetBundleName()
 {
-    DVASSERT(resourceFolders.size());
-    return resourceFolders.front();
+    const EngineContext* ctx = GetEngineContext();
+    DVASSERT(ctx->fileSystem->resourceFolders.size());
+    return ctx->fileSystem->resourceFolders.front();
 }
 
 void FilePath::AddResourcesFolder(const FilePath& folder)
@@ -48,7 +53,9 @@ void FilePath::AddResourcesFolder(const FilePath& folder)
 
     FilePath resPath = folder;
     resPath.pathType = PATH_IN_RESOURCES;
-    resourceFolders.push_back(resPath);
+
+    const EngineContext* ctx = GetEngineContext();
+    ctx->fileSystem->resourceFolders.push_back(resPath);
 }
 
 void FilePath::AddTopResourcesFolder(const FilePath& folder)
@@ -59,21 +66,25 @@ void FilePath::AddTopResourcesFolder(const FilePath& folder)
 
     FilePath resPath = folder;
     resPath.pathType = PATH_IN_RESOURCES;
-    resourceFolders.insert(begin(resourceFolders), resPath);
+
+    const EngineContext* ctx = GetEngineContext();
+    ctx->fileSystem->resourceFolders.insert(begin(ctx->fileSystem->resourceFolders), resPath);
 }
 
 void FilePath::RemoveResourcesFolder(const FilePath& folder)
 {
-    auto it = std::remove(begin(resourceFolders), end(resourceFolders), folder);
-    if (it != end(resourceFolders))
+    const EngineContext* ctx = GetEngineContext();
+    auto it = std::remove(begin(ctx->fileSystem->resourceFolders), end(ctx->fileSystem->resourceFolders), folder);
+    if (it != end(ctx->fileSystem->resourceFolders))
     {
-        resourceFolders.erase(it);
+        ctx->fileSystem->resourceFolders.erase(it);
     }
 }
 
 const Vector<FilePath>& FilePath::GetResFolders()
 {
-    return resourceFolders;
+    const EngineContext* ctx = GetEngineContext();
+    return ctx->fileSystem->resourceFolders;
 }
 
 const List<FilePath>& FilePath::GetResourcesFolders()
@@ -81,12 +92,13 @@ const List<FilePath>& FilePath::GetResourcesFolders()
     // for backward compatibility use list values
     static List<FilePath> list;
 
-    if (list.size() != resourceFolders.size() ||
-        !std::equal(begin(resourceFolders), end(resourceFolders), begin(list)))
+    const EngineContext* ctx = GetEngineContext();
+    if (list.size() != ctx->fileSystem->resourceFolders.size() ||
+        !std::equal(begin(ctx->fileSystem->resourceFolders), end(ctx->fileSystem->resourceFolders), begin(list)))
     {
         list.clear();
 
-        std::copy(begin(resourceFolders), end(resourceFolders), std::back_inserter(list));
+        std::copy(begin(ctx->fileSystem->resourceFolders), end(ctx->fileSystem->resourceFolders), std::back_inserter(list));
     }
 
     return list;
@@ -197,11 +209,18 @@ FilePath FilePath::FilepathInDocuments(const String& relativePathname)
     return FilepathInDocuments(relativePathname.c_str());
 }
 
-bool FilePath::StartsWith(const FilePath& basePath)
+bool FilePath::StartsWith(const FilePath& basePath) const
 {
     DVASSERT(!basePath.IsEmpty());
-    String baseStr = basePath.GetAbsolutePathname();
-    return (GetAbsolutePathname().compare(0, baseStr.size(), baseStr) == 0);
+    // if both path starts with ~res:/ we can just compare text without conversion to absolute path
+    if (absolutePathname.compare(0, 6, "~res:/") == 0 && basePath.absolutePathname.compare(0, 6, "~res:/") == 0)
+    {
+        return absolutePathname.compare(0, basePath.absolutePathname.size(), basePath.absolutePathname) == 0;
+    }
+
+    const String baseStr = basePath.GetAbsolutePathname();
+    const String thisStr = GetAbsolutePathname();
+    return thisStr.compare(0, baseStr.size(), baseStr) == 0;
 }
 
 bool FilePath::ContainPath(const FilePath& basePath, const FilePath& partPath)
@@ -359,12 +378,11 @@ void FilePath::Initialize(const String& _pathname)
     }
     else
     {
-        Logger::FrameworkDebug("[FilePath::Initialize] FilePath was initialized from relative path name (%s)", _pathname.c_str());
-
 #if defined(__DAVAENGINE_ANDROID__)
         absolutePathname = pathname;
 #else //#if defined(__DAVAENGINE_ANDROID__)
-        FilePath path = FileSystem::Instance()->GetCurrentWorkingDirectory() + pathname;
+        const EngineContext* ctx = GetEngineContext();
+        FilePath path = ctx->fileSystem->GetCurrentWorkingDirectory() + pathname;
         absolutePathname = path.GetAbsolutePathname();
 #endif //#if defined(__DAVAENGINE_ANDROID__)
     }
@@ -421,10 +439,11 @@ String FilePath::ResolveResourcesPath() const
         String relativePathname = absolutePathname.substr(6);
         FilePath path;
 
-        for (auto reverseIt = resourceFolders.rbegin(); reverseIt != resourceFolders.rend(); ++reverseIt)
+        const EngineContext* ctx = GetEngineContext();
+        for (auto reverseIt = ctx->fileSystem->resourceFolders.rbegin(); reverseIt != ctx->fileSystem->resourceFolders.rend(); ++reverseIt)
         {
             path = reverseIt->absolutePathname + relativePathname;
-            if (FileSystem::Instance()->Exists(path))
+            if (ctx->fileSystem->Exists(path))
             {
                 return path.absolutePathname;
             }
@@ -507,22 +526,42 @@ String FilePath::GetFilename() const
 
 String FilePath::GetFilename(const String& pathname)
 {
-    String::size_type dotpos = pathname.rfind(String("/"));
-    if (dotpos == String::npos)
+    String::size_type slashpos = pathname.rfind(String("/"));
+    if (slashpos == String::npos)
         return pathname;
 
-    return pathname.substr(dotpos + 1);
+    return pathname.substr(slashpos + 1);
 }
 
 String FilePath::GetBasename() const
 {
-    const String filename = GetFilename();
+    if (IsDirectoryPathname())
+    {
+        return GetLastDirectoryName();
+    }
+    else
+    {
+        String filename = GetFilename();
+        const String::size_type dotpos = filename.rfind(String("."));
+        if (String::npos != dotpos)
+        {
+            filename = filename.substr(0, dotpos);
+        }
 
-    const String::size_type dotpos = filename.rfind(String("."));
-    if (dotpos == String::npos)
         return filename;
+    }
+}
 
-    return filename.substr(0, dotpos);
+DAVA::String FilePath::GetName() const
+{
+    if (IsDirectoryPathname())
+    {
+        return GetLastDirectoryName();
+    }
+    else
+    {
+        return GetFilename();
+    }
 }
 
 String FilePath::GetExtension() const
@@ -552,7 +591,9 @@ FilePath FilePath::GetDirectory() const
 
 String FilePath::GetRelativePathname() const
 {
-    return GetRelativePathname(FileSystem::Instance()->GetCurrentWorkingDirectory());
+    FileSystem* fs = GetEngineContext()->fileSystem;
+    const FilePath cwd = fs->GetCurrentWorkingDirectory();
+    return GetRelativePathname(cwd);
 }
 
 String FilePath::GetRelativePathname(const FilePath& forDirectory) const
@@ -568,15 +609,19 @@ String FilePath::GetRelativePathname(const FilePath& forDirectory) const
 String FilePath::GetRelativePathname(const String& forDirectory) const
 {
     if (forDirectory.empty())
+    {
         return String();
+    }
 
     return GetRelativePathname(FilePath(forDirectory));
 }
 
 String FilePath::GetRelativePathname(const char8* forDirectory) const
 {
-    if (forDirectory == NULL)
+    if (forDirectory == nullptr)
+    {
         return String();
+    }
 
     return GetRelativePathname(FilePath(forDirectory));
 }
@@ -721,11 +766,12 @@ String FilePath::GetFrameworkPath() const
         return pathInDoc;
     }
 
+    const EngineContext* ctx = GetEngineContext();
     // search starting from last added directories
-    auto it = std::find_if(rbegin(resourceFolders), rend(resourceFolders),
+    auto it = std::find_if(rbegin(ctx->fileSystem->resourceFolders), rend(ctx->fileSystem->resourceFolders),
                            IsPathStartingWith(absolutePathname));
 
-    if (it != rend(resourceFolders))
+    if (it != rend(ctx->fileSystem->resourceFolders))
     {
         const String& s = it->GetStringValue();
         String copy = absolutePathname;

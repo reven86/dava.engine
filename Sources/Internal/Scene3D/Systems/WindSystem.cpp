@@ -12,6 +12,8 @@
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Render/Renderer.h"
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
 
 namespace DAVA
 {
@@ -21,7 +23,7 @@ WindSystem::WindInfo::WindInfo(WindComponent* c)
     :
     component(c)
 {
-    timeValue = static_cast<float32>(Random::Instance()->RandFloat(1000.f));
+    timeValue = static_cast<float32>(GetEngineContext()->random->RandFloat(1000.f));
 }
 
 WindSystem::WindSystem(Scene* scene)
@@ -67,6 +69,16 @@ void WindSystem::RemoveEntity(Entity* entity)
             break;
         }
     }
+}
+
+void WindSystem::PrepareForRemove()
+{
+    for (WindInfo* info : winds)
+    {
+        SafeDelete(info);
+    }
+
+    winds.clear();
 }
 
 void WindSystem::Process(float32 timeElapsed)

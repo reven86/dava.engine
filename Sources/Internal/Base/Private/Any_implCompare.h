@@ -27,6 +27,10 @@ template <>
 bool AnyCompare<String>::IsEqual(const Any& v1, const Any& v2);
 extern template struct AnyCompare<String>;
 
+template <>
+bool AnyCompare<WideString>::IsEqual(const Any& v1, const Any& v2);
+extern template struct AnyCompare<WideString>;
+
 template <typename K, typename V, typename Eq>
 struct AnyCompare<Map<K, V, Eq>>
 {

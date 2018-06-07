@@ -2,7 +2,6 @@
 #include "FileSystem/FilePath.h"
 #include "Logger/Logger.h"
 #include "Base/Exception.h"
-#include <cstring>
 
 namespace DAVA
 {
@@ -12,7 +11,6 @@ ZipArchive::ZipArchive(RefPtr<File>& file_, const FilePath& fileName)
     // Get and print information about each file in the archive.
     uint32 count = zipFile.GetNumFiles();
 
-    fileNames.reserve(count);
     fileInfos.reserve(count);
     for (uint32 i = 0u; i < count; i++)
     {
@@ -28,9 +26,8 @@ ZipArchive::ZipArchive(RefPtr<File>& file_, const FilePath& fileName)
 
         if (!isDirectory)
         {
-            fileNames.push_back(name);
             ResourceArchive::FileInfo info;
-            info.relativeFilePath = fileNames.back().c_str();
+            info.relativeFilePath = name;
             info.compressionType = Compressor::Type::RFC1951;
             info.compressedSize = compressedSize;
             info.originalSize = origSize;

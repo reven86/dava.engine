@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_SPINLOCK_H__
-#define __DAVAENGINE_SPINLOCK_H__
+#pragma once
 
 #include "Concurrency/Atomic.h"
 
@@ -44,5 +43,3 @@ inline void Spinlock::Unlock()
     flag.Set(0);
 }
 }
-
-#endif //  __DAVAENGINE_SPINLOCK_H__

@@ -13,7 +13,7 @@ class UIControl;
 class UIModalInputComponent : public UIComponent
 {
     DAVA_VIRTUAL_REFLECTION(UIModalInputComponent, UIComponent);
-    IMPLEMENT_UI_COMPONENT(UIModalInputComponent);
+    DECLARE_UI_COMPONENT(UIModalInputComponent);
 
 public:
     UIModalInputComponent();

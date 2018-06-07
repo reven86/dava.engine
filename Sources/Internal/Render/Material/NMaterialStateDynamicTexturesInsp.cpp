@@ -23,7 +23,7 @@ void NMaterialStateDynamicTexturesInsp::FindMaterialTexturesRecursive(NMaterial*
     auto fxName = material->GetEffectiveFXName();
     if (fxName.IsValid())
     {
-        HashMap<FastName, int32> flags;
+        UnorderedMap<FastName, int32> flags;
         material->CollectMaterialFlags(flags);
 
         // shader data

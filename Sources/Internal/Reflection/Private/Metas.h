@@ -30,6 +30,11 @@ public:
     const String displayName;
 };
 
+/** Hint that property can be edited as slider */
+class Slider
+{
+};
+
 /**
     Defines valid range of value
     Control will try to cast minValue and maxValue to control specific type T
@@ -205,6 +210,17 @@ private:
 };
 
 /**
+    Indicates that we can bind UIControl/UIComponent reflection field to some
+    data from model. QuickEd uses this indication to build special editor in 
+    Property Panel.
+*/
+class Bindable
+{
+public:
+    Bindable();
+};
+
+/**
     We think about some types like about base types: Vector2, Vector3, Vector4, Color, Rect etc
     But in real this types are complex and have fields. For example Vector3 comprises the following fields: X, Y, Z
     This meta mark field of "BaseType" as "field to edit". As a reaction there will be created separate sub-editor
@@ -222,13 +238,41 @@ class FrequentlyChangedValue
 {
 };
 
-/** Type that derived from Component and marked by this Meta couldn't be created in PropertyPanel */
+/** Type that derived from Component and marked by this Meta can't be created in PropertyPanel */
 class CantBeCreatedManualyComponent
 {
 };
 
-/** Type that derived from Component and marked by this Meta couldn't be deleted in PropertyPanel */
+/** Type that derived from Component and marked by this Meta can't be deleted in PropertyPanel */
 class CantBeDeletedManualyComponent
+{
+};
+
+/** Says that type derived from Component and marked by this Meta can't be exported */
+class NonExportableComponent
+{
+};
+
+/** Says that type derived from Component and marked by this Meta can't be serialized */
+class NonSerializableComponent
+{
+};
+
+/** Indicate field in current type, that will return tooltip */
+class Tooltip
+{
+public:
+    Tooltip(const String& tooltipFieldName);
+    String tooltipFieldName;
+};
+
+/** Indicate that color's components should be edited as int*/
+class IntColor
+{
+};
+
+/** Marks UIComponent type as multiples instances per UIControl */
+class Multiple
 {
 };
 

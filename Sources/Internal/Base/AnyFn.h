@@ -35,6 +35,9 @@ public:
     template <typename... Args>
     Any Invoke(const Args&... args) const;
 
+    template <typename... Args>
+    Any InvokeWithCast(const Args&... args) const;
+
     AnyFn BindThis(const void* this_) const;
 
     struct Params

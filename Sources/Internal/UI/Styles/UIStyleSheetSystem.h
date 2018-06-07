@@ -3,11 +3,12 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
+#include "Base/RefPtr.h"
 #include "UI/Styles/UIPriorityStyleSheet.h"
 #include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 #include "UI/Styles/UIStyleSheetStructs.h"
 #include "UI/UISystem.h"
-#include "Base/RefPtr.h"
+#include "Functional/Signal.h"
 
 namespace DAVA
 {
@@ -17,19 +18,6 @@ class UIScreenTransition;
 class UIStyleSheet;
 struct UIStyleSheetSelector;
 class VariantType;
-
-class UIStyleSheetSystemListener
-{
-public:
-    UIStyleSheetSystemListener()
-    {
-    }
-    virtual ~UIStyleSheetSystemListener()
-    {
-    }
-
-    virtual void OnStylePropertyChanged(UIControl* control, UIComponent* component, uint32 propertyIndex) = 0;
-};
 
 struct UIStyleSheetProcessDebugData
 {
@@ -51,9 +39,7 @@ public:
     ~UIStyleSheetSystem() override;
 
     void SetCurrentScreen(const RefPtr<UIScreen>& screen);
-    void SetCurrentScreenTransition(const RefPtr<UIScreenTransition>& screenTransition);
     void SetPopupContainer(const RefPtr<UIControl>& popupContainer);
-    void SetListener(UIStyleSheetSystemListener* listener);
 
     void AddGlobalClass(const FastName& clazz);
     void RemoveGlobalClass(const FastName& clazz);
@@ -72,6 +58,8 @@ public:
     void DebugControl(UIControl* control, UIStyleSheetProcessDebugData* debugData);
     void ProcessControl(UIControl* control, bool styleSheetListChanged = false); //DON'T USE IT!
 
+    Signal<UIControl*, const UIStyleSheetPropertySet&> stylePropertiesChanged;
+
 private:
     void Process(float32 elapsedTime) override;
     void ForceProcessControl(float32 elapsedTime, UIControl* control) override;
@@ -84,6 +72,8 @@ private:
 
     template <typename CallbackType>
     void DoForAllPropertyInstances(UIControl* control, uint32 propertyIndex, const CallbackType& action);
+    /** Sets 'globalStyleSheetDirty' flag for next 'Process()' call. Flag will reset automatically. */
+    void SetGlobalStyleSheetDirty();
 
     UIStyleSheetClassSet globalClasses;
 
@@ -93,11 +83,9 @@ private:
     int32 statsStyleSheetCount = 0;
     bool dirty = false;
     bool needUpdate = false;
+    bool globalStyleSheetDirty = false;
     RefPtr<UIScreen> currentScreen;
     RefPtr<UIControl> popupContainer;
-    RefPtr<UIScreenTransition> currentScreenTransition;
-
-    UIStyleSheetSystemListener* listener = nullptr;
 };
 
 inline void UIStyleSheetSystem::SetDirty()

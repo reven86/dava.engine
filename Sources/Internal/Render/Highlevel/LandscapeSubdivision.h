@@ -56,15 +56,6 @@ public:
 
         bool operator==(const SubdivisionMetrics& other) const;
 
-        INTROSPECTION(SubdivisionMetrics,
-                      MEMBER(normalMaxHeightError, "normalMaxHeightError", I_VIEW | I_EDIT)
-                      MEMBER(normalMaxPatchRadiusError, "normalMaxPatchRadiusError", I_VIEW | I_EDIT)
-                      MEMBER(normalMaxAbsoluteHeightError, "normalMaxAbsoluteHeightError", I_VIEW | I_EDIT)
-                      MEMBER(zoomMaxHeightError, "zoomMaxHeightError", I_VIEW | I_EDIT)
-                      MEMBER(zoomMaxPatchRadiusError, "zoomMaxPatchRadiusError", I_VIEW | I_EDIT)
-                      MEMBER(zoomMaxAbsoluteHeightError, "zoomMaxAbsoluteHeightError", I_VIEW | I_EDIT)
-                      );
-
         DAVA_VIRTUAL_REFLECTION(SubdivisionMetrics, InspBase);
     };
 
@@ -127,11 +118,6 @@ private:
     bool forceMaxSubdiv = false;
 
     friend class LandscapeSystem;
-
-public:
-    INTROSPECTION(LandscapeSubdivision,
-                  MEMBER(metrics, "metrics", I_VIEW | I_EDIT)
-                  );
 
     DAVA_VIRTUAL_REFLECTION(LandscapeSubdivision, InspBase);
 };

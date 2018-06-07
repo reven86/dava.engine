@@ -24,6 +24,15 @@ typedef struct tagTHREADNAME_INFO
 } THREADNAME_INFO;
 #pragma pack(pop)
 
+unsigned __stdcall ThreadFunc(void* param)
+{
+    Thread* t = static_cast<Thread*>(param);
+    Thread::SetCurrentThreadName(t->name);
+
+    Thread::ThreadFunction(param);
+    return 0;
+}
+
 void Thread::Init()
 {
 }
@@ -83,15 +92,6 @@ void Thread::SetCurrentThreadName(const String& str)
     }
 }
 
-unsigned __stdcall ThreadFunc(void* param)
-{
-    Thread* t = static_cast<Thread*>(param);
-    Thread::SetCurrentThreadName(t->name);
-
-    Thread::ThreadFunction(param);
-    return 0;
-}
-
 void Thread::Join()
 {
     if (isJoinable.CompareAndSwap(true, false))
@@ -137,7 +137,7 @@ bool Thread::BindToProcessor(unsigned proc_n)
 
     success = (::SetThreadIdealProcessorEx(handle, &proc_number, nullptr) == TRUE);
 #else
-    DWORD_PTR mask = 1 << proc_n;
+    DWORD_PTR mask = DWORD_PTR(1) << proc_n;
     success = (::SetThreadAffinityMask(handle, mask) == 0);
 #endif
 
@@ -164,6 +164,8 @@ void Thread::SetPriority(eThreadPriority priority)
         break;
     case PRIORITY_HIGH:
         prio = THREAD_PRIORITY_HIGHEST;
+        break;
+    default:
         break;
     }
 

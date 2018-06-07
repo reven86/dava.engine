@@ -1,7 +1,5 @@
 #include "UI/Components/UIComponent.h"
 #include "UI/UIControl.h"
-#include "UI/RichContent/UIRichContentAliasesComponent.h"
-
 #include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
@@ -49,18 +47,6 @@ UIComponent* UIComponent::CreateByType(const Type* componentType)
 RefPtr<UIComponent> UIComponent::SafeCreateByType(const Type* componentType)
 {
     return RefPtr<UIComponent>(CreateByType(componentType));
-}
-
-bool UIComponent::IsMultiple(const Type* componentType)
-{
-    if (componentType == Type::Instance<UIRichContentAliasesComponent>())
-    {
-        return true;
-    }
-    else
-    {
-        return false;
-    }
 }
 
 RefPtr<UIComponent> UIComponent::SafeClone() const

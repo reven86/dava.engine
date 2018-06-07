@@ -6,11 +6,17 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
 
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
+
 #include "Render/Highlevel/Camera.h"
 
 #include "Input/InputSystem.h"
-#include "Input/KeyboardDevice.h"
+#include "Input/Keyboard.h"
+
 #include "UI/UIEvent.h"
+
+#include "DeviceManager/DeviceManager.h"
 
 namespace DAVA
 {
@@ -23,23 +29,9 @@ RotationControllerSystem::RotationControllerSystem(Scene* scene)
     , rotationSpeed(0.15f)
     , oldCamera(NULL)
 {
-#if defined(__DAVAENGINE_COREV2__)
-// inputHandlerToken = InputSystem::Instance()->AddHandler(eInputDevices::CLASS_POINTER, MakeFunction(this, &RotationControllerSystem::Input));
-#else
-    inputCallback = new InputCallback(this, &RotationControllerSystem::Input, InputSystem::INPUT_DEVICE_TOUCH);
-//    InputSystem::Instance()->AddInputCallback(*inputCallback);
-#endif
 }
 
-RotationControllerSystem::~RotationControllerSystem()
-{
-#if defined(__DAVAENGINE_COREV2__)
-// InputSystem::Instance()->RemoveHandler(inputHandlerToken);
-#else
-    //    InputSystem::Instance()->RemoveInputCallback(*inputCallback);
-    SafeDelete(inputCallback);
-#endif
-}
+RotationControllerSystem::~RotationControllerSystem() = default;
 
 void RotationControllerSystem::AddEntity(Entity* entity)
 {
@@ -54,6 +46,11 @@ void RotationControllerSystem::RemoveEntity(Entity* entity)
     DVASSERT(removeResult);
 }
 
+void RotationControllerSystem::PrepareForRemove()
+{
+    entities.clear();
+}
+
 void RotationControllerSystem::Process(float32 timeElapsed)
 {
     Camera* camera = GetScene()->GetDrawCamera();
@@ -64,20 +61,12 @@ void RotationControllerSystem::Process(float32 timeElapsed)
     }
 }
 
-#if defined(__DAVAENGINE_COREV2__)
 bool RotationControllerSystem::Input(UIEvent* event)
-#else
-void RotationControllerSystem::Input(UIEvent* event)
-#endif
 {
     const uint32 size = static_cast<uint32>(entities.size());
     if (0 == size)
     {
-#if defined(__DAVAENGINE_COREV2__)
         return false;
-#else
-        return;
-#endif
     }
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
@@ -97,11 +86,7 @@ void RotationControllerSystem::Input(UIEvent* event)
             Camera* camera = GetScene()->GetDrawCamera();
             if (!camera)
             {
-#if defined(__DAVAENGINE_COREV2__)
                 return false;
-#else
-                return;
-#endif
             }
 
             //Find active wasd component
@@ -118,14 +103,17 @@ void RotationControllerSystem::Input(UIEvent* event)
                     }
                     else if (event->mouseButton == eMouseButtons::MIDDLE)
                     {
-                        KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-                        if (keyboard.IsKeyPressed(Key::LALT) || keyboard.IsKeyPressed(Key::RALT))
+                        Keyboard* keyboard = GetEngineContext()->deviceManager->GetKeyboard();
+                        if (keyboard != nullptr)
                         {
-                            RotatePositionAroundPoint(camera, rotationPoint);
-                        }
-                        else
-                        {
-                            RotatePosition(camera);
+                            if (keyboard->GetKeyState(eInputElements::KB_LALT).IsPressed() || keyboard->GetKeyState(eInputElements::KB_RALT).IsPressed())
+                            {
+                                RotatePositionAroundPoint(camera, rotationPoint);
+                            }
+                            else
+                            {
+                                RotatePosition(camera);
+                            }
                         }
                     }
 #endif
@@ -133,22 +121,20 @@ void RotationControllerSystem::Input(UIEvent* event)
             }
         }
     }
-#if defined(__DAVAENGINE_COREV2__)
     return false;
-#endif
 }
 
 void RotationControllerSystem::RotateDirection(Camera* camera)
 {
-    //if (!camera->GetIsOrtho())
+    if (!camera->GetIsOrtho())
     {
         DAVA::Vector2 dp = rotateStopPoint - rotateStartPoint;
         curViewAngleZ += dp.x * rotationSpeed;
         curViewAngleY = Clamp(curViewAngleY + dp.y * rotationSpeed, -maxViewAngle, maxViewAngle);
 
         DAVA::Matrix4 mt, mt2;
-        mt.CreateRotation(DAVA::Vector3(0.f, 0.f, 1.f), DAVA::DegToRad(curViewAngleZ));
-        mt2.CreateRotation(DAVA::Vector3(1.f, 0.f, 0.f), DAVA::DegToRad(curViewAngleY));
+        mt.BuildRotation(DAVA::Vector3(0.f, 0.f, 1.f), -DAVA::DegToRad(curViewAngleZ));
+        mt2.BuildRotation(DAVA::Vector3(1.f, 0.f, 0.f), -DAVA::DegToRad(curViewAngleY));
         mt2 *= mt;
 
         DAVA::Vector3 dir = DAVA::Vector3(0.f, 10.f, 0.f) * mt2;
@@ -161,9 +147,9 @@ void RotationControllerSystem::RotatePosition(Camera* camera)
     DAVA::Vector2 dp = rotateStopPoint - rotateStartPoint;
     DAVA::Matrix4 mt, mt1, mt2, mt3;
 
-    mt1.CreateTranslation(DAVA::Vector3(-dp.x * rotationSpeed, 0.f, dp.y * rotationSpeed));
-    mt2.CreateRotation(DAVA::Vector3(1.f, 0.f, 0.f), DAVA::DegToRad(curViewAngleY));
-    mt3.CreateRotation(DAVA::Vector3(0.f, 0.f, 1.f), DAVA::DegToRad(curViewAngleZ));
+    mt1.BuildTranslation(DAVA::Vector3(-dp.x * rotationSpeed, 0.f, dp.y * rotationSpeed));
+    mt2.BuildRotation(DAVA::Vector3(1.f, 0.f, 0.f), -DAVA::DegToRad(curViewAngleY));
+    mt3.BuildRotation(DAVA::Vector3(0.f, 0.f, 1.f), -DAVA::DegToRad(curViewAngleZ));
 
     mt = mt1 * mt2 * mt3;
 
@@ -180,8 +166,8 @@ void RotationControllerSystem::RotatePositionAroundPoint(Camera* camera, const V
     curViewAngleY = Clamp(curViewAngleY + (rotateStopPoint.y - rotateStartPoint.y), -maxViewAngle, maxViewAngle);
 
     DAVA::Matrix4 mt, mt2;
-    mt.CreateRotation(DAVA::Vector3(0, 0, 1), DAVA::DegToRad(curViewAngleZ));
-    mt2.CreateRotation(DAVA::Vector3(1, 0, 0), DAVA::DegToRad(curViewAngleY));
+    mt.BuildRotation(DAVA::Vector3(0, 0, 1), -DAVA::DegToRad(curViewAngleZ));
+    mt2.BuildRotation(DAVA::Vector3(1, 0, 0), -DAVA::DegToRad(curViewAngleY));
     mt2 *= mt;
 
     DAVA::Vector3 curPos = camera->GetPosition();

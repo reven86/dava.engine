@@ -45,7 +45,7 @@ int32 FormulaException::GetPositionInLine() const
     return positionInLine;
 }
 
-String FormulaException::GetMessage() const
+String FormulaException::GetErrorMessage() const
 {
     return what();
 }

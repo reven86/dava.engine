@@ -47,8 +47,6 @@ private:
         IChannelListener* service = nullptr;
     };
 
-    friend bool operator==(const Channel& ch, uint32 channelId);
-
     enum eSendingFrameType
     {
         SENDING_DATA_FRAME = false,
@@ -71,7 +69,7 @@ public:
     bool OnTimeout();
 
 private:
-    Channel* GetChannel(uint32 channelId);
+    std::shared_ptr<Channel>& GetChannel(uint32 channelId);
     void SendControl(uint32 code, uint32 channelId, uint32 packetId);
 
     bool ProcessDataPacket(ProtoDecoder::DecodeResult* result);
@@ -96,7 +94,7 @@ private:
     const ServiceRegistrar& registrar;
     void* serviceContext = nullptr;
     IClientTransport* transport = nullptr;
-    Vector<Channel> channels;
+    Vector<std::shared_ptr<Channel>> channels;
 
     Spinlock senderLock;
     Mutex queueMutex;
@@ -125,7 +123,10 @@ inline ProtoDriver::Channel::Channel(uint32 id, ProtoDriver* aDriver)
 
 inline bool ProtoDriver::Channel::Send(const void* data, size_t length, uint32 flags, uint32* outPacketId)
 {
-    driver->SendData(channelId, data, length, outPacketId);
+    if (driver != nullptr)
+    {
+        driver->SendData(channelId, data, length, outPacketId);
+    }
     return true;
 }
 
@@ -134,17 +135,18 @@ inline const Endpoint& ProtoDriver::Channel::RemoteEndpoint() const
     return remoteEndpoint;
 }
 
-inline bool operator==(const ProtoDriver::Channel& ch, uint32 channelId)
+inline std::shared_ptr<ProtoDriver::Channel>& ProtoDriver::GetChannel(uint32 channelId)
 {
-    return ch.channelId == channelId;
-}
+    for (std::shared_ptr<ProtoDriver::Channel>& channel : channels)
+    {
+        if (channel->channelId == channelId)
+        {
+            return channel;
+        }
+    }
 
-inline ProtoDriver::Channel* ProtoDriver::GetChannel(uint32 channelId)
-{
-    Vector<Channel>::iterator i = std::find(channels.begin(), channels.end(), channelId);
-    return i != channels.end() ? &*i
-                                 :
-                                 NULL;
+    static std::shared_ptr<ProtoDriver::Channel> empty;
+    return empty;
 }
 
 } // namespace Net

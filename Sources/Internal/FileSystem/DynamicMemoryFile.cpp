@@ -1,5 +1,6 @@
 #include "FileSystem/DynamicMemoryFile.h"
 #include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -16,7 +17,7 @@ DynamicMemoryFile* DynamicMemoryFile::Create(Vector<uint8>&& data, uint32 attrib
 DynamicMemoryFile* DynamicMemoryFile::Create(const uint8* data, int32 dataSize, uint32 attributes)
 {
     DynamicMemoryFile* fl = new DynamicMemoryFile();
-    fl->filename = Format("memoryfile_%p", static_cast<void*>(fl));
+    fl->filename = Format("memory_file_%p", static_cast<void*>(fl));
     fl->Write(data, dataSize);
     fl->fileAttributes = attributes;
     fl->currentPtr = 0;
@@ -28,38 +29,50 @@ DynamicMemoryFile* DynamicMemoryFile::Create(uint32 attributes)
 {
     DynamicMemoryFile* fl = new DynamicMemoryFile();
     fl->fileAttributes = attributes;
-    fl->filename = Format("memoryfile_%p", static_cast<void*>(fl));
+    fl->filename = Format("memory_file_%p", static_cast<void*>(fl));
 
     return fl;
 }
 
 DynamicMemoryFile::DynamicMemoryFile()
-    : File()
-    , isEof(false)
+    : currentPtr(0)
+    , fileAttributes(WRITE)
 {
-    currentPtr = 0;
-    fileAttributes = File::WRITE;
 }
 
-DynamicMemoryFile::~DynamicMemoryFile()
+DynamicMemoryFile::DynamicMemoryFile(DynamicMemoryFile&& other)
+: currentPtr(other.currentPtr)
+  ,
+  data(std::move(other.data))
+  ,
+  fileAttributes(other.fileAttributes)
 {
+    other.fileAttributes = 0;
+    other.currentPtr = 0;
+}
+
+DynamicMemoryFile& DynamicMemoryFile::operator=(DynamicMemoryFile&& other)
+{
+    currentPtr = other.currentPtr;
+    data = std::move(other.data);
+    fileAttributes = other.fileAttributes;
+
+    other.fileAttributes = 0;
+    other.currentPtr = 0;
+
+    return *this;
 }
 
 const uint8* DynamicMemoryFile::GetData() const
 {
-    if (!data.empty())
-    {
-        return data.data();
-    }
-    else
-    {
-        return nullptr;
-    }
+    return data.data();
 }
 
 uint32 DynamicMemoryFile::Write(const void* pointerToData, uint32 dataSize)
 {
-    if (!(fileAttributes & File::WRITE) && !(fileAttributes & File::APPEND))
+    DVASSERT(nullptr != pointerToData);
+
+    if (!(fileAttributes & WRITE) && !(fileAttributes & APPEND))
     {
         return 0;
     }
@@ -70,7 +83,6 @@ uint32 DynamicMemoryFile::Write(const void* pointerToData, uint32 dataSize)
     }
     if (dataSize)
     {
-        DVASSERT(nullptr != pointerToData);
         Memcpy(&(data[static_cast<size_t>(currentPtr)]), pointerToData, dataSize);
         currentPtr += dataSize;
     }
@@ -82,19 +94,27 @@ uint32 DynamicMemoryFile::Read(void* pointerToData, uint32 dataSize)
 {
     DVASSERT(NULL != pointerToData);
 
-    if (!(fileAttributes & File::READ))
+    if (!(fileAttributes & READ))
     {
+        Logger::Error("memory_file read failed: 0(expected: %u) bytes from file: %s, errno: %s",
+                      dataSize, filename.GetStringValue().c_str(), std::strerror(EACCES));
         return 0;
     }
 
-    int32 realReadSize = dataSize;
-    uint32 size = static_cast<uint32>(data.size());
+    if (currentPtr == data.size() && !isEof && dataSize > 0)
+    {
+        isEof = true;
+        return 0;
+    }
+
+    int32 realReadSize = static_cast<int32>(dataSize);
+    const auto size = static_cast<uint32>(data.size());
     if (currentPtr + realReadSize > size)
     {
         isEof = true;
         realReadSize = size - static_cast<uint32>(currentPtr);
     }
-    if (0 < realReadSize)
+    if (realReadSize > 0)
     {
         Memcpy(pointerToData, &(data[static_cast<size_t>(currentPtr)]), realReadSize);
         currentPtr += realReadSize;
@@ -112,7 +132,7 @@ uint64 DynamicMemoryFile::GetPos() const
 
 uint64 DynamicMemoryFile::GetSize() const
 {
-    return static_cast<uint32>(data.size());
+    return static_cast<uint64>(data.size());
 }
 
 bool DynamicMemoryFile::Seek(int64 position, eFileSeek seekType)
@@ -138,11 +158,13 @@ bool DynamicMemoryFile::Seek(int64 position, eFileSeek seekType)
         return false;
     }
 
-    // behavior taken from std::FILE - don't move pointer to less than 0 value
-    currentPtr = pos;
+    if (pos > static_cast<int64>(data.size()) && !(fileAttributes & WRITE))
+    {
+        Logger::Warning("memory_file opened in readonly mode you about to seek over EOF (POSIX let it)");
+    }
 
-    // like in std::FILE
-    // The end-of-file internal indicator of the stream is cleared after a successful call to this function
+    currentPtr = pos;
+    // behavior like in std::FILE http://en.cppreference.com/w/c/io/fseek
     isEof = false;
 
     return true;
@@ -155,13 +177,20 @@ bool DynamicMemoryFile::IsEof() const
 
 bool DynamicMemoryFile::Truncate(uint64 size)
 {
-    if (!(fileAttributes & File::WRITE))
+    if (!(fileAttributes & WRITE))
+    {
         return false;
+    }
 
     data.resize(size_t(size));
     currentPtr = Min(currentPtr, size);
-    isEof = (currentPtr == size);
+    isEof = currentPtr == size;
 
+    return true;
+}
+
+bool DynamicMemoryFile::Flush()
+{
     return true;
 }
 };

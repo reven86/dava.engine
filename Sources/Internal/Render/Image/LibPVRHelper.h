@@ -25,12 +25,6 @@ public:
 
     ImageInfo GetImageInfo(File* infile) const override;
 
-    static bool CanCompressTo(PixelFormat format);
-    static bool CompressFromRGBA(const Image* image, Image* dstImage);
-
-    static bool CanDecompressFrom(PixelFormat format);
-    static bool DecompressToRGBA(const Image* encodedImage, Image* decodedImage);
-
 protected:
     bool CanProcessFileInternal(File* infile) const override;
 };

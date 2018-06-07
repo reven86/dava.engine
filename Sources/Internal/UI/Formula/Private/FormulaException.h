@@ -23,7 +23,7 @@ public:
 
     int32 GetLineNumber() const;
     int32 GetPositionInLine() const;
-    String GetMessage() const;
+    String GetErrorMessage() const;
     String GetFormattedMessage() const;
 
 private:

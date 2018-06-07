@@ -1,27 +1,30 @@
 #include "UI/RichContent/Private/XMLRichContentBuilder.h"
-
+#include "FileSystem/XMLParser.h"
 #include "Logger/Logger.h"
 #include "UI/DefaultUIPackageBuilder.h"
 #include "UI/Layouts/UIFlowLayoutHintComponent.h"
 #include "UI/Layouts/UILayoutSourceRectComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
-#include "UI/RichContent/Private/RichContentUIPackageBuilder.h"
-#include "UI/RichContent/Private/RichLink.h"
-#include "UI/RichContent/UIRichAliasMap.h"
+#include "UI/Render/UIDebugRenderComponent.h"
+#include "UI/RichContent/Private/RichStructs.h"
 #include "UI/RichContent/UIRichContentAliasesComponent.h"
 #include "UI/RichContent/UIRichContentComponent.h"
-#include "UI/RichContent/UIRichContentObjectComponent.h"
+#include "UI/Components/UIControlSourceComponent.h"
+#include "UI/Text/UITextComponent.h"
 #include "UI/UIControl.h"
+#include "UI/UIControlBackground.h"
 #include "UI/UIPackageLoader.h"
-#include "UI/UIStaticText.h"
+#include "Utils/StringUtils.h"
 #include "Utils/UTF8Utils.h"
+#include "Utils/UTF8Walker.h"
 #include "Utils/Utils.h"
 
 namespace DAVA
 {
-XMLRichContentBuilder::XMLRichContentBuilder(RichLink* link_, bool editorMode /*= false*/)
-    : link(link_)
-    , isEditorMode(editorMode)
+XMLRichContentBuilder::XMLRichContentBuilder(RichContentLink* link_, bool editorMode /*= false*/, bool debugDraw /*= false*/)
+    : isEditorMode(editorMode)
+    , isDebugDraw(debugDraw)
+    , link(link_)
 {
     DVASSERT(link);
     defaultClasses = link->component->GetBaseClasses();
@@ -30,12 +33,11 @@ XMLRichContentBuilder::XMLRichContentBuilder(RichLink* link_, bool editorMode /*
     PutClass(defaultClasses);
 }
 
-bool XMLRichContentBuilder::Build(const String& text)
+XMLParserStatus XMLRichContentBuilder::Build(const String& text)
 {
     controls.clear();
     direction = bidiHelper.GetDirectionUTF8String(text); // Detect text direction
-    RefPtr<XMLParser> parser(new XMLParser());
-    return parser->ParseBytes(reinterpret_cast<const unsigned char*>(text.c_str()), static_cast<int32>(text.length()), this);
+    return XMLParser::ParseStringEx(text, this);
 }
 
 const Vector<RefPtr<UIControl>>& XMLRichContentBuilder::GetControls() const
@@ -96,17 +98,57 @@ void XMLRichContentBuilder::PrepareControl(UIControl* ctrl, bool autosize)
     flh->SetContentDirection(direction);
     if (needLineBreak)
     {
-        flh->SetNewLineBeforeThis(needLineBreak);
-        needLineBreak = false;
+        flh->SetNewLineBeforeThis(true);
     }
+    else if (!needSpace)
+    {
+        flh->SetStickItemBeforeThis(true);
+        if (!needSoftStick)
+        {
+            flh->SetStickHardBeforeThis(true);
+        }
+    }
+
+    if (isDebugDraw)
+    {
+        UIDebugRenderComponent* debug = ctrl->GetOrCreateComponent<UIDebugRenderComponent>();
+        debug->SetEnabled(true);
+        if (needLineBreak)
+        {
+            debug->SetDrawColor(Color::Yellow);
+        }
+        else if (!needSpace)
+        {
+            if (needSoftStick)
+            {
+                debug->SetDrawColor(Color::Cyan);
+            }
+            else
+            {
+                debug->SetDrawColor(Color::Blue);
+            }
+        }
+        else
+        {
+            debug->SetDrawColor(Color::Magenta);
+        }
+    }
+
+    needSpace = false;
+    needLineBreak = false;
+    needSoftStick = false;
+}
+
+void XMLRichContentBuilder::AppendControl(UIControl* ctrl)
+{
+    controls.emplace_back(RefPtr<UIControl>::ConstructWithRetain(ctrl));
 }
 
 void XMLRichContentBuilder::OnElementStarted(const String& elementName, const String& namespaceURI, const String& qualifedName, const Map<String, String>& attributes)
 {
-    for (UIRichContentAliasesComponent* c : link->aliasesComponents)
+    for (const RichContentAliasesLink& alink : link->aliasesLinks)
     {
-        const UIRichAliasMap& aliases = c->GetAliases();
-        const UIRichAliasMap::Alias& alias = aliases.GetAlias(elementName);
+        const RichContentAlias& alias = alink.GetAlias(elementName);
         if (!alias.tag.empty())
         {
             ProcessTagBegin(alias.tag, alias.attributes);
@@ -118,10 +160,9 @@ void XMLRichContentBuilder::OnElementStarted(const String& elementName, const St
 
 void XMLRichContentBuilder::OnElementEnded(const String& elementName, const String& namespaceURI, const String& qualifedName)
 {
-    for (UIRichContentAliasesComponent* c : link->aliasesComponents)
+    for (const RichContentAliasesLink& alink : link->aliasesLinks)
     {
-        const UIRichAliasMap& aliases = c->GetAliases();
-        const UIRichAliasMap::Alias& alias = aliases.GetAlias(elementName);
+        const RichContentAlias& alias = alink.GetAlias(elementName);
         if (!alias.tag.empty())
         {
             ProcessTagEnd(alias.tag);
@@ -133,11 +174,16 @@ void XMLRichContentBuilder::OnElementEnded(const String& elementName, const Stri
 
 void XMLRichContentBuilder::OnFoundCharacters(const String& chars)
 {
-    ProcessText(chars);
+    // Concat input characters in one single string, because some kind
+    // of internalization characters break XML parser to few
+    // OnFoundCharacters callbacks per one word
+    fullText += chars;
 }
 
 void XMLRichContentBuilder::ProcessTagBegin(const String& tag, const Map<String, String>& attributes)
 {
+    FlushText();
+
     // Global attributes
     String classes;
     if (!GetAttribute(attributes, "class", classes) && !classesInheritance)
@@ -153,6 +199,16 @@ void XMLRichContentBuilder::ProcessTagBegin(const String& tag, const Map<String,
     }
     else if (tag == "br")
     {
+        if (needLineBreak)
+        {
+            // Append text with space for additional empty line
+            RefPtr<UIControl> ctrl(new UIControl());
+            PrepareControl(ctrl.Get(), true);
+            ctrl->SetInputEnabled(false, false);
+            UITextComponent* txt = ctrl->GetOrCreateComponent<UITextComponent>();
+            txt->SetText(" ");
+            AppendControl(ctrl.Get());
+        }
         needLineBreak = true;
     }
     else if (tag == "ul")
@@ -162,19 +218,19 @@ void XMLRichContentBuilder::ProcessTagBegin(const String& tag, const Map<String,
     else if (tag == "li")
     {
         needLineBreak = true;
-        ProcessText("*"); // TODO: Change to create "bullet" control
     }
     else if (tag == "img")
     {
         String src;
         if (GetAttribute(attributes, "src", src))
         {
-            UIControl* img = new UIControl();
-            PrepareControl(img, true);
+            RefPtr<UIControl> img(new UIControl());
+            PrepareControl(img.Get(), true);
+            img->SetInputEnabled(false, false);
             UIControlBackground* bg = img->GetOrCreateComponent<UIControlBackground>();
             bg->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
             bg->SetSprite(FilePath(src));
-            controls.emplace_back(img);
+            AppendControl(img.Get());
         }
     }
     else if (tag == "object")
@@ -196,7 +252,7 @@ void XMLRichContentBuilder::ProcessTagBegin(const String& tag, const Map<String,
                 UIControl* ctrl = link->control;
                 while (ctrl != nullptr)
                 {
-                    UIRichContentObjectComponent* objComp = ctrl->GetComponent<UIRichContentObjectComponent>();
+                    UIControlSourceComponent* objComp = ctrl->GetComponent<UIControlSourceComponent>();
                     if (objComp)
                     {
                         if (path == objComp->GetPackagePath() &&
@@ -213,10 +269,11 @@ void XMLRichContentBuilder::ProcessTagBegin(const String& tag, const Map<String,
 
             if (valid)
             {
-                std::unique_ptr<DefaultUIPackageBuilder> pkgBuilder = isEditorMode ? std::make_unique<RichContentUIPackageBuilder>() : std::make_unique<DefaultUIPackageBuilder>();
-                UIPackageLoader().LoadPackage(path, pkgBuilder.get());
+                DefaultUIPackageBuilder pkgBuilder;
+                pkgBuilder.SetEditorMode(isEditorMode);
+                UIPackageLoader().LoadPackage(path, &pkgBuilder);
                 UIControl* obj = nullptr;
-                UIPackage* pkg = pkgBuilder->GetPackage();
+                UIPackage* pkg = pkgBuilder.GetPackage();
                 if (pkg != nullptr)
                 {
                     if (!controlName.empty())
@@ -230,24 +287,25 @@ void XMLRichContentBuilder::ProcessTagBegin(const String& tag, const Map<String,
                 }
                 if (obj != nullptr)
                 {
-                    PrepareControl(obj, false);
-
-                    UIRichContentObjectComponent* objComp = obj->GetOrCreateComponent<UIRichContentObjectComponent>();
-                    objComp->SetPackagePath(path);
-                    objComp->SetControlName(controlName);
-                    objComp->SetPrototypeName(prototypeName);
-
                     if (!name.empty())
                     {
                         obj->SetName(name);
                     }
+
+                    PrepareControl(obj, false);
+
+                    UIControlSourceComponent* objComp = obj->GetOrCreateComponent<UIControlSourceComponent>();
+                    objComp->SetPackagePath(path);
+                    objComp->SetControlName(controlName);
+                    objComp->SetPrototypeName(prototypeName);
+
                     link->component->onCreateObject.Emit(obj);
-                    controls.emplace_back(SafeRetain(obj));
+                    AppendControl(obj);
                 }
             }
             else
             {
-                Logger::Error("[UIRichContentSystem] Recursive object in rich content from '%s' with name '%s'!",
+                Logger::Error("Recursive object in rich content from '%s' with name '%s'!",
                               path.c_str(),
                               controlName.empty() ? prototypeName.c_str() : controlName.c_str());
             }
@@ -257,6 +315,8 @@ void XMLRichContentBuilder::ProcessTagBegin(const String& tag, const Map<String,
 
 void XMLRichContentBuilder::ProcessTagEnd(const String& tag)
 {
+    FlushText();
+
     PopClass();
 
     if (tag == "p")
@@ -277,32 +337,66 @@ void XMLRichContentBuilder::ProcessText(const String& text)
 {
     const static String LTR_MARK = UTF8Utils::EncodeToUTF8(L"\u200E");
     const static String RTL_MARK = UTF8Utils::EncodeToUTF8(L"\u200F");
+    const static uint32 ZERO_WIDTH_SPACE = 0x200B;
+    const static uint32 NO_BREAK_SPACE = 0xA0;
+    const static uint32 NEW_LINE = 0x0A;
 
-    Vector<String> tokens;
-    Split(text, " \n\r\t", tokens);
-    for (String& token : tokens)
+    UTF8Walker walker(text);
+    String token;
+    while (walker.Next())
     {
-        BiDiHelper::Direction wordDirection = bidiHelper.GetDirectionUTF8String(token);
-        if (wordDirection == BiDiHelper::Direction::NEUTRAL)
+        token += walker.GetUtf8Character();
+
+        StringUtils::eLineBreakType br = walker.GetLineBreak();
+
+        bool allowBreak = br == StringUtils::LB_ALLOWBREAK || (walker.IsWhitespace() && walker.GetUnicodeCodepoint() != NO_BREAK_SPACE);
+        if (!allowBreak && br == StringUtils::LB_NOBREAK && walker.HasNext())
         {
-            if (direction == BiDiHelper::Direction::RTL)
-            {
-                token = RTL_MARK + token;
-            }
-            else if (direction == BiDiHelper::Direction::LTR)
-            {
-                token = LTR_MARK + token;
-            }
-        }
-        else
-        {
-            direction = wordDirection;
+            continue;
         }
 
-        UIStaticText* ctrl = new UIStaticText();
-        PrepareControl(ctrl, true);
-        ctrl->SetUtf8Text(token);
-        controls.emplace_back(ctrl);
+        token = UTF8Utils::Trim(token);
+        if (!token.empty())
+        {
+            BiDiHelper::Direction wordDirection = bidiHelper.GetDirectionUTF8String(token);
+            if (wordDirection == BiDiHelper::Direction::NEUTRAL)
+            {
+                if (direction == BiDiHelper::Direction::RTL)
+                {
+                    token = RTL_MARK + token;
+                }
+                else if (direction == BiDiHelper::Direction::LTR)
+                {
+                    token = LTR_MARK + token;
+                }
+            }
+            else
+            {
+                direction = wordDirection;
+            }
+
+            RefPtr<UIControl> ctrl(new UIControl());
+            PrepareControl(ctrl.Get(), true);
+            ctrl->SetInputEnabled(false, false);
+            UITextComponent* txt = ctrl->GetOrCreateComponent<UITextComponent>();
+            txt->SetText(token);
+            AppendControl(ctrl.Get());
+
+            token.clear();
+        }
+
+        needLineBreak |= br == StringUtils::LB_MUSTBREAK || walker.GetUnicodeCodepoint() == NEW_LINE;
+        needSoftStick |= allowBreak;
+        needSpace |= walker.IsWhitespace() && walker.GetUnicodeCodepoint() != ZERO_WIDTH_SPACE;
+    }
+}
+
+void XMLRichContentBuilder::FlushText()
+{
+    if (!fullText.empty())
+    {
+        ProcessText(fullText);
+        fullText.clear();
     }
 }
 }

@@ -18,9 +18,9 @@ DAVA_VIRTUAL_REFLECTION_IMPL(RenderBatch)
     .Field("dataSource", &RenderBatch::dataSource)[M::DisplayName("Data source")]
     .Field("startIndex", &RenderBatch::startIndex)[M::DisplayName("Start index"), M::ReadOnly(), M::HiddenField()]
     .Field("indexCount", &RenderBatch::indexCount)[M::DisplayName("Index count"), M::ReadOnly(), M::HiddenField()]
-    .Field("aabbbox", &RenderBatch::aabbox)[M::DisplayName("Bounding box")]
+    .Field("aabbbox", &RenderBatch::aabbox)[M::DisplayName("Bounding box"), M::DeveloperModeOnly()]
     .Field("material", &RenderBatch::material)[M::DisplayName("Material")]
-    .Field("sortingKey", &RenderBatch::GetSortingKey, &RenderBatch::SetSortingKey)[M::DisplayName("Sorting key")]
+    .Field("sortingKey", &RenderBatch::GetSortingKey, &RenderBatch::SetSortingKey)[M::DisplayName("Sorting key"), M::DeveloperModeOnly()]
     .End();
 }
 

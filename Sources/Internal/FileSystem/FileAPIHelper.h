@@ -23,6 +23,7 @@ int32 RemoveFile(const String& fileName);
 /**
 	oldfileName - utf8 string
 	newFileName - utf8 string
+	return value - 0 upon success or non-zero on error
 */
 int32 RenameFile(const String& oldFileName, const String& newFileName);
 

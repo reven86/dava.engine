@@ -113,7 +113,7 @@ public:
 
     void SetFoliageSystem(FoliageSystem* _foliageSystem);
 
-    void BindDynamicParameters(Camera* camera) override;
+    void BindDynamicParameters(Camera* camera, RenderBatch* batch) override;
     void PrepareToRender(Camera* camera) override;
 
     void UpdatePart(const Rect2i& rect);
@@ -131,6 +131,9 @@ public:
     void SetRenderMode(RenderMode mode);
     void UpdateMaterialFlags();
 
+    void RecursiveRayTrace(uint32 level, uint32 x, uint32 y, const Ray3& rayInObjectSpace, float32& resultT);
+    bool RayTrace(const Ray3& rayInObjectSpace, float32& resultT);
+
 protected:
     void AddPatchToRender(uint32 level, uint32 x, uint32 y);
 
@@ -142,6 +145,11 @@ protected:
     void SetLandscapeSize(const Vector3& newSize);
     bool BuildHeightmap();
     void RebuildLandscape();
+
+    /**
+        Return size of heightmap object. Return if heighmap is nullptr. Used to prevent crashes in ResourceEditor
+     */
+    int32 GetHeightmapSize() const;
 
     void SetDrawWired(bool isWire);
     bool IsDrawWired() const;
@@ -291,18 +299,6 @@ protected:
     ////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     friend class LandscapeSystem;
-
-public:
-    INTROSPECTION_EXTEND(Landscape, RenderObject,
-                         PROPERTY("heightmapPath", "Height Map Path", GetHeightmapPathname, SetHeightmapPathname, I_VIEW | I_EDIT)
-                         PROPERTY("size", "Size", GetLandscapeSize, SetLandscapeSize, I_VIEW | I_EDIT)
-                         PROPERTY("height", "Height", GetLandscapeHeight, SetLandscapeHeight, I_VIEW | I_EDIT)
-                         PROPERTY("useMorphing", "useMorphing", IsUseMorphing, SetUseMorphing, I_VIEW | I_EDIT)
-                         PROPERTY("isDrawWired", "isDrawWired", IsDrawWired, SetDrawWired, I_VIEW | I_EDIT)
-                         PROPERTY("debugDrawMorphing", "debugDrawMorphing", IsDrawMorphing, SetDrawMorphing, I_VIEW | I_EDIT)
-                         MEMBER(debugDrawMetrics, "debugDrawMetrics", I_VIEW | I_EDIT)
-                         MEMBER(subdivision, "subdivision", I_VIEW | I_EDIT)
-                         );
 
     DAVA_VIRTUAL_REFLECTION(Landscape, RenderObject);
 };

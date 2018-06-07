@@ -1,6 +1,7 @@
 #include "UI/UIScrollBar.h"
-#include "UI/UIEvent.h"
 #include "UI/UIControlHelpers.h"
+#include "UI/UIEvent.h"
+#include "UI/UIScrollBarDelegate.h"
 #include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
@@ -10,13 +11,10 @@ static const FastName UISCROLLBAR_SLIDER_NAME("slider");
 
 DAVA_VIRTUAL_REFLECTION_IMPL(UIScrollBar)
 {
-    ReflectionRegistrator<UIScrollBar>::Begin()
+    ReflectionRegistrator<UIScrollBar>::Begin()[M::DisplayName("Scroll Bar")]
     .ConstructorByPointer()
     .DestructorByPointer([](UIScrollBar* o) { o->Release(); })
-    .Field("orientation", &UIScrollBar::GetOrientation, &UIScrollBar::SetOrientation)
-    [
-    M::EnumT<eScrollOrientation>()
-    ]
+    .Field("orientation", &UIScrollBar::GetOrientation, &UIScrollBar::SetOrientation)[M::EnumT<eScrollOrientation>(), M::DisplayName("Orientation")]
     .End();
 }
 

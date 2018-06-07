@@ -37,10 +37,7 @@
 **********************************************************************
 */
 
-#ifndef __DAVAENGINE_MD5__
-#define __DAVAENGINE_MD5__
-
-
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
@@ -78,6 +75,9 @@ public:
     static void CharToHash(const char8* buffer, MD5Digest& digest);
     static void CharToHash(const char8* buffer, uint32 bufferSize, uint8* hash, uint32 hashSize);
 
+    static String HashToString(const MD5Digest& digest);
+    static String HashToString(const uint8* hash, uint32 hashSize);
+
     void Init();
     void Update(const uint8* inBuf, uint32 inLen);
     void Final();
@@ -96,6 +96,4 @@ private:
     uint8 in[64]; /* input buffer */
     MD5Digest digest; /* actual digest after MD5Final call */
 };
-}
-
-#endif //
+} // namespace DAVA

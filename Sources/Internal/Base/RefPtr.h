@@ -15,6 +15,10 @@ public:
     {
     }
 
+    RefPtr(std::nullptr_t)
+    {
+    }
+
     explicit RefPtr(T* p)
         : _ptr(p)
     {
@@ -33,11 +37,17 @@ public:
         SafeRelease(_ptr);
     }
 
-    RefPtr(const RefPtr<T>& rp)
+    RefPtr(const RefPtr& rp)
     {
         _ptr = rp._ptr;
 
         SafeRetain(_ptr);
+    }
+
+    RefPtr(RefPtr&& rp)
+        : _ptr(rp._ptr)
+    {
+        rp._ptr = nullptr;
     }
 
     template <class Other>
@@ -48,10 +58,17 @@ public:
         SafeRetain(_ptr);
     }
 
+    template <class Other>
+    RefPtr(RefPtr<Other>&& rp)
+        : _ptr(rp._ptr)
+    {
+        rp._ptr = nullptr;
+    }
+
     static RefPtr<T> ConstructWithRetain(T* p)
     {
         static_assert(std::is_base_of<BaseObject, T>::value, "RefPtr works only with classes, derived from BaseObject!");
-        p->Retain();
+        SafeRetain(p);
         return RefPtr<T>(p);
     }
 
@@ -62,19 +79,32 @@ public:
 
     bool Valid() const
     {
-        return _ptr != 0;
+        return _ptr != nullptr;
     }
 
     RefPtr& operator=(const RefPtr& rp)
     {
-        assign(rp);
+        Assign(rp);
+        return *this;
+    }
+
+    RefPtr& operator=(RefPtr&& rp)
+    {
+        Assign(std::move(rp));
         return *this;
     }
 
     template <class Other>
     RefPtr& operator=(const RefPtr<Other>& rp)
     {
-        assign(rp);
+        Assign(rp);
+        return *this;
+    }
+
+    template <class Other>
+    RefPtr& operator=(RefPtr<Other>&& rp)
+    {
+        Assign(std::move(rp));
         return *this;
     }
 
@@ -87,6 +117,12 @@ public:
         _ptr = ptr;
         SafeRetain(_ptr);
         SafeRelease(tmp_ptr);
+        return *this;
+    }
+
+    RefPtr& operator=(std::nullptr_t)
+    {
+        RefPtr().Swap(*this);
         return *this;
     }
 
@@ -115,11 +151,18 @@ public:
     {
         return _ptr == ptr;
     }
+    bool operator==(std::nullptr_t) const
+    {
+        return _ptr == nullptr;
+    }
     friend bool operator==(const T* ptr, const RefPtr& rp)
     {
         return ptr == rp._ptr;
     }
-
+    friend bool operator==(std::nullptr_t, const RefPtr& rp)
+    {
+        return nullptr == rp._ptr;
+    }
     bool operator!=(const RefPtr& rp) const
     {
         return _ptr != rp._ptr;
@@ -128,13 +171,21 @@ public:
     {
         return _ptr != ptr;
     }
+    bool operator!=(std::nullptr_t) const
+    {
+        return _ptr != nullptr;
+    }
     friend bool operator!=(const T* ptr, const RefPtr& rp)
     {
         return ptr != rp._ptr;
     }
+    friend bool operator!=(std::nullptr_t, const RefPtr& rp)
+    {
+        return nullptr != rp._ptr;
+    }
     bool operator!() const // Enables "if (!sp) ..."
     {
-        return _ptr == 0;
+        return _ptr == nullptr;
     }
 
     template <typename... Arg>
@@ -143,10 +194,9 @@ public:
         Set(new T(std::forward<Arg>(arg)...));
     }
 
-    template <typename... Arg>
-    static RefPtr<T> Construct(Arg&&... arg)
+    void Swap(RefPtr& rp)
     {
-        return RefPtr<T>(new T(std::forward<Arg>(arg)...));
+        std::swap(_ptr, rp._ptr);
     }
 
 private:
@@ -159,7 +209,7 @@ public:
     operator Tester*() const
     {
         if (!_ptr)
-            return 0;
+            return nullptr;
         static Tester test;
         return &test;
     }
@@ -168,15 +218,27 @@ private:
     T* _ptr = nullptr;
 
     template <class Other>
-    void assign(const RefPtr<Other>& rp)
+    friend class RefPtr;
+
+    template <class Other>
+    void Assign(const RefPtr<Other>& rp)
     {
-        if (_ptr == rp.Get())
+        if (_ptr == rp._ptr)
             return;
 
         T* tmp_ptr = _ptr;
         _ptr = rp.Get();
         SafeRetain(_ptr);
         SafeRelease(tmp_ptr);
+    }
+
+    template <class Other>
+    void Assign(RefPtr<Other>&& rp)
+    {
+        if (_ptr == rp._ptr)
+            return;
+
+        RefPtr(std::move(rp)).Swap(*this);
     }
 };
 
@@ -191,5 +253,14 @@ struct AnyCompare<RefPtr<T>>
     }
 };
 } // ns
+
+namespace std
+{
+template <class T>
+void swap(DAVA::RefPtr<T>& left, DAVA::RefPtr<T>& right)
+{
+    left.Swap(right);
+}
+}
 
 #endif // __DAVA_REF_PTR_H__

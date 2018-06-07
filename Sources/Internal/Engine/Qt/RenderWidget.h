@@ -1,14 +1,12 @@
 #pragma once
 
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Base/BaseTypes.h"
 
 #if defined(__DAVAENGINE_QT__)
 
-#include "Functional/Signal.h"
-#include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/EngineTypes.h"
+#include "Engine/Private/EnginePrivateFwd.h"
+#include "Functional/Signal.h"
 
 #include <QWidget>
 
@@ -28,13 +26,18 @@ class RenderWidget final : public QWidget
     Q_OBJECT
 public:
     void SetClientDelegate(IClientDelegate* delegate);
+    void SetFrameBlocked(bool isBlocked);
     Signal<uint32, uint32> resized;
+    static QString BackendWidgetName;
 
 private:
-    friend class Private::WindowBackend;
+    friend class Private::WindowImpl;
 
     RenderWidget(IWindowDelegate* widgetDelegate, uint32 width, uint32 height);
     ~RenderWidget();
+
+    // QWidget
+    void actionEvent(QActionEvent* event) override;
 
     void AcquireContext();
     void ReleaseContext();
@@ -45,9 +48,9 @@ private:
     void InitCustomRenderParams(rhi::InitParam& params);
 
     RenderWidgetBackend* renderWidgetBackend = nullptr;
+    QWidget* renderWidgetImpl = nullptr;
 };
 
 } // namespace DAVA
 
 #endif // __DAVAENGINE_QT__
-#endif // __DAVAENGINE_COREV2__

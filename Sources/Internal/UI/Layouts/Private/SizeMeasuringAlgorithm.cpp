@@ -1,11 +1,12 @@
 #include "SizeMeasuringAlgorithm.h"
 
 #include "Reflection/ReflectionRegistrator.h"
-#include "UI/Layouts/UILinearLayoutComponent.h"
+#include "UI/Layouts/LayoutFormula.h"
 #include "UI/Layouts/UIFlowLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutHintComponent.h"
+#include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
-#include "UI/Layouts/LayoutFormula.h"
+#include "UI/Text/UITextComponent.h"
 
 #include "UI/UIControl.h"
 
@@ -25,14 +26,16 @@ DAVA_VIRTUAL_REFLECTION_IMPL(SizeMeasuringAlgorithm)
     .Field("minLimit", &SizeMeasuringAlgorithm::GetMinLimit, nullptr)
     .Field("maxLimit", &SizeMeasuringAlgorithm::GetMaxLimit, nullptr)
     .Field("value", &SizeMeasuringAlgorithm::GetValue, nullptr)
+    .Field("visibilityMargins", &SizeMeasuringAlgorithm::CalculateVisibilityMargins, nullptr)
+    .Field("safeAreaInsets", &SizeMeasuringAlgorithm::GetSafeAreaInsets, nullptr)
     .Method("min", &SizeMeasuringAlgorithm::Min)
     .Method("max", &SizeMeasuringAlgorithm::Max)
     .Method("clamp", &SizeMeasuringAlgorithm::Clamp)
     .End();
 }
 
-SizeMeasuringAlgorithm::SizeMeasuringAlgorithm(Vector<ControlLayoutData>& layoutData_, ControlLayoutData& data_, Vector2::eAxis axis_, const UISizePolicyComponent* sizePolicy_)
-    : layoutData(layoutData_)
+SizeMeasuringAlgorithm::SizeMeasuringAlgorithm(Layouter& layouter_, ControlLayoutData& data_, Vector2::eAxis axis_, const UISizePolicyComponent* sizePolicy_)
+    : layouter(layouter_)
     , data(data_)
     , axis(axis_)
     , sizePolicy(sizePolicy_)
@@ -147,7 +150,7 @@ float32 SizeMeasuringAlgorithm::Calculate()
         value = ClampValue(percentedValue);
     }
 
-    return Max(value, 0.0f);
+    return DAVA::Max(value, 0.0f);
 }
 
 float32 SizeMeasuringAlgorithm::CalculateFixedSize() const
@@ -182,6 +185,7 @@ float32 SizeMeasuringAlgorithm::CalculateDefaultChildrenSum() const
 {
     float32 value = 0;
     int32 processedChildrenCount = 0;
+    const Vector<ControlLayoutData>& layoutData = layouter.GetLayoutData();
 
     bool newLineBeforeNext = false;
     for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
@@ -219,6 +223,7 @@ float32 SizeMeasuringAlgorithm::CalculateHorizontalFlowLayoutChildrenSum() const
     float32 maxWidth = 0.0f;
     bool newLineBeforeNext = false;
     bool firstInLine = true;
+    const Vector<ControlLayoutData>& layoutData = layouter.GetLayoutData();
 
     for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
     {
@@ -243,7 +248,7 @@ float32 SizeMeasuringAlgorithm::CalculateHorizontalFlowLayoutChildrenSum() const
 
             if (newLineBeforeThis)
             {
-                maxWidth = Max(maxWidth, lineWidth);
+                maxWidth = DAVA::Max(maxWidth, lineWidth);
                 lineWidth = 0.0f;
                 firstInLine = true;
             }
@@ -257,7 +262,7 @@ float32 SizeMeasuringAlgorithm::CalculateHorizontalFlowLayoutChildrenSum() const
         }
     }
 
-    maxWidth = Max(maxWidth, lineWidth);
+    maxWidth = DAVA::Max(maxWidth, lineWidth);
     return maxWidth;
 }
 
@@ -266,9 +271,9 @@ float32 SizeMeasuringAlgorithm::CalculateVerticalFlowLayoutChildrenSum() const
     DVASSERT(flowLayout && flowLayout->IsEnabled());
 
     float32 value = 0;
-
     int32 linesCount = 0;
     float32 lineHeight = 0;
+    Vector<ControlLayoutData>& layoutData = layouter.GetLayoutData();
 
     for (int32 index = data.GetFirstChildIndex(); index <= data.GetLastChildIndex(); index++)
     {
@@ -276,7 +281,7 @@ float32 SizeMeasuringAlgorithm::CalculateVerticalFlowLayoutChildrenSum() const
         if (childData.HaveToSkipControl(skipInvisible))
             continue;
 
-        lineHeight = Max(lineHeight, childData.GetHeight());
+        lineHeight = DAVA::Max(lineHeight, childData.GetHeight());
 
         if (childData.HasFlag(ControlLayoutData::FLAG_LAST_IN_LINE))
         {
@@ -296,12 +301,13 @@ float32 SizeMeasuringAlgorithm::CalculateVerticalFlowLayoutChildrenSum() const
 float32 SizeMeasuringAlgorithm::CalculateMaxChild() const
 {
     float32 value = 0.0f;
+    const Vector<ControlLayoutData>& layoutData = layouter.GetLayoutData();
     for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
     {
         const ControlLayoutData& childData = layoutData[i];
         if (!childData.HaveToSkipControl(skipInvisible))
         {
-            value = Max(value, GetSize(childData));
+            value = DAVA::Max(value, GetSize(childData));
         }
     }
 
@@ -311,6 +317,7 @@ float32 SizeMeasuringAlgorithm::CalculateMaxChild() const
 float32 SizeMeasuringAlgorithm::CalculateFirstChild() const
 {
     float32 value = 0.0f;
+    const Vector<ControlLayoutData>& layoutData = layouter.GetLayoutData();
     for (int32 i = data.GetFirstChildIndex(); i <= data.GetLastChildIndex(); i++)
     {
         const ControlLayoutData& childData = layoutData[i];
@@ -327,6 +334,7 @@ float32 SizeMeasuringAlgorithm::CalculateFirstChild() const
 float32 SizeMeasuringAlgorithm::CalculateLastChild() const
 {
     float32 value = 0.0f;
+    const Vector<ControlLayoutData>& layoutData = layouter.GetLayoutData();
     for (int32 i = data.GetLastChildIndex(); i >= data.GetFirstChildIndex(); i--)
     {
         const ControlLayoutData& childData = layoutData[i];
@@ -343,12 +351,57 @@ float32 SizeMeasuringAlgorithm::CalculateLastChild() const
 float32 SizeMeasuringAlgorithm::CalculateContent() const
 {
     Vector2 constraints(-1.0f, -1.0f);
-    if (data.GetControl()->IsHeightDependsOnWidth() && axis == Vector2::AXIS_Y)
+    if (IsHeightDependsOnWidth() && axis == Vector2::AXIS_Y)
     {
         constraints.x = data.GetSize(Vector2::AXIS_X);
     }
 
-    return data.GetControl()->GetContentPreferredSize(constraints).data[axis];
+    return GetContentPreferredSize(constraints).data[axis];
+}
+
+Vector2 SizeMeasuringAlgorithm::GetContentPreferredSize(const Vector2& constraints) const
+{
+    UIControl* control = data.GetControl();
+    UITextComponent* txt = control->GetComponent<UITextComponent>();
+    if (txt)
+    {
+        DVASSERT(!txt->IsModified());
+        return txt->GetLink()->GetTextBlock()->GetPreferredSizeForWidth(constraints.x);
+    }
+    UIControlBackground* bg = control->GetComponent<UIControlBackground>();
+    if (bg != nullptr && bg->GetSprite() != nullptr)
+    {
+        if (constraints.dx > 0)
+        {
+            Vector2 size;
+            size.dx = constraints.dx;
+            size.dy = bg->GetSprite()->GetHeight() * size.dx / bg->GetSprite()->GetWidth();
+            return size;
+        }
+        else
+        {
+            return bg->GetSprite()->GetSize();
+        }
+    }
+    return Vector2(0.0f, 0.0f);
+}
+
+bool SizeMeasuringAlgorithm::IsHeightDependsOnWidth() const
+{
+    UIControl* control = data.GetControl();
+    UITextComponent* txt = control->GetComponent<UITextComponent>();
+    if (txt)
+    {
+        return txt->GetMultiline() != UITextComponent::eTextMultiline::MULTILINE_DISABLED;
+    }
+    UIControlBackground* bg = control->GetComponent<UIControlBackground>();
+    if (bg == nullptr || bg->GetSprite() == nullptr)
+    {
+        return false;
+    }
+
+    UIControlBackground::eDrawType dt = bg->GetDrawType();
+    return dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL || dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL_ONE;
 }
 
 float32 SizeMeasuringAlgorithm::GetSize(const ControlLayoutData& data) const
@@ -365,11 +418,34 @@ float32 SizeMeasuringAlgorithm::GetLayoutPadding() const
 {
     if (flowLayout && flowLayout->IsEnabled())
     {
-        return flowLayout->GetPaddingByAxis(axis) * 2.0f;
+        float32 padding = flowLayout->GetPaddingByAxis(axis) * 2.0f;
+        if (axis == Vector2::AXIS_X && flowLayout->IsHorizontalSafeAreaPaddingInset())
+        {
+            padding += layouter.GetSafeAreaInsets().left + layouter.GetSafeAreaInsets().right;
+        }
+        else if (axis == Vector2::AXIS_Y && flowLayout->IsVerticalSafeAreaPaddingInset())
+        {
+            padding += layouter.GetSafeAreaInsets().top + layouter.GetSafeAreaInsets().bottom;
+        }
+
+        return padding;
     }
     else if (linearLayout != nullptr && linearLayout->IsEnabled() && linearLayout->GetAxis() == axis)
     {
-        return linearLayout->GetPadding() * 2.0f;
+        float32 padding = linearLayout->GetPadding() * 2.0f;
+        if (linearLayout->IsSafeAreaPaddingInset())
+        {
+            if (axis == Vector2::AXIS_X)
+            {
+                padding += layouter.GetSafeAreaInsets().left + layouter.GetSafeAreaInsets().right;
+            }
+            else
+            {
+                padding += layouter.GetSafeAreaInsets().top + layouter.GetSafeAreaInsets().bottom;
+            }
+        }
+
+        return padding;
     }
     return 0.0f;
 }
@@ -379,7 +455,7 @@ float32 SizeMeasuringAlgorithm::ClampValue(float32 value) const
     UISizePolicyComponent::eSizePolicy policy = sizePolicy->GetPolicyByAxis(axis);
     if (policy != UISizePolicyComponent::PERCENT_OF_PARENT && policy != UISizePolicyComponent::IGNORE_SIZE)
     {
-        return Clamp(value, sizePolicy->GetMinValueByAxis(axis), sizePolicy->GetMaxValueByAxis(axis));
+        return DAVA::Clamp(value, sizePolicy->GetMinValueByAxis(axis), sizePolicy->GetMaxValueByAxis(axis));
     }
     return value;
 }
@@ -399,18 +475,52 @@ float32 SizeMeasuringAlgorithm::GetValue() const
     return sizePolicy->GetValueByAxis(axis);
 }
 
-float32 SizeMeasuringAlgorithm::Min(float32 a, float32 b) const
+float32 SizeMeasuringAlgorithm::Min(const std::shared_ptr<FormulaContext>& context, float32 a, float32 b) const
 {
     return DAVA::Min(a, b);
 }
 
-float32 SizeMeasuringAlgorithm::Max(float32 a, float32 b) const
+float32 SizeMeasuringAlgorithm::Max(const std::shared_ptr<FormulaContext>& context, float32 a, float32 b) const
 {
     return DAVA::Max(a, b);
 }
 
-float32 SizeMeasuringAlgorithm::Clamp(float32 val, float32 a, float32 b) const
+float32 SizeMeasuringAlgorithm::Clamp(const std::shared_ptr<FormulaContext>& context, float32 val, float32 a, float32 b) const
 {
     return DAVA::Clamp(val, a, b);
+}
+
+const LayoutMargins& SizeMeasuringAlgorithm::CalculateVisibilityMargins()
+{
+    const Rect& visibilityRect = layouter.GetVisibilityRect();
+    const Vector<ControlLayoutData>& layoutData = layouter.GetLayoutData();
+
+    int32 parent = data.GetParentIndex();
+    float32 parentPos = 0.f;
+    while (parent >= 0)
+    {
+        const ControlLayoutData& d = layoutData[parent];
+        parentPos += d.GetPosition(axis);
+        parent = d.GetParentIndex();
+    }
+
+    if (axis == Vector2::AXIS_X)
+    {
+        visibilityMargins.top = visibilityMargins.bottom = 0.f;
+        visibilityMargins.left = DAVA::Max(0.f, visibilityRect.x - parentPos);
+        visibilityMargins.right = DAVA::Max(0.f, (parentPos + parentSize) - (visibilityRect.x + visibilityRect.dx));
+    }
+    else
+    {
+        visibilityMargins.left = visibilityMargins.right = 0.f;
+        visibilityMargins.top = DAVA::Max(0.f, visibilityRect.y - parentPos);
+        visibilityMargins.bottom = DAVA::Max(0.f, (parentPos + parentSize) - (visibilityRect.y + visibilityRect.dy));
+    }
+    return visibilityMargins;
+}
+
+const LayoutMargins& SizeMeasuringAlgorithm::GetSafeAreaInsets()
+{
+    return layouter.GetSafeAreaInsets();
 }
 }

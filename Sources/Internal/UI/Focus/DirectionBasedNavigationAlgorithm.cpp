@@ -10,7 +10,6 @@
 #include "UI/UIList.h"
 #include "UI/UIEvent.h"
 #include "UI/UIControlHelpers.h"
-#include "Input/KeyboardDevice.h"
 
 namespace DAVA
 {
@@ -122,9 +121,9 @@ UIControl* DirectionBasedNavigationAlgorithm::FindNearestControl(UIControl* focu
         return control;
     }
 
-    for (UIControl* c : control->GetChildren())
+    for (const auto& c : control->GetChildren())
     {
-        UIControl* res = FindNearestControl(focusedControl, c, dir);
+        UIControl* res = FindNearestControl(focusedControl, c.Get(), dir);
 
         if (res != nullptr)
         {

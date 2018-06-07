@@ -1,17 +1,28 @@
 #include "Particles/ParticleEmitterInstance.h"
 
+#include "Reflection/ReflectionRegistrator.h"
+
 namespace DAVA
 {
-ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* owner_, bool isInner)
+DAVA_VIRTUAL_REFLECTION_IMPL(ParticleEmitterInstance)
+{
+    ReflectionRegistrator<ParticleEmitterInstance>::Begin()
+    .End();
+}
+
+ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* owner_)
     : owner(owner_)
-    , isInnerEmitter(isInner)
 {
 }
 
-ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* owner_, ParticleEmitter* emitter_, bool isInner)
+ParticleEmitterInstance::ParticleEmitterInstance(ParticleEmitter* emitter)
+    : emitter(SafeRetain(emitter))
+{
+}
+
+ParticleEmitterInstance::ParticleEmitterInstance(ParticleEffectComponent* owner_, ParticleEmitter* emitter_)
     : owner(owner_)
     , emitter(SafeRetain(emitter_))
-    , isInnerEmitter(isInner)
 {
 }
 
@@ -21,7 +32,6 @@ ParticleEmitterInstance* ParticleEmitterInstance::Clone() const
     ParticleEmitterInstance* result = new ParticleEmitterInstance(owner, clonedEmitter.get());
     result->SetFilePath(GetFilePath());
     result->SetSpawnPosition(GetSpawnPosition());
-    result->isInnerEmitter = isInnerEmitter;
     return result;
 }
 }

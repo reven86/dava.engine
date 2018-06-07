@@ -9,7 +9,8 @@ namespace Net
 {
 struct IChannelListener;
 
-using ServiceCreator = Function<IChannelListener*(uint32 serviceId, void* context)>;
+using ServiceID = uint32;
+using ServiceCreator = Function<IChannelListener*(ServiceID serviceId, void* context)>;
 using ServiceDeleter = Function<void(IChannelListener* obj, void* context)>;
 
 class ServiceRegistrar
@@ -19,7 +20,7 @@ private:
     {
         static const size_t MAX_NAME_LENGTH = 32;
 
-        Entry(uint32 id, const char8* serviceName, ServiceCreator creatorFunc, ServiceDeleter deleterFunc);
+        Entry(ServiceID id, const char8* serviceName, ServiceCreator creatorFunc, ServiceDeleter deleterFunc);
 
         uint32 serviceId;
         char8 name[MAX_NAME_LENGTH];
@@ -30,25 +31,25 @@ private:
     friend bool operator==(const Entry& entry, uint32 serviceId);
 
 public:
-    bool Register(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter, const char8* name = NULL);
-    bool UnRegister(uint32 serviceId);
+    bool Register(ServiceID serviceId, ServiceCreator creator, ServiceDeleter deleter, const char8* name = NULL);
+    bool UnRegister(ServiceID serviceId);
     void UnregisterAll();
-    bool IsRegistered(uint32 serviceId) const;
+    bool IsRegistered(ServiceID serviceId) const;
 
-    IChannelListener* Create(uint32 serviceId, void* context) const;
-    bool Delete(uint32 serviceId, IChannelListener* obj, void* context) const;
+    IChannelListener* Create(ServiceID serviceId, void* context) const;
+    bool Delete(ServiceID serviceId, IChannelListener* obj, void* context) const;
 
-    const char8* Name(uint32 serviceId) const;
+    const char8* Name(ServiceID serviceId) const;
 
 private:
-    const Entry* FindEntry(uint32 serviceId) const;
+    const Entry* FindEntry(ServiceID serviceId) const;
 
 private:
     Vector<Entry> registrar;
 };
 
 //////////////////////////////////////////////////////////////////////////
-inline ServiceRegistrar::Entry::Entry(uint32 id, const char8* serviceName, ServiceCreator creatorFunc, ServiceDeleter deleterFunc)
+inline ServiceRegistrar::Entry::Entry(ServiceID id, const char8* serviceName, ServiceCreator creatorFunc, ServiceDeleter deleterFunc)
     : serviceId(id)
     , creator(creatorFunc)
     , deleter(deleterFunc)
@@ -61,12 +62,12 @@ inline ServiceRegistrar::Entry::Entry(uint32 id, const char8* serviceName, Servi
 #endif
 }
 
-inline bool ServiceRegistrar::IsRegistered(uint32 serviceId) const
+inline bool ServiceRegistrar::IsRegistered(ServiceID serviceId) const
 {
     return std::find(registrar.begin(), registrar.end(), serviceId) != registrar.end();
 }
 
-inline bool operator==(const ServiceRegistrar::Entry& entry, uint32 serviceId)
+inline bool operator==(const ServiceRegistrar::Entry& entry, ServiceID serviceId)
 {
     return entry.serviceId == serviceId;
 }

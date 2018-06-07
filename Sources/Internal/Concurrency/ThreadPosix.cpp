@@ -12,8 +12,7 @@
 #if defined(__DAVAENGINE_ANDROID__)
 #include <sys/syscall.h>
 #include <unistd.h>
-#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#include "Engine/Android/JNIBridge.h"
+#include "Engine/PlatformApiAndroid.h"
 #elif defined(__DAVAENGINE_APPLE__)
 #import <Foundation/NSAutoreleasePool.h>
 #include <mach/thread_policy.h>

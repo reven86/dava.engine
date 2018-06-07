@@ -1,13 +1,11 @@
-#ifndef __DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__
-#define __DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
-#include "Render/RenderBase.h"
-#include "Render/2D/Sprite.h"
-
-#include "UI/UIControlBackground.h"
 #include "Functional/Function.h"
+#include "Render/2D/Sprite.h"
+#include "Render/2D/Systems/BatchDescriptor2D.h"
+#include "Render/RenderBase.h"
 
 namespace DAVA
 {
@@ -119,29 +117,7 @@ private:
 
 class RenderSystem2D : public Singleton<RenderSystem2D>
 {
-    static const uint32 MAX_TEXTURE_STREAMS_COUNT = 4;
-
 public:
-    struct BatchDescriptor
-    {
-        Color singleColor = Color::White;
-        uint32 vertexCount = 0;
-        uint32 indexCount = 0;
-        const float32* vertexPointer = nullptr;
-        uint32 vertexStride = 0;
-        Array<const float32*, MAX_TEXTURE_STREAMS_COUNT> texCoordPointer = {};
-        uint32 texCoordStride = 0;
-        uint32 texCoordCount = 1;
-        const uint32* colorPointer = nullptr;
-        uint32 colorStride = 0;
-        const uint16* indexPointer = nullptr;
-        NMaterial* material = nullptr;
-        rhi::HTextureSet textureSetHandle;
-        rhi::HSamplerState samplerStateHandle;
-        rhi::PrimitiveType primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
-        Matrix4* worldMatrix = nullptr;
-    };
-
     struct RenderTargetPassDescriptor
     {
         rhi::HTexture colorAttachment;
@@ -182,11 +158,11 @@ public:
 
     void Init();
 
-    void Draw(Sprite* sprite, Sprite::DrawState* drawState, const Color& color);
-    void DrawStretched(Sprite* sprite, Sprite::DrawState* drawState, Vector2 streatchCap, UIControlBackground::eDrawType type, const UIGeometricData& gd, StretchDrawData** pStreachData, const Color& color);
-    void DrawTiled(Sprite* sprite, Sprite::DrawState* drawState, const Vector2& streatchCap, const UIGeometricData& gd, TiledDrawData** pTiledData, const Color& color);
+    void Draw(Sprite* sprite, SpriteDrawState* drawState, const Color& color);
+    void DrawStretched(Sprite* sprite, SpriteDrawState* drawState, Vector2 streatchCap, int32 type, const UIGeometricData& gd, StretchDrawData** pStreachData, const Color& color);
+    void DrawTiled(Sprite* sprite, SpriteDrawState* drawState, const Vector2& streatchCap, const UIGeometricData& gd, TiledDrawData** pTiledData, const Color& color);
     void DrawTiledMultylayer(Sprite* mask, Sprite* detail, Sprite* gradient, Sprite* contour,
-                             Sprite::DrawState* state, const Vector2& stretchCapVector, const UIGeometricData& gd, TiledMultilayerData** pTileData, const Color& color);
+                             SpriteDrawState* state, const Vector2& stretchCapVector, const UIGeometricData& gd, TiledMultilayerData** pTileData, const Color& color);
 
     void SetViewMatrix(const Matrix4& viewMatrix);
 
@@ -198,7 +174,7 @@ public:
      */
     void HardResetBatchingBuffers(uint32 verticesCount, uint32 indicesCount, uint8 buffersCount);
 
-    void PushBatch(const BatchDescriptor& batchDesc);
+    void PushBatch(const BatchDescriptor2D& batchDesc);
 
     /*
      *  note - it will flush currently batched!
@@ -337,7 +313,7 @@ public:
 
 private:
     void UpdateVirtualToPhysicalMatrix(bool);
-    bool IsPreparedSpriteOnScreen(Sprite::DrawState* drawState);
+    bool IsPreparedSpriteOnScreen(SpriteDrawState* drawState);
     void Setup2DMatrices();
 
     void AddPacket(rhi::Packet& packet);
@@ -379,7 +355,7 @@ private:
     int32 spriteVertexCount = 0;
     int32 spriteIndexCount = 0;
 
-    Sprite::DrawState defaultSpriteDrawState;
+    SpriteDrawState defaultSpriteDrawState;
 
     bool spriteClipping = true;
 
@@ -394,11 +370,10 @@ private:
     Rect lastClip;
     Matrix4 lastCustomWorldMatrix;
     bool lastUsedCustomWorldMatrix = false;
-    uint32 lastCustomMatrixSematic = 0;
     float32 globalTime = 0.f;
 
-    uint32 VBO_STRIDE[MAX_TEXTURE_STREAMS_COUNT + 1];
-    uint32 vertexLayouts2d[MAX_TEXTURE_STREAMS_COUNT + 1];
+    uint32 VBO_STRIDE[BatchDescriptor2D::MAX_TEXTURE_STREAMS_COUNT + 1];
+    uint32 vertexLayouts2d[BatchDescriptor2D::MAX_TEXTURE_STREAMS_COUNT + 1];
 
     // Batching errors handling
     enum ErrorFlag
@@ -449,5 +424,3 @@ inline Vector2 RenderSystem2D::GetAlignedVertex(const Vector2& vertex)
 }
 
 } // ns
-
-#endif /* __DAVAENGINE_RENDER_RENDERSYSTEM_2D_H__ */

@@ -39,10 +39,10 @@ void TextLayout::Reset(const WideString& _input)
     Seek(0);
 }
 
-void TextLayout::Reset(const WideString& input, const Font& font)
+void TextLayout::Reset(const WideString& input, const Font& font, float32 size)
 {
     Reset(input);
-    CalculateCharSizes(font);
+    CalculateCharSizes(font, size);
 }
 
 void TextLayout::SetCharSizes(const Vector<float32>& charSizes)
@@ -51,11 +51,11 @@ void TextLayout::SetCharSizes(const Vector<float32>& charSizes)
     PrepareCharSizes();
 }
 
-void TextLayout::CalculateCharSizes(const Font& font)
+void TextLayout::CalculateCharSizes(const Font& font, float32 size)
 {
     // Update characters sizes from font
     characterSizes.clear();
-    font.GetStringMetrics(preparedText, &characterSizes);
+    font.GetStringMetrics(size, preparedText, &characterSizes);
     PrepareCharSizes();
 }
 

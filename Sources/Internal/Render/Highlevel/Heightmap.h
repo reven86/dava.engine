@@ -50,12 +50,6 @@ protected:
 
     static String FILE_EXTENSION;
 
-public:
-    INTROSPECTION_EXTEND(Heightmap, BaseObject,
-                         MEMBER(size, "Size", I_VIEW)
-                         MEMBER(tileSize, "Tile Size", I_VIEW)
-                         );
-
     DAVA_VIRTUAL_REFLECTION(Heightmap, BaseObject);
 };
 inline uint16 Heightmap::GetHeightClamp(uint16 x, uint16 y) const

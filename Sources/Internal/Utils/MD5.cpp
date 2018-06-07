@@ -140,6 +140,19 @@ void MD5::HashToChar(const uint8* hash, uint32 hashSize, char8* buffer, uint32 b
     buffer[bufferSize - 1] = 0;
 }
 
+String MD5::HashToString(const MD5Digest& digest)
+{
+    return HashToString(digest.digest.data(), static_cast<uint32>(digest.digest.size()));
+}
+
+String MD5::HashToString(const uint8* hash, uint32 hashSize)
+{
+    const uint32 bufferSize = hashSize * 2 + 1;
+    Vector<char8> buffer(bufferSize);
+    HashToChar(hash, hashSize, buffer.data(), bufferSize);
+    return String(buffer.data());
+}
+
 void MD5::CharToHash(const char8* buffer, MD5Digest& digest)
 {
     const int32 bufferSize = Min(static_cast<int32>(strlen(buffer)), MD5Digest::DIGEST_SIZE * 2);
@@ -192,7 +205,7 @@ char8 MD5::GetCharacterFromNumber(uint8 number)
     return (number + 'A' - 10);
 }
 
-static void Transform(uint32* buf, uint32* in);
+static void TransformMD5(uint32* buf, uint32* in);
 
 static unsigned char PADDING[64] = {
     0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -277,7 +290,7 @@ void MD5::Update(const uint8* inBuf, uint32 inLen)
                 ((static_cast<uint32>(this->in[ii + 2])) << 16) |
                 ((static_cast<uint32>(this->in[ii + 1])) << 8) |
                 (static_cast<uint32>(this->in[ii]));
-            Transform(this->buf, in);
+            TransformMD5(this->buf, in);
             mdi = 0;
         }
     }
@@ -307,7 +320,7 @@ void MD5::Final()
         ((static_cast<uint32>(this->in[ii + 2]) << 16)) |
         ((static_cast<uint32>(this->in[ii + 1]) << 8)) |
         (static_cast<uint32>(this->in[ii]));
-    Transform(this->buf, in);
+    TransformMD5(this->buf, in);
 
     /* store buffer in digest */
     for (i = 0, ii = 0; i < 4; i++, ii += 4)
@@ -325,7 +338,7 @@ void MD5::Final()
 /*
 	Basic MD5 step. Transform buf based on in.
  */
-static void Transform(uint32* buf, uint32* in)
+static void TransformMD5(uint32* buf, uint32* in)
 {
     uint32 a = buf[0], b = buf[1], c = buf[2], d = buf[3];
 

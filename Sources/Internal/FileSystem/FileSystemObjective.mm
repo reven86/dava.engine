@@ -18,7 +18,12 @@ const FilePath FileSystem::GetUserDocumentsPath()
 
 const FilePath FileSystem::GetPublicDocumentsPath()
 {
+#if defined(__DAVAENGINE_MACOS__)
     return "/Users/Shared/";
+#else // iOS
+    // FIXME for now just use user documents path
+    return GetUserDocumentsPath();
+#endif
 }
 
 const FilePath FileSystem::GetHomePath()

@@ -64,7 +64,7 @@ public:
 		to the impulse direction for the period of time.
 	 \param[in] impulseSpeed impulse value.
 	 */
-    void Impulse(float impulseSpeed);
+    void Impulse(float32 impulseSpeed);
 
     /**
 	 \brief Returns scroll position for the current scroll helper states.
@@ -84,7 +84,7 @@ public:
 	 \param[in] isPositionLocked send true if position is changing now.
 	 \returns new scroll position.
 	 */
-    float GetPosition(float positionDelta, float timeDelta, bool isPositionLocked);
+    float GetPosition(float32 positionDelta, float32 timeDelta, bool isPositionLocked);
 
     /**
 	 \brief Sets how fast scroll speed will be reduced
@@ -93,14 +93,21 @@ public:
 		Used 0.25 by default.
 	 \param[in] newValue value of the slow down time in seconds.
 	 */
-    void SetSlowDownTime(float newValue);
+    void SetSlowDownTime(float32 newValue);
+
+    /** Return current slowdown time. */
+    float32 GetSlowDownTime() const;
+
     /**
 	 \brief Sets the scrolling element behavior at the scroll borders.
 		To remove movement effect after borders are reached set this value to 0.
 		0.5 by default.
 	 \param[in] newValue value of border movement length.
 	 */
-    void SetBorderMoveModifer(float newValue);
+    void SetBorderMoveModifer(float32 newValue);
+
+    /** Return current border move modifier. */
+    float32 GetBorderMoveModifer() const;
 
 private:
     float32 position;

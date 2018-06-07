@@ -1,15 +1,14 @@
 #pragma once
 
-#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
 
+#include "Base/BaseTypes.h"
+#include "Debug/DVAssert.h"
 #include "Engine/EngineTypes.h"
 #include "Engine/Private/Qt/IWindowDelegate.h"
 #include "Engine/Qt/IClientDelegate.h"
-#include "Render/RHI/rhi_Public.h"
 #include "Functional/Signal.h"
-#include "Debug/DVAssert.h"
-#include "Base/BaseTypes.h"
+#include "Render/RHI/rhi_Public.h"
 
 namespace DAVA
 {
@@ -26,6 +25,7 @@ public:
     virtual void ReleaseContext() = 0;
 
     void SetClientDelegate(IClientDelegate* clientDelegate);
+    void SetFrameBlocked(bool isBlocked);
 
     Signal<uint32, uint32> resized;
 
@@ -42,6 +42,7 @@ protected:
     IClientDelegate* clientDelegate = nullptr;
 
     bool isClosing = false;
+    bool isFrameBlocked = false;
 };
 
 template <typename TBase>
@@ -84,4 +85,3 @@ protected:
 
 } // namespace DAVA
 #endif // __DAVAENGINE_QT__
-#endif // __DAVAENGINE_COREV2__

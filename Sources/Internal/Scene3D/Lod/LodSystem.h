@@ -22,6 +22,7 @@ public:
     void RemoveEntity(Entity* entity) override;
     void RegisterComponent(Entity* entity, Component* component) override;
     void UnregisterComponent(Entity* entity, Component* component) override;
+    void PrepareForRemove() override;
     void ImmediateEvent(Component* component, uint32 event) override;
 
     void SetForceLodLayer(LodComponent* forComponent, int32 layer);

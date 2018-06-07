@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_GLOBAL_ENUM_H__
-#define __DAVAENGINE_GLOBAL_ENUM_H__
+#pragma once
 
 #include "Base/EnumMap.h"
 
@@ -39,8 +38,8 @@ void GlobalEnumMap<T>::Register(const int e, const char* s)
 }
 
 #define ENUM_DECLARE(eType) template <> void GlobalEnumMap<eType>::RegisterAll()
-#define ENUM_ADD(eValue) Register(eValue, #eValue)
-#define ENUM_ADD_DESCR(eValue, eDescr) Register(eValue, eDescr)
+#define ENUM_ADD(eValue) Register(static_cast<int>(eValue), #eValue)
+#define ENUM_ADD_DESCR(eValue, eDescr) Register(static_cast<int>(eValue), eDescr)
 
 // Define:
 //	ENUM_DECLARE(AnyEnumType)
@@ -51,5 +50,3 @@ void GlobalEnumMap<T>::Register(const int e, const char* s)
 //
 // Usage:
 //  GlobalEnumMap::Instance<AnyEnumType>();
-
-#endif // __DAVAENGINE_GLOBAL_ENUM_H__

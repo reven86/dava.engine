@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_ROTATION_CONTROLLER_SYSTEM_H__
-#define __DAVAENGINE_ROTATION_CONTROLLER_SYSTEM_H__
+#pragma once
 
 #include "Entity/SceneSystem.h"
 #include "Math/Vector.h"
@@ -8,7 +7,6 @@ namespace DAVA
 {
 class Camera;
 class UIEvent;
-class InputCallback;
 class RotationControllerSystem : public SceneSystem
 {
     static const float32 maxViewAngle;
@@ -19,14 +17,11 @@ public:
 
     void AddEntity(Entity* entity) override;
     void RemoveEntity(Entity* entity) override;
+    void PrepareForRemove() override;
 
     void Process(float32 timeElapsed) override;
 
-#if defined(__DAVAENGINE_COREV2__)
     bool Input(UIEvent* event) override;
-#else
-    void Input(UIEvent* event) override;
-#endif
 
     float32 GetRotationSpeeed() const;
     void SetRotationSpeeed(float32 rotateSpeed);
@@ -50,12 +45,6 @@ private:
     float32 curViewAngleY;
 
     float32 rotationSpeed;
-
-#if defined(__DAVAENGINE_COREV2__)
-//uint32 inputHandlerToken = 0;
-#else
-    InputCallback* inputCallback = nullptr;
-#endif
 
     Vector<Entity*> entities;
 
@@ -81,5 +70,3 @@ inline void RotationControllerSystem::SetRotationPoint(const Vector3& point)
     rotationPoint = point;
 }
 };
-
-#endif //__DAVAENGINE_WASD_CONTROLLER_SYSTEM_H__

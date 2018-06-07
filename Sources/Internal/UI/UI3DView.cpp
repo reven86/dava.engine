@@ -1,7 +1,8 @@
 #include "UI/UI3DView.h"
+#include "Engine/Engine.h"
 #include "Scene3D/Scene.h"
-#include "Core/Core.h"
 #include "UI/UIControlSystem.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/RenderHelper.h"
 #include "Render/Highlevel/RenderPass.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -11,17 +12,17 @@
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 #include "Reflection/ReflectionRegistrator.h"
 #include "UI/Update/UIUpdateComponent.h"
-#include "UI/Render/UISceneComponent.h"
+#include "UI/Scene3D/UISceneComponent.h"
 
 namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(UI3DView)
 {
-    ReflectionRegistrator<UI3DView>::Begin()
+    ReflectionRegistrator<UI3DView>::Begin()[M::DisplayName("3D View")]
     .ConstructorByPointer()
     .DestructorByPointer([](UI3DView* o) { o->Release(); })
-    .Field("drawToFrameBuffer", &UI3DView::GetDrawToFrameBuffer, &UI3DView::SetDrawToFrameBuffer)
-    .Field("frameBufferScaleFactor", &UI3DView::GetFrameBufferScaleFactor, &UI3DView::SetFrameBufferScaleFactor)
+    .Field("drawToFrameBuffer", &UI3DView::GetDrawToFrameBuffer, &UI3DView::SetDrawToFrameBuffer)[M::DisplayName("Draw To Frame Buffer")]
+    .Field("frameBufferScaleFactor", &UI3DView::GetFrameBufferScaleFactor, &UI3DView::SetFrameBufferScaleFactor)[M::DisplayName("Frame Buffer Scale Factor")]
     .End();
 }
 
@@ -71,7 +72,9 @@ void UI3DView::AddControl(UIControl* control)
 void UI3DView::Update(float32 timeElapsed)
 {
     if (scene)
+    {
         scene->Update(timeElapsed);
+    }
 }
 
 void UI3DView::Draw(const UIGeometricData& geometricData)
@@ -86,7 +89,7 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
     Rect viewportRect = geometricData.GetUnrotatedRect();
 
     if (currentTarget.transformVirtualToPhysical)
-        viewportRc = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(viewportRect);
+        viewportRc = GetEngineContext()->uiControlSystem->vcs->ConvertVirtualToPhysical(viewportRect);
     else
         viewportRc = viewportRect;
 
@@ -120,7 +123,7 @@ void UI3DView::Draw(const UIGeometricData& geometricData)
     {
         if (currentTarget.transformVirtualToPhysical)
         {
-            viewportRc += UIControlSystem::Instance()->vcs->GetPhysicalDrawOffset();
+            viewportRc += GetEngineContext()->uiControlSystem->vcs->GetPhysicalDrawOffset();
         }
 
         priority += basePriority;
@@ -229,8 +232,13 @@ void UI3DView::SetDrawToFrameBuffer(bool enable)
 {
     drawToFrameBuffer = enable;
 
-    if (!enable)
+    if (enable)
     {
+        RemoveComponent<UISceneComponent>();
+    }
+    else
+    {
+        GetOrCreateComponent<UISceneComponent>();
         SafeRelease(frameBuffer);
     }
 }
@@ -244,7 +252,7 @@ void UI3DView::PrepareFrameBuffer()
 {
     DVASSERT(scene);
 
-    fbRenderSize = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(GetSize()) * fbScaleFactor;
+    fbRenderSize = GetEngineContext()->uiControlSystem->vcs->ConvertVirtualToPhysical(GetSize()) * fbScaleFactor;
 
     if (frameBuffer == nullptr || frameBuffer->GetWidth() < fbRenderSize.dx || frameBuffer->GetHeight() < fbRenderSize.dy)
     {

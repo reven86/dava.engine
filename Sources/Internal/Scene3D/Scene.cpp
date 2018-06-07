@@ -1,60 +1,79 @@
-
 #include "Scene3D/Scene.h"
-#include "Render/Texture.h"
-#include "Render/3D/StaticMesh.h"
-#include "Render/Image/Image.h"
-#include "Render/Highlevel/RenderSystem.h"
-#include "Render/RenderOptions.h"
-#include "Render/MipmapReplacer.h"
 
-#include "Time/SystemTimer.h"
-#include "FileSystem/FileSystem.h"
-
-#include "Scene3D/SceneFileV2.h"
-#include "Scene3D/DataNode.h"
-#include "Render/Highlevel/Light.h"
-#include "Render/Highlevel/Landscape.h"
-#include "Render/Highlevel/RenderSystem.h"
-
-#include "Entity/SceneSystem.h"
-#include "Scene3D/Systems/TransformSystem.h"
-#include "Scene3D/Systems/RenderUpdateSystem.h"
-#include "Scene3D/Lod/LodComponent.h"
-#include "Scene3D/Lod/LodSystem.h"
-#include "Scene3D/Systems/DebugRenderSystem.h"
-#include "Scene3D/Systems/EventSystem.h"
-#include "Scene3D/Systems/ParticleEffectSystem.h"
-#include "Scene3D/Systems/UpdateSystem.h"
-#include "Scene3D/Systems/LightUpdateSystem.h"
-#include "Scene3D/Systems/SwitchSystem.h"
-#include "Scene3D/Systems/ActionUpdateSystem.h"
-#include "Scene3D/Systems/WindSystem.h"
-#include "Scene3D/Systems/WaveSystem.h"
-#include "Scene3D/Systems/SkeletonSystem.h"
-#include "Scene3D/Systems/AnimationSystem.h"
-#include "Scene3D/Systems/LandscapeSystem.h"
-#include "Scene3D/Systems/SoundUpdateSystem.h"
-#include "Scene3D/Systems/ParticleEffectDebugDrawSystem.h"
-
-#include "Scene3D/Components/SingleComponents/TransformSingleComponent.h"
-
+#include "Concurrency/Thread.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
-#include "Concurrency/Thread.h"
-
-#include "Sound/SoundSystem.h"
-
-#include "Scene3D/Systems/SpeedTreeUpdateSystem.h"
-
-#include "Scene3D/Systems/StaticOcclusionSystem.h"
-#include "Scene3D/Systems/FoliageSystem.h"
-
-#include "Scene3D/Components/ComponentHelpers.h"
-#include "Scene3D/Components/TransformComponent.h"
-#include "UI/UIEvent.h"
+#include "Entity/ComponentUtils.h"
+#include "FileSystem/FileSystem.h"
+#include "Render/3D/StaticMesh.h"
+#include "Render/Highlevel/Landscape.h"
+#include "Render/Highlevel/Light.h"
 #include "Render/Highlevel/RenderPass.h"
-
+#include "Render/Highlevel/RenderSystem.h"
+#include "Render/Highlevel/RenderSystem.h"
+#include "Render/Image/Image.h"
+#include "Render/MipmapReplacer.h"
+#include "Render/RenderOptions.h"
 #include "Render/Renderer.h"
+#include "Render/Texture.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/SingleComponents/MotionSingleComponent.h"
+#include "Scene3D/Components/SingleComponents/TransformSingleComponent.h"
+#include "Scene3D/Components/TransformComponent.h"
+#include "Scene3D/Components/UpdatableComponent.h"
+#include "Scene3D/Components/DebugRenderComponent.h"
+#include "Scene3D/Components/StaticOcclusionComponent.h"
+#include "Scene3D/Components/AnimationComponent.h"
+#include "Scene3D/Components/MotionComponent.h"
+#include "Scene3D/Components/SlotComponent.h"
+#include "Scene3D/Components/SwitchComponent.h"
+#include "Scene3D/Components/SoundComponent.h"
+#include "Scene3D/Components/RenderComponent.h"
+#include "Scene3D/Components/LightComponent.h"
+#include "Scene3D/Components/SpeedTreeComponent.h"
+#include "Scene3D/Components/WindComponent.h"
+#include "Scene3D/Components/WaveComponent.h"
+#include "Scene3D/DataNode.h"
+#include "Scene3D/Lod/LodComponent.h"
+#include "Scene3D/Lod/LodSystem.h"
+#include "Scene3D/SceneFileV2.h"
+#include "Scene3D/Systems/ActionUpdateSystem.h"
+#include "Scene3D/Systems/AnimationSystem.h"
+#include "Scene3D/Systems/DebugRenderSystem.h"
+#include "Scene3D/Systems/EventSystem.h"
+#include "Scene3D/Systems/FoliageSystem.h"
+#include "Scene3D/Systems/GeoDecalSystem.h"
+#include "Scene3D/Systems/LandscapeSystem.h"
+#include "Scene3D/Systems/LightUpdateSystem.h"
+#include "Scene3D/Systems/MotionSystem.h"
+#include "Scene3D/Systems/ParticleEffectDebugDrawSystem.h"
+#include "Scene3D/Systems/ParticleEffectSystem.h"
+#include "Scene3D/Systems/RenderUpdateSystem.h"
+#include "Scene3D/Systems/SkeletonSystem.h"
+#include "Scene3D/Systems/SlotSystem.h"
+#include "Scene3D/Systems/SoundUpdateSystem.h"
+#include "Scene3D/Systems/SpeedTreeUpdateSystem.h"
+#include "Scene3D/Systems/StaticOcclusionSystem.h"
+#include "Scene3D/Systems/SwitchSystem.h"
+#include "Scene3D/Systems/TransformSystem.h"
+#include "Scene3D/Systems/UpdateSystem.h"
+#include "Scene3D/Systems/WaveSystem.h"
+#include "Scene3D/Systems/WindSystem.h"
+#include "Sound/SoundSystem.h"
+#include "Time/SystemTimer.h"
+#include "UI/UIEvent.h"
+#include "Utils/Utils.h"
+
+#if defined(__DAVAENGINE_PHYSICS_DEBUG_DRAW_ENABLED__)
+#include "PhysicsDebug/PhysicsDebugDrawSystem.h"
+#endif
+
+#if defined(__DAVAENGINE_PHYSICS_ENABLED__)
+#include <Physics/WASDPhysicsControllerSystem.h>
+#include <Physics/PhysicsSystem.h>
+#include <Physics/CollisionSingleComponent.h>
+#endif
 
 #include <functional>
 
@@ -81,8 +100,8 @@ void EntityCache::Preload(const FilePath& path)
             Entity* child = srcRootEntity->GetChild(0);
             if (1 == child->GetComponentCount())
             {
-                TransformComponent* tr = static_cast<TransformComponent*>(srcRootEntity->GetComponent(Component::TRANSFORM_COMPONENT));
-                if (nullptr != tr && tr->GetLocalTransform() == Matrix4::IDENTITY)
+                TransformComponent* tr = srcRootEntity->GetComponent<TransformComponent>();
+                if (nullptr != tr && tr->GetLocalMatrix() == Matrix4::IDENTITY)
                 {
                     srcRootEntity = child;
                 }
@@ -162,24 +181,14 @@ void EntityCache::ClearAll()
     cachedEntities.clear();
 }
 
+DAVA_VIRTUAL_REFLECTION_IMPL(Scene)
+{
+    ReflectionRegistrator<Scene>::Begin()
+    .End();
+}
+
 Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     : Entity()
-    , transformSystem(0)
-    , renderUpdateSystem(0)
-    , lodSystem(0)
-    , debugRenderSystem(0)
-    , particleEffectSystem(0)
-    , updatableSystem(0)
-    , lightUpdateSystem(0)
-    , switchSystem(0)
-    , soundSystem(0)
-    , actionSystem(0)
-    , staticOcclusionSystem(0)
-    , foliageSystem(0)
-    , windSystem(0)
-    , animationSystem(0)
-    , staticOcclusionDebugDrawSystem(0)
-    , particleEffectDebugDrawSystem(0)
     , systemsMask(_systemsMask)
     , maxEntityIDCounter(0)
     , sceneGlobalMaterial(0)
@@ -242,19 +251,56 @@ void Scene::CreateSystems()
     if (SCENE_SYSTEM_STATIC_OCCLUSION_FLAG & systemsMask)
     {
         staticOcclusionSystem = new StaticOcclusionSystem(this);
-        AddSystem(staticOcclusionSystem, MAKE_COMPONENT_MASK(Component::STATIC_OCCLUSION_DATA_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(staticOcclusionSystem, ComponentUtils::MakeMask<StaticOcclusionDataComponent>(), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if (SCENE_SYSTEM_ANIMATION_FLAG & systemsMask)
     {
         animationSystem = new AnimationSystem(this);
-        AddSystem(animationSystem, MAKE_COMPONENT_MASK(Component::ANIMATION_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(animationSystem, ComponentUtils::MakeMask<AnimationComponent>(), SCENE_SYSTEM_REQUIRE_PROCESS);
+    }
+
+    if (SCENE_SYSTEM_MOTION_FLAG & systemsMask)
+    {
+        motionSingleComponent = new MotionSingleComponent();
+
+        motionSystem = new MotionSystem(this);
+        AddSystem(motionSystem, ComponentUtils::MakeMask<SkeletonComponent>() | ComponentUtils::MakeMask<MotionComponent>(), SCENE_SYSTEM_REQUIRE_PROCESS);
+    }
+
+#if defined(__DAVAENGINE_PHYSICS_ENABLED__)
+    if (SCENE_SYSTEM_PHYSICS_FLAG & systemsMask)
+    {
+        collisionSingleComponent = new CollisionSingleComponent;
+
+        physicsSystem = new PhysicsSystem(this);
+        AddSystem(physicsSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS);
+
+        WASDPhysicsControllerSystem* wasdPhysicsSystem = new WASDPhysicsControllerSystem(this);
+        AddSystem(wasdPhysicsSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, physicsSystem, physicsSystem);
+    }
+#endif
+
+#if defined(__DAVAENGINE_PHYSICS_DEBUG_DRAW_ENABLED__)
+    AddSystem(new PhysicsDebugDrawSystem(this), 0, SCENE_SYSTEM_REQUIRE_PROCESS);
+#endif
+
+    if (SCENE_SYSTEM_SKELETON_FLAG & systemsMask)
+    {
+        skeletonSystem = new SkeletonSystem(this);
+        AddSystem(skeletonSystem, ComponentUtils::MakeMask<SkeletonComponent>(), SCENE_SYSTEM_REQUIRE_PROCESS);
+    }
+
+    if (SCENE_SYSTEM_SLOT_FLAG & systemsMask)
+    {
+        slotSystem = new SlotSystem(this);
+        AddSystem(slotSystem, ComponentUtils::MakeMask<SlotComponent>(), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if (SCENE_SYSTEM_TRANSFORM_FLAG & systemsMask)
     {
         transformSystem = new TransformSystem(this);
-        AddSystem(transformSystem, MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(transformSystem, ComponentUtils::MakeMask<TransformComponent>(), SCENE_SYSTEM_REQUIRE_PROCESS);
 
         transformSingleComponent = new TransformSingleComponent;
     }
@@ -262,98 +308,98 @@ void Scene::CreateSystems()
     if (SCENE_SYSTEM_LOD_FLAG & systemsMask)
     {
         lodSystem = new LodSystem(this);
-        AddSystem(lodSystem, MAKE_COMPONENT_MASK(Component::LOD_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(lodSystem, ComponentUtils::MakeMask<LodComponent>(), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if (SCENE_SYSTEM_SWITCH_FLAG & systemsMask)
     {
         switchSystem = new SwitchSystem(this);
-        AddSystem(switchSystem, MAKE_COMPONENT_MASK(Component::SWITCH_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(switchSystem, ComponentUtils::MakeMask<SwitchComponent>(), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if (SCENE_SYSTEM_PARTICLE_EFFECT_FLAG & systemsMask)
     {
         particleEffectSystem = new ParticleEffectSystem(this);
         particleEffectSystem->SetGlobalMaterial(GetGlobalMaterial());
-        AddSystem(particleEffectSystem, MAKE_COMPONENT_MASK(Component::PARTICLE_EFFECT_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(particleEffectSystem, ComponentUtils::MakeMask<ParticleEffectComponent>(), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if (SCENE_SYSTEM_SOUND_UPDATE_FLAG & systemsMask)
     {
-        soundSystem = new SoundUpdateSystem(this);
-        AddSystem(soundSystem, MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT) | MAKE_COMPONENT_MASK(Component::SOUND_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        //soundSystem = new SoundUpdateSystem(this);
+        //AddSystem(soundSystem, ComponentUtils::MakeMask<TransformComponent>() | ComponentUtils::MakeMask<SoundComponent>(), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if (SCENE_SYSTEM_RENDER_UPDATE_FLAG & systemsMask)
     {
         renderUpdateSystem = new RenderUpdateSystem(this);
-        AddSystem(renderUpdateSystem, MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT) | MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(renderUpdateSystem, ComponentUtils::MakeMask<TransformComponent>() | ComponentUtils::MakeMask<RenderComponent>(), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if (SCENE_SYSTEM_UPDATEBLE_FLAG & systemsMask)
     {
         updatableSystem = new UpdateSystem(this);
-        AddSystem(updatableSystem, MAKE_COMPONENT_MASK(Component::UPDATABLE_COMPONENT));
+        AddSystem(updatableSystem, ComponentUtils::MakeMask<UpdatableComponent>());
     }
 
     if (SCENE_SYSTEM_LIGHT_UPDATE_FLAG & systemsMask)
     {
         lightUpdateSystem = new LightUpdateSystem(this);
-        AddSystem(lightUpdateSystem, MAKE_COMPONENT_MASK(Component::TRANSFORM_COMPONENT) | MAKE_COMPONENT_MASK(Component::LIGHT_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(lightUpdateSystem, ComponentUtils::MakeMask<TransformComponent>() | ComponentUtils::MakeMask<LightComponent>(), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if (SCENE_SYSTEM_ACTION_UPDATE_FLAG & systemsMask)
     {
         actionSystem = new ActionUpdateSystem(this);
-        AddSystem(actionSystem, MAKE_COMPONENT_MASK(Component::ACTION_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(actionSystem, ComponentUtils::MakeMask<ActionComponent>(), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if (SCENE_SYSTEM_DEBUG_RENDER_FLAG & systemsMask)
     {
         debugRenderSystem = new DebugRenderSystem(this);
-        AddSystem(debugRenderSystem, MAKE_COMPONENT_MASK(Component::DEBUG_RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(debugRenderSystem, ComponentUtils::MakeMask<DebugRenderComponent>(), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if (SCENE_SYSTEM_LANDSCAPE_FLAG & systemsMask)
     {
         landscapeSystem = new LandscapeSystem(this);
-        AddSystem(landscapeSystem, MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(landscapeSystem, ComponentUtils::MakeMask<RenderComponent>(), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if (SCENE_SYSTEM_FOLIAGE_FLAG & systemsMask)
     {
         foliageSystem = new FoliageSystem(this);
-        AddSystem(foliageSystem, MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(foliageSystem, ComponentUtils::MakeMask<RenderComponent>(), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if (SCENE_SYSTEM_SPEEDTREE_UPDATE_FLAG & systemsMask)
     {
         speedTreeUpdateSystem = new SpeedTreeUpdateSystem(this);
-        AddSystem(speedTreeUpdateSystem, MAKE_COMPONENT_MASK(Component::SPEEDTREE_COMPONENT) | MAKE_COMPONENT_MASK(Component::RENDER_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(speedTreeUpdateSystem, ComponentUtils::MakeMask<SpeedTreeComponent>() | ComponentUtils::MakeMask<RenderComponent>(), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if (SCENE_SYSTEM_WIND_UPDATE_FLAG & systemsMask)
     {
         windSystem = new WindSystem(this);
-        AddSystem(windSystem, MAKE_COMPONENT_MASK(Component::WIND_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(windSystem, ComponentUtils::MakeMask<WindComponent>(), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if (SCENE_SYSTEM_WAVE_UPDATE_FLAG & systemsMask)
     {
         waveSystem = new WaveSystem(this);
-        AddSystem(waveSystem, MAKE_COMPONENT_MASK(Component::WAVE_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        AddSystem(waveSystem, ComponentUtils::MakeMask<WaveComponent>(), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
-    if (SCENE_SYSTEM_SKELETON_UPDATE_FLAG & systemsMask)
+    if (SCENE_SYSTEM_GEO_DECAL_FLAG & systemsMask)
     {
-        skeletonSystem = new SkeletonSystem(this);
-        AddSystem(skeletonSystem, MAKE_COMPONENT_MASK(Component::SKELETON_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+        geoDecalSystem = new GeoDecalSystem(this);
+        AddSystem(geoDecalSystem, ComponentUtils::MakeMask<GeoDecalComponent>(), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
 
     if (DAVA::Renderer::GetOptions()->IsOptionEnabled(DAVA::RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && !staticOcclusionDebugDrawSystem)
     {
         staticOcclusionDebugDrawSystem = new DAVA::StaticOcclusionDebugDrawSystem(this);
-        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(DAVA::Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
+        AddSystem(staticOcclusionDebugDrawSystem, ComponentUtils::MakeMask<StaticOcclusionComponent>(), 0, renderUpdateSystem);
     }
 
     if (DAVA::Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_DRAW_PARTICLES) && particleEffectDebugDrawSystem == nullptr)
@@ -367,47 +413,66 @@ Scene::~Scene()
 {
     Renderer::GetOptions()->RemoveObserver(this);
 
-    for (Vector<Camera*>::iterator t = cameras.begin(); t != cameras.end(); ++t)
-    {
-        Camera* obj = *t;
-        obj->Release();
-    }
-    cameras.clear();
+    transformSystem = nullptr;
+    renderUpdateSystem = nullptr;
+    lodSystem = nullptr;
+    debugRenderSystem = nullptr;
+    particleEffectSystem = nullptr;
+    updatableSystem = nullptr;
+    lightUpdateSystem = nullptr;
+    switchSystem = nullptr;
+    soundSystem = nullptr;
+    actionSystem = nullptr;
+    staticOcclusionSystem = nullptr;
+    speedTreeUpdateSystem = nullptr;
+    foliageSystem = nullptr;
+    windSystem = nullptr;
+    waveSystem = nullptr;
+    animationSystem = nullptr;
+    motionSystem = nullptr;
+#if defined(__DAVAENGINE_PHYSICS_ENABLED__)
+    physicsSystem = nullptr;
+#endif
 
-    SafeRelease(mainCamera);
-    SafeRelease(drawCamera);
-
-    // Children should be removed first because they should unregister themselves in managers
-    RemoveAllChildren();
-
-    SafeRelease(sceneGlobalMaterial);
-
-    transformSystem = 0;
-    renderUpdateSystem = 0;
-    lodSystem = 0;
-    debugRenderSystem = 0;
-    particleEffectSystem = 0;
-    updatableSystem = 0;
-    lightUpdateSystem = 0;
-    switchSystem = 0;
-    soundSystem = 0;
-    actionSystem = 0;
-    staticOcclusionSystem = 0;
-    speedTreeUpdateSystem = 0;
-    foliageSystem = 0;
-    windSystem = 0;
-    waveSystem = 0;
-    animationSystem = 0;
+    renderSystem->PrepareForShutdown();
 
     size_t size = systems.size();
     for (size_t k = 0; k < size; ++k)
+    {
+        systems[k]->PrepareForRemove();
+    }
+
+    for (size_t k = 0; k < size; ++k)
+    {
         SafeDelete(systems[k]);
+    }
     systems.clear();
 
+    SafeRelease(mainCamera);
+    SafeRelease(drawCamera);
+    for (Camera*& c : cameras)
+        SafeRelease(c);
+    cameras.clear();
+
+    for (SingletonComponent* s : singletonComponents)
+    {
+        SafeDelete(s);
+    }
+    singletonComponents.clear();
+
     SafeDelete(transformSingleComponent);
+    SafeDelete(motionSingleComponent);
+#if defined(__DAVAENGINE_PHYSICS_ENABLED__)
+    SafeDelete(collisionSingleComponent);
+#endif
 
     systemsToProcess.clear();
     systemsToInput.clear();
+    systemsToFixedProcess.clear();
+
+    RemoveAllChildren();
+    SafeRelease(sceneGlobalMaterial);
+
     cache.ClearAll();
 
     SafeDelete(eventSystem);
@@ -436,6 +501,17 @@ void Scene::UnregisterEntity(Entity* entity)
     {
         transformSingleComponent->EraseEntity(entity);
     }
+    if (motionSingleComponent)
+    {
+        motionSingleComponent->EntityRemoved(entity);
+    }
+
+#if defined(__DAVAENGINE_PHYSICS_ENABLED__)
+    if (collisionSingleComponent)
+    {
+        collisionSingleComponent->RemoveCollisionsWithEntity(entity);
+    }
+#endif
 
     for (auto& system : systems)
     {
@@ -448,12 +524,6 @@ void Scene::RegisterEntitiesInSystemRecursively(SceneSystem* system, Entity* ent
     system->RegisterEntity(entity);
     for (int32 i = 0, sz = entity->GetChildrenCount(); i < sz; ++i)
         RegisterEntitiesInSystemRecursively(system, entity->GetChild(i));
-}
-void Scene::UnregisterEntitiesInSystemRecursively(SceneSystem* system, Entity* entity)
-{
-    system->UnregisterEntity(entity);
-    for (int32 i = 0, sz = entity->GetChildrenCount(); i < sz; ++i)
-        UnregisterEntitiesInSystemRecursively(system, entity->GetChild(i));
 }
 
 void Scene::RegisterComponent(Entity* entity, Component* component)
@@ -476,44 +546,9 @@ void Scene::UnregisterComponent(Entity* entity, Component* component)
     }
 }
 
-
-#if 0 // Removed temporarly if everything will work with events can be removed fully.
-void Scene::ImmediateEvent(Entity * entity, uint32 componentType, uint32 event)
+void Scene::AddSystem(SceneSystem* sceneSystem, const ComponentMask& componentMask, uint32 processFlags /*= 0*/, SceneSystem* insertBeforeSceneForProcess /* = nullptr */, SceneSystem* insertBeforeSceneForInput /* = nullptr*/, SceneSystem* insertBeforeSceneForFixedProcess)
 {
-#if 1
-    uint32 systemsCount = systems.size();
-    uint64 updatedComponentFlag = MAKE_COMPONENT_MASK(componentType);
-    uint64 componentsInEntity = entity->GetAvailableComponentFlags();
-
-    for (uint32 k = 0; k < systemsCount; ++k)
-    {
-        uint64 requiredComponentFlags = systems[k]->GetRequiredComponents();
-        
-        if (((requiredComponentFlags & updatedComponentFlag) != 0) && ((requiredComponentFlags & componentsInEntity) == requiredComponentFlags))
-        {
-			eventSystem->NotifySystem(systems[k], entity, event);
-        }
-    }
-#else
-    uint64 componentsInEntity = entity->GetAvailableComponentFlags();
-    Set<SceneSystem*> & systemSetForType = componentTypeMapping.GetValue(componentsInEntity);
-    
-    for (Set<SceneSystem*>::iterator it = systemSetForType.begin(); it != systemSetForType.end(); ++it)
-    {
-        SceneSystem * system = *it;
-        uint64 requiredComponentFlags = system->GetRequiredComponents();
-        if ((requiredComponentFlags & componentsInEntity) == requiredComponentFlags)
-            eventSystem->NotifySystem(system, entity, event);
-    }
-#endif
-}
-#endif
-
-void Scene::AddSystem(SceneSystem* sceneSystem, uint64 componentFlags, uint32 processFlags /*= 0*/, SceneSystem* insertBeforeSceneForProcess /* = nullptr */, SceneSystem* insertBeforeSceneForInput /* = nullptr*/)
-{
-    sceneSystem->SetRequiredComponents(componentFlags);
-    //Set<SceneSystem*> & systemSetForType = componentTypeMapping.GetValue(componentFlags);
-    //systemSetForType.insert(sceneSystem);
+    sceneSystem->SetRequiredComponents(componentMask);
     systems.push_back(sceneSystem);
 
     auto insertSystemBefore = [sceneSystem](Vector<SceneSystem*>& container, SceneSystem* beforeThisSystem)
@@ -551,16 +586,23 @@ void Scene::AddSystem(SceneSystem* sceneSystem, uint64 componentFlags, uint32 pr
         DVASSERT(wasInsertedForInput);
     }
 
+    if (processFlags & SCENE_SYSTEM_REQUIRE_FIXED_PROCESS)
+    {
+        bool wasInserted = insertSystemBefore(systemsToProcess, insertBeforeSceneForFixedProcess);
+        DVASSERT(wasInserted);
+    }
+
     sceneSystem->SetScene(this);
     RegisterEntitiesInSystemRecursively(sceneSystem, this);
 }
 
 void Scene::RemoveSystem(SceneSystem* sceneSystem)
 {
-    UnregisterEntitiesInSystemRecursively(sceneSystem, this);
+    sceneSystem->PrepareForRemove();
 
     RemoveSystem(systemsToProcess, sceneSystem);
     RemoveSystem(systemsToInput, sceneSystem);
+    RemoveSystem(systemsToFixedProcess, sceneSystem);
 
     bool removed = RemoveSystem(systems, sceneSystem);
     if (removed)
@@ -586,6 +628,17 @@ bool Scene::RemoveSystem(Vector<SceneSystem*>& storage, SceneSystem* system)
     }
 
     return false;
+}
+
+void Scene::AddSingletonComponent(SingletonComponent* component)
+{
+    DVASSERT(GetSingletonComponent<std::remove_pointer<decltype(component)>::type>() == nullptr);
+    singletonComponents.push_back(component);
+}
+
+void Scene::RemoveSingletonComponent(SingletonComponent* component)
+{
+    FindAndRemoveExchangingWithLast(singletonComponents, component);
 }
 
 Scene* Scene::GetScene()
@@ -622,67 +675,23 @@ Camera* Scene::GetCamera(int32 n)
     return nullptr;
 }
 
-void Scene::SetupTestLighting()
-{
-#ifdef __DAVAENGINE_IPHONE__
-//	glShadeModel(GL_SMOOTH);
-//	// enable lighting
-//	glEnable(GL_LIGHTING);
-//	glEnable(GL_NORMALIZE);
-//
-//	// deactivate all lights
-//	for (int i=0; i<8; i++)  glDisable(GL_LIGHT0 + i);
-//
-//	// ambiental light to nothing
-//	GLfloat ambientalLight[]= {0.2f, 0.2f, 0.2f, 1.0f};
-//	glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambientalLight);
-//
-////	GLfloat light_ambient[] = { 0.0f, 0.0f, 0.0f, 1.0f };  // delete
-//	//GLfloat light_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-//	GLfloat light_specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-//
-//	GLfloat light_diffuse[4];
-//	light_diffuse[0]=1.0f;
-//	light_diffuse[1]=1.0f;
-//	light_diffuse[2]=1.0f;
-//	light_diffuse[3]=1.0f;
-//
-//	GLfloat lightPos[] = { 0.0f, 0.0f, 1.0f, 0.0f };
-//
-//	// activate this light
-//	glEnable(GL_LIGHT0);
-//
-//	//always position 0,0,0 because light  is moved with transformations
-//	glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
-//
-//	// colors
-//	glLightfv(GL_LIGHT0, GL_AMBIENT, light_diffuse); // now like diffuse color
-//	glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-//	glLightfv(GL_LIGHT0, GL_SPECULAR,light_specular);
-//
-//	//specific values for this light
-//	glLightf(GL_LIGHT0, GL_CONSTANT_ATTENUATION, 1);
-//	glLightf(GL_LIGHT0, GL_LINEAR_ATTENUATION, 0);
-//	glLightf(GL_LIGHT0, GL_QUADRATIC_ATTENUATION, 0);
-//
-//	//other values
-//	glLightf(GL_LIGHT0, GL_SPOT_CUTOFF, 30.0f);
-//	glLightf(GL_LIGHT0, GL_SPOT_EXPONENT, 0.0f);
-//	GLfloat spotdirection[] = { 0.0f, 0.0f, -1.0f, 0.0f }; // irrelevant for this light (I guess)
-//	glLightfv(GL_LIGHT0, GL_SPOT_DIRECTION, spotdirection); 
-#endif
-}
-
-void Scene::Update(float timeElapsed)
+void Scene::Update(float32 timeElapsed)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_UPDATE)
 
-    uint64 time = SystemTimer::GetMs();
-
-    size_t size = systemsToProcess.size();
-    for (size_t k = 0; k < size; ++k)
+    fixedUpdate.lastTime += timeElapsed;
+    //call ProcessFixed N times where N = (timeSinceLastProcessFixed + timeElapsed) / fixedUpdate.constantTime;
+    while (fixedUpdate.lastTime >= fixedUpdate.constantTime)
     {
-        SceneSystem* system = systemsToProcess[k];
+        for (SceneSystem* system : systemsToFixedProcess)
+        {
+            system->ProcessFixed(fixedUpdate.constantTime);
+        }
+        fixedUpdate.lastTime -= fixedUpdate.constantTime;
+    }
+
+    for (SceneSystem* system : systemsToProcess)
+    {
         if ((systemsMask & SCENE_SYSTEM_UPDATEBLE_FLAG) && system == transformSystem)
         {
             updatableSystem->UpdatePreTransform(timeElapsed);
@@ -707,7 +716,13 @@ void Scene::Update(float timeElapsed)
         transformSingleComponent->Clear();
     }
 
-    updateTime = SystemTimer::GetMs() - time;
+#if defined(__DAVAENGINE_PHYSICS_ENABLED__)
+    if (collisionSingleComponent)
+    {
+        collisionSingleComponent->collisions.clear();
+    }
+#endif
+
     sceneGlobalTime += timeElapsed;
 }
 
@@ -730,15 +745,10 @@ void Scene::Draw()
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WATER_CLEAR_COLOR, waterDataPtr, reinterpret_cast<pointer_size>(waterDataPtr));
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_GLOBAL_TIME, &sceneGlobalTime, reinterpret_cast<pointer_size>(&sceneGlobalTime));
 
-    uint64 time = SystemTimer::GetMs();
-
     renderSystem->Render();
 
     if (particleEffectDebugDrawSystem != nullptr)
         particleEffectDebugDrawSystem->Draw();
-    //foliageSystem->DebugDrawVegetation();
-
-    drawTime = SystemTimer::GetMs() - time;
 }
 
 void Scene::SceneDidLoaded()
@@ -785,115 +795,6 @@ Camera* Scene::GetDrawCamera() const
     return drawCamera;
 }
 
-//void Scene::SetForceLodLayer(int32 layer)
-//{
-//    forceLodLayer = layer;
-//}
-//int32 Scene::GetForceLodLayer()
-//{
-//    return forceLodLayer;
-//}
-//
-//int32 Scene::RegisterLodLayer(float32 nearDistance, float32 farDistance)
-//{
-//    LodLayer newLevel;
-//    newLevel.nearDistance = nearDistance;
-//    newLevel.farDistance = farDistance;
-//    newLevel.nearDistanceSq = nearDistance * nearDistance;
-//    newLevel.farDistanceSq = farDistance * farDistance;
-//    int i = 0;
-//
-//    for (Vector<LodLayer>::iterator it = lodLayers.begin(); it < lodLayers.end(); it++)
-//    {
-//        if (nearDistance < it->nearDistance)
-//        {
-//            lodLayers.insert(it, newLevel);
-//            return i;
-//        }
-//        i++;
-//    }
-//
-//    lodLayers.push_back(newLevel);
-//    return i;
-//}
-//
-//void Scene::ReplaceLodLayer(int32 layerNum, float32 nearDistance, float32 farDistance)
-//{
-//    DVASSERT(layerNum < (int32)lodLayers.size());
-//
-//    lodLayers[layerNum].nearDistance = nearDistance;
-//    lodLayers[layerNum].farDistance = farDistance;
-//    lodLayers[layerNum].nearDistanceSq = nearDistance * nearDistance;
-//    lodLayers[layerNum].farDistanceSq = farDistance * farDistance;
-//
-//
-////    LodLayer newLevel;
-////    newLevel.nearDistance = nearDistance;
-////    newLevel.farDistance = farDistance;
-////    newLevel.nearDistanceSq = nearDistance * nearDistance;
-////    newLevel.farDistanceSq = farDistance * farDistance;
-////    int i = 0;
-////
-////    for (Vector<LodLayer>::iterator it = lodLayers.begin(); it < lodLayers.end(); it++)
-////    {
-////        if (nearDistance < it->nearDistance)
-////        {
-////            lodLayers.insert(it, newLevel);
-////            return i;
-////        }
-////        i++;
-////    }
-////
-////    lodLayers.push_back(newLevel);
-////    return i;
-//}
-//
-
-void Scene::UpdateLights()
-{
-}
-
-Light* Scene::GetNearestDynamicLight(Light::eType type, Vector3 position)
-{
-    switch (type)
-    {
-    case Light::TYPE_DIRECTIONAL:
-
-        break;
-
-    default:
-        break;
-    };
-
-    float32 squareMinDistance = 10000000.0f;
-    Light* nearestLight = 0;
-
-    Set<Light*>& lights = GetLights();
-    const Set<Light*>::iterator& endIt = lights.end();
-    for (Set<Light*>::iterator it = lights.begin(); it != endIt; ++it)
-    {
-        Light* node = *it;
-        if (node->IsDynamic())
-        {
-            const Vector3& lightPosition = node->GetPosition();
-
-            float32 squareDistanceToLight = (position - lightPosition).SquareLength();
-            if (squareDistanceToLight < squareMinDistance)
-            {
-                squareMinDistance = squareDistanceToLight;
-                nearestLight = node;
-            }
-        }
-    }
-
-    return nearestLight;
-}
-
-Set<Light*>& Scene::GetLights()
-{
-    return lights;
-}
-
 EventSystem* Scene::GetEventSystem() const
 {
     return eventSystem;
@@ -913,22 +814,6 @@ ParticleEffectDebugDrawSystem* Scene::GetParticleEffectDebugDrawSystem() const
 {
     return particleEffectDebugDrawSystem;
 }
-
-/*void Scene::Save(KeyedArchive * archive)
-{
-    // Perform refactoring and add Matrix4, Vector4 types to VariantType and KeyedArchive
-    Entity::Save(archive);
-    
-    
-    
-    
-    
-}
-
-void Scene::Load(KeyedArchive * archive)
-{
-    Entity::Load(archive);
-}*/
 
 SceneFileV2::eError Scene::LoadScene(const DAVA::FilePath& pathname)
 {
@@ -1023,7 +908,7 @@ void Scene::HandleEvent(Observable* observable)
     if (options->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && !staticOcclusionDebugDrawSystem)
     {
         staticOcclusionDebugDrawSystem = new StaticOcclusionDebugDrawSystem(this);
-        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
+        AddSystem(staticOcclusionDebugDrawSystem, ComponentUtils::MakeMask<StaticOcclusionComponent>(), 0, renderUpdateSystem);
     }
     else if (!options->IsOptionEnabled(RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && staticOcclusionDebugDrawSystem)
     {

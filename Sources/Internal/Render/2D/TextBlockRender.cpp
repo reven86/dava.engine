@@ -1,5 +1,4 @@
 #include "Render/2D/TextBlockRender.h"
-#include "Core/Core.h"
 
 namespace DAVA
 {
@@ -29,7 +28,7 @@ void TextBlockRender::DrawText()
         uint32 yOffset = 0;
         int32 stringSize = 0;
         int32 blockWidth = 0;
-        int32 fontHeight = textBlock->font->GetFontHeight() + textBlock->font->GetVerticalSpacing();
+        int32 fontHeight = textBlock->font->GetFontHeight(textBlock->renderSize) + textBlock->font->GetVerticalSpacing();
         int32 stringsCnt = int32(textBlock->multilineStrings.size());
         for (int32 line = 0; line < stringsCnt; ++line)
         {

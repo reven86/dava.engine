@@ -20,6 +20,14 @@ class eMovieScalingMode
     static final int scalingModeFill = 3;
 };
 
+class eMoviePlayingState
+{
+    static final int stateStopped = 0;
+    static final int stateLoading = 1;
+    static final int statePaused = 2;
+    static final int statePlaying = 3;
+};
+
 final class DavaMovieView implements MediaPlayer.OnCompletionListener,
                                      MediaPlayer.OnPreparedListener,
                                      MediaPlayer.OnErrorListener
@@ -54,7 +62,7 @@ final class DavaMovieView implements MediaPlayer.OnCompletionListener,
     private String movieFile = "";
 
     // Flags accessed in dava main thread (where cpp code lives)
-    private boolean playing = false;    // Movie is playing
+    private int playingState = eMoviePlayingState.stateStopped; // Movie playing state
     private boolean canPlay = false;    // openMovie method has been called and movie file exists
 
     public static native void nativeReleaseWeakPtr(long backendPointer);
@@ -168,7 +176,6 @@ final class DavaMovieView implements MediaPlayer.OnCompletionListener,
     void openMovie(String moviePath, int scaleMode)
     {
         canPlay = false;
-        playing = false;
 
         String path = prepareMovieFile(moviePath);
         if (path != null)
@@ -190,25 +197,15 @@ final class DavaMovieView implements MediaPlayer.OnCompletionListener,
             // So assume movie is playing under following conditions:
             //  - movie is really playing
             //  - game has called Play() method after openMovie
-            switch (action)
-            {
-            case eAction.ACTION_PLAY:
-            case eAction.ACTION_RESUME:
-                playing = true;
-                break;
-            default:
-                playing = false;
-                break;
-            }
             properties.action = action;
             properties.actionChanged = true;
             properties.anyPropertyChanged = true;
         }
     }
 
-    boolean isPlaying()
+    int getState()
     {
-        return playing;
+        return playingState;
     }
 
     void update()
@@ -295,6 +292,7 @@ final class DavaMovieView implements MediaPlayer.OnCompletionListener,
             movieFile = props.moviePath;
             nativeMovieView.setVideoPath(movieFile);
 
+            playingState = eMoviePlayingState.stateLoading;
             movieLoaded = false;
             playAfterLoaded = false;
         }
@@ -305,16 +303,21 @@ final class DavaMovieView implements MediaPlayer.OnCompletionListener,
                 switch (props.action)
                 {
                 case eAction.ACTION_PLAY:
+                    playingState = eMoviePlayingState.statePlaying;
                     nativeMovieView.start();
                     break;
                 case eAction.ACTION_PAUSE:
+                    playingState = eMoviePlayingState.statePaused;
                     nativeMovieView.pause();
                     break;
                 case eAction.ACTION_RESUME:
+                    playingState = eMoviePlayingState.statePlaying;
                     nativeMovieView.start();
                     break;
                 case eAction.ACTION_STOP:
-                    nativeMovieView.stopPlayback();
+                    playingState = eMoviePlayingState.stateStopped;
+                    nativeMovieView.seekTo(0);
+                    nativeMovieView.pause();
                     break;
                 default:
                     return;
@@ -334,12 +337,12 @@ final class DavaMovieView implements MediaPlayer.OnCompletionListener,
         nativeMovieView.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
-    void tellPlayingStatus(final boolean status)
+    void tellPlayingState(final int state)
     {
         DavaActivity.commandHandler().post(new Runnable() {
             @Override public void run()
             {
-                playing = status;
+                playingState = state;
             }
         });
     }
@@ -382,7 +385,7 @@ final class DavaMovieView implements MediaPlayer.OnCompletionListener,
     @Override
     public void onCompletion(MediaPlayer mplayer)
     {
-        tellPlayingStatus(false);
+        tellPlayingState(eMoviePlayingState.stateStopped);
     }
 
     // MediaPlayer.OnPreparedListener interface
@@ -453,7 +456,11 @@ final class DavaMovieView implements MediaPlayer.OnCompletionListener,
         if (playAfterLoaded)
         {
             playAfterLoaded = false;
-            nativeMovieView.start();
+            doAction(eAction.ACTION_PLAY);
+        }
+        else
+        {
+            doAction(eAction.ACTION_STOP);
         }
     }
 
@@ -463,7 +470,7 @@ final class DavaMovieView implements MediaPlayer.OnCompletionListener,
     {
         DavaLog.e(DavaActivity.LOG_TAG, String.format("DavaMovieView.onError: file='%s', what=%d, extra=%d", movieFile, what, extra));
 
-        tellPlayingStatus(false);
+        tellPlayingState(eMoviePlayingState.stateStopped);
         // Return true to prevent showing error dialog on error
         return true;
     }

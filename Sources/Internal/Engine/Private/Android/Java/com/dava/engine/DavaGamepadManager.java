@@ -99,6 +99,11 @@ final class DavaGamepadManager extends DavaActivity.ActivityListenerImpl
         for (int id : deviceIds)
         {
             InputDevice device = InputDevice.getDevice(id);
+            if (device == null)
+            {
+                continue;
+            }
+            
             int sources = device.getSources();
             // Select only joystick devices
             // TODO: maybe I should also check and SOURCE_CLASS_BUTTON devices?

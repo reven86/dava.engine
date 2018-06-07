@@ -1,31 +1,28 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Base/RefPtr.h"
-#include "Functional/Functional.h"
-
 #include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
-
-#include "UI/UIEvent.h"
-
+#include "Functional/Functional.h"
 #include "Render/RHI/rhi_Type.h"
+#include "UI/UIEvent.h"
 
 namespace DAVA
 {
+class AppInstanceMonitor;
 class KeyedArchive;
 namespace Private
 {
+void SetEngineContext(EngineContext* context);
+
 class EngineBackend final
 {
 public:
     static EngineBackend* Instance();
     static bool showingModalMessageBox;
 
-    static WindowBackend* GetWindowBackend(Window* w);
+    static WindowImpl* GetWindowImpl(Window* w);
 
     EngineBackend(const Vector<String>& cmdargs);
     ~EngineBackend();
@@ -74,6 +71,8 @@ public:
     void OnGameLoopStopped();
     void OnEngineCleanup();
 
+    void OnFileActivated();
+
     void OnWindowCreated(Window* window);
     void OnWindowDestroyed(Window* window);
 
@@ -84,6 +83,9 @@ public:
     void DeinitRender(Window* w);
 
     void UpdateDisplayConfig();
+
+    void InstallEventFilter(void* token, const Function<bool(const MainDispatcherEvent&)>& filter);
+    void UninstallEventFilter(void* token);
 
     // Proxy method that calls SystemTimer::Adjust to prevent many friends to SystemTimer
     static void AdjustSystemTimer(int64 adjustMicro);
@@ -98,6 +100,11 @@ public:
     // but it leads to a black screen if we have another non fullscreen activity on top and surface was destroyed while it's active
     // This eliminates black screen and shows a correct image instead
     void DrawSingleFrameWhileSuspended();
+
+    void AddActivationFilename(String filename);
+    Vector<String> GetActivationFilenames() const;
+
+    AppInstanceMonitor* GetAppInstanceMonitor(const char* uniqueAppId);
 
 private:
     void RunConsole();
@@ -118,16 +125,12 @@ private:
     void HandleBackNavigation(const MainDispatcherEvent& e);
     void HandleAppTerminate(const MainDispatcherEvent& e);
     void HandleUserCloseRequest(const MainDispatcherEvent& e);
+    void HandleLowMemory(const MainDispatcherEvent& e);
 
     void CreateSubsystems(const Vector<String>& modules);
     void DestroySubsystems();
 
     void OnWindowVisibilityChanged(Window* window, bool visible);
-
-    // These two methods are used instead of rhi::SuspendRendering and rhi::ResumeRendering
-    // They check if we've already suspended or resumed the renderer and do nothing if we already have
-    void SuspendRenderer();
-    void ResumeRenderer();
 
     static void OnRenderingError(rhi::RenderingError err, void* param);
 
@@ -147,6 +150,13 @@ private:
     // Application-supplied functor which is invoked when user is trying to close window or application
     Function<bool(Window*)> closeRequestHandler;
 
+    struct EventFilter
+    {
+        void* token;
+        Function<bool(const MainDispatcherEvent&)> filter;
+    };
+    Vector<EventFilter> eventFilters;
+
     eEngineRunMode runMode = eEngineRunMode::GUI_STANDALONE;
     bool isInitialized = false; // Flag indicating that Init method has been called
     bool quitConsole = false;
@@ -163,8 +173,11 @@ private:
     bool atLeastOneWindowIsVisible = false;
     bool screenTimeoutEnabled = true;
 
-    bool rendererSuspended = false;
     bool drawSingleFrameWhileSuspended = false;
+
+    Vector<String> activationFilenames; // List of filenames application was started or activated with
+
+    AppInstanceMonitor* appInstanceMonitor = nullptr;
 
     static EngineBackend* instance;
 };
@@ -241,5 +254,3 @@ inline bool EngineBackend::IsScreenTimeoutEnabled() const
 
 } // namespace Private
 } // namespace DAVA
-
-#endif // __DAVAENGINE_COREV2__

@@ -1,10 +1,9 @@
 #pragma once
 
-
 #include "Base/BaseTypes.h"
 #include "Debug/DVAssert.h"
+#include "Entity/Private/FamilyRepository.h"
 #include "UI/Components/UIComponent.h"
-#include "Entity/BaseFamily.h"
 
 namespace DAVA
 {
@@ -21,14 +20,15 @@ public:
 
 private:
     UIControlFamily(const Vector<UIComponent*>& components);
+    UIControlFamily(const UIControlFamily& other);
 
-    int32 refCount = 0;
+    Atomic<int32> refCount;
     int32 hash = 0;
 
     Vector<uint32> componentIndices;
     Vector<uint32> componentsCount;
 
     template <typename EntityFamilyType>
-    friend class BaseFamilyRepository;
+    friend class FamilyRepository;
 };
 }

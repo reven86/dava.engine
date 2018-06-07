@@ -12,7 +12,6 @@
 namespace DAVA
 {
 static const int32 CUSTOM_PROPERTIES_COMPONENT_SAVE_SCENE_VERSION = 8;
-static const int32 COMPONENTS_BY_NAME_SAVE_SCENE_VERSION = 10;
 static const int32 OLD_LODS_SCENE_VERSION = 11;
 static const int32 TREE_ANIMATION_SCENE_VERSION = 12;
 static const int32 PREREQUIRED_BINORMAL_SCENE_VERSION = 13;
@@ -24,8 +23,10 @@ static const int32 FIXED_VEGETATION_SCENE_VERSION = 19;
 static const int32 LODSYSTEM2 = 20;
 static const int32 OLD_MATERIAL_FLAGS_SCENE_VERSION = 21;
 static const int32 SPEED_TREE_POLYGON_GROUPS_PIVOT3_SCENE_VERSION = 22; // convert EVF_PIVOT -> EVF_PIVOT4; EVF_PIVOT depricated
+static const int32 COMPONENTS_REFLECTION_SCENE_VERSION = 23; // enum Component::eType removed, scene components serialization without "comp.type".
+static const int32 TRANSFORM_REFACTORING_SCENE_VERSION = 24; // TransformComponent has Transform instead of Matrix4
 
-static const int32 SCENE_FILE_CURRENT_VERSION = SPEED_TREE_POLYGON_GROUPS_PIVOT3_SCENE_VERSION;
+static const int32 SCENE_FILE_CURRENT_VERSION = TRANSFORM_REFACTORING_SCENE_VERSION;
 static const int32 SCENE_FILE_MINIMAL_SUPPORTED_VERSION = 9;
 
 class VersionInfo

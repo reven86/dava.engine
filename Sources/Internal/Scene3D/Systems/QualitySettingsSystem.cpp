@@ -8,6 +8,8 @@
 #include "FileSystem/YamlNode.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Logger/Logger.h"
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
 
 namespace DAVA
 {
@@ -35,9 +37,9 @@ QualitySettingsSystem::QualitySettingsSystem()
 
 void QualitySettingsSystem::Load(const FilePath& path)
 {
-    if (FileSystem::Instance()->Exists(path))
+    if (GetEngineContext()->fileSystem->Exists(path))
     {
-        ScopedPtr<YamlParser> parser(YamlParser::Create(path));
+        RefPtr<YamlParser> parser(YamlParser::Create(path));
         YamlNode* rootNode = parser->GetRootNode();
 
         if (NULL != rootNode)
@@ -46,6 +48,7 @@ void QualitySettingsSystem::Load(const FilePath& path)
             materialGroups.clear();
             soundQualities.clear();
             landscapeQualities.clear();
+            anisotropyQualities.clear();
             msaaQualities.clear();
 
             // materials
@@ -69,7 +72,7 @@ void QualitySettingsSystem::Load(const FilePath& path)
                         name->GetType() == YamlNode::TYPE_STRING &&
                         values->GetType() == YamlNode::TYPE_ARRAY)
                     {
-                        const Vector<YamlNode*>& v = values->AsVector();
+                        const auto& v = values->AsVector();
 
                         MAGrQ maGr;
                         maGr.curQuality = 0;
@@ -92,7 +95,9 @@ void QualitySettingsSystem::Load(const FilePath& path)
                             }
                         }
 
-                        materialGroups.insert(FastName(name->AsString().c_str()), maGr);
+                        String nodeName = name->AsString();
+                        FastName materialKey = FastName(nodeName);
+                        materialGroups[materialKey] = std::move(maGr);
                     }
                 }
             }
@@ -627,23 +632,23 @@ size_t QualitySettingsSystem::GetMaterialQualityGroupCount() const
 
 FastName QualitySettingsSystem::GetMaterialQualityGroupName(size_t index) const
 {
-    FastName ret;
-
     if (index < materialGroups.size())
     {
-        ret = materialGroups.keyByIndex(index);
+        return std::next(materialGroups.begin(), index)->first;
     }
 
-    return ret;
+    return FastName();
 }
 
 size_t QualitySettingsSystem::GetMaterialQualityCount(const FastName& group) const
 {
     size_t ret = 0;
 
-    if (materialGroups.count(group) > 0)
+    auto it = materialGroups.find(group);
+
+    if (it != materialGroups.end())
     {
-        ret = materialGroups[group].qualities.size();
+        ret = it->second.qualities.size();
     }
 
     return ret;
@@ -653,9 +658,16 @@ FastName QualitySettingsSystem::GetMaterialQualityName(const FastName& group, si
 {
     FastName ret;
 
-    if (materialGroups.count(group) > 0 && index < materialGroups[group].qualities.size())
+    auto it = materialGroups.find(group);
+
+    if (it != materialGroups.end())
     {
-        ret = materialGroups[group].qualities[index].qualityName;
+        auto& materialGroup = it->second;
+
+        if (index < materialGroup.qualities.size())
+        {
+            ret = materialGroup.qualities[index].qualityName;
+        }
     }
 
     return ret;
@@ -665,9 +677,11 @@ FastName QualitySettingsSystem::GetCurMaterialQuality(const FastName& group) con
 {
     FastName ret;
 
-    if (materialGroups.count(group) > 0)
+    auto it = materialGroups.find(group);
+
+    if (it != materialGroups.end())
     {
-        ret = GetMaterialQualityName(group, materialGroups[group].curQuality);
+        ret = GetMaterialQualityName(group, it->second.curQuality);
     }
 
     return ret;
@@ -675,13 +689,16 @@ FastName QualitySettingsSystem::GetCurMaterialQuality(const FastName& group) con
 
 void QualitySettingsSystem::SetCurMaterialQuality(const FastName& group, const FastName& quality)
 {
-    if (materialGroups.count(group) > 0)
+    auto it = materialGroups.find(group);
+
+    if (it != materialGroups.end())
     {
-        for (size_t i = 0; i < materialGroups[group].qualities.size(); ++i)
+        auto& materialGroup = it->second;
+        for (size_t i = 0; i < materialGroup.qualities.size(); ++i)
         {
-            if (materialGroups[group].qualities[i].qualityName == quality)
+            if (materialGroup.qualities[i].qualityName == quality)
             {
-                materialGroups[group].curQuality = i;
+                materialGroup.curQuality = i;
                 return;
             }
         }
@@ -694,13 +711,16 @@ const MaterialQuality* QualitySettingsSystem::GetMaterialQuality(const FastName&
 {
     const MaterialQuality* ret = NULL;
 
-    if (materialGroups.count(group) > 0)
+    auto it = materialGroups.find(group);
+
+    if (it != materialGroups.end())
     {
-        for (size_t i = 0; i < materialGroups[group].qualities.size(); ++i)
+        auto& materialGroup = it->second;
+        for (size_t i = 0; i < materialGroup.qualities.size(); ++i)
         {
-            if (materialGroups[group].qualities[i].qualityName == quality)
+            if (materialGroup.qualities[i].qualityName == quality)
             {
-                ret = &materialGroups[group].qualities[i];
+                ret = &materialGroup.qualities[i];
                 break;
             }
         }
@@ -728,9 +748,11 @@ void QualitySettingsSystem::EnableOption(const FastName& option, bool enabled)
 
 bool QualitySettingsSystem::IsOptionEnabled(const FastName& option) const
 {
-    if (qualityOptions.count(option) > 0)
+    auto it = qualityOptions.find(option);
+
+    if (it != qualityOptions.end())
     {
-        return qualityOptions[option];
+        return it->second;
     }
 
     return false;
@@ -743,7 +765,14 @@ int32 QualitySettingsSystem::GetOptionsCount() const
 
 FastName QualitySettingsSystem::GetOptionName(int32 index) const
 {
-    return qualityOptions.keyByIndex(index);
+    DVASSERT(index >= 0);
+
+    if (static_cast<size_t>(index) < qualityOptions.size())
+    {
+        return std::next(qualityOptions.begin(), index)->first;
+    }
+
+    return FastName();
 }
 
 void QualitySettingsSystem::UpdateEntityAfterLoad(Entity* entity)
@@ -752,7 +781,7 @@ void QualitySettingsSystem::UpdateEntityAfterLoad(Entity* entity)
         return;
 
     Vector<Entity*> entitiesWithQualityComponent;
-    entity->GetChildEntitiesWithComponent(entitiesWithQualityComponent, Component::QUALITY_SETTINGS_COMPONENT);
+    entity->GetChildEntitiesWithComponent(entitiesWithQualityComponent, Type::Instance<QualitySettingsComponent>());
 
     for (size_t i = 0, sz = entitiesWithQualityComponent.size(); i < sz; ++i)
     {

@@ -4,15 +4,19 @@ import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Application;
 import android.app.PendingIntent;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +24,10 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -74,6 +82,10 @@ public final class DavaActivity extends Activity
         public void onRestart();
         public void onStop();
         public void onDestroy();
+        public void onTrimMemory(int level);
+        public void onWindowFocusChanged(boolean hasWindowFocus);
+        public void onConfigurationChanged(Configuration newConfig);
+        public void onBackPressed();
         public void onSaveInstanceState(Bundle outState);
         public void onActivityResult(int requestCode, int resultCode, Intent data);
         public void onNewIntent(Intent intent);
@@ -93,6 +105,10 @@ public final class DavaActivity extends Activity
         public void onRestart() {}
         public void onStop() {}
         public void onDestroy() {}
+        public void onTrimMemory(int level) {}
+        public void onWindowFocusChanged(boolean hasWindowFocus) {}
+        public void onConfigurationChanged(Configuration newConfig) {}
+        public void onBackPressed() {}
         public void onSaveInstanceState(Bundle outState) {}
         public void onActivityResult(int requestCode, int resultCode, Intent data) {}
         public void onNewIntent(Intent intent) {}
@@ -162,6 +178,10 @@ public final class DavaActivity extends Activity
     private static final int ON_ACTIVITY_RESULT = 8;
     private static final int ON_ACTIVITY_NEW_INTENT = 9;
     private static final int ON_ACTIVITY_REQUEST_PERMISSION_RESULT = 10;
+    private static final int ON_ACTIVITY_WINDOW_FOCUS_CHANGED = 11;
+    private static final int ON_ACTIVITY_CONFIGURATION_CHANGED = 12;
+    private static final int ON_ACTIVITY_BACK_PRESSED = 13;
+    private static final int ON_ACTIVITY_TRIM_MEMORY = 14;
 
     public static native void nativeInitializeEngine(String externalFilesDir,
                                                      String internalFilesDir,
@@ -170,10 +190,12 @@ public final class DavaActivity extends Activity
                                                      String cmdline);
     public static native void nativeShutdownEngine();
     public static native long nativeOnCreate(DavaActivity activity);
+    public static native void nativeOnFileIntent(String filename, boolean onStartup);
     public static native void nativeOnResume();
     public static native void nativeOnPause();
     public static native void nativeOnDestroy();
     public static native void nativeGameThread();
+    public static native void nativeOnTrimMemory(int level);
 
     /**
         Get `DavaActivity` instance.
@@ -272,7 +294,14 @@ public final class DavaActivity extends Activity
         uiThreadId = android.os.Process.myTid();
         
         Application app = getApplication();
-        externalFilesDir = app.getExternalFilesDir(null).getAbsolutePath() + "/";
+        File externalFiles = app.getExternalFilesDir(null); // Could be null due to unmounted external storage
+        externalFilesDir = externalFiles != null? (externalFiles.getAbsolutePath() + "/") : "";
+        // validate path to externalFilesDir
+        DeviceInfo.StorageCapacity storageCapacity = DeviceInfo.getCapacityAndFreeSpace(externalFilesDir);
+        if (storageCapacity == null)
+        {
+            externalFilesDir = "";
+        }
         internalFilesDir = app.getFilesDir().getAbsolutePath() + "/";
         sourceDir = app.getApplicationInfo().publicSourceDir;
         packageName = app.getApplicationInfo().packageName;
@@ -286,6 +315,8 @@ public final class DavaActivity extends Activity
         window.requestFeature(Window.FEATURE_NO_TITLE);
         window.getDecorView().setOnSystemUiVisibilityChangeListener(this);
         hideNavigationBar();
+
+        DeviceInfo.initialize();
 
         // Load & show splash view
         Bitmap splashViewBitmap =  loadSplashViewBitmap();
@@ -301,10 +332,18 @@ public final class DavaActivity extends Activity
 
         // #3 Initialize engine and run its onCreate method
         nativeInitializeEngine(externalFilesDir, internalFilesDir, sourceDir, packageName, cmdline);
-        long nativePrimaryWindowBackend = nativeOnCreate(this);
+        long nativePrimaryWindowImpl = nativeOnCreate(this);
         // Create primary DavaSurfaceView in advance but add to view hierarchy later when DavaSplashView will do its work
-        primarySurfaceView = new DavaSurfaceView(getApplication(), nativePrimaryWindowBackend);
+        primarySurfaceView = new DavaSurfaceView(getApplication(), nativePrimaryWindowImpl);
 
+        // Create layout and keyboard state checkers and subscribe they to Activity lifecycle
+        globalLayoutState = new DavaGlobalLayoutState();
+        registerActivityListener(globalLayoutState);
+        keyboardState = new DavaKeyboardState();
+        registerActivityListener(keyboardState);
+
+        clearActivationFilesCacheDir();
+        CollectActivationFilenames(getIntent(), true);
         notifyListeners(ON_ACTIVITY_CREATE, savedInstanceState);
 
         super.onCreate(savedInstanceState);
@@ -341,12 +380,6 @@ public final class DavaActivity extends Activity
 
         gamepadManager = new DavaGamepadManager();
         registerActivityListener(gamepadManager);
-
-        globalLayoutState = new DavaGlobalLayoutState();
-        registerActivityListener(globalLayoutState);
-
-        keyboardState = new DavaKeyboardState();
-        registerActivityListener(keyboardState);
     }
 
     protected void onSplashFinishedCollectingDeviceInfo()
@@ -459,6 +492,16 @@ public final class DavaActivity extends Activity
         DavaLog.i(LOG_TAG, "Quitting application...");
         System.exit(0);
     }
+
+    @Override
+    public void onTrimMemory(int level) {
+        DavaLog.i(LOG_TAG, "DavaActivity.onTrimMemory");
+        super.onTrimMemory(level);
+
+        nativeOnTrimMemory(level);
+
+        notifyListeners(ON_ACTIVITY_TRIM_MEMORY, level);
+    }
     
     @Override
     public void onWindowFocusChanged(boolean hasWindowFocus)
@@ -471,6 +514,8 @@ public final class DavaActivity extends Activity
             hideNavigationBar();
             handleResume();
         }
+
+        notifyListeners(ON_ACTIVITY_WINDOW_FOCUS_CHANGED, hasWindowFocus);
     }
 
     @Override
@@ -478,6 +523,8 @@ public final class DavaActivity extends Activity
     {
         DavaLog.i(LOG_TAG, "DavaActivity.onConfigurationChanged");
         super.onConfigurationChanged(newConfig);
+
+        notifyListeners(ON_ACTIVITY_CONFIGURATION_CHANGED, newConfig);
     }
 
     @Override
@@ -485,6 +532,8 @@ public final class DavaActivity extends Activity
     {
         // Do not call base class method to prevent finishing activity
         // and application on back pressed
+
+        notifyListeners(ON_ACTIVITY_BACK_PRESSED, null);
     }
 
     @Override
@@ -544,6 +593,8 @@ public final class DavaActivity extends Activity
     protected void onNewIntent(Intent intent)
     {
         super.onNewIntent(intent);
+
+        CollectActivationFilenames(intent, false);
         notifyListeners(ON_ACTIVITY_NEW_INTENT, intent);
     }
 
@@ -557,6 +608,115 @@ public final class DavaActivity extends Activity
         args.permissions = permissions;
         args.grantResults = grantResults;
         notifyListeners(ON_ACTIVITY_REQUEST_PERMISSION_RESULT, args);
+    }
+
+    private void CollectActivationFilenames(Intent intent, boolean onStartup)
+    {
+        if (intent != null)
+        {
+            String action = intent.getAction();
+            if (action != null && action.compareTo(Intent.ACTION_VIEW) == 0)
+            {
+                String scheme = intent.getScheme();
+                if (scheme != null)
+                {
+                    Uri uri = intent.getData();
+                    if (scheme.compareTo(ContentResolver.SCHEME_FILE) == 0)
+                    {
+                        nativeOnFileIntent(uri.getPath(), onStartup);
+                    }
+                    else if (scheme.compareTo(ContentResolver.SCHEME_CONTENT) == 0)
+                    {
+                        try {
+                            ContentResolver resolver = getContentResolver();
+                            File file = getActivationFileFromContentScheme(resolver, uri);
+
+                            int size = 0;
+                            byte[] buffer = new byte[1024];
+                            InputStream is = resolver.openInputStream(uri);
+                            OutputStream os = new FileOutputStream(file);
+                            while ((size = is.read(buffer)) != -1)
+                                os.write(buffer, 0, size);
+                            os.close();
+
+                            nativeOnFileIntent(file.getAbsolutePath(), onStartup);
+                        } catch (Exception e) {
+                            DavaLog.e(LOG_TAG, "CollectActivationFilenames exception: " + e.toString());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private File getActivationFileFromContentScheme(ContentResolver resolver, Uri uri) throws Exception
+    {
+        File tempDir = getActivationFilesCacheDir();
+
+        // https://developer.android.com/training/secure-file-sharing/retrieve-info#RetrieveFileInfo
+        Cursor cursor = resolver.query(uri, null, null, null, null);
+        cursor.moveToFirst();
+        int columnIndex = cursor.getColumnIndex(MediaStore.MediaColumns.DISPLAY_NAME);
+        if (columnIndex >= 0)
+        {
+            String displayName = cursor.getString(columnIndex);
+            String[] baseAndExt = null;
+
+            // Try to create unique filename adding counter to name
+            int fileIndex = 0;
+            do {
+                String filename = displayName;
+                if (fileIndex > 0)
+                {
+                    if (baseAndExt == null)
+                        baseAndExt = splitFilename(displayName);
+                    filename = String.format("%s (%d)%s", baseAndExt[0], fileIndex, baseAndExt[1]);
+                }
+                File file = new File(tempDir, filename);
+                if (!file.exists())
+                {
+                    return file;
+                }
+                fileIndex += 1;
+            } while (fileIndex <= 42);
+            // Give up incrementing counter and let system to generate filename
+        }
+        return File.createTempFile("dava", null, tempDir);
+    }
+
+    private File getActivationFilesCacheDir()
+    {
+        File tempDir = new File(getCacheDir(), "dava_afiles");
+        if (!tempDir.exists())
+            tempDir.mkdir();
+        return tempDir;
+    }
+
+    private void clearActivationFilesCacheDir()
+    {
+        try {
+            File tempDir = getActivationFilesCacheDir();
+            for (File file : tempDir.listFiles())
+                file.delete();
+        } catch(Exception e){}
+    }
+
+    private static String[] splitFilename(String filename)
+    {
+        // It seems that Java does not have methods to split filename into basename and extension
+        String result[] = new String[]{"",""};
+        int dot = filename.indexOf('.');
+        if (dot > 0)
+        {
+            result[0] = filename.substring(0, dot);
+            result[1] = filename.substring(dot);
+        }
+        else
+        {
+            // Treat filenames starting with dot or without dot as having no extension
+            result[0] = filename;
+        }
+        return result;
     }
 
     void hideNavigationBar()
@@ -616,7 +776,6 @@ public final class DavaActivity extends Activity
                 }
             }
         });
-
     }
 
     // Invoked from c++ thread and tells that Engine has entered Run method
@@ -854,6 +1013,20 @@ public final class DavaActivity extends Activity
             case ON_ACTIVITY_REQUEST_PERMISSION_RESULT:
                 RequestPermissionResultArgs requestResultArgs = (RequestPermissionResultArgs)arg;
                 l.onRequestPermissionsResult(requestResultArgs.requestCode, requestResultArgs.permissions, requestResultArgs.grantResults);
+                break;
+            case ON_ACTIVITY_WINDOW_FOCUS_CHANGED:
+                boolean hasWindowFocus = (Boolean)arg;
+                l.onWindowFocusChanged(hasWindowFocus);
+                break;
+            case ON_ACTIVITY_CONFIGURATION_CHANGED:
+                Configuration configuration = (Configuration)arg;
+                l.onConfigurationChanged(configuration);
+                break;
+            case ON_ACTIVITY_BACK_PRESSED:
+                l.onBackPressed();
+                break;
+            case ON_ACTIVITY_TRIM_MEMORY:
+                l.onTrimMemory((int)arg);
                 break;
             }
         }

@@ -5,7 +5,6 @@
 #include "Logger/Logger.h"
 #include "Utils/StringFormat.h"
 #include "Render/RHI/rhi_ShaderSource.h"
-#include "Render/RHI/Common/PreProcess.h"
 
 #define RHI_TRACE_CACHE_USAGE 0
 
@@ -27,7 +26,7 @@ struct ShaderSourceCode
 
 namespace
 {
-Map<Vector<int32>, ShaderDescriptor*> shaderDescriptors;
+Map<Vector<size_t>, ShaderDescriptor*> shaderDescriptors;
 Map<FastName, ShaderSourceCode> shaderSourceCodes;
 Mutex shaderCacheMutex;
 bool loadingNotifyEnabled = false;
@@ -66,24 +65,31 @@ void ClearDynamicBindigs()
     }
 }
 
-Vector<int32> BuildFlagsKey(const FastName& name, const HashMap<FastName, int32>& defines)
+size_t GetUniqueFlagKey(FastName flagName)
 {
-    Vector<int32> key;
+    static_assert(sizeof(size_t) == sizeof(void*), "Cant cast `const char*` into `int`");
+    return reinterpret_cast<size_t>(flagName.c_str());
+}
+
+Vector<size_t> BuildFlagsKey(const FastName& name, const UnorderedMap<FastName, int32>& defines)
+{
+    Vector<size_t> key;
+
     key.reserve(defines.size() * 2 + 1);
     for (const auto& define : defines)
     {
-        key.emplace_back(define.first.Index());
+        key.emplace_back(GetUniqueFlagKey(define.first));
         key.emplace_back(define.second);
     }
 
     // reinterpret cast to pairs and sort them
-    using Int32Pair = std::pair<int32, int32>;
-    Int32Pair* begin = reinterpret_cast<Int32Pair*>(key.data());
-    std::sort(begin, begin + key.size() / 2, [](const Int32Pair& l, const Int32Pair& r) {
+    using SizeTPair = std::pair<size_t, size_t>;
+    SizeTPair* begin = reinterpret_cast<SizeTPair*>(key.data());
+    std::sort(begin, begin + key.size() / 2, [](const SizeTPair& l, const SizeTPair& r) {
         return l.first < r.first;
     });
 
-    key.push_back(name.Index());
+    key.push_back(GetUniqueFlagKey(name));
     return key;
 }
 
@@ -183,13 +189,13 @@ void SetLoadingNotifyEnabled(bool enable)
 #define LOG_TRACE_USAGE(...)
 #endif
 
-ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines)
+ShaderDescriptor* GetShaderDescriptor(const FastName& name, const UnorderedMap<FastName, int32>& defines)
 {
     DVASSERT(initialized);
 
     LockGuard<Mutex> guard(shaderCacheMutex);
 
-    Vector<int32> key = BuildFlagsKey(name, defines);
+    Vector<size_t> key = BuildFlagsKey(name, defines);
 
     auto descriptorIt = shaderDescriptors.find(key);
     if (descriptorIt != shaderDescriptors.end())
@@ -342,8 +348,7 @@ void ReloadShaders()
 
     LockGuard<Mutex> guard(shaderCacheMutex);
     shaderSourceCodes.clear();
-
-    ShaderPreprocessScope preprocessScope;
+    rhi::ShaderSource::PurgeIncludesCache();
 
     //reload shaders
     for (auto& shaderDescr : shaderDescriptors)

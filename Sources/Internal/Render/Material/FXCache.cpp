@@ -9,21 +9,24 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
+#include "Concurrency/Mutex.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {
 namespace FXCacheDetails
 {
-Map<Vector<int32>, FXDescriptor> fxDescriptors;
+Map<Vector<size_t>, FXDescriptor> fxDescriptors;
 Map<std::pair<FastName, FastName>, FXDescriptor> oldTemplateMap;
 
 FXDescriptor defaultFX;
 bool initialized = false;
+Mutex fxCacheMutex;
 }
 
 namespace FXCache
 {
-const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastName, int32>& defines, const Vector<int32>& key, const FastName& quality);
+const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, UnorderedMap<FastName, int32>& defines, const Vector<size_t>& key, const FastName& quality);
 
 void Initialize()
 {
@@ -32,7 +35,7 @@ void Initialize()
     DVASSERT(!initialized);
     initialized = true;
 
-    HashMap<FastName, int32> defFlags;
+    UnorderedMap<FastName, int32> defFlags;
     defFlags[FastName("MATERIAL_TEXTURE")] = 1;
 
     RenderPassDescriptor defaultPass;
@@ -57,7 +60,7 @@ void Clear()
     //RHI_COMPLETE
 }
 
-const FXDescriptor& GetFXDescriptor(const FastName& fxName, HashMap<FastName, int32>& defines, const FastName& quality)
+const FXDescriptor& GetFXDescriptor(const FastName& fxName, UnorderedMap<FastName, int32>& defines, const FastName& quality)
 {
     using namespace FXCacheDetails;
 
@@ -68,14 +71,12 @@ const FXDescriptor& GetFXDescriptor(const FastName& fxName, HashMap<FastName, in
         return FXCacheDetails::defaultFX;
     }
 
-    Vector<int32> key = ShaderDescriptorCache::BuildFlagsKey(fxName, defines);
+    Vector<size_t> key = ShaderDescriptorCache::BuildFlagsKey(fxName, defines);
 
     if (quality.IsValid()) //quality made as part of fx key
-        key.push_back(quality.Index());
+        key.push_back(ShaderDescriptorCache::GetUniqueFlagKey(quality));
 
-    //[METAL_COMPLETE] to be able to switch fx depending on metal/non-metal option
-    key.push_back(QualitySettingsSystem::Instance()->GetAllowMetalFeatures() ? 1 : 0);
-
+    LockGuard<Mutex> guard(FXCacheDetails::fxCacheMutex);
     auto it = fxDescriptors.find(key);
     if (it != fxDescriptors.end())
         return it->second;
@@ -95,7 +96,7 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
     }
 
     FilePath fxPath(fxName.c_str());
-    ScopedPtr<YamlParser> parser(YamlParser::Create(fxPath));
+    RefPtr<YamlParser> parser(YamlParser::Create(fxPath));
     YamlNode* rootNode = nullptr;
     if (parser)
     {
@@ -130,7 +131,7 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
             }
             qualityNode = materialTemplateNode->Get(materialTemplateNode->GetCount() - 1);
         }
-        ScopedPtr<YamlParser> parserTechnique(YamlParser::Create(qualityNode->AsString()));
+        RefPtr<YamlParser> parserTechnique(YamlParser::Create(qualityNode->AsString()));
         if (parserTechnique)
         {
             renderTechniqueNode = parserTechnique->GetRootNode();
@@ -339,28 +340,28 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
         }
     }
 
-    //add render pass for reflection/refraction - hard coded for now
+    //copy forward render pass for reflection/refraction - hard coded for now
+    //modify it only for editor or if high quality water is enabled - to prevent compiling shaders if not required - performance issue
     //TODO: rethink how to modify material template without full copy for all passes
-    //do it only for editor or if metal features are allowed - performance issue
-    if (QualitySettingsSystem::Instance()->GetAllowMetalFeatures() || QualitySettingsSystem::Instance()->GetRuntimeQualitySwitching())
+    const static FastName WATER_QUALITY_NAME("Water");
+    const static FastName WATER_QUALITY_REQUIRE_REFLECTION("ULTRA_HIGH");
+    for (RenderPassDescriptor& pass : target.renderPassDescriptors)
     {
-        for (RenderPassDescriptor& pass : target.renderPassDescriptors)
+        if (pass.passName == PASS_FORWARD)
         {
-            if (pass.passName == PASS_FORWARD)
-            {
-                RenderPassDescriptor noFog = pass;
-                noFog.passName = PASS_REFLECTION_REFRACTION;
-                noFog.templateDefines[NMaterialFlagName::FLAG_FOG_HALFSPACE] = 0;
-                target.renderPassDescriptors.push_back(noFog);
-                break;
-            }
+            RenderPassDescriptor reflectionPass = pass;
+            reflectionPass.passName = PASS_REFLECTION_REFRACTION;
+            if (QualitySettingsSystem::Instance()->GetRuntimeQualitySwitching() || (QualitySettingsSystem::Instance()->GetCurMaterialQuality(WATER_QUALITY_NAME) == WATER_QUALITY_REQUIRE_REFLECTION))
+                reflectionPass.templateDefines[NMaterialFlagName::FLAG_FOG_HALFSPACE] = 0;
+            target.renderPassDescriptors.push_back(reflectionPass);
+            break;
         }
     }
 
     return oldTemplateMap[std::make_pair(fxName, quality)] = target;
 }
 
-const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastName, int32>& defines, const Vector<int32>& key, const FastName& quality)
+const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, UnorderedMap<FastName, int32>& defines, const Vector<size_t>& key, const FastName& quality)
 {
     //the stuff below is old old legacy carried from RenderTechnique and NMaterialTemplate
 
@@ -368,9 +369,15 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastNa
     target.defines = defines; //combine
     for (auto& pass : target.renderPassDescriptors)
     {
-        HashMap<FastName, int32> shaderDefines = defines;
+        UnorderedMap<FastName, int32> shaderDefines = defines;
         for (auto& templateDefine : pass.templateDefines)
-            shaderDefines[templateDefine.first] = templateDefine.second;
+        {
+            if (templateDefine.second == 0)
+                shaderDefines.erase(templateDefine.first);
+            else
+                shaderDefines[templateDefine.first] = templateDefine.second;
+        }
+
         if (pass.hasBlend)
         {
             if (shaderDefines.find(NMaterialFlagName::FLAG_BLENDING) == shaderDefines.end())
@@ -379,13 +386,6 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastNa
         else
         {
             shaderDefines.erase(NMaterialFlagName::FLAG_BLENDING);
-        }
-
-        //[METAL_COMPLETE] THIS IS TEMPORARY SOLUTION TO ENNABLE IT FOR METAL ONLY
-        if (!QualitySettingsSystem::Instance()->GetAllowMetalFeatures())
-        {
-            shaderDefines.erase(NMaterialFlagName::FLAG_SPECULAR);
-            shaderDefines.erase(NMaterialFlagName::FLAG_FLOWMAP_SKY);
         }
 
         pass.shader = ShaderDescriptorCache::GetShaderDescriptor(pass.shaderFileName, shaderDefines);

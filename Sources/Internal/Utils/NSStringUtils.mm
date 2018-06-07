@@ -66,7 +66,7 @@ NSString* NSStringSafeCut(const NSString* replString, NSUInteger newLength)
 
 NSString* NSStringFromString(const DAVA::String& str)
 {
-    NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingASCII);
+    NSStringEncoding encoding = CFStringConvertEncodingToNSStringEncoding(kCFStringEncodingUTF8);
     NSString* nsstring = [[[NSString alloc] initWithBytes:str.c_str()
                                                    length:str.length()
                                                  encoding:encoding] autorelease];

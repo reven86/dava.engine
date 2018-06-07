@@ -27,6 +27,9 @@ public:
     ParticleEffectDebugDrawSystem(Scene* scene);
     ~ParticleEffectDebugDrawSystem();
 
+    void PrepareForRemove() override
+    {
+    }
     void Draw();
 
     void GenerateDebugMaterials();

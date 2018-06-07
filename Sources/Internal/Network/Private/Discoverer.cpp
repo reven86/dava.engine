@@ -40,7 +40,6 @@ void Discoverer::Stop(Function<void(IController*)> callback)
 {
     DVASSERT(false == isTerminating);
     DVASSERT(callback != nullptr);
-    isTerminating = true;
     stopCallback = callback;
     loop->Post(MakeFunction(this, &Discoverer::DoStop));
 }
@@ -55,12 +54,16 @@ bool Discoverer::TryDiscoverDevice(const Endpoint& endpoint)
     DVASSERT(!isTerminating);
     if (!(tcpSocket.IsOpen() || tcpSocket.IsClosing()))
     {
+        DAVA::Logger::FrameworkDebug("Discovering on %s", endpoint.ToString().c_str());
         tcpEndpoint = endpoint;
         loop->Post(MakeFunction(this, &Discoverer::DiscoverDevice));
         return true;
     }
-    tcpSocket.Close();
-    return false;
+    else
+    {
+        tcpSocket.Close();
+        return false;
+    }
 }
 
 void Discoverer::DoStart()
@@ -74,12 +77,20 @@ void Discoverer::DoStart()
     }
     if (error != 0 && false == isTerminating)
     {
+        status = START_FAILED;
         DoStop();
+    }
+    else
+    {
+        status = STARTED;
     }
 }
 
 void Discoverer::DoStop()
 {
+    isTerminating = true;
+    status = NOT_STARTED;
+
     if (socket.IsOpen() && !socket.IsClosing())
     {
         runningObjects += 1;
@@ -128,8 +139,13 @@ void Discoverer::DiscoverDevice()
         }
         else
         {
-            Logger::Error("[Discoverer] failed to discover device %s: %s", tcpEndpoint.ToString().c_str(), ErrorToString(error));
+            Logger::Debug("Can't discover on %s: %s", tcpEndpoint.ToString().c_str(), ErrorToString(error));
             socket->Close();
+            if (isTerminating)
+            {
+                DoObjectClose();
+                return;
+            }
         }
     };
 

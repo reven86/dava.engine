@@ -12,6 +12,7 @@
 
 #include "Utils/StringFormat.h"
 #include "Utils/UTF8Utils.h"
+#include "Render/RenderBase.h"
 
 namespace DAVA
 {
@@ -128,7 +129,16 @@ void RegisterAnyCasts()
     AnyCast<FastName, String>::Register(&FastNameToString);
     AnyCast<int32, size_t>::RegisterDefault();
     AnyCast<size_t, int32>::RegisterDefault();
+    AnyCast<int8, String>::Register(&IntegralToString<int8>);
+    AnyCast<uint8, String>::Register(&IntegralToString<uint8>);
+    AnyCast<int16, String>::Register(&IntegralToString<int16>);
+    AnyCast<uint16, String>::Register(&IntegralToString<uint16>);
     AnyCast<int32, String>::Register(&IntegralToString<int32>);
+    AnyCast<uint32, String>::Register(&IntegralToString<uint32>);
+    AnyCast<int64, String>::Register(&IntegralToString<int64>);
+    AnyCast<uint64, String>::Register(&IntegralToString<uint64>);
+    AnyCast<float32, String>::Register(&IntegralToString<float32>);
+    AnyCast<float64, String>::Register(&IntegralToString<float64>);
     AnyCast<size_t, String>::Register(&IntegralToString<size_t>);
     AnyCast<int8, FastName>::Register(&IntegralToString<int8>);
     AnyCast<uint8, FastName>::Register(&IntegralToString<uint8>);
@@ -143,6 +153,10 @@ void RegisterAnyCasts()
     AnyCast<String, FilePath>::Register(&StringToFilePath);
     AnyCast<float64, float32>::RegisterDefault();
     AnyCast<float32, float64>::RegisterDefault();
+    AnyCast<int32, float32>::RegisterDefault();
+    AnyCast<float32, int32>::RegisterDefault();
+    AnyCast<int32, float64>::RegisterDefault();
+    AnyCast<float64, int32>::RegisterDefault();
     AnyCast<uint32, int>::RegisterDefault();
     AnyCast<int, uint32>::RegisterDefault();
     AnyCast<uint16, int>::RegisterDefault();
@@ -155,6 +169,8 @@ void RegisterAnyCasts()
     AnyCast<int, int16>::RegisterDefault();
     AnyCast<int8, int>::RegisterDefault();
     AnyCast<int, int8>::RegisterDefault();
+    AnyCast<eGPUFamily, int32>::RegisterDefault();
+    AnyCast<int32, eGPUFamily>::RegisterDefault();
 
     AnyCast<Matrix2, String>::Register(&Matrix2ToString);
     AnyCast<Matrix3, String>::Register(&Matrix3ToString);

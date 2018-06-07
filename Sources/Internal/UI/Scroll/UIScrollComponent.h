@@ -9,7 +9,7 @@ namespace DAVA
 class UIScrollComponent : public UIComponent
 {
     DAVA_VIRTUAL_REFLECTION(UIScrollComponent, UIComponent);
-    IMPLEMENT_UI_COMPONENT(UIScrollComponent);
+    DECLARE_UI_COMPONENT(UIScrollComponent);
 
 public:
     UIScrollComponent();

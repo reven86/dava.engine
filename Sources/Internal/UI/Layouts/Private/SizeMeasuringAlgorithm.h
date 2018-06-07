@@ -3,23 +3,24 @@
 
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
-
-#include "ControlLayoutData.h"
-
 #include "Reflection/Reflection.h"
+#include "UI/Layouts/Private/ControlLayoutData.h"
+#include "UI/Layouts/Private/Layouter.h"
+#include "UI/Layouts/Private/LayoutMargins.h"
 
 namespace DAVA
 {
 class UISizePolicyComponent;
 class UIFlowLayoutComponent;
 class UILinearLayoutComponent;
+class FormulaContext;
 
 class SizeMeasuringAlgorithm : public ReflectionBase
 {
     DAVA_VIRTUAL_REFLECTION(UISizeMeasuringAlgorithm, ReflectionBase);
 
 public:
-    SizeMeasuringAlgorithm(Vector<ControlLayoutData>& layoutData_, ControlLayoutData& data, Vector2::eAxis axis, const UISizePolicyComponent* sizePolicy);
+    SizeMeasuringAlgorithm(Layouter& layouter, ControlLayoutData& data, Vector2::eAxis axis, const UISizePolicyComponent* sizePolicy);
     ~SizeMeasuringAlgorithm() override;
 
     void SetParentSize(float32 parentSize);
@@ -38,6 +39,11 @@ private:
     float32 CalculateFirstChild() const;
     float32 CalculateLastChild() const;
     float32 CalculateContent() const;
+    const LayoutMargins& CalculateVisibilityMargins();
+    const LayoutMargins& GetSafeAreaInsets();
+
+    Vector2 GetContentPreferredSize(const Vector2& constraints) const; // -1.0f means no constraint for axis
+    bool IsHeightDependsOnWidth() const;
 
     void ApplySize(float32 value);
     float32 GetSize(const ControlLayoutData& data) const;
@@ -48,11 +54,11 @@ private:
     float32 GetMinLimit() const;
     float32 GetMaxLimit() const;
     float32 GetValue() const;
-    float32 Min(float32 a, float32 b) const;
-    float32 Max(float32 a, float32 b) const;
-    float32 Clamp(float32 val, float32 a, float32 b) const;
+    float32 Min(const std::shared_ptr<FormulaContext>& context, float32 a, float32 b) const;
+    float32 Max(const std::shared_ptr<FormulaContext>& context, float32 a, float32 b) const;
+    float32 Clamp(const std::shared_ptr<FormulaContext>& context, float32 val, float32 a, float32 b) const;
 
-    Vector<ControlLayoutData>& layoutData;
+    Layouter& layouter;
     ControlLayoutData& data;
     Vector2::eAxis axis = Vector2::AXIS_X;
     float32 parentSize = 0.0f;
@@ -64,8 +70,9 @@ private:
     const UIFlowLayoutComponent* flowLayout = nullptr;
 
     bool skipInvisible = false;
+
+    LayoutMargins visibilityMargins;
 };
 }
-
 
 #endif //__DAVAENGINE_SIZE_MEASURING_ALGORITHM_H__

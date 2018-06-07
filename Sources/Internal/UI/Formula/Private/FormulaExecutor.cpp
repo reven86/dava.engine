@@ -9,7 +9,7 @@
 
 namespace DAVA
 {
-FormulaExecutor::FormulaExecutor(FormulaContext* context_)
+FormulaExecutor::FormulaExecutor(const std::shared_ptr<FormulaContext>& context_)
     : context(context_)
 {
 }
@@ -61,31 +61,60 @@ void FormulaExecutor::Visit(FormulaNegExpression* exp)
     {
         calculationResult = Any(-val.Get<float32>());
     }
+    else if (val.CanGet<float64>())
+    {
+        calculationResult = Any(-val.Get<float64>());
+    }
     else if (val.CanGet<int64>())
     {
         calculationResult = Any(-val.Get<int64>());
     }
-    else if (val.CanCast<int32>())
-    {
-        calculationResult = Any(-val.Cast<int32>());
-    }
     else
     {
-        DAVA_THROW(FormulaException, Format("Invalid argument type '%s' to unary '-' expression", FormulaFormatter::AnyTypeToString(val).c_str()), exp);
+        int32 res = 0;
+        if (CastToInt32(val, &res))
+        {
+            calculationResult = Any(-res);
+        }
+        else
+        {
+            DAVA_THROW(FormulaException, Format("Invalid argument type '%s' to unary '-' expression", FormulaFormatter::AnyTypeToString(val).c_str()), exp);
+        }
     }
 }
 
 void FormulaExecutor::Visit(FormulaNotExpression* exp)
 {
-    Any val = Calculate(exp->GetExp());
+    Any val = CalculateImpl(exp->GetExp());
     if (val.CanGet<bool>())
     {
         calculationResult = Any(!val.Get<bool>());
     }
     else
     {
-        DAVA_THROW(FormulaException, Format("Invalid argument type '%s' to unary '!' expression", FormulaFormatter::AnyTypeToString(val).c_str()), exp);
+        DAVA_THROW(FormulaException, Format("Invalid argument type '%s' to unary 'not' expression", FormulaFormatter::AnyTypeToString(val).c_str()), exp);
     }
+}
+
+void FormulaExecutor::Visit(FormulaWhenExpression* exp)
+{
+    for (const auto& branch : exp->GetBranches())
+    {
+        Any val = CalculateImpl(branch.first.get());
+        if (val.CanGet<bool>())
+        {
+            if (val.Get<bool>())
+            {
+                calculationResult = CalculateImpl(branch.second.get());
+                return;
+            }
+        }
+        else
+        {
+            DAVA_THROW(FormulaException, Format("Invalid argument type '%s' to when selector expression", FormulaFormatter::AnyTypeToString(val).c_str()), branch.first.get());
+        }
+    }
+    calculationResult = CalculateImpl(exp->GetElseBranch());
 }
 
 void FormulaExecutor::Visit(FormulaBinaryOperatorExpression* exp)
@@ -95,25 +124,15 @@ void FormulaExecutor::Visit(FormulaBinaryOperatorExpression* exp)
 
     if (l.CanGet<uint64>() && r.CanGet<uint64>())
     {
-        calculationResult = CalculateIntAnyValues<uint64>(exp->GetOperator(), l, r);
+        calculationResult = CalculateIntAnyValues<uint64>(exp->GetOperator(), l, r, exp);
     }
     else if (l.CanGet<int64>() && r.CanGet<int64>())
     {
-        calculationResult = CalculateIntAnyValues<int64>(exp->GetOperator(), l, r);
+        calculationResult = CalculateIntAnyValues<int64>(exp->GetOperator(), l, r, exp);
     }
     else if (l.CanGet<uint32>() && r.CanGet<uint32>())
     {
-        calculationResult = CalculateIntAnyValues<uint32>(exp->GetOperator(), l, r);
-    }
-    else if (l.CanCast<int32>() && r.CanCast<int32>())
-    {
-        calculationResult = CalculateIntAnyValues<int32>(exp->GetOperator(), l, r);
-    }
-    else if ((l.CanGet<float32>() || l.CanCast<int32>()) && (r.CanGet<float32>() || r.CanCast<int32>()))
-    {
-        float32 lVal = l.CanGet<float32>() ? l.Get<float32>() : static_cast<float32>(l.Cast<int32>());
-        float32 rVal = r.CanGet<float32>() ? r.Get<float32>() : static_cast<float32>(r.Cast<int32>());
-        calculationResult = CalculateNumberValues<float32>(exp->GetOperator(), lVal, rVal);
+        calculationResult = CalculateIntAnyValues<uint32>(exp->GetOperator(), l, r, exp);
     }
     else if (l.CanGet<bool>() && r.CanGet<bool>())
     {
@@ -173,11 +192,36 @@ void FormulaExecutor::Visit(FormulaBinaryOperatorExpression* exp)
     }
     else
     {
-        DAVA_THROW(FormulaException, Format("Operator '%s' cannot be applied to '%s', '%s'",
-                                            FormulaFormatter::BinaryOpToString(exp->GetOperator()).c_str(),
-                                            FormulaFormatter::AnyTypeToString(l).c_str(),
-                                            FormulaFormatter::AnyTypeToString(r).c_str()),
-                   exp);
+        int32 leftIntVal = 0;
+        bool isLeftInt = CastToInt32(l, &leftIntVal);
+
+        int32 rightIntVal = 0;
+        bool isRightInt = CastToInt32(r, &rightIntVal);
+
+        if (isLeftInt && isRightInt)
+        {
+            calculationResult = CalculateIntValues<int32>(exp->GetOperator(), leftIntVal, rightIntVal, exp);
+        }
+        else if ((l.CanGet<float32>() || isLeftInt) && (r.CanGet<float32>() || isRightInt))
+        {
+            float32 lVal = l.CanGet<float32>() ? l.Get<float32>() : static_cast<float32>(leftIntVal);
+            float32 rVal = r.CanGet<float32>() ? r.Get<float32>() : static_cast<float32>(rightIntVal);
+            calculationResult = CalculateNumberValues<float32>(exp->GetOperator(), lVal, rVal);
+        }
+        else if ((l.CanGet<float64>() && r.CanCast<float64>()) || (l.CanCast<float64>() && r.CanGet<float64>()))
+        {
+            float64 lVal = l.Cast<float64>();
+            float64 rVal = r.Cast<float64>();
+            calculationResult = CalculateNumberValues<float64>(exp->GetOperator(), lVal, rVal);
+        }
+        else
+        {
+            DAVA_THROW(FormulaException, Format("Operator '%s' cannot be applied to '%s', '%s'",
+                                                FormulaFormatter::BinaryOpToString(exp->GetOperator()).c_str(),
+                                                FormulaFormatter::AnyTypeToString(l).c_str(),
+                                                FormulaFormatter::AnyTypeToString(r).c_str()),
+                       exp);
+        }
     }
 }
 
@@ -193,6 +237,13 @@ void FormulaExecutor::Visit(FormulaFunctionExpression* exp)
     for (const std::shared_ptr<FormulaExpression>& paramExp : params)
     {
         Any res = CalculateImpl(paramExp.get());
+        if (res.IsEmpty())
+        {
+            DAVA_THROW(FormulaException, Format("Can't calculate param '%s' for function '%s'",
+                                                FormulaFormatter().Format(paramExp.get()).c_str(),
+                                                exp->GetName().c_str()),
+                       paramExp.get());
+        }
         types.push_back(res.GetType());
         values.push_back(res);
     }
@@ -212,12 +263,13 @@ void FormulaExecutor::Visit(FormulaFunctionExpression* exp)
         DAVA_THROW(FormulaException, Format("Can't resolve function '%s(%s)'", exp->GetName().c_str(), args.c_str()), exp);
     }
 
-    int32 index = 0;
+    int32 index = 1; // Skip first arg (FormulaContext).
     for (Any& v : values)
     {
-        if (v.CanCast<int32>() && fn.GetInvokeParams().argsType[index] == Type::Instance<float32>())
+        int32 intVal = 0;
+        if (fn.GetInvokeParams().argsType[index] == Type::Instance<float32>() && FormulaExecutor::CastToInt32(v, &intVal))
         {
-            v = Any(static_cast<float32>(v.Cast<int32>()));
+            v = Any(static_cast<float32>(intVal));
         }
 
         index++;
@@ -226,31 +278,27 @@ void FormulaExecutor::Visit(FormulaFunctionExpression* exp)
     switch (params.size())
     {
     case 0:
-        calculationResult = fn.Invoke();
+        calculationResult = fn.Invoke(context);
         break;
 
     case 1:
-        calculationResult = fn.Invoke(values[0]);
+        calculationResult = fn.Invoke(context, values[0]);
         break;
 
     case 2:
-        calculationResult = fn.Invoke(values[0], values[1]);
+        calculationResult = fn.Invoke(context, values[0], values[1]);
         break;
 
     case 3:
-        calculationResult = fn.Invoke(values[0], values[1], values[2]);
+        calculationResult = fn.Invoke(context, values[0], values[1], values[2]);
         break;
 
     case 4:
-        calculationResult = fn.Invoke(values[0], values[1], values[2], values[3]);
+        calculationResult = fn.Invoke(context, values[0], values[1], values[2], values[3]);
         break;
 
     case 5:
-        calculationResult = fn.Invoke(values[0], values[1], values[2], values[3], values[4]);
-        break;
-
-    case 6:
-        calculationResult = fn.Invoke(values[0], values[1], values[2], values[3], values[4], values[5]);
+        calculationResult = fn.Invoke(context, values[0], values[1], values[2], values[3], values[4]);
         break;
 
     default:
@@ -265,7 +313,7 @@ void FormulaExecutor::Visit(FormulaFunctionExpression* exp)
             args += FormulaFormatter::AnyTypeToString(values[i]);
         }
         DAVA_THROW(FormulaException,
-                   Format("Function '%s(%s)' has to much arguments (more than 6)",
+                   Format("Function '%s(%s)' has to much arguments (more than 5)",
                           exp->GetName().c_str(),
                           args.c_str()),
                    exp);
@@ -332,6 +380,18 @@ void FormulaExecutor::Visit(FormulaIndexExpression* exp)
 
 const Any& FormulaExecutor::CalculateImpl(FormulaExpression* exp)
 {
+    for (FormulaExpression* stackExpression : expressionsStack)
+    {
+        if (stackExpression == exp)
+        {
+            DAVA_THROW(FormulaException,
+                       Format("Recursion access '%s'",
+                              FormulaFormatter().Format(exp).c_str()),
+                       exp);
+        }
+    }
+
+    expressionsStack.push_back(exp);
     dataReference = Reflection();
     calculationResult.Clear();
 
@@ -352,8 +412,15 @@ const Any& FormulaExecutor::CalculateImpl(FormulaExpression* exp)
         }
     }
 
+    if (calculationResult.CanCast<std::shared_ptr<FormulaExpression>>())
+    {
+        std::shared_ptr<FormulaExpression> internalExpr = calculationResult.Cast<std::shared_ptr<FormulaExpression>>();
+        calculationResult = Calculate(internalExpr.get());
+    }
+
     dataReference = Reflection();
 
+    expressionsStack.pop_back();
     return calculationResult;
 }
 
@@ -367,6 +434,14 @@ const Reflection& FormulaExecutor::GetDataReferenceImpl(FormulaExpression* exp)
     if (dataReference.IsValid())
     {
         calculationResult.Clear();
+
+        Any value = dataReference.GetValue();
+        if (value.CanCast<std::shared_ptr<FormulaExpression>>())
+        {
+            std::shared_ptr<FormulaExpression> internalExpr = value.Cast<std::shared_ptr<FormulaExpression>>();
+            dataReference = GetDataReferenceImpl(internalExpr.get());
+        }
+
         return dataReference;
     }
     else
@@ -387,14 +462,37 @@ Any FormulaExecutor::CalculateNumberAnyValues(FormulaBinaryOperatorExpression::O
 }
 
 template <typename T>
-Any FormulaExecutor::CalculateIntAnyValues(FormulaBinaryOperatorExpression::Operator op, Any anyLVal, Any anyRVal) const
+Any FormulaExecutor::CalculateIntAnyValues(FormulaBinaryOperatorExpression::Operator op, Any anyLVal, Any anyRVal, FormulaExpression* exp) const
 {
     T lVal = anyLVal.Cast<T>();
     T rVal = anyRVal.Cast<T>();
+    return CalculateIntValues<T>(op, lVal, rVal, exp);
+}
 
+template <typename T>
+Any FormulaExecutor::CalculateIntValues(FormulaBinaryOperatorExpression::Operator op, T lVal, T rVal, FormulaExpression* exp) const
+{
     if (op == FormulaBinaryOperatorExpression::OP_MOD)
     {
+        if (rVal == 0)
+        {
+            DAVA_THROW(FormulaException,
+                       Format("Division by zero '%s'",
+                              FormulaFormatter().Format(exp).c_str()),
+                       exp);
+        }
         return Any(lVal % rVal);
+    }
+    else if (op == FormulaBinaryOperatorExpression::OP_DIV)
+    {
+        if (rVal == 0)
+        {
+            DAVA_THROW(FormulaException,
+                       Format("Division by zero '%s'",
+                              FormulaFormatter().Format(exp).c_str()),
+                       exp);
+        }
+        return Any(lVal / rVal);
     }
     else
     {
@@ -432,5 +530,35 @@ Any FormulaExecutor::CalculateNumberValues(FormulaBinaryOperatorExpression::Oper
         DVASSERT("Invalid operands to binary expression");
         return Any();
     }
+}
+
+bool FormulaExecutor::CastToInt32(const Any& val, int32* res) const
+{
+    if (val.CanGet<int32>())
+    {
+        *res = val.Get<int32>();
+        return true;
+    }
+    else if (val.CanGet<int16>())
+    {
+        *res = static_cast<int32>(val.Get<int16>());
+        return true;
+    }
+    else if (val.CanGet<uint16>())
+    {
+        *res = static_cast<int32>(val.Get<uint16>());
+        return true;
+    }
+    else if (val.CanGet<int8>())
+    {
+        *res = static_cast<int32>(val.Get<int8>());
+        return true;
+    }
+    else if (val.CanGet<uint8>())
+    {
+        *res = static_cast<int32>(val.Get<uint8>());
+        return true;
+    }
+    return false;
 }
 }

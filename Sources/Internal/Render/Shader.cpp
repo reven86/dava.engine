@@ -94,7 +94,7 @@ void ShaderDescriptor::UpdateDynamicParams()
         {
             if (dynamicBinding.type < rhi::ShaderProp::TYPE_FLOAT4)
             {
-                DVASSERT(Renderer::GetDynamicBindings().GetDynamicParamArraySize(dynamicBinding.dynamicPropertySemantic, 1) == 1);
+                DVASSERT(Renderer::GetDynamicBindings().GetDynamicParamArraySize(dynamicBinding.dynamicPropertySemantic) == 1);
                 rhi::UpdateConstBuffer1fv(dynamicBinding.buffer, dynamicBinding.reg, dynamicBinding.regCount, data, CalculateDataSize(dynamicBinding.type, 1));
             }
             else
@@ -135,9 +135,9 @@ rhi::HConstBuffer ShaderDescriptor::GetDynamicBuffer(ConstBufferDescriptor::Type
 }
 
 ShaderDescriptor::ShaderDescriptor(rhi::HPipelineState _pipelineState, FastName _vProgUid, FastName _fProgUid)
-    : piplineState(_pipelineState)
-    , vProgUid(_vProgUid)
+    : vProgUid(_vProgUid)
     , fProgUid(_fProgUid)
+    , piplineState(_pipelineState)
 {
 }
 ShaderDescriptor::~ShaderDescriptor()

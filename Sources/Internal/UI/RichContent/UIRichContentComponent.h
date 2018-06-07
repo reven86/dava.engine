@@ -34,7 +34,7 @@ class UIControl;
 class UIRichContentComponent : public UIComponent
 {
     DAVA_VIRTUAL_REFLECTION(UIRichContentComponent, UIComponent);
-    IMPLEMENT_UI_COMPONENT(UIRichContentComponent);
+    DECLARE_UI_COMPONENT(UIRichContentComponent);
 
 public:
     /** Default constructor. */

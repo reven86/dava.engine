@@ -1,13 +1,14 @@
-#include "Scene3D/Systems/TransformSystem.h"
-#include "Scene3D/Components/TransformComponent.h"
-#include "Scene3D/Components/AnimationComponent.h"
-#include "Scene3D/Entity.h"
 #include "Debug/DVAssert.h"
-#include "Scene3D/Scene.h"
-#include "Scene3D/Components/ComponentHelpers.h"
-#include "Scene3D/Components/SingleComponents/TransformSingleComponent.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
+#include "Scene3D/Components/AnimationComponent.h"
+#include "Scene3D/Components/ComponentHelpers.h"
+#include "Math/Transform.h"
+#include "Scene3D/Components/SingleComponents/TransformSingleComponent.h"
+#include "Scene3D/Components/TransformComponent.h"
+#include "Scene3D/Entity.h"
+#include "Scene3D/Scene.h"
+#include "Scene3D/Systems/TransformSystem.h"
 
 namespace DAVA
 {
@@ -24,17 +25,17 @@ void TransformSystem::Process(float32 timeElapsed)
     for (Entity* e : tsc->localTransformChanged)
     {
         EntityNeedUpdate(e);
-        HierahicAddToUpdate(e);
+        HierarchicAddToUpdate(e);
     }
     for (Entity* e : tsc->transformParentChanged)
     {
         EntityNeedUpdate(e);
-        HierahicAddToUpdate(e);
+        HierarchicAddToUpdate(e);
     }
     for (Entity* e : tsc->animationTransformChanged)
     {
         EntityNeedUpdate(e);
-        HierahicAddToUpdate(e);
+        HierarchicAddToUpdate(e);
     }
 
     passedNodes = 0;
@@ -46,11 +47,6 @@ void TransformSystem::Process(float32 timeElapsed)
         FindNodeThatRequireUpdate(updatableEntities[i]);
     }
     updatableEntities.clear();
-
-    if (passedNodes)
-    {
-        //		Logger::Info("TransformSystem %d passed %d multiplied", passedNodes, multipliedNodes);
-    }
 }
 
 void TransformSystem::FindNodeThatRequireUpdate(Entity* entity)
@@ -101,17 +97,22 @@ void TransformSystem::TransformAllChildEntities(Entity* entity)
     {
         Entity* entity = stack[--stackPosition];
 
-        TransformComponent* transform = static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT));
-        if (transform->parentMatrix)
+        TransformComponent* transform = entity->GetComponent<TransformComponent>();
+
+        if (transform->parentTransform)
         {
             AnimationComponent* animComp = GetAnimationComponent(entity);
             localMultiplied++;
             if (animComp)
-                transform->worldMatrix = animComp->animationTransform * transform->localMatrix * *(transform->parentMatrix);
+            {
+                transform->worldTransform = Transform(animComp->animationTransform) * transform->localTransform * *(transform->parentTransform);
+            }
             else
-                transform->worldMatrix = transform->localMatrix * *(transform->parentMatrix);
-            TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-            tsc->worldTransformChanged.Push(entity);
+            {
+                transform->worldTransform = transform->localTransform * *(transform->parentTransform);
+            }
+
+            transform->MarkWorldChanged();
         }
 
         entity->RemoveFlag(Entity::TRANSFORM_NEED_UPDATE | Entity::TRANSFORM_DIRTY);
@@ -127,42 +128,12 @@ void TransformSystem::TransformAllChildEntities(Entity* entity)
     multipliedNodes += localMultiplied;
 }
 
-void TransformSystem::HierahicFindUpdatableTransform(Entity* entity, bool forcedUpdate)
-{
-    passedNodes++;
-
-    if (forcedUpdate || entity->GetFlags() & Entity::TRANSFORM_NEED_UPDATE)
-    {
-        forcedUpdate = true;
-        multipliedNodes++;
-        TransformComponent* transform = static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT));
-        if (transform->parentMatrix)
-        {
-            transform->worldMatrix = transform->localMatrix * *(transform->parentMatrix);
-            TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-            tsc->worldTransformChanged.Push(entity);
-        }
-    }
-
-    uint32 size = entity->GetChildrenCount();
-    for (uint32 i = 0; i < size; ++i)
-    {
-        if (forcedUpdate || entity->GetChild(i)->GetFlags() & Entity::TRANSFORM_DIRTY)
-        {
-            HierahicFindUpdatableTransform(entity->GetChild(i), forcedUpdate);
-        }
-    }
-
-    entity->RemoveFlag(Entity::TRANSFORM_NEED_UPDATE);
-    entity->RemoveFlag(Entity::TRANSFORM_DIRTY);
-}
-
 void TransformSystem::EntityNeedUpdate(Entity* entity)
 {
     entity->AddFlag(Entity::TRANSFORM_NEED_UPDATE);
 }
 
-void TransformSystem::HierahicAddToUpdate(Entity* entity)
+void TransformSystem::HierarchicAddToUpdate(Entity* entity)
 {
     if (!(entity->GetFlags() & Entity::TRANSFORM_DIRTY))
     {
@@ -170,7 +141,7 @@ void TransformSystem::HierahicAddToUpdate(Entity* entity)
         Entity* parent = entity->GetParent();
         if (parent && parent->GetParent())
         {
-            HierahicAddToUpdate(entity->GetParent());
+            HierarchicAddToUpdate(entity->GetParent());
         }
         else
         { //topmost parent
@@ -183,7 +154,7 @@ void TransformSystem::HierahicAddToUpdate(Entity* entity)
 void TransformSystem::AddEntity(Entity* entity)
 {
     EntityNeedUpdate(entity);
-    HierahicAddToUpdate(entity);
+    HierarchicAddToUpdate(entity);
 }
 
 void TransformSystem::RemoveEntity(Entity* entity)
@@ -202,5 +173,18 @@ void TransformSystem::RemoveEntity(Entity* entity)
 
     entity->RemoveFlag(Entity::TRANSFORM_NEED_UPDATE);
     entity->RemoveFlag(Entity::TRANSFORM_DIRTY);
+}
+
+void TransformSystem::PrepareForRemove()
+{
+    uint32 size = static_cast<uint32>(updatableEntities.size());
+    for (uint32 i = 0; i < size; ++i)
+    {
+        Entity* entity = updatableEntities[i];
+        entity->RemoveFlag(Entity::TRANSFORM_NEED_UPDATE);
+        entity->RemoveFlag(Entity::TRANSFORM_DIRTY);
+    }
+
+    updatableEntities.clear();
 }
 };

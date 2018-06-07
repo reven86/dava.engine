@@ -14,13 +14,13 @@ public:
     }
 
     virtual bool IsStatic() const = 0;
-    virtual Any Invoke(const AnyFn::AnyFnStorage&) const = 0;
-    virtual Any Invoke(const AnyFn::AnyFnStorage&, const Any&) const = 0;
-    virtual Any Invoke(const AnyFn::AnyFnStorage&, const Any&, const Any&) const = 0;
-    virtual Any Invoke(const AnyFn::AnyFnStorage&, const Any&, const Any&, const Any&) const = 0;
-    virtual Any Invoke(const AnyFn::AnyFnStorage&, const Any&, const Any&, const Any&, const Any&) const = 0;
-    virtual Any Invoke(const AnyFn::AnyFnStorage&, const Any&, const Any&, const Any&, const Any&, const Any&) const = 0;
-    virtual Any Invoke(const AnyFn::AnyFnStorage&, const Any&, const Any&, const Any&, const Any&, const Any&, const Any&) const = 0;
+    virtual Any Invoke(const AnyFn::AnyFnStorage&, bool castArguments) const = 0;
+    virtual Any Invoke(const AnyFn::AnyFnStorage&, bool castArguments, const Any&) const = 0;
+    virtual Any Invoke(const AnyFn::AnyFnStorage&, bool castArguments, const Any&, const Any&) const = 0;
+    virtual Any Invoke(const AnyFn::AnyFnStorage&, bool castArguments, const Any&, const Any&, const Any&) const = 0;
+    virtual Any Invoke(const AnyFn::AnyFnStorage&, bool castArguments, const Any&, const Any&, const Any&, const Any&) const = 0;
+    virtual Any Invoke(const AnyFn::AnyFnStorage&, bool castArguments, const Any&, const Any&, const Any&, const Any&, const Any&) const = 0;
+    virtual Any Invoke(const AnyFn::AnyFnStorage&, bool castArguments, const Any&, const Any&, const Any&, const Any&, const Any&, const Any&) const = 0;
 
     virtual AnyFn BindThis(const AnyFn::AnyFnStorage& storage, const void*) const = 0;
 };
@@ -38,39 +38,39 @@ struct StaticAnyFnInvoker : AnyFnInvoker
         return true;
     }
 
-    Any Invoke(const AnyFn::AnyFnStorage& storage) const override
+    Any Invoke(const AnyFn::AnyFnStorage& storage, bool castArguments) const override
     {
-        return FinalInvoker<0 == sizeof...(Args), Ret>::Invoke(storage);
+        return FinalInvoker<0 == sizeof...(Args), Ret>::Invoke(storage, castArguments);
     }
 
-    Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& a1) const override
+    Any Invoke(const AnyFn::AnyFnStorage& storage, bool castArguments, const Any& a1) const override
     {
-        return FinalInvoker<1 == sizeof...(Args), Ret, Any>::Invoke(storage, a1);
+        return FinalInvoker<1 == sizeof...(Args), Ret, Any>::Invoke(storage, castArguments, a1);
     }
 
-    Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& a1, const Any& a2) const override
+    Any Invoke(const AnyFn::AnyFnStorage& storage, bool castArguments, const Any& a1, const Any& a2) const override
     {
-        return FinalInvoker<2 == sizeof...(Args), Ret, Any, Any>::Invoke(storage, a1, a2);
+        return FinalInvoker<2 == sizeof...(Args), Ret, Any, Any>::Invoke(storage, castArguments, a1, a2);
     }
 
-    Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& a1, const Any& a2, const Any& a3) const override
+    Any Invoke(const AnyFn::AnyFnStorage& storage, bool castArguments, const Any& a1, const Any& a2, const Any& a3) const override
     {
-        return FinalInvoker<3 == sizeof...(Args), Ret, Any, Any, Any>::Invoke(storage, a1, a2, a3);
+        return FinalInvoker<3 == sizeof...(Args), Ret, Any, Any, Any>::Invoke(storage, castArguments, a1, a2, a3);
     }
 
-    Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& a1, const Any& a2, const Any& a3, const Any& a4) const override
+    Any Invoke(const AnyFn::AnyFnStorage& storage, bool castArguments, const Any& a1, const Any& a2, const Any& a3, const Any& a4) const override
     {
-        return FinalInvoker<4 == sizeof...(Args), Ret, Any, Any, Any, Any>::Invoke(storage, a1, a2, a3, a4);
+        return FinalInvoker<4 == sizeof...(Args), Ret, Any, Any, Any, Any>::Invoke(storage, castArguments, a1, a2, a3, a4);
     }
 
-    Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5) const override
+    Any Invoke(const AnyFn::AnyFnStorage& storage, bool castArguments, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5) const override
     {
-        return FinalInvoker<5 == sizeof...(Args), Ret, Any, Any, Any, Any, Any>::Invoke(storage, a1, a2, a3, a4, a5);
+        return FinalInvoker<5 == sizeof...(Args), Ret, Any, Any, Any, Any, Any>::Invoke(storage, castArguments, a1, a2, a3, a4, a5);
     }
 
-    Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5, const Any& a6) const override
+    Any Invoke(const AnyFn::AnyFnStorage& storage, bool castArguments, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5, const Any& a6) const override
     {
-        return FinalInvoker<6 == sizeof...(Args), Ret, Any, Any, Any, Any, Any, Any>::Invoke(storage, a1, a2, a3, a4, a5, a6);
+        return FinalInvoker<6 == sizeof...(Args), Ret, Any, Any, Any, Any, Any, Any>::Invoke(storage, castArguments, a1, a2, a3, a4, a5, a6);
     }
 
     AnyFn BindThis(const AnyFn::AnyFnStorage& storage, const void* this_) const override
@@ -83,7 +83,7 @@ template <typename Fn, typename Ret, typename... Args>
 template <bool, typename R, typename... A>
 struct StaticAnyFnInvoker<Fn, Ret, Args...>::FinalInvoker
 {
-    inline static Any Invoke(const AnyFn::AnyFnStorage& storage, const A&... args)
+    inline static Any Invoke(const AnyFn::AnyFnStorage& storage, bool castArguments, const A&... args)
     {
         DAVA_THROW(Exception, "AnyFn:: can't be invoker with such arguments, type to count mismatch");
     }
@@ -93,9 +93,12 @@ template <typename Fn, typename Ret, typename... Args>
 template <typename R, typename... A>
 struct StaticAnyFnInvoker<Fn, Ret, Args...>::FinalInvoker<true, R, A...>
 {
-    inline static Any Invoke(const AnyFn::AnyFnStorage& storage, const A&... args)
+    inline static Any Invoke(const AnyFn::AnyFnStorage& storage, bool castArguments, const A&... args)
     {
         Fn fn = storage.template GetAuto<Fn>();
+        if (castArguments)
+            return Any(fn(args.template Cast<Args>()...));
+
         return Any(fn(args.template Get<Args>()...));
     };
 };
@@ -104,10 +107,13 @@ template <typename Fn, typename Ret, typename... Args>
 template <typename... A>
 struct StaticAnyFnInvoker<Fn, Ret, Args...>::FinalInvoker<true, void, A...>
 {
-    inline static Any Invoke(const AnyFn::AnyFnStorage& storage, const A&... args)
+    inline static Any Invoke(const AnyFn::AnyFnStorage& storage, bool castArguments, const A&... args)
     {
         Fn fn = storage.GetAuto<Fn>();
-        fn(args.template Get<Args>()...);
+        if (castArguments)
+            fn(args.template Cast<Args>()...);
+        else
+            fn(args.template Get<Args>()...);
         return Any();
     };
 };
@@ -125,39 +131,39 @@ struct ClassAnyFnInvoker : AnyFnInvoker
         return false;
     }
 
-    Any Invoke(const AnyFn::AnyFnStorage& storage) const override
+    Any Invoke(const AnyFn::AnyFnStorage& storage, bool castArguments) const override
     {
-        return FinalInvoker<false, Ret>::Invoke(storage, Any());
+        return FinalInvoker<false, Ret>::Invoke(storage, castArguments, Any());
     }
 
-    Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& that) const override
+    Any Invoke(const AnyFn::AnyFnStorage& storage, bool castArguments, const Any& that) const override
     {
-        return FinalInvoker<0 == sizeof...(Args), Ret>::Invoke(storage, that);
+        return FinalInvoker<0 == sizeof...(Args), Ret>::Invoke(storage, castArguments, that);
     }
 
-    Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& that, const Any& a1) const override
+    Any Invoke(const AnyFn::AnyFnStorage& storage, bool castArguments, const Any& that, const Any& a1) const override
     {
-        return FinalInvoker<1 == sizeof...(Args), Ret, Any>::Invoke(storage, that, a1);
+        return FinalInvoker<1 == sizeof...(Args), Ret, Any>::Invoke(storage, castArguments, that, a1);
     }
 
-    Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& that, const Any& a1, const Any& a2) const override
+    Any Invoke(const AnyFn::AnyFnStorage& storage, bool castArguments, const Any& that, const Any& a1, const Any& a2) const override
     {
-        return FinalInvoker<2 == sizeof...(Args), Ret, Any, Any>::Invoke(storage, that, a1, a2);
+        return FinalInvoker<2 == sizeof...(Args), Ret, Any, Any>::Invoke(storage, castArguments, that, a1, a2);
     }
 
-    Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& that, const Any& a1, const Any& a2, const Any& a3) const override
+    Any Invoke(const AnyFn::AnyFnStorage& storage, bool castArguments, const Any& that, const Any& a1, const Any& a2, const Any& a3) const override
     {
-        return FinalInvoker<3 == sizeof...(Args), Ret, Any, Any, Any>::Invoke(storage, that, a1, a2, a3);
+        return FinalInvoker<3 == sizeof...(Args), Ret, Any, Any, Any>::Invoke(storage, castArguments, that, a1, a2, a3);
     }
 
-    Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& that, const Any& a1, const Any& a2, const Any& a3, const Any& a4) const override
+    Any Invoke(const AnyFn::AnyFnStorage& storage, bool castArguments, const Any& that, const Any& a1, const Any& a2, const Any& a3, const Any& a4) const override
     {
-        return FinalInvoker<4 == sizeof...(Args), Ret, Any, Any, Any, Any>::Invoke(storage, that, a1, a2, a3, a4);
+        return FinalInvoker<4 == sizeof...(Args), Ret, Any, Any, Any, Any>::Invoke(storage, castArguments, that, a1, a2, a3, a4);
     }
 
-    Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& that, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5) const override
+    Any Invoke(const AnyFn::AnyFnStorage& storage, bool castArguments, const Any& that, const Any& a1, const Any& a2, const Any& a3, const Any& a4, const Any& a5) const override
     {
-        return FinalInvoker<5 == sizeof...(Args), Ret, Any, Any, Any, Any, Any>::Invoke(storage, that, a1, a2, a3, a4, a5);
+        return FinalInvoker<5 == sizeof...(Args), Ret, Any, Any, Any, Any, Any>::Invoke(storage, castArguments, that, a1, a2, a3, a4, a5);
     }
 
     AnyFn BindThis(const AnyFn::AnyFnStorage& storage, const void* this_) const override
@@ -175,7 +181,7 @@ template <typename Ret, typename C, typename... Args>
 template <bool, typename R, typename... A>
 struct ClassAnyFnInvoker<Ret, C, Args...>::FinalInvoker
 {
-    inline static Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& cls, const A&... args)
+    inline static Any Invoke(const AnyFn::AnyFnStorage& storage, bool castArguments, const Any& cls, const A&... args)
     {
         DAVA_THROW(Exception, "AnyFn:: can't be invoker with such arguments, type or count mismatch");
     }
@@ -185,10 +191,13 @@ template <typename Ret, typename C, typename... Args>
 template <typename R, typename... A>
 struct ClassAnyFnInvoker<Ret, C, Args...>::FinalInvoker<true, R, A...>
 {
-    inline static Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& cls, const A&... args)
+    inline static Any Invoke(const AnyFn::AnyFnStorage& storage, bool castArguments, const Any& cls, const A&... args)
     {
         Fn fn = storage.GetAuto<Fn>();
         C* p = const_cast<C*>(cls.Get<const C*>());
+        if (castArguments)
+            return Any((p->*fn)(args.template Cast<Args>()...));
+
         return Any((p->*fn)(args.template Get<Args>()...));
     }
 };
@@ -197,11 +206,14 @@ template <typename Ret, typename C, typename... Args>
 template <typename... A>
 struct ClassAnyFnInvoker<Ret, C, Args...>::FinalInvoker<true, void, A...>
 {
-    inline static Any Invoke(const AnyFn::AnyFnStorage& storage, const Any& cls, const A&... args)
+    inline static Any Invoke(const AnyFn::AnyFnStorage& storage, bool castArguments, const Any& cls, const A&... args)
     {
         Fn fn = storage.GetAuto<Fn>();
         C* p = const_cast<C*>(cls.Get<const C*>());
-        (p->*fn)(args.template Get<Args>()...);
+        if (castArguments)
+            (p->*fn)(args.template Cast<Args>()...);
+        else
+            (p->*fn)(args.template Get<Args>()...);
         return Any();
     }
 };
@@ -283,7 +295,13 @@ inline const AnyFn::Params& AnyFn::GetInvokeParams() const
 template <typename... Args>
 inline Any AnyFn::Invoke(const Args&... args) const
 {
-    return invoker->Invoke(anyFnStorage, args...);
+    return invoker->Invoke(anyFnStorage, false, args...);
+}
+
+template <typename... Args>
+inline Any AnyFn::InvokeWithCast(const Args&... args) const
+{
+    return invoker->Invoke(anyFnStorage, true, args...);
 }
 
 inline AnyFn AnyFn::BindThis(const void* this_) const

@@ -1,8 +1,7 @@
-#ifndef __SHARED_PREFERENCES_H__
-#define __SHARED_PREFERENCES_H__
+#pragma once
 
 #include "DataStorage/DataStorage.h"
-#include "Engine/Android/JNIBridge.h"
+#include "Engine/PlatformApiAndroid.h"
 
 namespace DAVA
 {
@@ -42,5 +41,3 @@ private:
 #endif
 
 } //namespace DAVA
-
-#endif // __DATA_VAULT_H__

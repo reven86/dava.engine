@@ -1,45 +1,110 @@
 #include "UIControlHelpers.h"
+#include "Reflection/ReflectedTypeDB.h"
 #include "UI/UIControl.h"
 #include "UI/UIList.h"
 #include "UI/UIScrollView.h"
 #include "Utils/Utils.h"
+#include "Reflection/ReflectedTypeDB.h"
 
 namespace UIControlHelpersDetails
 {
-static const DAVA::String PATH_SEPARATOR("/");
-static const DAVA::FastName WILDCARD_PARENT("..");
-static const DAVA::FastName WILDCARD_CURRENT(".");
-static const DAVA::FastName WILDCARD_ROOT("^");
-static const DAVA::FastName WILDCARD_MATCHES_ONE_LEVEL("*");
-static const DAVA::FastName WILDCARD_MATCHES_ZERO_OR_MORE_LEVEL("**");
-static const DAVA::Set<DAVA::FastName> RESERVED_NAMES = {
+using namespace DAVA;
+
+const String PATH_SEPARATOR("/");
+const FastName WILDCARD_PARENT("..");
+const FastName WILDCARD_CURRENT(".");
+const FastName WILDCARD_ROOT("^");
+const FastName WILDCARD_MATCHES_ONE_LEVEL("*");
+const FastName WILDCARD_MATCHES_ZERO_OR_MORE_LEVEL("**");
+const Set<FastName> RESERVED_NAMES = {
     WILDCARD_PARENT,
     WILDCARD_CURRENT,
-    WILDCARD_ROOT,
-    WILDCARD_MATCHES_ONE_LEVEL,
-    WILDCARD_MATCHES_ZERO_OR_MORE_LEVEL
 };
+
+bool IsReservedName(const FastName& name)
+{
+    return (RESERVED_NAMES.find(name) != RESERVED_NAMES.end());
+}
+
+bool IsAllowedSymbol(char ch, UIControlHelpers::NameCheckStrictness strictness)
+{
+    auto IsLatinChar = [](char ch) -> bool
+    {
+        return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
+    };
+
+    auto IsDigit = [](char ch) -> bool
+    {
+        return (ch >= '0' && ch <= '9');
+    };
+
+    auto IsOtherAllowedChar = [](char ch) -> bool
+    {
+        static const UnorderedSet<char> allowedChars = { '.', '-', '_', ' ', ':' };
+        return allowedChars.find(ch) != allowedChars.end();
+    };
+
+    auto IsOtherAllowedCharStrict = [](char ch) -> bool
+    {
+        static const UnorderedSet<char> allowedChars = { '.', '-', '_' };
+        return allowedChars.find(ch) != allowedChars.end();
+    };
+
+    bool strict = (strictness == UIControlHelpers::NameCheckStrictness::StrictCheck);
+    return IsLatinChar(ch) || IsDigit(ch) || (strict ? IsOtherAllowedCharStrict(ch) : IsOtherAllowedChar(ch));
+}
+
+bool ContainsOnlyAllowedSymbols(const String& str, UIControlHelpers::NameCheckStrictness strictness)
+{
+    return std::all_of(str.begin(), str.end(), Bind(&IsAllowedSymbol, _1, strictness));
+}
 }
 
 namespace DAVA
 {
-String UIControlHelpers::GetControlPath(const UIControl* control, const UIControl* rootControl /*= NULL*/)
+UIComponent* UIControlHelpers::GetComponentByName(const UIControl* control, const String& componentName, uint32 index)
+{
+    const ReflectedType* rType = ReflectedTypeDB::GetByPermanentName(componentName);
+    if (control && rType)
+    {
+        const Type* type = rType->GetType();
+        return control->GetComponent(type, index);
+    }
+    return nullptr;
+}
+
+UIComponent* UIControlHelpers::GetOrCreateComponentByName(UIControl* control, const String& componentName, uint32 index)
+{
+    const ReflectedType* rType = ReflectedTypeDB::GetByPermanentName(componentName);
+    if (control && rType)
+    {
+        const Type* type = rType->GetType();
+        return control->GetOrCreateComponent(type, index);
+    }
+    return nullptr;
+}
+
+String UIControlHelpers::GetControlPath(const UIControl* control, const Function<bool(const UIControl*)>& haveToStopCriterion)
 {
     using namespace UIControlHelpersDetails;
-    if (!control)
-        return "";
+
+    DVASSERT(control != nullptr);
 
     String controlPath = "";
-    UIControl* controlIter = control->GetParent();
-    do
+    const UIControl* controlIter = control;
+    while (!haveToStopCriterion(controlIter))
     {
-        if (!controlIter)
-            return "";
-
-        controlPath = String(controlIter->GetName().c_str()) + PATH_SEPARATOR + controlPath;
-
+        if (controlPath.empty())
+        {
+            controlPath = String(controlIter->GetName().c_str());
+        }
+        else
+        {
+            const char* name = controlIter->GetName().IsValid() ? controlIter->GetName().c_str() : "";
+            controlPath = String(name) + PATH_SEPARATOR + controlPath;
+        }
         controlIter = controlIter->GetParent();
-    } while (controlIter != rootControl);
+    }
 
     return controlPath;
 }
@@ -115,14 +180,14 @@ UIControl* UIControlHelpers::FindChildControlByName(const String& controlName, c
 
 UIControl* UIControlHelpers::FindChildControlByName(const FastName& controlName, const UIControl* rootControl, bool recursive)
 {
-    for (UIControl* c : rootControl->GetChildren())
+    for (const auto& c : rootControl->GetChildren())
     {
         if (c->GetName() == controlName)
-            return c;
+            return c.Get();
 
         if (recursive)
         {
-            UIControl* res = FindChildControlByName(controlName, c, recursive);
+            UIControl* res = FindChildControlByName(controlName, c.Get(), recursive);
             if (res)
             {
                 return res;
@@ -183,9 +248,9 @@ const UIControl* UIControlHelpers::FindControlByPathImpl(Vector<FastName>::const
         else if (name == WILDCARD_MATCHES_ONE_LEVEL)
         {
             auto nextIt = it + 1;
-            for (UIControl* c : control->GetChildren())
+            for (const auto& c : control->GetChildren())
             {
-                const UIControl* res = FindControlByPathImpl(nextIt, end, c);
+                const UIControl* res = FindControlByPathImpl(nextIt, end, c.Get());
                 if (res)
                 {
                     return res;
@@ -221,9 +286,9 @@ const UIControl* UIControlHelpers::FindControlByPathRecursivelyImpl(Vector<FastN
         return res;
     }
 
-    for (UIControl* c : control->GetChildren())
+    for (const auto& c : control->GetChildren())
     {
-        res = FindControlByPathRecursivelyImpl(begin, end, c);
+        res = FindControlByPathRecursivelyImpl(begin, end, c.Get());
         if (res)
         {
             return res;
@@ -251,14 +316,21 @@ void UIControlHelpers::ScrollToControlWithAnimation(DAVA::UIControl* control, fl
     }
 }
 
-bool UIControlHelpers::IsControlNameValid(const FastName& controlName)
+bool UIControlHelpers::IsControlNameValid(const FastName& controlName, NameCheckStrictness strictness)
 {
     using namespace UIControlHelpersDetails;
+    return !IsReservedName(controlName) && ContainsOnlyAllowedSymbols(controlName.c_str(), strictness);
+}
 
-    if (RESERVED_NAMES.count(controlName) > 0)
-        return false;
+bool UIControlHelpers::IsControlNull(const UIControl* control)
+{
+    return control == nullptr;
+}
 
-    return (String(controlName.c_str()).find_first_of(PATH_SEPARATOR) == String::npos);
+bool UIControlHelpers::IsEventNameValid(const FastName& eventName, NameCheckStrictness strictness)
+{
+    using namespace UIControlHelpersDetails;
+    return eventName.empty() || (!IsReservedName(eventName) && ContainsOnlyAllowedSymbols(eventName.c_str(), strictness));
 }
 
 void UIControlHelpers::ScrollToRect(DAVA::UIControl* control, const Rect& rect, float32 animationTime, bool toTopLeftForBigControls)

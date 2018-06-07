@@ -4,6 +4,7 @@
 #include "UI/UIControl.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/UIScrollBar.h"
+#include "UI/UIScrollBarDelegate.h"
 #include "Logger/Logger.h"
 
 namespace DAVA

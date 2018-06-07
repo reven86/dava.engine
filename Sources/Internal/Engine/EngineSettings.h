@@ -1,15 +1,11 @@
 #pragma once
 
+#include "Base/Any.h"
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
-#include "Base/Any.h"
 #include "Debug/DVAssert.h"
 #include "Functional/Signal.h"
 #include "Reflection/Reflection.h"
-
-#if !defined(__DAVAENGINE_COREV2__)
-#include "Base/Singleton.h"
-#endif
 
 namespace DAVA
 {
@@ -24,8 +20,8 @@ class FilePath;
         Also you can specify range of valid values, it will be added as meta-data in reflection.
         To access range just get meta-data from reflection by type `SettingRange`.
 
-        If you want to use enum as setting-type - add necessary values to `eSettingValue`, 
-        call `SetupSettingValue` in reflection-impl block to set string-name of value. 
+        If you want to use enum as setting-type - add necessary values to `eSettingValue`,
+        call `SetupSettingValue` in reflection-impl block to set string-name of value.
         Then setup setting with type `eSettingValue` and specify range of valid enum values.
 
         It is possible to load setting from yaml-file. To do it call EngineSettings::Load().
@@ -34,11 +30,7 @@ class FilePath;
         The key is a setting-name. Value depends of setting-type. If setting has enum-type, the key is string-name of `eSettingValue`
 */
 
-#ifdef __DAVAENGINE_COREV2__
 class EngineSettings
-#else
-class EngineSettings : public Singleton<EngineSettings>
-#endif
 {
     struct EngineSettingsDetails;
 
@@ -51,6 +43,7 @@ public:
     enum eSetting : uint32
     {
         SETTING_LANDSCAPE_RENDERMODE = 0,
+        SETTING_PROFILE_DLC_MANAGER = 1,
 
         //don't forget setup new enum values in reflection block
         SETTING_COUNT
@@ -71,7 +64,7 @@ public:
     };
 
     /**
-        Range of valid values for setting. Used to retrieving from reflection meta-data 
+        Range of valid values for setting. Used to retrieving from reflection meta-data
     */
     template <typename T>
     struct SettingRange

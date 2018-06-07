@@ -46,6 +46,7 @@ void ReleasePerfQueryPool();
 
 namespace PipelineStateDX11
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 uint32 VertexLayoutStride(Handle ps, uint32 stream_i);
 uint32 VertexLayoutStreamCount(Handle ps);
@@ -80,24 +81,28 @@ Size2i Size(Handle tex);
 
 namespace DepthStencilStateDX11
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void SetToRHI(Handle state, ID3D11DeviceContext* context);
 }
 
 namespace SamplerStateDX11
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void SetToRHI(Handle state, ID3D11DeviceContext* context);
 }
 
 namespace RenderPassDX11
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void RejectCommandBuffersAndRelease(Handle handle);
 }
 
 namespace CommandBufferDX11
 {
+void Init(uint32 maxCount);
 void BindHardwareCommandBufferDispatch(Dispatch* dispatch);
 void BindSoftwareCommandBufferDispatch(Dispatch* dispatch);
 

@@ -1,33 +1,34 @@
 #include "Engine/Window.h"
 
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/EngineContext.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
-#include "Engine/Private/WindowBackend.h"
+#include "Engine/Private/WindowImpl.h"
 
 #include "Utils/StringFormat.h"
 #include "Animation/AnimationManager.h"
 #include "Autotesting/AutotestingSystem.h"
 #include "Input/InputSystem.h"
+#include "Input/InputEvent.h"
+#include "Input/Keyboard.h"
 #include "Logger/Logger.h"
 #include "Time/SystemTimer.h"
 #include "Render/2D/TextBlock.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "UI/UIControlSystem.h"
+#include "DeviceManager/DeviceManager.h"
 
 namespace DAVA
 {
 Window::Window(Private::EngineBackend* engineBackend, bool primary)
     : engineBackend(engineBackend)
     , mainDispatcher(engineBackend->GetDispatcher())
-    , windowBackend(new Private::WindowBackend(engineBackend, this))
+    , windowImpl(new Private::WindowImpl(engineBackend, this))
     , isPrimary(primary)
 {
     // TODO: Add platfom's caps check
-    //if (windowBackend->IsPlatformSupported(SET_CURSOR_VISIBILITY))
+    //if (windowImpl->IsPlatformSupported(SET_CURSOR_VISIBILITY))
     {
         cursorVisible = true;
     }
@@ -41,7 +42,15 @@ void Window::SetSizeAsync(Size2f sz)
     // is controlled by highlevel framework
     if (!engineBackend->IsEmbeddedGUIMode())
     {
-        windowBackend->Resize(sz.dx, sz.dy);
+        windowImpl->Resize(sz.dx, sz.dy);
+    }
+}
+
+void Window::ActivateAsync()
+{
+    if (!engineBackend->IsEmbeddedGUIMode())
+    {
+        windowImpl->Activate();
     }
 }
 
@@ -54,7 +63,7 @@ void Window::SetMinimumSize(Size2f size)
         size.dx = std::max(size.dx, static_cast<float32>(smallestWidth));
         size.dy = std::max(size.dy, static_cast<float32>(smallestHeight));
 
-        windowBackend->SetMinimumSize(size);
+        windowImpl->SetMinimumSize(size);
     }
 }
 
@@ -75,7 +84,7 @@ void Window::CloseAsync()
     // is controlled by highlevel framework
     if (!engineBackend->IsEmbeddedGUIMode())
     {
-        windowBackend->Close(false);
+        windowImpl->Close(false);
     }
 }
 
@@ -84,7 +93,7 @@ void Window::SetTitleAsync(const String& title)
     // It does not make sense to set window title in embedded mode
     if (!engineBackend->IsEmbeddedGUIMode())
     {
-        windowBackend->SetTitle(title);
+        windowImpl->SetTitle(title);
     }
 }
 
@@ -93,7 +102,7 @@ void Window::SetFullscreenAsync(eFullscreen newMode)
     // Window's fullscreen mode cannot be changed in embedded mode
     if (!engineBackend->IsEmbeddedGUIMode() && newMode != fullscreenMode)
     {
-        windowBackend->SetFullscreen(newMode);
+        windowImpl->SetFullscreen(newMode);
     }
 }
 
@@ -104,22 +113,22 @@ Engine* Window::GetEngine() const
 
 void* Window::GetNativeHandle() const
 {
-    return windowBackend->GetHandle();
+    return windowImpl->GetHandle();
 }
 
 void Window::RunOnUIThreadAsync(const Function<void()>& task)
 {
-    windowBackend->RunAsyncOnUIThread(task);
+    windowImpl->RunAsyncOnUIThread(task);
 }
 
 void Window::RunOnUIThread(const Function<void()>& task)
 {
-    windowBackend->RunAndWaitOnUIThread(task);
+    windowImpl->RunAndWaitOnUIThread(task);
 }
 
 void Window::InitCustomRenderParams(rhi::InitParam& params)
 {
-    windowBackend->InitCustomRenderParams(params);
+    windowImpl->InitCustomRenderParams(params);
 }
 
 void Window::SetCursorCapture(eCursorCapture mode)
@@ -128,24 +137,25 @@ void Window::SetCursorCapture(eCursorCapture mode)
     if (mode == eCursorCapture::FRAME)
         return;
 
-    /*if (windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
+    /*if (windowImpl->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
     {
         if (cursorCapture != mode)
         {
             cursorCapture = mode;
+            cursorCaptureChanged.Emit(this, cursorCapture);
             if (cursorCapture == eCursorCapture::PINNING)
             {
                 waitInputActivation |= !hasFocus;
                 if (!waitInputActivation)
                 {
-                    windowBackend->SetCursorCapture(cursorCapture);
-                    windowBackend->SetCursorVisibility(false);
+                    windowImpl->SetCursorCapture(cursorCapture);
+                    windowImpl->SetCursorVisibility(false);
                 }
             }
             else if (hasFocus)
             {
-                windowBackend->SetCursorCapture(cursorCapture);
-                windowBackend->SetCursorVisibility(cursorVisible);
+                windowImpl->SetCursorCapture(cursorCapture);
+                windowImpl->SetCursorVisibility(cursorVisible);
             }
         }
     }
@@ -158,14 +168,14 @@ eCursorCapture Window::GetCursorCapture() const
 
 void Window::SetCursorVisibility(bool visible)
 {
-    /*if (windowBackend->IsPlatformSupported(SET_CURSOR_VISIBILITY))*/ // TODO: Add platfom's caps check
+    /*if (windowImpl->IsPlatformSupported(SET_CURSOR_VISIBILITY))*/ // TODO: Add platfom's caps check
     {
         if (cursorVisible != visible)
         {
             cursorVisible = visible;
             if (hasFocus && cursorCapture != eCursorCapture::PINNING)
             {
-                windowBackend->SetCursorVisibility(cursorVisible);
+                windowImpl->SetCursorVisibility(cursorVisible);
             }
         }
     }
@@ -174,6 +184,11 @@ void Window::SetCursorVisibility(bool visible)
 bool Window::GetCursorVisibility() const
 {
     return cursorVisible && cursorCapture != eCursorCapture::PINNING;
+}
+
+void Window::SetInputHandlingMode(eInputHandlingModes mode)
+{
+    inputHandlingMode = mode;
 }
 
 void Window::Update(float32 frameDelta)
@@ -207,45 +222,26 @@ void Window::Draw()
     context->renderSystem2D->EndFrame();
 }
 
-void Window::EventHandler(const Private::MainDispatcherEvent& e)
+bool Window::EventHandler(const Private::MainDispatcherEvent& e)
 {
     using Private::MainDispatcherEvent;
+    if (e.window != this)
+        return false;
+
     if (MainDispatcherEvent::IsInputEvent(e.type))
     {
         // Skip input events if window does not have focus or pinning switching logic tells to ignore input event
-        if (!hasFocus || HandleInputActivation(e))
+        if ((inputHandlingMode == eInputHandlingModes::HANDLE_ONLY_WHEN_FOCUSED && !hasFocus) || HandleInputActivation(e))
         {
-            return;
+            return true;
         }
     }
+
+    bool isHandled = true;
     switch (e.type)
     {
-    case MainDispatcherEvent::MOUSE_MOVE:
-        HandleMouseMove(e);
-        break;
-    case MainDispatcherEvent::MOUSE_BUTTON_DOWN:
-    case MainDispatcherEvent::MOUSE_BUTTON_UP:
-        HandleMouseClick(e);
-        break;
-    case MainDispatcherEvent::MOUSE_WHEEL:
-        HandleMouseWheel(e);
-        break;
-    case MainDispatcherEvent::TOUCH_DOWN:
-    case MainDispatcherEvent::TOUCH_UP:
-        HandleTouchClick(e);
-        break;
-    case MainDispatcherEvent::TOUCH_MOVE:
-        HandleTouchMove(e);
-        break;
     case MainDispatcherEvent::TRACKPAD_GESTURE:
         HandleTrackpadGesture(e);
-        break;
-    case MainDispatcherEvent::KEY_DOWN:
-    case MainDispatcherEvent::KEY_UP:
-        HandleKeyPress(e);
-        break;
-    case MainDispatcherEvent::KEY_CHAR:
-        HandleKeyChar(e);
         break;
     case MainDispatcherEvent::WINDOW_SIZE_CHANGED:
         HandleSizeChanged(e);
@@ -270,19 +266,25 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
         break;
     case MainDispatcherEvent::WINDOW_CANCEL_INPUT:
         HandleCancelInput(e);
+        isHandled = false; // To send it further to other input-dependent subscribers
         break;
     case MainDispatcherEvent::WINDOW_VISIBLE_FRAME_CHANGED:
         HandleVisibleFrameChanged(e);
         break;
+    case MainDispatcherEvent::WINDOW_SAFE_AREA_INSETS_CHANGED:
+        HandleSafeAreaInsetsChanged(e);
+        break;
     default:
+        isHandled = false;
         break;
     }
+    return isHandled;
 }
 
 void Window::FinishEventHandlingOnCurrentFrame()
 {
     sizeEventsMerged = false;
-    windowBackend->TriggerPlatformEvents();
+    windowImpl->TriggerPlatformEvents();
 }
 
 void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
@@ -337,8 +339,8 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
         MergeSizeChangedEvents(e);
         sizeEventsMerged = true;
 
-        engineBackend->ResetRenderer(this, !windowBackend->IsWindowReadyForRender());
-        if (windowBackend->IsWindowReadyForRender())
+        engineBackend->ResetRenderer(this, !windowImpl->IsWindowReadyForRender());
+        if (windowImpl->IsWindowReadyForRender())
         {
             UpdateVirtualCoordinatesSystem();
             sizeChanged.Emit(this, GetSize(), GetSurfaceSize());
@@ -449,8 +451,8 @@ bool Window::HandleInputActivation(const Private::MainDispatcherEvent& e)
 
         if (enablePinning)
         {
-            windowBackend->SetCursorCapture(eCursorCapture::PINNING);
-            windowBackend->SetCursorVisibility(false);
+            windowImpl->SetCursorCapture(eCursorCapture::PINNING);
+            windowImpl->SetCursorVisibility(false);
         }
         return skipEvent;
     }
@@ -461,13 +463,25 @@ bool Window::HandleInputActivation(const Private::MainDispatcherEvent& e)
 void Window::HandleCancelInput(const Private::MainDispatcherEvent& e)
 {
     uiControlSystem->CancelAllInputs();
-    inputSystem->GetKeyboard().ClearAllKeys();
 }
 
 void Window::HandleVisibleFrameChanged(const Private::MainDispatcherEvent& e)
 {
     Rect visibleRect(e.visibleFrameEvent.x, e.visibleFrameEvent.y, e.visibleFrameEvent.width, e.visibleFrameEvent.height);
     visibleFrameChanged.Emit(this, visibleRect);
+}
+
+void Window::HandleSafeAreaInsetsChanged(const Private::MainDispatcherEvent& e)
+{
+    if (uiControlSystem)
+    {
+        uiControlSystem->SetPhysicalSafeAreaInsets(e.safeAreaInsetsEvent.left,
+                                                   e.safeAreaInsetsEvent.top,
+                                                   e.safeAreaInsetsEvent.right,
+                                                   e.safeAreaInsetsEvent.bottom,
+                                                   e.safeAreaInsetsEvent.isLeftNotch,
+                                                   e.safeAreaInsetsEvent.isRightNotch);
+    }
 }
 
 void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
@@ -478,17 +492,16 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
         Logger::FrameworkDebug("=========== WINDOW_FOCUS_CHANGED: state=%s", e.stateEvent.state ? "got_focus" : "lost_focus");
 
         uiControlSystem->CancelAllInputs();
-        inputSystem->GetKeyboard().ClearAllKeys();
         hasFocus = gainsFocus;
-        /*if (windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
+        /*if (windowImpl->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
         {
             // When the native window loses focus, it restores the original cursor capture and visibility.
             // After the window gives the focus back, set the current visibility state, if not set pinning mode.
             // If the cursor capture mode is pinning, set the visibility state and capture mode when input activated.
             if (hasFocus && cursorCapture != eCursorCapture::PINNING)
             {
-                windowBackend->SetCursorVisibility(cursorVisible);
-                windowBackend->SetCursorCapture(cursorCapture);
+                windowImpl->SetCursorVisibility(cursorVisible);
+                windowImpl->SetCursorCapture(cursorCapture);
             }
         }
         focusChanged.Emit(this, hasFocus);
@@ -509,108 +522,10 @@ void Window::HandleVisibilityChanged(const Private::MainDispatcherEvent& e)
     }
 }
 
-void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
-{
-    bool pressed = e.type == Private::MainDispatcherEvent::MOUSE_BUTTON_DOWN;
-    eMouseButtons button = e.mouseEvent.button;
-
-    UIEvent uie;
-    uie.window = e.window;
-    uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
-    uie.isRelative = e.mouseEvent.isRelative;
-    uie.physPoint = e.mouseEvent.isRelative ? Vector2(0.f, 0.f) : Vector2(e.mouseEvent.x, e.mouseEvent.y);
-    uie.device = eInputDevices::MOUSE;
-    uie.timestamp = e.timestamp / 1000.0;
-    uie.mouseButton = button;
-    uie.modifiers = e.mouseEvent.modifierKeys;
-
-    uint32 buttonIndex = static_cast<uint32>(button) - 1;
-    mouseButtonState[buttonIndex] = pressed;
-
-    inputSystem->HandleInputEvent(&uie);
-}
-
-void Window::HandleMouseWheel(const Private::MainDispatcherEvent& e)
-{
-    UIEvent uie;
-    uie.window = e.window;
-    uie.phase = UIEvent::Phase::WHEEL;
-    uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
-    uie.isRelative = e.mouseEvent.isRelative;
-    uie.device = eInputDevices::MOUSE;
-    uie.timestamp = e.timestamp / 1000.0;
-    uie.wheelDelta = { e.mouseEvent.scrollDeltaX, e.mouseEvent.scrollDeltaY };
-    uie.modifiers = e.mouseEvent.modifierKeys;
-
-    inputSystem->HandleInputEvent(&uie);
-}
-
-void Window::HandleMouseMove(const Private::MainDispatcherEvent& e)
-{
-    UIEvent uie;
-    uie.window = e.window;
-    uie.phase = UIEvent::Phase::MOVE;
-    uie.physPoint = Vector2(e.mouseEvent.x, e.mouseEvent.y);
-    uie.isRelative = e.mouseEvent.isRelative;
-    uie.device = eInputDevices::MOUSE;
-    uie.timestamp = e.timestamp / 1000.0;
-    uie.mouseButton = eMouseButtons::NONE;
-    uie.modifiers = e.mouseEvent.modifierKeys;
-
-    if (mouseButtonState.any())
-    {
-        // Send DRAG phase instead of MOVE for each pressed mouse button
-        uie.phase = UIEvent::Phase::DRAG;
-
-        uint32 firstButton = static_cast<uint32>(eMouseButtons::FIRST);
-        uint32 lastButton = static_cast<uint32>(eMouseButtons::LAST);
-        for (uint32 buttonIndex = firstButton; buttonIndex <= lastButton; ++buttonIndex)
-        {
-            if (mouseButtonState[buttonIndex - 1])
-            {
-                uie.mouseButton = static_cast<eMouseButtons>(buttonIndex);
-                inputSystem->HandleInputEvent(&uie);
-            }
-        }
-    }
-    else
-    {
-        inputSystem->HandleInputEvent(&uie);
-    }
-}
-
-void Window::HandleTouchClick(const Private::MainDispatcherEvent& e)
-{
-    bool pressed = e.type == Private::MainDispatcherEvent::TOUCH_DOWN;
-
-    UIEvent uie;
-    uie.window = e.window;
-    uie.phase = pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
-    uie.physPoint = Vector2(e.touchEvent.x, e.touchEvent.y);
-    uie.device = eInputDevices::TOUCH_SURFACE;
-    uie.timestamp = e.timestamp / 1000.0;
-    uie.touchId = e.touchEvent.touchId;
-    uie.modifiers = e.touchEvent.modifierKeys;
-
-    inputSystem->HandleInputEvent(&uie);
-}
-
-void Window::HandleTouchMove(const Private::MainDispatcherEvent& e)
-{
-    UIEvent uie;
-    uie.window = e.window;
-    uie.phase = UIEvent::Phase::DRAG;
-    uie.physPoint = Vector2(e.touchEvent.x, e.touchEvent.y);
-    uie.device = eInputDevices::TOUCH_SURFACE;
-    uie.timestamp = e.timestamp / 1000.0;
-    uie.touchId = e.touchEvent.touchId;
-    uie.modifiers = e.touchEvent.modifierKeys;
-
-    inputSystem->HandleInputEvent(&uie);
-}
-
 void Window::HandleTrackpadGesture(const Private::MainDispatcherEvent& e)
 {
+    // TODO: move gestures to the new input system
+
     UIEvent uie;
     uie.window = e.window;
     uie.timestamp = e.timestamp / 1000.0;
@@ -622,52 +537,6 @@ void Window::HandleTrackpadGesture(const Private::MainDispatcherEvent& e)
     uie.gesture.rotation = e.trackpadGestureEvent.rotation;
     uie.gesture.dx = e.trackpadGestureEvent.deltaX;
     uie.gesture.dy = e.trackpadGestureEvent.deltaY;
-
-    inputSystem->HandleInputEvent(&uie);
-}
-
-void Window::HandleKeyPress(const Private::MainDispatcherEvent& e)
-{
-    bool pressed = e.type == Private::MainDispatcherEvent::KEY_DOWN;
-
-    KeyboardDevice& keyboard = inputSystem->GetKeyboard();
-
-    UIEvent uie;
-    uie.window = e.window;
-    uie.key = keyboard.GetDavaKeyForSystemKey(e.keyEvent.key);
-    uie.device = eInputDevices::KEYBOARD;
-    uie.timestamp = e.timestamp / 1000.0;
-    uie.modifiers = e.keyEvent.modifierKeys;
-
-    if (pressed)
-    {
-        uie.phase = e.keyEvent.isRepeated ? UIEvent::Phase::KEY_DOWN_REPEAT : UIEvent::Phase::KEY_DOWN;
-    }
-    else
-    {
-        uie.phase = UIEvent::Phase::KEY_UP;
-    }
-
-    if (pressed)
-    {
-        keyboard.OnKeyPressed(uie.key);
-    }
-    else
-    {
-        keyboard.OnKeyUnpressed(uie.key);
-    }
-    inputSystem->HandleInputEvent(&uie);
-}
-
-void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)
-{
-    UIEvent uie;
-    uie.window = e.window;
-    uie.keyChar = static_cast<char32_t>(e.keyEvent.key);
-    uie.phase = e.keyEvent.isRepeated ? UIEvent::Phase::CHAR_REPEAT : UIEvent::Phase::CHAR;
-    uie.device = eInputDevices::KEYBOARD;
-    uie.timestamp = e.timestamp / 1000.0;
-    uie.modifiers = e.keyEvent.modifierKeys;
 
     inputSystem->HandleInputEvent(&uie);
 }
@@ -686,9 +555,7 @@ void Window::SetSurfaceScaleAsync(float32 scale)
         return;
     }
 
-    windowBackend->SetSurfaceScaleAsync(scale);
+    windowImpl->SetSurfaceScaleAsync(scale);
 }
 
 } // namespace DAVA
-
-#endif // __DAVAENGINE_COREV2__

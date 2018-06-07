@@ -161,7 +161,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
                 Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
                 batch->layerSortingKey = static_cast<uint32>((position - cameraPosition).SquareLength() * 100.0f);
 
-                auto occlusionId = batch->GetRenderObject()->GetStaticOcclusionIndex();
+                auto occlusionId = renderObject->GetStaticOcclusionIndex();
                 bool occlusionIndexIsInvalid = occlusionId == INVALID_STATIC_OCCLUSION_INDEX;
                 bool isAlreadyVisible = occlusionIndexIsInvalid || data.IsObjectVisibleFromBlock(blockIndex, occlusionId);
                 if (!isAlreadyVisible)
@@ -191,7 +191,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
     {
         rhi::Packet packet;
         RenderObject* renderObject = batch->GetRenderObject();
-        renderObject->BindDynamicParameters(occlusionCamera);
+        renderObject->BindDynamicParameters(occlusionCamera, batch);
         NMaterial* mat = batch->GetMaterial();
         DVASSERT(mat);
         batch->BindGeometryData(packet);
@@ -205,7 +205,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
     for (const auto& batch : meshRenderBatches)
     {
         RenderObject* renderObject = batch.first->GetRenderObject();
-        renderObject->BindDynamicParameters(occlusionCamera);
+        renderObject->BindDynamicParameters(occlusionCamera, batch.first);
 
         rhi::Packet packet;
         batch.first->BindGeometryData(packet);
@@ -218,7 +218,10 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
         }
         packet.cullMode = rhi::CULL_NONE;
 
-        if ((batch.second & OPTION_DISABLE_DEPTH) == OPTION_DISABLE_DEPTH)
+        bool isAlphaTestOrAlphaBlend = (packet.userFlags & NMaterial::USER_FLAG_ALPHATEST) != 0;
+        isAlphaTestOrAlphaBlend |= (packet.userFlags & NMaterial::USER_FLAG_ALPHABLEND) != 0;
+
+        if ((batch.second & OPTION_DISABLE_DEPTH) == OPTION_DISABLE_DEPTH || isAlphaTestOrAlphaBlend)
             packet.depthStencilState = stateDisabledDepthWrite;
 
         rhi::AddPacket(packetList, packet);

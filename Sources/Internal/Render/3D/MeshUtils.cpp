@@ -14,6 +14,171 @@ namespace DAVA
 {
 namespace MeshUtils
 {
+namespace MeshUtilsDetails
+{
+struct FaceWork
+{
+    int32 indexOrigin[3];
+    Vector3 tangent, binormal;
+};
+
+struct VertexWork
+{
+    Vector<int32> refIndices;
+    Vector3 tangent, binormal;
+    int32 tbRatio;
+    int32 refIndex;
+    int32 resultGroup;
+};
+
+struct SkinnedMeshWorkKey
+{
+    SkinnedMeshWorkKey(int32 _lod, int32 _switch, NMaterial* _materialParent)
+        :
+        lodIndex(_lod)
+        , switchIndex(_switch)
+        , materialParent(_materialParent)
+    {
+    }
+
+    bool operator==(const SkinnedMeshWorkKey& data) const
+    {
+        return (lodIndex == data.lodIndex)
+        && (switchIndex == data.switchIndex)
+        && (materialParent == data.materialParent);
+    }
+
+    bool operator<(const SkinnedMeshWorkKey& data) const
+    {
+        if (materialParent != data.materialParent)
+        {
+            return materialParent < data.materialParent;
+        }
+        else if (lodIndex != data.lodIndex)
+        {
+            return lodIndex < data.lodIndex;
+        }
+        else
+        {
+            return switchIndex < data.switchIndex;
+        }
+    }
+
+    int32 lodIndex;
+    int32 switchIndex;
+    NMaterial* materialParent;
+};
+
+struct SkinnedMeshJointWork
+{
+    SkinnedMeshJointWork(RenderBatch* _batch, uint32 _jointIndex)
+        :
+        batch(_batch)
+        , jointIndex(_jointIndex)
+    {
+    }
+
+    RenderBatch* batch;
+    uint32 jointIndex;
+};
+
+struct EdgeMappingWork
+{
+    int32 oldEdge[2];
+    int32 newEdge[2][2];
+
+    EdgeMappingWork()
+    {
+        Memset(oldEdge, -1, sizeof(oldEdge));
+        Memset(newEdge, -1, sizeof(newEdge));
+    }
+};
+
+struct SkinnedTriangleWork
+{
+    Set<int32> usedJoints;
+    int32 indices[3];
+    bool processed = false;
+};
+
+int32 FindEdgeInMappingTable(int32 nV1, int32 nV2, EdgeMappingWork* mapping, int32 count)
+{
+    for (int i = 0; i < count; ++i)
+    {
+        // If both vertex indexes of the old edge in mapping entry are -1, then
+        // we have searched every valid entry without finding a match.  Return
+        // this index as a newly created entry.
+        if ((mapping[i].oldEdge[0] == -1 && mapping[i].oldEdge[1] == -1) ||
+
+            // Or if we find a match, return the index.
+            (mapping[i].oldEdge[1] == nV1 && mapping[i].oldEdge[0] == nV2))
+        {
+            return i;
+        }
+    }
+
+    DVASSERT(0);
+    return -1; // We should never reach this line
+}
+
+Vector<int32> GetSignificantJoints(PolygonGroup* pg, int32 vertex)
+{
+    DVASSERT(pg);
+    DVASSERT(vertex < pg->GetVertexCount());
+
+    Vector<int32> result;
+    int32 jIndex = -1;
+    float32 jWeight = 0.f;
+    if (pg->GetFormat() & EVF_HARD_JOINTINDEX) //hard-skinning
+    {
+        pg->GetHardJointIndex(vertex, jIndex);
+        result.emplace_back(jIndex);
+    }
+    else if (pg->GetFormat() & (EVF_JOINTINDEX | EVF_JOINTWEIGHT)) //soft-skinning
+    {
+        for (uint32 j = 0; j < 4; ++j)
+        {
+            pg->GetJointWeight(vertex, j, jWeight);
+            if (jWeight > EPSILON)
+            {
+                pg->GetJointIndex(vertex, j, jIndex);
+                result.emplace_back(jIndex);
+            }
+        }
+    }
+
+    return result;
+}
+
+void ReplaceSignificantJoints(PolygonGroup* pg, int32 vertex, const Map<int32, int32>& jointsMap)
+{
+    DVASSERT(pg);
+    DVASSERT(vertex < pg->GetVertexCount());
+
+    int32 jIndex = -1;
+    float32 jWeight = 0.f;
+    if (pg->GetFormat() & EVF_HARD_JOINTINDEX) //hard-skinning
+    {
+        pg->GetHardJointIndex(vertex, jIndex);
+        DVASSERT(jointsMap.count(jIndex) != 0);
+        pg->SetHardJointIndex(vertex, jointsMap.at(jIndex));
+    }
+    else if (pg->GetFormat() & (EVF_JOINTINDEX | EVF_JOINTWEIGHT)) //soft-skinning
+    {
+        for (uint32 j = 0; j < 4; ++j)
+        {
+            pg->GetJointWeight(vertex, j, jWeight);
+            if (jWeight > EPSILON)
+            {
+                pg->GetJointIndex(vertex, j, jIndex);
+                DVASSERT(jointsMap.count(jIndex) != 0);
+                pg->SetJointIndex(vertex, j, jointsMap.at(jIndex));
+            }
+        }
+    }
+}
+}
+
 void CopyVertex(PolygonGroup* srcGroup, uint32 srcPos, PolygonGroup* dstGroup, uint32 dstPos)
 {
     int32 srcFormat = srcGroup->GetFormat();
@@ -53,38 +218,10 @@ void CopyGroupData(PolygonGroup* srcGroup, PolygonGroup* dstGroup)
     dstGroup->BuildBuffers();
 }
 
-uint32 ReleaseGeometryDataRecursive(Entity* forEntity)
-{
-    if (!forEntity)
-        return 0;
-
-    uint32 ret = 0;
-
-    int32 childrenCount = forEntity->GetChildrenCount();
-    for (int32 i = 0; i < childrenCount; ++i)
-    {
-        ret += ReleaseGeometryDataRecursive(forEntity->GetChild(i));
-    }
-
-    RenderObject* ro = GetRenderObject(forEntity);
-    if (ro)
-    {
-        uint32 rbCount = ro->GetRenderBatchCount();
-        for (uint32 i = 0; i < rbCount; ++i)
-        {
-            PolygonGroup* pg = ro->GetRenderBatch(i)->GetPolygonGroup();
-            if (pg && pg->vertexBuffer != rhi::InvalidHandle && pg->indexBuffer != rhi::InvalidHandle)
-            {
-                ret += pg->ReleaseGeometryData();
-            }
-        }
-    }
-
-    return ret;
-}
-
 void RebuildMeshTangentSpace(PolygonGroup* group, bool precomputeBinormal /*=true*/)
 {
+    using namespace MeshUtilsDetails;
+
     DVASSERT(group->GetPrimitiveType() == rhi::PRIMITIVE_TRIANGLELIST); //only triangle lists for now
     DVASSERT(group->GetFormat() & EVF_TEXCOORD0);
     DVASSERT(group->GetFormat() & EVF_NORMAL);
@@ -289,8 +426,10 @@ void RebuildMeshTangentSpace(PolygonGroup* group, bool precomputeBinormal /*=tru
     group->BuildBuffers();
 }
 
-SkinnedMesh* CreateSkinnedMesh(Entity* fromEntity, Vector<SkeletonComponent::JointConfig>& outJoints)
+SkinnedMesh* CreateHardSkinnedMesh(Entity* fromEntity, Vector<SkeletonComponent::Joint>& outJoints)
 {
+    using namespace MeshUtilsDetails;
+
     SkinnedMesh* newRenderObject = new SkinnedMesh();
 
     Map<SkinnedMeshWorkKey, Vector<SkinnedMeshJointWork>> collapseDataMap;
@@ -300,13 +439,24 @@ SkinnedMesh* CreateSkinnedMesh(Entity* fromEntity, Vector<SkeletonComponent::Joi
 
     outJoints.resize(childrenNodes.size());
 
-    int32 currentTargetIndex = 0;
+    SkinnedMesh::JointTargets jointTargets;
     for (int32 nodeIndex = 0; nodeIndex < int32(childrenNodes.size()); ++nodeIndex)
     {
         Entity* child = childrenNodes[nodeIndex];
+
+        Matrix4 bindTransform = child->AccamulateLocalTransform(fromEntity);
+
+        outJoints[nodeIndex].name = childrenNodes[nodeIndex]->GetName();
+        outJoints[nodeIndex].uid = childrenNodes[nodeIndex]->GetName();
+        outJoints[nodeIndex].bindTransform = bindTransform;
+        bindTransform.GetInverse(outJoints[nodeIndex].bindTransformInv);
+
         RenderObject* ro = GetRenderObject(child);
-        if (ro)
+        if (ro != nullptr)
         {
+            uint32 jointTarget = uint32(jointTargets.size());
+            jointTargets.emplace_back(nodeIndex);
+
             int32 batchesCount = ro->GetRenderBatchCount();
             for (int32 batchIndex = 0; batchIndex < batchesCount; ++batchIndex)
             {
@@ -314,25 +464,15 @@ SkinnedMesh* CreateSkinnedMesh(Entity* fromEntity, Vector<SkeletonComponent::Joi
                 RenderBatch* rb = ro->GetRenderBatch(batchIndex, lodIndex, switchIndex);
                 SkinnedMeshWorkKey dataKey(lodIndex, switchIndex, rb->GetMaterial()->GetParent());
 
-                collapseDataMap[dataKey].push_back(SkinnedMeshJointWork(rb, currentTargetIndex));
+                collapseDataMap[dataKey].push_back(SkinnedMeshJointWork(rb, jointTarget));
             }
 
-            outJoints[nodeIndex].bbox = ro->GetBoundingBox();
-
-            outJoints[nodeIndex].targetId = currentTargetIndex;
-            currentTargetIndex++;
+            ro->GetBoundingBox().GetTransformedBox(outJoints[nodeIndex].bindTransformInv, outJoints[nodeIndex].bbox);
         }
         else
         {
-            outJoints[nodeIndex].targetId = SkeletonComponent::INVALID_JOINT_INDEX;
+            outJoints[nodeIndex].bbox.Empty();
         }
-
-        const Matrix4& localTransform = child->GetLocalTransform();
-
-        outJoints[nodeIndex].name = childrenNodes[nodeIndex]->GetName();
-        outJoints[nodeIndex].orientation.Construct(localTransform);
-        outJoints[nodeIndex].position = localTransform.GetTranslationVector();
-        outJoints[nodeIndex].scale = localTransform.GetScaleVector().x;
 
         Entity* parentEntity = child->GetParent();
         if (!parentEntity || parentEntity == fromEntity)
@@ -371,7 +511,7 @@ SkinnedMesh* CreateSkinnedMesh(Entity* fromEntity, Vector<SkeletonComponent::Joi
         }
 
         PolygonGroup* polygonGroup = new PolygonGroup();
-        polygonGroup->AllocateData(meshFormat | EVF_JOINTINDEX | EVF_JOINTWEIGHT, vxCount, indCount);
+        polygonGroup->AllocateData(meshFormat | EVF_HARD_JOINTINDEX, vxCount, indCount);
 
         int32 vertexOffset = 0;
         int32 indexOffset = 0;
@@ -383,9 +523,7 @@ SkinnedMesh* CreateSkinnedMesh(Entity* fromEntity, Vector<SkeletonComponent::Joi
             {
                 int32 newBatchVxIndex = vertexOffset + currentBatchVxIndex;
                 CopyVertex(currentGroup, currentBatchVxIndex, polygonGroup, newBatchVxIndex);
-                polygonGroup->SetJointWeight(newBatchVxIndex, 0, 1.f);
-                polygonGroup->SetJointIndex(newBatchVxIndex, 0, data[dataIndex].jointIndex);
-                polygonGroup->SetJointCount(newBatchVxIndex, 1);
+                polygonGroup->SetHardJointIndex(newBatchVxIndex, data[dataIndex].jointIndex);
             }
 
             int32 currentBatchIndexCount = currentGroup->GetIndexCount();
@@ -402,7 +540,7 @@ SkinnedMesh* CreateSkinnedMesh(Entity* fromEntity, Vector<SkeletonComponent::Joi
 
         NMaterial* material = new NMaterial();
         material->SetParent(key.materialParent);
-        material->AddFlag(NMaterialFlagName::FLAG_SKINNING, 1);
+        material->AddFlag(NMaterialFlagName::FLAG_HARD_SKINNING, 1);
 
         RenderBatch* newBatch = new RenderBatch();
         polygonGroup->RecalcAABBox();
@@ -411,6 +549,7 @@ SkinnedMesh* CreateSkinnedMesh(Entity* fromEntity, Vector<SkeletonComponent::Joi
         newBatch->SetMaterial(material);
 
         newRenderObject->AddRenderBatch(newBatch, key.lodIndex, key.switchIndex);
+        newRenderObject->SetJointTargets(newBatch, jointTargets);
 
         material->Release();
         polygonGroup->Release();
@@ -420,8 +559,145 @@ SkinnedMesh* CreateSkinnedMesh(Entity* fromEntity, Vector<SkeletonComponent::Joi
     return newRenderObject;
 }
 
+Vector<std::pair<PolygonGroup*, SkinnedMesh::JointTargets>> SplitSkinnedMeshGeometry(PolygonGroup* dataSource, uint32 maxJointCount)
+{
+    using namespace MeshUtilsDetails;
+
+    DVASSERT(dataSource);
+    DVASSERT(dataSource->GetPrimitiveType() == rhi::PRIMITIVE_TRIANGLELIST);
+
+    int32 vertexFormat = dataSource->GetFormat();
+    int32 trianglesCount = dataSource->GetPrimitiveCount();
+
+    DVASSERT((vertexFormat & EVF_HARD_JOINTINDEX) || (vertexFormat & (EVF_JOINTINDEX | EVF_JOINTWEIGHT)));
+
+    Vector<std::pair<PolygonGroup*, SkinnedMesh::JointTargets>> result;
+    Vector<SkinnedTriangleWork> sourceTriangles(trianglesCount);
+
+    //////////////////////////////////////////////////////////////////////////
+    //Disassemble mesh to triangles and sort it
+
+    int32 jIndex = -1, vIndex = -1;
+    float32 jWeight = 0.f;
+    int32 sourceMaxJointIndex = 0;
+    for (int32 t = 0; t < trianglesCount; ++t)
+    {
+        SkinnedTriangleWork& triangle = sourceTriangles[t];
+        for (int32 i = 0; i < 3; ++i)
+        {
+            dataSource->GetIndex(t * 3 + i, vIndex);
+            triangle.indices[i] = vIndex;
+
+            for (int32 jIndex : GetSignificantJoints(dataSource, vIndex))
+            {
+                triangle.usedJoints.insert(jIndex);
+                sourceMaxJointIndex = Max(sourceMaxJointIndex, jIndex);
+            }
+        }
+    }
+
+    std::sort(sourceTriangles.begin(), sourceTriangles.end(), [](const SkinnedTriangleWork& l, const SkinnedTriangleWork& r) {
+        return *l.usedJoints.rbegin() > *r.usedJoints.rbegin(); //descending order by max joint index
+    });
+
+    Set<int32> usedJointsWork;
+    Set<int32> usedIndicesWork;
+    Vector<int32> jointsWork;
+    Vector<int32> indicesWork;
+    Map<int32, int32> indicesMapWork;
+    Map<int32, int32> jointsMapWork;
+    Vector<SkinnedTriangleWork> triangles;
+    while (sourceTriangles.size())
+    {
+        triangles.clear();
+        usedJointsWork.clear();
+        usedIndicesWork.clear();
+
+        //////////////////////////////////////////////////////////////////////////
+        //Search triangles that suit to max joints count
+
+        for (SkinnedTriangleWork& triangle : sourceTriangles)
+        {
+            jointsWork.clear();
+            std::set_union(usedJointsWork.begin(), usedJointsWork.end(), triangle.usedJoints.begin(), triangle.usedJoints.end(), std::back_inserter(jointsWork));
+            if (uint32(jointsWork.size()) > maxJointCount)
+                continue;
+
+            usedJointsWork.insert(triangle.usedJoints.begin(), triangle.usedJoints.end());
+
+            for (int32 ind : triangle.indices)
+                usedIndicesWork.insert(ind);
+
+            triangles.push_back(triangle);
+            triangle.processed = true;
+        }
+
+        auto removed = std::remove_if(sourceTriangles.begin(), sourceTriangles.end(), [](const SkinnedTriangleWork& element) {
+            return element.processed;
+        });
+        sourceTriangles.erase(removed, sourceTriangles.end());
+
+        //////////////////////////////////////////////////////////////////////////
+        //Fill temporary mapping data for joints and indices
+
+        SkinnedMesh::JointTargets jointTargets;
+        jointTargets.insert(jointTargets.end(), usedJointsWork.begin(), usedJointsWork.end());
+
+        jointsMapWork.clear();
+        for (int32 j = 0; j < int32(jointTargets.size()); ++j)
+            jointsMapWork[jointTargets[j]] = j;
+
+        indicesWork.clear();
+        indicesWork.reserve(usedIndicesWork.size());
+        indicesWork.insert(indicesWork.end(), usedIndicesWork.begin(), usedIndicesWork.end());
+
+        indicesMapWork.clear();
+        for (int32 ind = 0; ind < int32(usedIndicesWork.size()); ++ind)
+            indicesMapWork[indicesWork[ind]] = ind;
+
+        //////////////////////////////////////////////////////////////////////////
+        //Fill vertex data
+
+        int32 vertexCount = int32(usedIndicesWork.size());
+        int32 indexCount = int32(triangles.size()) * 3;
+
+        PolygonGroup* pg = new PolygonGroup();
+        pg->AllocateData(vertexFormat, vertexCount, indexCount);
+
+        for (int32 v = 0; v < vertexCount; ++v)
+        {
+            MeshUtils::CopyVertex(dataSource, indicesWork[v], pg, v);
+            ReplaceSignificantJoints(pg, v, jointsMapWork);
+        }
+
+        //////////////////////////////////////////////////////////////////////////
+        //Fill index data
+
+        int32 iIndex = 0;
+        for (const SkinnedTriangleWork& t : triangles)
+        {
+            for (int32 i : t.indices)
+            {
+                DVASSERT(indicesMapWork.count(i) != 0);
+                pg->SetIndex(iIndex, uint16(indicesMapWork[i]));
+
+                ++iIndex;
+            }
+        }
+        DVASSERT(iIndex == indexCount);
+
+        //////////////////////////////////////////////////////////////////////////
+
+        result.emplace_back(pg, std::move(jointTargets));
+    }
+
+    return result;
+}
+
 PolygonGroup* CreateShadowPolygonGroup(PolygonGroup* oldPolygonGroup)
 {
+    using namespace MeshUtilsDetails;
+
     int32 numEdges = oldPolygonGroup->GetIndexCount();
     int32 oldIndexCount = oldPolygonGroup->GetIndexCount();
     EdgeMappingWork* mapping = new EdgeMappingWork[numEdges];
@@ -777,26 +1053,6 @@ PolygonGroup* CreateShadowPolygonGroup(PolygonGroup* oldPolygonGroup)
     return shadowDataSource;
 }
 
-int32 FindEdgeInMappingTable(int32 nV1, int32 nV2, EdgeMappingWork* mapping, int32 count)
-{
-    for (int i = 0; i < count; ++i)
-    {
-        // If both vertex indexes of the old edge in mapping entry are -1, then
-        // we have searched every valid entry without finding a match.  Return
-        // this index as a newly created entry.
-        if ((mapping[i].oldEdge[0] == -1 && mapping[i].oldEdge[1] == -1) ||
-
-            // Or if we find a match, return the index.
-            (mapping[i].oldEdge[1] == nV1 && mapping[i].oldEdge[0] == nV2))
-        {
-            return i;
-        }
-    }
-
-    DVASSERT(0);
-    return -1; // We should never reach this line
-}
-
 Vector<uint16> BuildSortedIndexBufferData(PolygonGroup* pg, Vector3 direction)
 {
     DVASSERT(pg);
@@ -860,6 +1116,36 @@ Vector<uint16> BuildSortedIndexBufferData(PolygonGroup* pg, Vector3 direction)
         indexBufferData.insert(indexBufferData.end(), t.indices.begin(), t.indices.end());
 
     return indexBufferData;
+}
+
+uint32 ReleaseGeometryDataRecursive(Entity* forEntity)
+{
+    if (!forEntity)
+        return 0;
+
+    uint32 ret = 0;
+
+    int32 childrenCount = forEntity->GetChildrenCount();
+    for (int32 i = 0; i < childrenCount; ++i)
+    {
+        ret += ReleaseGeometryDataRecursive(forEntity->GetChild(i));
+    }
+
+    RenderObject* ro = GetRenderObject(forEntity);
+    if (ro)
+    {
+        uint32 rbCount = ro->GetRenderBatchCount();
+        for (uint32 i = 0; i < rbCount; ++i)
+        {
+            PolygonGroup* pg = ro->GetRenderBatch(i)->GetPolygonGroup();
+            if (pg && pg->vertexBuffer != rhi::InvalidHandle && pg->indexBuffer != rhi::InvalidHandle)
+            {
+                ret += pg->ReleaseGeometryData();
+            }
+        }
+    }
+
+    return ret;
 }
 };
 };

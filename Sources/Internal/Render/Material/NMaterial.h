@@ -2,7 +2,6 @@
 #define __DAVAENGINE_NMATERIAL_H__
 
 #include <memory>
-#include "Base/FastNameMap.h"
 #include "NMaterialNames.h"
 #include "NMaterialStateDynamicFlagsInsp.h"
 #include "NMaterialStateDynamicPropertiesInsp.h"
@@ -52,9 +51,9 @@ struct MaterialConfig
 
     FastName name;
     FastName fxName;
-    HashMap<FastName, NMaterialProperty*> localProperties;
-    HashMap<FastName, MaterialTextureInfo*> localTextures;
-    HashMap<FastName, int32> localFlags; // integer flags are just more generic than boolean (eg. #if SHADING == HIGH), it has nothing in common with eFlagValue
+    UnorderedMap<FastName, NMaterialProperty*> localProperties;
+    UnorderedMap<FastName, MaterialTextureInfo*> localTextures;
+    UnorderedMap<FastName, int32> localFlags; // integer flags are just more generic than boolean (eg. #if SHADING == HIGH), it has nothing in common with eFlagValue
 };
 
 class RenderVariantInstance
@@ -127,7 +126,7 @@ public:
     uint32 GetLocalPropArraySize(const FastName& propName);
     const float32* GetLocalPropValue(const FastName& propName);
     const float32* GetEffectivePropValue(const FastName& propName);
-    const HashMap<FastName, NMaterialProperty*>& GetLocalProperties() const;
+    const UnorderedMap<FastName, NMaterialProperty*>& GetLocalProperties() const;
 
     // textures
     void AddTexture(const FastName& slotName, Texture* texture);
@@ -140,14 +139,14 @@ public:
     void CollectLocalTextures(Set<MaterialTextureInfo*>& collection) const;
     void CollectActiveLocalTextures(Set<MaterialTextureInfo*>& collection) const;
     bool ContainsTexture(Texture* texture) const;
-    const HashMap<FastName, MaterialTextureInfo*>& GetLocalTextures() const;
+    const UnorderedMap<FastName, MaterialTextureInfo*>& GetLocalTextures() const;
 
     // flags
     void AddFlag(const FastName& flagName, int32 value);
     void RemoveFlag(const FastName& flagName);
     void SetFlag(const FastName& flagName, int32 value);
     bool HasLocalFlag(const FastName& flagName);
-    const HashMap<FastName, int32>& GetLocalFlags() const;
+    const UnorderedMap<FastName, int32>& GetLocalFlags() const;
 
     int32 GetLocalFlagValue(const FastName& flagName);
     int32 GetEffectiveFlagValue(const FastName& flagName);
@@ -186,7 +185,7 @@ public:
 
     // RHI_COMPLETE - it's temporary solution to avoid FX loading and shaders compilation after loading
     void PreCacheFX();
-    void PreCacheFXWithFlags(const HashMap<FastName, int32>& extraFlags, const FastName& extraFxName = FastName());
+    void PreCacheFXWithFlags(const UnorderedMap<FastName, int32>& extraFlags, const FastName& extraFxName = FastName());
     void PreCacheFXVariations(const Vector<FastName>& fxNames, const Vector<FastName>& flags);
 
     static const float32 DEFAULT_LIGHTMAP_SIZE;
@@ -213,7 +212,7 @@ private:
     // the following functions will collect data recursively
     MaterialBufferBinding* GetConstBufferBinding(UniquePropertyLayout propertyLayout);
     NMaterialProperty* GetMaterialProperty(const FastName& propName);
-    void CollectMaterialFlags(HashMap<FastName, int32>& target);
+    void CollectMaterialFlags(UnorderedMap<FastName, int32>& target);
     void CollectConfigTextures(const MaterialConfig& config, Set<MaterialTextureInfo*>& collection) const;
 
     void AddChildMaterial(NMaterial* material);
@@ -239,10 +238,10 @@ private:
     FastName activeVariantName;
     RenderVariantInstance* activeVariantInstance = nullptr;
 
-    HashMap<UniquePropertyLayout, MaterialBufferBinding*> localConstBuffers;
+    UnorderedMap<UniquePropertyLayout, MaterialBufferBinding*> localConstBuffers;
 
     // this is for render passes - not used right now - only active variant instance
-    HashMap<FastName, RenderVariantInstance*> renderVariants;
+    UnorderedMap<FastName, RenderVariantInstance*> renderVariants;
 
     uint32 sortingKey = 0;
     bool needRebuildBindings = true;
@@ -250,15 +249,15 @@ private:
     bool needRebuildVariants = true;
 
 public:
-    INTROSPECTION_EXTEND(NMaterial, DataNode,
-                         PROPERTY("materialName", "Material name", GetMaterialName, SetMaterialName, I_VIEW | I_EDIT)
-                         PROPERTY("configName", "Config name", GetCurrentConfigName, SetCurrentConfigName, I_VIEW | I_EDIT)
-                         PROPERTY("configId", "Current config", GetCurrentConfigIndex, SetCurrentConfigIndex, I_VIEW | I_EDIT)
-                         PROPERTY("fxName", "FX Name", GetLocalFXName, SetFXName, I_VIEW | I_EDIT)
-                         PROPERTY("qualityGroup", "Quality group", GetQualityGroup, SetQualityGroup, I_VIEW | I_EDIT)
-                         DYNAMIC(localFlags, "Material flags", new NMaterialStateDynamicFlagsInsp(), I_EDIT | I_VIEW)
-                         DYNAMIC(localProperties, "Material properties", new NMaterialStateDynamicPropertiesInsp(), I_EDIT | I_VIEW)
-                         DYNAMIC(localTextures, "Material textures", new NMaterialStateDynamicTexturesInsp(), I_EDIT | I_VIEW))
+    INTROSPECTION(NMaterial,
+                  PROPERTY("materialName", "Material name", GetMaterialName, SetMaterialName, I_VIEW | I_EDIT)
+                  PROPERTY("configName", "Config name", GetCurrentConfigName, SetCurrentConfigName, I_VIEW | I_EDIT)
+                  PROPERTY("configId", "Current config", GetCurrentConfigIndex, SetCurrentConfigIndex, I_VIEW | I_EDIT)
+                  PROPERTY("fxName", "FX Name", GetLocalFXName, SetFXName, I_VIEW | I_EDIT)
+                  PROPERTY("qualityGroup", "Quality group", GetQualityGroup, SetQualityGroup, I_VIEW | I_EDIT)
+                  DYNAMIC(localFlags, "Material flags", new NMaterialStateDynamicFlagsInsp(), I_EDIT | I_VIEW)
+                  DYNAMIC(localProperties, "Material properties", new NMaterialStateDynamicPropertiesInsp(), I_EDIT | I_VIEW)
+                  DYNAMIC(localTextures, "Material textures", new NMaterialStateDynamicTexturesInsp(), I_EDIT | I_VIEW))
 };
 
 void NMaterialProperty::SetPropertyValue(const float32* newValue)

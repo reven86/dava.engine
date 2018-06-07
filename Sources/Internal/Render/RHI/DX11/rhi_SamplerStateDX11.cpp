@@ -88,6 +88,10 @@ static Handle dx11_SamplerState_Create(const SamplerState::Descriptor& desc)
     return handle;
 }
 
+void SamplerStateDX11::Init(uint32 maxCount)
+{
+    SamplerStateDX11Pool::Reserve(maxCount);
+}
 void SamplerStateDX11::SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_SamplerState_Create = &dx11_SamplerState_Create;

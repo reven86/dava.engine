@@ -1,11 +1,11 @@
 #include "Render/2D/Font.h"
-#include "Core/Core.h"
-#include "FileSystem/YamlParser.h"
+#include "Engine/Engine.h"
 #include "FileSystem/YamlNode.h"
+#include "FileSystem/YamlParser.h"
 #include "FontManager.h"
 #include "UI/UIControlSystem.h"
-#include "Utils/StringFormat.h"
 #include "Utils/CRC32.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
@@ -22,15 +22,13 @@ int32 Font::GetDPI()
 }
 
 Font::Font()
-    : size(14.0f)
-    , verticalSpacing(0)
 {
-    FontManager::Instance()->RegisterFont(this);
+    GetEngineContext()->fontManager->RegisterFont(this);
 }
 
 Font::~Font()
 {
-    FontManager::Instance()->UnregisterFont(this);
+    GetEngineContext()->fontManager->UnregisterFont(this);
 }
 
 bool Font::IsEqual(const Font* font) const
@@ -40,16 +38,37 @@ bool Font::IsEqual(const Font* font) const
         return false;
     }
 
-    if (fontType != font->fontType)
+    if (GetFontType() != font->GetFontType())
     {
         return false;
     }
-    if (size != font->size || verticalSpacing != font->verticalSpacing)
+
+    if (GetVerticalSpacing() != font->GetVerticalSpacing())
+    {
+        return false;
+    }
+
+    if (!FLOAT_EQUAL(GetAscendScale(), font->GetAscendScale()))
+    {
+        return false;
+    }
+
+    if (!FLOAT_EQUAL(GetDescendScale(), font->GetDescendScale()))
     {
         return false;
     }
 
     return true;
+}
+
+bool Font::IsTextSupportsSoftwareRendering() const
+{
+    return false;
+}
+
+bool Font::IsTextSupportsHardwareRendering() const
+{
+    return false;
 }
 
 uint32 Font::GetHashCode()
@@ -60,17 +79,7 @@ uint32 Font::GetHashCode()
 
 String Font::GetRawHashString()
 {
-    return Format("%i_%.0f_%i", fontType, size, verticalSpacing);
-}
-
-void Font::SetSize(float32 _size)
-{
-    size = _size;
-}
-
-float32 Font::GetSize() const
-{
-    return size;
+    return Format("%i_%i_%0.3f_%0.3f", GetFontType(), GetVerticalSpacing(), GetAscendScale(), GetDescendScale());
 }
 
 void Font::SetVerticalSpacing(int32 _verticalSpacing)
@@ -83,9 +92,9 @@ int32 Font::GetVerticalSpacing() const
     return verticalSpacing;
 }
 
-Size2i Font::GetStringSize(const WideString& str, Vector<float32>* charSizes)
+Size2i Font::GetStringSize(float32 size, const WideString& str, Vector<float32>* charSizes)
 {
-    StringMetrics metrics = GetStringMetrics(str, charSizes);
+    StringMetrics metrics = GetStringMetrics(size, str, charSizes);
     return Size2i(int32(std::ceil(metrics.width)), int32(std::ceil(metrics.height)));
 }
 
@@ -98,19 +107,13 @@ YamlNode* Font::SaveToYamlNode() const
 {
     YamlNode* node = new YamlNode(YamlNode::TYPE_MAP);
 
-    VariantType* nodeValue = new VariantType();
     //Type
     node->Set("type", "Font");
-    //Font size
-    node->Set("size", this->GetSize());
     //Vertical Spacing
     node->Set("verticalSpacing", this->GetVerticalSpacing());
-
     //Ascend / descend
     node->Set("ascendScale", this->GetAscendScale());
     node->Set("descendScale", this->GetDescendScale());
-
-    SafeDelete(nodeValue);
 
     return node;
 }

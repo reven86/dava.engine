@@ -10,12 +10,9 @@ const char* ENGINE_DO_EVENTS = "Engine::DoEvents";
 const char* ENGINE_BEGIN_FRAME = "Engine::BeginFrame";
 const char* ENGINE_END_FRAME = "Engine::EndFrame";
 const char* ENGINE_UPDATE = "Engine::Update";
-#if defined(__DAVAENGINE_COREV2__)
 const char* ENGINE_UPDATE_WINDOW = "Engine::UpdateWindow";
 const char* ENGINE_DRAW_WINDOW = "Engine::DrawWindow";
-#else
-const char* ENGINE_DRAW = "Engine::Draw";
-#endif
+
 const char* JOB_MANAGER = "JobManager";
 const char* SOUND_SYSTEM = "SoundSystem";
 const char* ANIMATION_MANAGER = "AnimationManager";
@@ -25,6 +22,7 @@ const char* UI_DRAW = "UI::Draw";
 const char* UI_UPDATE_SYSTEM = "UIUpdateSystem";
 const char* UI_LAYOUT_SYSTEM = "UILayoutSystem";
 const char* UI_STYLE_SHEET_SYSTEM = "UIStyleSheetSystem";
+const char* UI_TEXT_SYSTEM = "UITextSystem";
 const char* UI_RENDER_SYSTEM = "UIRenderSystem";
 
 const char* UI_TEXTBLOCK_RECALC_PARAMS = "UI::TextBlock::CalculateParams";
@@ -51,6 +49,8 @@ const char* SCENE_SPEEDTREE_SYSTEM = "SpeedTreeUpdateSystem";
 const char* SCENE_WIND_SYSTEM = "WindSystem";
 const char* SCENE_WAVE_SYSTEM = "WaveSystem";
 const char* SCENE_SKELETON_SYSTEM = "SkeletonSystem";
+const char* SCENE_MOTION_SYSTEM = "MotionSystem";
+const char* SCENE_GEODECAL_SYSTEM = "GeoDecalSystem";
 
 //Render
 const char* RENDER_PASS_PREPARE_ARRAYS = "RenderPass::PrepareArrays";

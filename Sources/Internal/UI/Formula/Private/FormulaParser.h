@@ -41,6 +41,7 @@ public:
 
 private:
     std::shared_ptr<FormulaDataVector> ParseVector();
+    std::shared_ptr<FormulaExpression> ParseConditionalExpression();
     std::shared_ptr<FormulaExpression> ParseLogicalOr();
     std::shared_ptr<FormulaExpression> ParseLogicalAnd();
     std::shared_ptr<FormulaExpression> ParseEquality();

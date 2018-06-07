@@ -19,8 +19,6 @@ protected:
 public:
     QualitySettingsComponent();
 
-    IMPLEMENT_COMPONENT_TYPE(QUALITY_SETTINGS_COMPONENT);
-
     Component* Clone(Entity* toEntity) override;
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
@@ -42,14 +40,6 @@ private:
     FastName requiredGroup;
     FastName requiredQuality;
     bool filterByType;
-
-public:
-    INTROSPECTION_EXTEND(QualitySettingsComponent, Component,
-                         PROPERTY("filterByType", "Filter By Type", GetFilterByType, SetFilterByType, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("modelType", "Model Type", GetModelType, SetModelType, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("requiredGroup", "Required Group", GetRequiredGroup, SetRequiredGroup, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("requiredQuality", "Required Quality", GetRequiredQuality, SetRequiredQuality, I_SAVE | I_VIEW | I_EDIT)
-                         );
 
     DAVA_VIRTUAL_REFLECTION(QualitySettingsComponent, Component);
 };

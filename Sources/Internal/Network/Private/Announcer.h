@@ -1,13 +1,11 @@
-#ifndef __DAVAENGINE_ANNOUNCER_H__
-#define __DAVAENGINE_ANNOUNCER_H__
+#pragma once
 
-#include <Network/Base/DeadlineTimer.h>
-#include <Network/Base/UDPSocket.h>
-
+#include "Concurrency/Atomic.h"
+#include "Network/Base/DeadlineTimer.h"
+#include "Network/Base/UDPSocket.h"
 #include "Network/Base/TCPAcceptor.h"
 #include "Network/Base/TCPSocket.h"
-
-#include <Network/IController.h>
+#include "Network/IController.h"
 
 namespace DAVA
 {
@@ -20,10 +18,18 @@ class Announcer : public IController
     static const uint32 RESTART_DELAY_PERIOD = 3000;
 
 public:
-    Announcer(IOLoop* ioLoop, const Endpoint& endp, uint32 sendPeriod, Function<size_t(size_t, void*)> needDataCallback, const Endpoint& tcpEndp);
+    /**
+        create announce connection using given `ioLoop`.
+        Announcer sends multicast message using given `endp` and `sendPeriodSec`.
+        It also listens to `tcpEndp` port that is handy when multicast is not working in network.
+        Announcer starts only when both `endp` and `tcpEndp` are available.
+        `needDataCallback` should also be specified to provide data about announcing peer to distant peers.
+    */
+    Announcer(IOLoop* ioLoop, const Endpoint& endp, uint32 sendPeriodSec, Function<size_t(size_t, void*)> needDataCallback, const Endpoint& tcpEndp);
     virtual ~Announcer();
 
     // IController
+    Status GetStatus() const override;
     void Start() override;
     void Stop(Function<void(IController*)> callback) override;
     void Restart() override;
@@ -56,9 +62,14 @@ private:
     Endpoint tcpEndpoint; // Listening port for direct connection
     TCPAcceptor acceptor; // TCP socket for direct connection from remote discoverer
     uint8 tcpBuffer[4 * 1024];
+
+    Atomic<Status> status{ NOT_STARTED };
 };
+
+inline IController::Status Announcer::GetStatus() const
+{
+    return status.Get();
+}
 
 } // namespace Net
 } // namespace DAVA
-
-#endif // __DAVAENGINE_ANNOUNCER_H__

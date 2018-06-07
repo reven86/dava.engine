@@ -1,16 +1,20 @@
 #include "UIUpdateComponent.h"
+#include "Engine/Engine.h"
+#include "Entity/ComponentManager.h"
 #include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(UIUpdateComponent)
 {
-    ReflectionRegistrator<UIUpdateComponent>::Begin()
+    ReflectionRegistrator<UIUpdateComponent>::Begin()[M::DisplayName("Update")]
     .ConstructorByPointer()
     .DestructorByPointer([](UIUpdateComponent* c) { SafeRelease(c); })
-    .Field("updateInvisible", &UIUpdateComponent::GetUpdateInvisible, &UIUpdateComponent::SetUpdateInvisible)
+    .Field("updateInvisible", &UIUpdateComponent::GetUpdateInvisible, &UIUpdateComponent::SetUpdateInvisible)[M::DisplayName("Update Invisible")]
     .End();
 }
+
+IMPLEMENT_UI_COMPONENT(UIUpdateComponent);
 
 UIUpdateComponent::UIUpdateComponent() = default;
 UIUpdateComponent::~UIUpdateComponent() = default;

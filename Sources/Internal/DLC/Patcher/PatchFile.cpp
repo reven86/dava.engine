@@ -408,14 +408,14 @@ void PatchFileWriter::EnumerateDir(const FilePath& dirPath, const FilePath& base
 // ======================================================================================
 PatchFileReader::PatchFileReader(const FilePath& path, bool beVerbose, bool enablePermissive)
     : isPermissiveMode(enablePermissive)
-    , verbose(beVerbose)
     , lastError(ERROR_NO)
     , parseError(ERROR_NO)
     , lastFileErrno(0)
+    , verbose(beVerbose)
+    , eof(true)
     , initialPositionsCount(0)
     , curPatchIndex(0)
     , curBSDiffPos(0)
-    , eof(true)
 {
     patchFile = File::Create(path, File::OPEN | File::READ | File::WRITE);
     if (nullptr != patchFile)

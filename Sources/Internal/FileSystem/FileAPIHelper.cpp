@@ -1,4 +1,5 @@
 #include "FileSystem/FileAPIHelper.h"
+#include "FileSystem/Private/CheckIOError.h"
 #include "Utils/UTF8Utils.h"
 #include "Logger/Logger.h"
 
@@ -53,6 +54,13 @@ int32 RemoveFile(const String& fileName)
 
 int32 RenameFile(const String& oldFileName, const String& newFileName)
 {
+#ifdef __DAVAENGINE_DEBUG__
+    if (DebugFS::GenErrorOnMoveFailed())
+    {
+        return 1;
+    }
+#endif
+
 #ifdef __DAVAENGINE_WINDOWS__
     WideString old = UTF8Utils::EncodeToWideString(oldFileName);
     WideString new_ = UTF8Utils::EncodeToWideString(newFileName);
@@ -71,6 +79,10 @@ static void LogError(int32 errnoCode, const String& fileName, const char* functi
         break;
     case EINVAL:
         Logger::Error("Invalid parameter to stat: %s", fileName.c_str());
+        break;
+    case EACCES:
+        // common case for android: /mnt/knox/Android/
+        // do not spam to logger
         break;
     default:
         // Should never be reached.

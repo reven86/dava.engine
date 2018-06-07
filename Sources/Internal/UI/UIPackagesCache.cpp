@@ -4,27 +4,28 @@
 
 namespace DAVA
 {
+UIPackagesCache::UIPackagesCache(const RefPtr<UIPackagesCache>& _parent)
+    : parent(_parent)
+{
+}
+
 UIPackagesCache::UIPackagesCache(UIPackagesCache* _parent)
-    : parent(SafeRetain(_parent))
+    : UIPackagesCache(RefPtr<UIPackagesCache>::ConstructWithRetain(_parent))
 {
 }
 
 UIPackagesCache::~UIPackagesCache()
 {
-    SafeRelease(parent);
-
-    for (auto& it : packages)
-        it.second->Release();
-
+    parent = nullptr;
     packages.clear();
 }
 
-void UIPackagesCache::PutPackage(const String& path, UIPackage* package)
+void UIPackagesCache::PutPackage(const String& path, const RefPtr<UIPackage>& package)
 {
     auto it = packages.find(path);
     if (it == packages.end())
     {
-        packages[path] = SafeRetain(package);
+        packages[path] = package;
     }
     else
     {
@@ -32,7 +33,7 @@ void UIPackagesCache::PutPackage(const String& path, UIPackage* package)
     }
 }
 
-UIPackage* UIPackagesCache::GetPackage(const String& path) const
+RefPtr<UIPackage> UIPackagesCache::GetPackage(const String& path) const
 {
     auto it = packages.find(path);
     if (it != packages.end())
@@ -41,6 +42,6 @@ UIPackage* UIPackagesCache::GetPackage(const String& path) const
     if (parent)
         return parent->GetPackage(path);
 
-    return nullptr;
+    return RefPtr<UIPackage>();
 }
 }

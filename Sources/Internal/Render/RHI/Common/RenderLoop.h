@@ -14,6 +14,7 @@ void InitializeRenderLoop(uint32 frameCount, DAVA::Thread::eThreadPriority prior
 void UninitializeRenderLoop();
 
 void SuspendRender();
+void SuspendRenderAfterFrame();
 void ResumeRender();
 
 void IssueImmediateCommand(CommonImpl::ImmediateCommand* command); //blocking until complete

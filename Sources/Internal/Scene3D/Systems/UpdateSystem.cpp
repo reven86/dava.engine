@@ -14,7 +14,7 @@ UpdateSystem::UpdateSystem(Scene* scene)
 
 void UpdateSystem::AddEntity(Entity* entity)
 {
-    UpdatableComponent* component = static_cast<UpdatableComponent*>(entity->GetComponent(Component::UPDATABLE_COMPONENT));
+    UpdatableComponent* component = entity->GetComponent<UpdatableComponent>();
     IUpdatable* object = component->GetUpdatableObject();
 
     if (object)
@@ -35,7 +35,7 @@ void UpdateSystem::AddEntity(Entity* entity)
 
 void UpdateSystem::RemoveEntity(Entity* entity)
 {
-    UpdatableComponent* component = static_cast<UpdatableComponent*>(entity->GetComponent(Component::UPDATABLE_COMPONENT));
+    UpdatableComponent* component = entity->GetComponent<UpdatableComponent>();
     IUpdatable* object = component->GetUpdatableObject();
 
     if (object)
@@ -70,6 +70,12 @@ void UpdateSystem::RemoveEntity(Entity* entity)
             }
         }
     }
+}
+
+void UpdateSystem::PrepareForRemove()
+{
+    updatesBeforeTransform.clear();
+    updatesAfterTransform.clear();
 }
 
 void UpdateSystem::UpdatePreTransform(float32 timeElapsed)

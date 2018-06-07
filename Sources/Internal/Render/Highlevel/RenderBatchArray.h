@@ -36,10 +36,6 @@ private:
     Vector<RenderBatch*> renderBatchArray;
     uint32 sortFlags;
     static bool MaterialCompareFunction(const RenderBatch* a, const RenderBatch* b);
-
-public:
-    INTROSPECTION(RenderBatchArray,
-                  COLLECTION(renderBatchArray, "Render Batch Array", I_EDIT));
 };
 
 inline void RenderBatchArray::Clear()

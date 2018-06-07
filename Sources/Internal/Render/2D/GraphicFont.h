@@ -36,7 +36,7 @@ public:
      \param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str
      \returns bounding rect for string in pixels
      */
-    virtual Font::StringMetrics GetStringMetrics(const WideString& str, Vector<float32>* charSizes = 0) const;
+    virtual Font::StringMetrics GetStringMetrics(float32 size, const WideString& str, Vector<float32>* charSizes = 0) const;
 
     /**
      \brief Checks if symbol is present in font.
@@ -49,7 +49,7 @@ public:
      \brief Get height of highest symbol in font.
      \returns height in pixels
      */
-    virtual uint32 GetFontHeight() const;
+    virtual uint32 GetFontHeight(float32 size) const;
 
     /**
      \brief Clone font.
@@ -72,7 +72,8 @@ public:
     //We need to return font path
     const FilePath& GetFontPath() const;
 
-    Font::StringMetrics DrawStringToBuffer(const WideString& str,
+    Font::StringMetrics DrawStringToBuffer(float32 size,
+                                           const WideString& str,
                                            int32 xOffset,
                                            int32 yOffset,
                                            GraphicFontVertex* vertexBuffer,
@@ -81,14 +82,14 @@ public:
                                            int32 justifyWidth = 0,
                                            int32 spaceAddon = 0) const;
 
-    float32 GetSpread() const;
+    float32 GetSpread(float32 size) const;
 
 protected:
     // Get the raw hash string (identical for identical fonts).
     virtual String GetRawHashString();
 
 private:
-    float32 GetSizeScale() const;
+    float32 GetSizeScale(float32 size) const;
     bool LoadTexture(const FilePath& path);
 
     GraphicInternalFont* fontInternal;

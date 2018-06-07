@@ -241,8 +241,21 @@ VariantType PrepareValueForKeyedArchiveImpl(const Any& value, VariantType::eVari
             result.SetAABBox3(value.Cast<AABBox3>());
         }
         break;
-    case VariantType::TYPE_BYTE_ARRAY:
     case VariantType::TYPE_KEYED_ARCHIVE:
+        if (value.CanGet<KeyedArchive*>())
+        {
+            result.SetKeyedArchive(value.Get<KeyedArchive*>());
+        }
+        else if (value.CanGet<RefPtr<KeyedArchive>>())
+        {
+            result.SetKeyedArchive(value.Get<RefPtr<KeyedArchive>>().Get());
+        }
+        else
+        {
+            DVASSERT(false);
+        }
+        break;
+    case VariantType::TYPE_BYTE_ARRAY:
     default:
         DVASSERT(false);
         break;
@@ -359,7 +372,10 @@ bool KeyedArchiveElementValueWrapper::SetValue(const ReflectedObject& object, co
 {
     VariantType* v = object.GetPtr<VariantType>();
     const Type* srcType = GetTypeByVariantType(v);
-    if (srcType != value.GetType())
+
+    bool exception = srcType == Type::Instance<KeyedArchive*>() && value.GetType() == Type::Instance<RefPtr<KeyedArchive>>();
+
+    if (srcType != value.GetType() && !exception)
     {
         return false;
     }
@@ -435,8 +451,21 @@ bool KeyedArchiveElementValueWrapper::SetValue(const ReflectedObject& object, co
     case VariantType::TYPE_AABBOX3:
         v->SetAABBox3(value.Get<AABBox3>());
         break;
-    case VariantType::TYPE_BYTE_ARRAY:
     case VariantType::TYPE_KEYED_ARCHIVE:
+        if (value.CanGet<KeyedArchive*>())
+        {
+            v->SetKeyedArchive(value.Get<KeyedArchive*>());
+        }
+        else if (value.CanGet<RefPtr<KeyedArchive>>())
+        {
+            v->SetKeyedArchive(value.Get<RefPtr<KeyedArchive>>().Get());
+        }
+        else
+        {
+            DVASSERT(false);
+        }
+        break;
+    case VariantType::TYPE_BYTE_ARRAY:
     default:
         DVASSERT(false);
         return false;
@@ -620,6 +649,10 @@ bool KeyedArchiveStructureWrapper::AddField(const ReflectedObject& object, const
             archive->SetColor(k, value.Get<Color>());
         else if (t == Type::Instance<bool>())
             archive->SetBool(k, value.Get<bool>());
+        else if (t == Type::Instance<KeyedArchive*>())
+            archive->SetArchive(k, value.Get<KeyedArchive*>());
+        else if (t == Type::Instance<RefPtr<KeyedArchive>>())
+            archive->SetArchive(k, value.Get<RefPtr<KeyedArchive>>().Get());
 
         return true;
     }

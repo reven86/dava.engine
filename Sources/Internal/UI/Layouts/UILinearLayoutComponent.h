@@ -1,6 +1,7 @@
 #ifndef __DAVAENGINE_UI_LINEAR_LAYOUT_COMPONENT_H__
 #define __DAVAENGINE_UI_LINEAR_LAYOUT_COMPONENT_H__
 
+#include "Math/Vector.h"
 #include "UI/Components/UIComponent.h"
 #include "Reflection/Reflection.h"
 #include <bitset>
@@ -10,7 +11,7 @@ namespace DAVA
 class UILinearLayoutComponent : public UIComponent
 {
     DAVA_VIRTUAL_REFLECTION(UILinearLayoutComponent, UIComponent);
-    IMPLEMENT_UI_COMPONENT(UILinearLayoutComponent);
+    DECLARE_UI_COMPONENT(UILinearLayoutComponent);
 
 public:
     enum eOrientation
@@ -52,6 +53,9 @@ public:
     bool IsDynamicPadding() const;
     void SetDynamicPadding(bool dynamic);
 
+    bool IsSafeAreaPaddingInset() const;
+    void SetSafeAreaPaddingInset(bool inset);
+
     bool IsDynamicSpacing() const;
     void SetDynamicSpacing(bool dynamic);
     bool IsUseRtl() const;
@@ -67,6 +71,7 @@ private:
         FLAG_ORIENTATION_VERTICAL,
         FLAG_ORIENTATION_INVERSE,
         FLAG_DYNAMIC_PADDING,
+        FLAG_SAFE_AREA_PADDING_INSET,
         FLAG_DYNAMIC_SPACING,
         FLAG_RTL,
         FLAG_SKIP_INVISIBLE_CONTROLS,

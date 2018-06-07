@@ -1,10 +1,11 @@
 #include "Engine/Private/Qt/RenderWidgetBackend.h"
 
-#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
 
-#include "Engine/PlatformApi.h"
 #include "Debug/DVAssert.h"
+#include "Engine/PlatformApiQt.h"
+#include "Logger/Logger.h"
+
 #include <QQuickWidget>
 #include <QWidget>
 #include <QDesktopWidget>
@@ -40,8 +41,13 @@ RenderWidgetBackend::RenderWidgetBackend(IWindowDelegate* windowDelegate_)
 
 void RenderWidgetBackend::SetClientDelegate(IClientDelegate* clientDelegate_)
 {
-    DVASSERT(nullptr == clientDelegate);
+    DVASSERT(clientDelegate == nullptr || clientDelegate_ == nullptr);
     clientDelegate = clientDelegate_;
+}
+
+void RenderWidgetBackend::SetFrameBlocked(bool isBlocked)
+{
+    isFrameBlocked = isBlocked;
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -76,6 +82,11 @@ void RenderWidgetBackendImpl<TBase>::OnCreated()
 template <typename TBase>
 void RenderWidgetBackendImpl<TBase>::OnFrame()
 {
+    if (isFrameBlocked == true)
+    {
+        return;
+    }
+
     if (screenParams.screenScale != this->devicePixelRatio())
     {
         screenParams.screenScale = this->devicePixelRatio();
@@ -288,4 +299,3 @@ _Pragma("clang diagnostic pop")
 
 } // namespace DAVA
 #endif // __DAVAENGINE_QT__
-#endif // __DAVAENGINE_COREV2__

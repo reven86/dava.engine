@@ -135,56 +135,56 @@ inline int stb_isspace(STB_TEXTEDIT_CHARTYPE ch)
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IOS__) // Apple-style hot keys
 
 #define STB_TEXTEDIT_K_SHIFT (K_SHIFT)
-#define STB_TEXTEDIT_K_LEFT (K_VKEY | int(DAVA::Key::LEFT))
-#define STB_TEXTEDIT_K_RIGHT (K_VKEY | int(DAVA::Key::RIGHT))
-#define STB_TEXTEDIT_K_UP (K_VKEY | int(DAVA::Key::UP))
-#define STB_TEXTEDIT_K_DOWN (K_VKEY | int(DAVA::Key::DOWN))
-#define STB_TEXTEDIT_K_LINESTART (K_VKEY | int(DAVA::Key::HOME))
-#define STB_TEXTEDIT_K_LINESTART2 (K_VKEY | K_CMD | int(DAVA::Key::LEFT))
-#define STB_TEXTEDIT_K_LINEEND (K_VKEY | int(DAVA::Key::END))
-#define STB_TEXTEDIT_K_LINEEND2 (K_VKEY | K_CMD | int(DAVA::Key::RIGHT))
-#define STB_TEXTEDIT_K_TEXTSTART (K_VKEY | K_CMD | int(DAVA::Key::UP))
-#define STB_TEXTEDIT_K_TEXTEND (K_VKEY | K_CMD | int(DAVA::Key::DOWN))
-#define STB_TEXTEDIT_K_WORDLEFT (K_VKEY | K_ALT | int(DAVA::Key::LEFT))
-#define STB_TEXTEDIT_K_WORDRIGHT (K_VKEY | K_ALT | int(DAVA::Key::RIGHT))
-#define STB_TEXTEDIT_K_INSERT (K_VKEY | int(DAVA::Key::INSERT))
-#define STB_TEXTEDIT_K_DELETE (K_VKEY | int(DAVA::Key::DELETE))
-#define STB_TEXTEDIT_K_BACKSPACE (K_VKEY | int(DAVA::Key::BACKSPACE))
-#define STB_TEXTEDIT_K_UNDO (K_VKEY | K_CMD | int(DAVA::Key::KEY_Z))
-#define STB_TEXTEDIT_K_REDO (K_VKEY | K_CMD | K_SHIFT | int(DAVA::Key::KEY_Z))
+#define STB_TEXTEDIT_K_LEFT (K_VKEY | int(DAVA::eInputElements::KB_LEFT))
+#define STB_TEXTEDIT_K_RIGHT (K_VKEY | int(DAVA::eInputElements::KB_RIGHT))
+#define STB_TEXTEDIT_K_UP (K_VKEY | int(DAVA::eInputElements::KB_UP))
+#define STB_TEXTEDIT_K_DOWN (K_VKEY | int(DAVA::eInputElements::KB_DOWN))
+#define STB_TEXTEDIT_K_LINESTART (K_VKEY | int(DAVA::eInputElements::KB_HOME))
+#define STB_TEXTEDIT_K_LINESTART2 (K_VKEY | K_CMD | int(DAVA::eInputElements::KB_LEFT))
+#define STB_TEXTEDIT_K_LINEEND (K_VKEY | int(DAVA::eInputElements::KB_END))
+#define STB_TEXTEDIT_K_LINEEND2 (K_VKEY | K_CMD | int(DAVA::eInputElements::KB_RIGHT))
+#define STB_TEXTEDIT_K_TEXTSTART (K_VKEY | K_CMD | int(DAVA::eInputElements::KB_UP))
+#define STB_TEXTEDIT_K_TEXTEND (K_VKEY | K_CMD | int(DAVA::eInputElements::KB_DOWN))
+#define STB_TEXTEDIT_K_WORDLEFT (K_VKEY | K_ALT | int(DAVA::eInputElements::KB_LEFT))
+#define STB_TEXTEDIT_K_WORDRIGHT (K_VKEY | K_ALT | int(DAVA::eInputElements::KB_RIGHT))
+#define STB_TEXTEDIT_K_INSERT (K_VKEY | int(DAVA::eInputElements::KB_INSERT))
+#define STB_TEXTEDIT_K_DELETE (K_VKEY | int(DAVA::eInputElements::KB_DELETE))
+#define STB_TEXTEDIT_K_BACKSPACE (K_VKEY | int(DAVA::eInputElements::KB_BACKSPACE))
+#define STB_TEXTEDIT_K_UNDO (K_VKEY | K_CMD | int(DAVA::eInputElements::KB_Z))
+#define STB_TEXTEDIT_K_REDO (K_VKEY | K_CMD | K_SHIFT | int(DAVA::eInputElements::KB_Z))
 
-#define K_VKEY_SELECT_ALL (K_VKEY | K_CMD | int(DAVA::Key::KEY_A))
-#define K_VKEY_CUT (K_VKEY | K_CMD | int(DAVA::Key::KEY_X))
-#define K_VKEY_COPY (K_VKEY | K_CMD | int(DAVA::Key::KEY_C))
-#define K_VKEY_PASTE (K_VKEY | K_CMD | int(DAVA::Key::KEY_V))
-#define K_VKEY_DELETE_WORD (K_VKEY | K_ALT | int(DAVA::Key::DELETE))
-#define K_VKEY_BACKSPACE_WORD (K_VKEY | K_ALT | int(DAVA::Key::BACKSPACE))
+#define K_VKEY_SELECT_ALL (K_VKEY | K_CMD | int(DAVA::eInputElements::KB_A))
+#define K_VKEY_CUT (K_VKEY | K_CMD | int(DAVA::eInputElements::KB_X))
+#define K_VKEY_COPY (K_VKEY | K_CMD | int(DAVA::eInputElements::KB_C))
+#define K_VKEY_PASTE (K_VKEY | K_CMD | int(DAVA::eInputElements::KB_V))
+#define K_VKEY_DELETE_WORD (K_VKEY | K_ALT | int(DAVA::eInputElements::KB_DELETE))
+#define K_VKEY_BACKSPACE_WORD (K_VKEY | K_ALT | int(DAVA::eInputElements::KB_BACKSPACE))
 
 #else // Win-style hot keys
 
 #define STB_TEXTEDIT_K_SHIFT (K_SHIFT)
-#define STB_TEXTEDIT_K_LEFT (K_VKEY | int(DAVA::Key::LEFT))
-#define STB_TEXTEDIT_K_RIGHT (K_VKEY | int(DAVA::Key::RIGHT))
-#define STB_TEXTEDIT_K_UP (K_VKEY | int(DAVA::Key::UP))
-#define STB_TEXTEDIT_K_DOWN (K_VKEY | int(DAVA::Key::DOWN))
-#define STB_TEXTEDIT_K_LINESTART (K_VKEY | int(DAVA::Key::HOME))
-#define STB_TEXTEDIT_K_LINEEND (K_VKEY | int(DAVA::Key::END))
-#define STB_TEXTEDIT_K_TEXTSTART (K_VKEY | K_CTRL | int(DAVA::Key::HOME))
-#define STB_TEXTEDIT_K_TEXTEND (K_VKEY | K_CTRL | int(DAVA::Key::END))
-#define STB_TEXTEDIT_K_WORDLEFT (K_VKEY | K_CTRL | int(DAVA::Key::LEFT))
-#define STB_TEXTEDIT_K_WORDRIGHT (K_VKEY | K_CTRL | int(DAVA::Key::RIGHT))
-#define STB_TEXTEDIT_K_INSERT (K_VKEY | int(DAVA::Key::INSERT))
-#define STB_TEXTEDIT_K_DELETE (K_VKEY | int(DAVA::Key::DELETE))
-#define STB_TEXTEDIT_K_BACKSPACE (K_VKEY | int(DAVA::Key::BACKSPACE))
-#define STB_TEXTEDIT_K_UNDO (K_VKEY | K_CTRL | int(DAVA::Key::KEY_Z))
-#define STB_TEXTEDIT_K_REDO (K_VKEY | K_CTRL | int(DAVA::Key::KEY_Y))
+#define STB_TEXTEDIT_K_LEFT (K_VKEY | int(DAVA::eInputElements::KB_LEFT))
+#define STB_TEXTEDIT_K_RIGHT (K_VKEY | int(DAVA::eInputElements::KB_RIGHT))
+#define STB_TEXTEDIT_K_UP (K_VKEY | int(DAVA::eInputElements::KB_UP))
+#define STB_TEXTEDIT_K_DOWN (K_VKEY | int(DAVA::eInputElements::KB_DOWN))
+#define STB_TEXTEDIT_K_LINESTART (K_VKEY | int(DAVA::eInputElements::KB_HOME))
+#define STB_TEXTEDIT_K_LINEEND (K_VKEY | int(DAVA::eInputElements::KB_END))
+#define STB_TEXTEDIT_K_TEXTSTART (K_VKEY | K_CTRL | int(DAVA::eInputElements::KB_HOME))
+#define STB_TEXTEDIT_K_TEXTEND (K_VKEY | K_CTRL | int(DAVA::eInputElements::KB_END))
+#define STB_TEXTEDIT_K_WORDLEFT (K_VKEY | K_CTRL | int(DAVA::eInputElements::KB_LEFT))
+#define STB_TEXTEDIT_K_WORDRIGHT (K_VKEY | K_CTRL | int(DAVA::eInputElements::KB_RIGHT))
+#define STB_TEXTEDIT_K_INSERT (K_VKEY | int(DAVA::eInputElements::KB_INSERT))
+#define STB_TEXTEDIT_K_DELETE (K_VKEY | int(DAVA::eInputElements::KB_DELETE))
+#define STB_TEXTEDIT_K_BACKSPACE (K_VKEY | int(DAVA::eInputElements::KB_BACKSPACE))
+#define STB_TEXTEDIT_K_UNDO (K_VKEY | K_CTRL | int(DAVA::eInputElements::KB_Z))
+#define STB_TEXTEDIT_K_REDO (K_VKEY | K_CTRL | int(DAVA::eInputElements::KB_Y))
 
-#define K_VKEY_SELECT_ALL (K_VKEY | K_CTRL | int(DAVA::Key::KEY_A))
-#define K_VKEY_CUT (K_VKEY | K_CTRL | int(DAVA::Key::KEY_X))
-#define K_VKEY_COPY (K_VKEY | K_CTRL | int(DAVA::Key::KEY_C))
-#define K_VKEY_PASTE (K_VKEY | K_CTRL | int(DAVA::Key::KEY_V))
-#define K_VKEY_DELETE_WORD (K_VKEY | K_CTRL | int(DAVA::Key::DELETE))
-#define K_VKEY_BACKSPACE_WORD (K_VKEY | K_CTRL | int(DAVA::Key::BACKSPACE))
+#define K_VKEY_SELECT_ALL (K_VKEY | K_CTRL | int(DAVA::eInputElements::KB_A))
+#define K_VKEY_CUT (K_VKEY | K_CTRL | int(DAVA::eInputElements::KB_X))
+#define K_VKEY_COPY (K_VKEY | K_CTRL | int(DAVA::eInputElements::KB_C))
+#define K_VKEY_PASTE (K_VKEY | K_CTRL | int(DAVA::eInputElements::KB_V))
+#define K_VKEY_DELETE_WORD (K_VKEY | K_CTRL | int(DAVA::eInputElements::KB_DELETE))
+#define K_VKEY_BACKSPACE_WORD (K_VKEY | K_CTRL | int(DAVA::eInputElements::KB_BACKSPACE))
 
 #endif
 
@@ -228,14 +228,9 @@ void StbTextEditBridge::CopyStbStateFrom(const StbTextEditBridge& c)
     Memcpy(stb_state, c.stb_state, sizeof(StbState));
 }
 
-#if defined(__DAVAENGINE_COREV2__)
-bool StbTextEditBridge::SendKey(Key key, eModifierKeys modifiers)
-#else
-bool StbTextEditBridge::SendKey(Key key, uint32 modifiers)
-#endif
+bool StbTextEditBridge::SendKey(eInputElements key, eModifierKeys modifiers)
 {
     uint32 code = K_VKEY | static_cast<uint32>(key);
-#if defined(__DAVAENGINE_COREV2__)
     if ((modifiers & eModifierKeys::CONTROL) != eModifierKeys::NONE)
     {
         code |= K_CTRL;
@@ -252,24 +247,6 @@ bool StbTextEditBridge::SendKey(Key key, uint32 modifiers)
     {
         code |= K_CMD;
     }
-#else
-    if (modifiers & UIEvent::CONTROL_DOWN)
-    {
-        code |= K_CTRL;
-    }
-    if (modifiers & UIEvent::ALT_DOWN)
-    {
-        code |= K_ALT;
-    }
-    if (modifiers & UIEvent::SHIFT_DOWN)
-    {
-        code |= K_SHIFT;
-    }
-    if (modifiers & UIEvent::COMMAND_DOWN)
-    {
-        code |= K_CMD;
-    }
-#endif
 
     switch (code)
     {
@@ -297,17 +274,9 @@ bool StbTextEditBridge::SendKey(Key key, uint32 modifiers)
     }
 }
 
-#if defined(__DAVAENGINE_COREV2__)
 bool StbTextEditBridge::SendKeyChar(uint32 keyChar, eModifierKeys modifiers)
-#else
-bool StbTextEditBridge::SendKeyChar(uint32 keyChar, uint32 modifiers)
-#endif
 {
-#if defined(__DAVAENGINE_COREV2__)
     if ((modifiers & eModifierKeys::COMMAND) != eModifierKeys::NONE)
-#else
-    if (modifiers & UIEvent::COMMAND_DOWN)
-#endif
     {
         // Skip CMD+char input under MacOS
         return false;

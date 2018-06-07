@@ -42,6 +42,7 @@ protected:
     enum
     {
         STATE_NONE = 0,
+        STATE_BEFORE_SCROLL,
         STATE_SCROLL,
         STATE_ZOOM,
         STATE_DECCELERATION,
@@ -65,7 +66,6 @@ protected:
 
     // All boolean variables are grouped together because of DF-2149.
     bool lockTouch : 1;
-    bool scrollStartMovement : 1;
     bool enableHorizontalScroll : 1;
     bool enableVerticalScroll : 1;
 };

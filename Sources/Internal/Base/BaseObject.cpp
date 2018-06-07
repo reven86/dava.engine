@@ -10,6 +10,7 @@ namespace DAVA
 DAVA_VIRTUAL_REFLECTION_IMPL(BaseObject)
 {
     ReflectionRegistrator<BaseObject>::Begin()
+    .Method("Release", &BaseObject::Release)
     .End();
 }
 

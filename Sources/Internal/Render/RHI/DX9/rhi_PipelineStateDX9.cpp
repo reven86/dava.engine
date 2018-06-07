@@ -145,6 +145,8 @@ IDirect3DVertexDeclaration9* VDeclDX9::Get(const VertexLayout& layout, bool forc
             case VS_BLENDINDEX:
                 elem[elemCount].Usage = D3DDECLUSAGE_BLENDINDICES;
                 break;
+            default:
+                break;
             }
 
             switch (layout.ElementDataType(i))
@@ -168,6 +170,8 @@ IDirect3DVertexDeclaration9* VDeclDX9::Get(const VertexLayout& layout, bool forc
                 }
             }
             break;
+            default:
+                break;
             }
 
             if (layout.ElementSemantics(i) == VS_COLOR)
@@ -601,14 +605,6 @@ void PipelineStateDX9_t::VertexProgDX9::SetToRHI(uint32 layoutUID, bool forceExe
 
                 if (VertexLayout::MakeCompatible(*vbLayout, this->vertexLayout, &layout))
                 {
-                    /*
-Logger::Info("vb-layout:");
-vbLayout->Dump();
-Logger::Info("vprog-layout:");
-this->vertexLayout.Dump();
-Logger::Info("compatible-layout:");
-layout.Dump();
-*/
                     info.vdecl = VDeclDX9::Get(layout, forceExecute);
                     info.layoutUID = layoutUID;
                     info.layout = layout;
@@ -619,7 +615,7 @@ layout.Dump();
                 }
                 else
                 {
-                    Logger::Error("can't create compatible vertex-layout");
+                    Logger::Warning("can't create compatible vertex-layout");
                     Logger::Info("vprog-layout:");
                     this->vertexLayout.Dump();
                     Logger::Info("custom-layout:");
@@ -630,7 +626,7 @@ layout.Dump();
 
         hr = _D3D9_Device->SetVertexDeclaration(vd);
 
-        for (unsigned s = 0; s != vl->StreamCount(); ++s)
+        for (uint32 s = 0; s != vl->StreamCount(); ++s)
         {
             switch (vl->StreamFrequency(s))
             {
@@ -938,6 +934,11 @@ void SetupDispatch(Dispatch* dispatch)
     dispatch->impl_PipelineState_Delete = &dx9_PipelineState_Delete;
     dispatch->impl_PipelineState_CreateVertexConstBuffer = &dx9_PipelineState_CreateVertexConstBuffer;
     dispatch->impl_PipelineState_CreateFragmentConstBuffer = &dx9_PipelineState_CreateFragmentConstBuffer;
+}
+
+void Init(uint32 maxCount)
+{
+    PipelineStateDX9Pool::Reserve(maxCount);
 }
 
 //------------------------------------------------------------------------------

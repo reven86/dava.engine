@@ -67,7 +67,7 @@ public:
 
     void RecalcBoundingBox() override;
 
-    void BindDynamicParameters(Camera* camera) override;
+    void BindDynamicParameters(Camera* camera, RenderBatch* batch) override;
 
 private:
     void Clear();
@@ -85,11 +85,6 @@ private:
     Vector2 sprPivot;
     int32 frame = 0;
     eSpriteType spriteType = SPRITE_OBJECT;
-
-public:
-    INTROSPECTION_EXTEND(SpriteObject, RenderObject,
-                         NULL
-                         );
 };
 };
 

@@ -1,24 +1,18 @@
-#include "LinearLayoutAlgorithm.h"
-
-#include "UI/Layouts/UISizePolicyComponent.h"
-
+#include "UI/Layouts/Private/LinearLayoutAlgorithm.h"
 #include "UI/Layouts/Private/AnchorLayoutAlgorithm.h"
-#include "UI/Layouts/Private/SizeMeasuringAlgorithm.h"
 #include "UI/Layouts/Private/LayoutHelpers.h"
-
+#include "UI/Layouts/Private/SizeMeasuringAlgorithm.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/UIControl.h"
 
 namespace DAVA
 {
-LinearLayoutAlgorithm::LinearLayoutAlgorithm(Vector<ControlLayoutData>& layoutData_, bool isRtl_)
-    : layoutData(layoutData_)
-    , isRtl(isRtl_)
+LinearLayoutAlgorithm::LinearLayoutAlgorithm(Layouter& layouter_)
+    : layouter(layouter_)
 {
 }
 
-LinearLayoutAlgorithm::~LinearLayoutAlgorithm()
-{
-}
+LinearLayoutAlgorithm::~LinearLayoutAlgorithm() = default;
 
 void LinearLayoutAlgorithm::SetInverse(bool inverse_)
 {
@@ -43,6 +37,11 @@ void LinearLayoutAlgorithm::SetSpacing(float32 spacing_)
 void LinearLayoutAlgorithm::SetDynamicPadding(bool dynamicPadding_)
 {
     dynamicPadding = dynamicPadding_;
+}
+
+void LinearLayoutAlgorithm::SetSafeAreaPaddingInset(bool paddingInset_)
+{
+    safeAreaPaddingInset = paddingInset_;
 }
 
 void LinearLayoutAlgorithm::SetDynamicSpacing(bool dynamicSpacing_)
@@ -71,19 +70,52 @@ void LinearLayoutAlgorithm::Apply(ControlLayoutData& data, Vector2::eAxis axis, 
         PlaceChildren(data, axis, firstIndex, lastIndex);
     }
 
-    AnchorLayoutAlgorithm anchorAlg(layoutData, isRtl);
+    AnchorLayoutAlgorithm anchorAlg(layouter);
     anchorAlg.Apply(data, axis, true, firstIndex, lastIndex);
 }
 
 void LinearLayoutAlgorithm::InitializeParams(ControlLayoutData& data, Vector2::eAxis axis, int32 firstIndex, int32 lastIndex)
 {
-    padding = initialPadding;
+    leadingPadding = initialPadding;
+    trailingPadding = initialPadding;
+
+    if (safeAreaPaddingInset)
+    {
+        if (axis == Vector2::AXIS_X)
+        {
+            if (inverse)
+            {
+                leadingPadding += layouter.GetSafeAreaInsets().right;
+                trailingPadding += layouter.GetSafeAreaInsets().left;
+            }
+            else
+            {
+                leadingPadding += layouter.GetSafeAreaInsets().left;
+                trailingPadding += layouter.GetSafeAreaInsets().right;
+            }
+        }
+        else
+        {
+            if (inverse)
+            {
+                leadingPadding += layouter.GetSafeAreaInsets().bottom;
+                trailingPadding += layouter.GetSafeAreaInsets().top;
+            }
+            else
+            {
+                leadingPadding += layouter.GetSafeAreaInsets().top;
+                trailingPadding += layouter.GetSafeAreaInsets().bottom;
+            }
+        }
+    }
+
     spacing = initialSpacing;
 
     fixedSize = 0.0f;
     totalPercent = 0.0f;
-
     childrenCount = 0;
+    const Vector<ControlLayoutData>& layoutData = layouter.GetLayoutData();
+
     for (int32 i = firstIndex; i <= lastIndex; i++)
     {
         const ControlLayoutData& childData = layoutData[i];
@@ -107,13 +139,14 @@ void LinearLayoutAlgorithm::InitializeParams(ControlLayoutData& data, Vector2::e
 
     currentSize = data.GetSize(axis);
     spacesCount = childrenCount - 1;
-    contentSize = currentSize - padding * 2.0f;
+    contentSize = currentSize - leadingPadding - trailingPadding;
     restSize = contentSize - fixedSize - spacesCount * spacing;
 }
 
 void LinearLayoutAlgorithm::CalculateDependentOnParentSizes(ControlLayoutData& data, Vector2::eAxis axis, int32 firstIndex, int32 lastIndex)
 {
     int32 index = firstIndex;
+    Vector<ControlLayoutData>& layoutData = layouter.GetLayoutData();
     while (index <= lastIndex)
     {
         ControlLayoutData& childData = layoutData[index];
@@ -173,7 +206,7 @@ bool LinearLayoutAlgorithm::CalculateChildDependentOnParentSize(ControlLayoutDat
     }
     else if (sizeHint != nullptr && sizeHint->GetPolicyByAxis(axis) == UISizePolicyComponent::FORMULA)
     {
-        SizeMeasuringAlgorithm alg(layoutData, childData, axis, sizeHint);
+        SizeMeasuringAlgorithm alg(layouter, childData, axis, sizeHint);
         alg.SetParentSize(currentSize);
         alg.SetParentRestSize(restSize);
 
@@ -206,7 +239,7 @@ void LinearLayoutAlgorithm::CalculateDynamicPaddingAndSpaces(ControlLayoutData& 
             float32 delta = restSize * (1.0f - totalPercent / 100.0f) / cnt;
             if (dynamicPadding)
             {
-                padding += delta;
+                leadingPadding += delta;
             }
 
             if (dynamicSpacing)
@@ -219,12 +252,12 @@ void LinearLayoutAlgorithm::CalculateDynamicPaddingAndSpaces(ControlLayoutData& 
 
 void LinearLayoutAlgorithm::PlaceChildren(ControlLayoutData& data, Vector2::eAxis axis, int32 firstIndex, int32 lastIndex)
 {
-    float32 position = padding;
+    float32 position = leadingPadding;
     if (inverse)
     {
-        position = data.GetSize(axis) - padding;
+        position = data.GetSize(axis) - leadingPadding;
     }
-
+    Vector<ControlLayoutData>& layoutData = layouter.GetLayoutData();
     for (int32 i = firstIndex; i <= lastIndex; i++)
     {
         ControlLayoutData& childData = layoutData[i];

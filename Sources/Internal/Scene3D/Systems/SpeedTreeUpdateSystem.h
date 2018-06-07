@@ -19,6 +19,7 @@ public:
 
     void AddEntity(Entity* entity) override;
     void RemoveEntity(Entity* entity) override;
+    void PrepareForRemove() override;
     void ImmediateEvent(Component* component, uint32 event) override;
     void Process(float32 timeElapsed) override;
 

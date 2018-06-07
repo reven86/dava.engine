@@ -35,7 +35,7 @@ GameObject* GameObject::Create(Sprite* sprite, int32 frame)
 GameObject::GameObject()
 {
     //Logger::FrameworkDebug("[GameObject] ctor");
-    //AnimationManager::Instance()->AddObject(this);
+    //GetEngineContext()->animationManager->AddObject(this);
     visible = true;
     dead = false;
     priorityChanged = false;
@@ -59,7 +59,7 @@ GameObject::~GameObject()
     SafeRelease(collision);
     SafeRelease(sprite);
     //Logger::FrameworkDebug("[GameObject] destructor");
-    //AnimationManager::Instance()->RemoveObject(this);
+    //GetEngineContext()->animationManager->RemoveObject(this);
 }
 
 Animation* GameObject::WaitAnimation(float32 time, int32 track)
@@ -250,7 +250,7 @@ void GameObject::Update(float32 timeElapsed)
     }
 }
 
-void GameObject::RecalcHierarchy(const Sprite::DrawState& parentDrawState)
+void GameObject::RecalcHierarchy(const SpriteDrawState& parentDrawState)
 {
     globalDrawState.BuildStateFromParentAndLocal(parentDrawState, localDrawState);
     if (!children.empty())

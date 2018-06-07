@@ -2,13 +2,17 @@
 
 #include "Engine/Engine.h"
 #include "UI/UITextField.h"
+#include "UI/UITextFieldDelegate.h"
 #include "UI/UIStaticText.h"
+#include "UI/Text/UITextSystem.h"
+#include "UI/Text/UITextComponent.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIEvent.h"
 #include "Time/SystemTimer.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/Render/UIClipContentComponent.h"
 #include "Input/InputSystem.h"
-#include "Input/KeyboardDevice.h"
 #include "Utils/UTF8Utils.h"
 #include "Utils/StringUtils.h"
 #include "Utils/TextBox.h"
@@ -19,55 +23,74 @@ namespace DAVA
 {
 static float32 DEFAULT_CURSOR_WIDTH = 1.f;
 
+namespace TextFieldStbImplDetails
+{
 static Vector2 TransformInputPoint(const Vector2& inputPoint, const Vector2& controlAbsPosition, const Vector2& controlScale)
 {
     return (inputPoint - controlAbsPosition) / controlScale;
 }
 
-#if defined(__DAVAENGINE_COREV2__)
-TextFieldStbImpl::TextFieldStbImpl(Window* w, UITextField* control)
-#else
-TextFieldStbImpl::TextFieldStbImpl(UITextField* control)
-#endif
-    : staticText(new UIStaticText(Rect(Vector2::Zero, control->GetSize())))
-    , control(control)
-    , stb(new StbTextEditBridge(this))
-#if defined(__DAVAENGINE_COREV2__)
-    , window(w)
-#endif
+static UIStyleSheetPropertySet GetComponentPropertiesSet(const Type* componentType)
 {
+    UIStyleSheetPropertySet componentSet;
+    UIStyleSheetPropertyDataBase* db = UIStyleSheetPropertyDataBase::Instance();
+    for (int32 i = 0; i < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT; i++)
+    {
+        const UIStyleSheetPropertyDescriptor& descr = db->GetStyleSheetPropertyByIndex(i);
+        componentSet.set(i, descr.group->componentType == componentType);
+    }
+    return componentSet;
+}
+}
+
+TextFieldStbImpl::TextFieldStbImpl(Window* w, UITextField* control)
+    : control(control)
+    , stb(new StbTextEditBridge(this))
+    , window(w)
+{
+    using namespace TextFieldStbImplDetails;
+
     stb->SetSingleLineMode(true); // Set default because UITextField is single line by default
-    UIControlBackground* bg = staticText->GetOrCreateComponent<UIControlBackground>();
-    bg->SetAlign(ALIGN_LEFT | ALIGN_BOTTOM);
-    staticText->SetName("TextFieldStaticText");
-    staticText->GetTextBlock()->SetMeasureEnable(true);
-    staticText->SetForceBiDiSupportEnabled(true);
+
+    control->GetOrCreateComponent<UIClipContentComponent>();
+
+    // Mark all styled properties as modified
+    control->SetLocalPropertySet(GetComponentPropertiesSet(Type::Instance<UITextComponent>()));
+
+    PrepareTextComponent();
 }
 
 TextFieldStbImpl::~TextFieldStbImpl()
 {
-    SafeRelease(staticText);
+    staticText = nullptr;
     SafeDelete(stb);
     control = nullptr;
 }
 
+void TextFieldStbImpl::PrepareTextComponent()
+{
+    staticText = control->GetOrCreateComponent<UITextComponent>();
+    staticText->SetRequestedTextRectSize(UIStaticText::NO_REQUIRED_SIZE);
+    staticText->SetForceBiDiSupportEnabled(true);
+    // Ignore staticText parent color because under different platforms
+    // we can't mix colors for text fields and parent backgrounds
+    staticText->SetColorInheritType(UIControlBackground::eColorInheritType::COLOR_IGNORE_PARENT);
+    GetTextBlock()->SetMeasureEnable(true);
+}
+
 void TextFieldStbImpl::Initialize()
 {
-#if defined(__DAVAENGINE_COREV2__)
     window->sizeChanged.Connect(this, &TextFieldStbImpl::OnWindowSizeChanged);
     Engine::Instance()->windowDestroyed.Connect(this, &TextFieldStbImpl::OnWindowDestroyed);
-#endif
 }
 
 void TextFieldStbImpl::OwnerIsDying()
 {
-#if defined(__DAVAENGINE_COREV2__)
     if (window != nullptr)
     {
         window->sizeChanged.Disconnect(this);
         Engine::Instance()->windowDestroyed.Disconnect(this);
     }
-#endif
 }
 
 void TextFieldStbImpl::OnWindowSizeChanged(Window* w, Size2f windowSize, Size2f surfaceSize)
@@ -85,9 +108,7 @@ void TextFieldStbImpl::OnWindowSizeChanged(Window* w, Size2f windowSize, Size2f 
 void TextFieldStbImpl::OnWindowDestroyed(Window* w)
 {
     OwnerIsDying();
-#if defined(__DAVAENGINE_COREV2__)
     window = nullptr;
-#endif
 }
 
 void TextFieldStbImpl::SetDelegate(UITextFieldDelegate* d)
@@ -96,8 +117,9 @@ void TextFieldStbImpl::SetDelegate(UITextFieldDelegate* d)
 
 void TextFieldStbImpl::CopyDataFrom(TextFieldStbImpl* t)
 {
+    PrepareTextComponent();
+
     stb->CopyStbStateFrom(*t->stb);
-    staticText->CopyDataFrom(t->staticText);
     cursorTime = t->cursorTime;
     showCursor = t->showCursor;
 }
@@ -136,7 +158,12 @@ void TextFieldStbImpl::SetIsPassword(bool)
 
 void TextFieldStbImpl::SetFontSize(float32 size)
 {
-    // Size getting from the Font
+    staticText->SetFontSize(size);
+}
+
+float32 TextFieldStbImpl::GetFontSize() const
+{
+    return staticText->GetFontSize();
 }
 
 void TextFieldStbImpl::SetText(const WideString& newText)
@@ -168,7 +195,7 @@ void TextFieldStbImpl::SetText(const WideString& newText)
             delegate->TextFieldOnTextChanged(control, text, prevText, UITextFieldDelegate::eReason::CODE);
         }
 
-        staticText->SetText(control->GetVisibleText(), UIStaticText::NO_REQUIRED_SIZE);
+        staticText->SetText(UTF8Utils::EncodeToUTF8(control->GetVisibleText()));
 
         needRedraw = true;
     }
@@ -178,7 +205,7 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
 {
     // see comment for TextFieldStbImpl class above
 
-    if (control == UIControlSystem::Instance()->GetFocusedControl() && isEditing)
+    if (control == GetEngineContext()->uiControlSystem->GetFocusedControl() && isEditing)
     {
         float32 timeElapsed = SystemTimer::GetFrameDelta();
         cursorTime += timeElapsed;
@@ -201,7 +228,7 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
         return;
     }
 
-    staticText->SetText(control->GetVisibleText(), UIStaticText::NO_REQUIRED_SIZE);
+    staticText->SetText(UTF8Utils::EncodeToUTF8(control->GetVisibleText()));
     needRedraw = false;
 
     if (lastCursorPos != stb->GetCursorPosition())
@@ -210,6 +237,7 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
 
         UpdateCursor(lastCursorPos, stb->IsInsertMode());
         UpdateOffset(cursorRect + staticTextOffset);
+        staticText->SetTextOffset(staticTextOffset);
         // Fix cursor position for multiline if end of some line contains many
         // spaces over control size (same behavior in MS Word)
         if (isEditing)
@@ -302,7 +330,7 @@ WideString TextFieldStbImpl::GetText() const
 
 bool TextFieldStbImpl::IsCharAvaliable(WideString::value_type ch) const
 {
-    Font* f = GetFont();
+    Font* f = GetRealFont();
     if (f)
     {
         return ch == '\n' || f->IsCharAvaliable(static_cast<char16>(ch));
@@ -323,10 +351,27 @@ void TextFieldStbImpl::SetVisible(bool v)
 {
 }
 
+void TextFieldStbImpl::SetFontName(const String& presetName)
+{
+    DropLastCursorAndSelection();
+    staticText->SetFontName(presetName);
+}
+
 void TextFieldStbImpl::SetFont(Font* f)
 {
     DropLastCursorAndSelection();
-    staticText->SetFont(f);
+    staticText->SetFont(RefPtr<Font>::ConstructWithRetain(f));
+}
+
+void TextFieldStbImpl::SetFontPath(const FilePath& path)
+{
+    DropLastCursorAndSelection();
+    staticText->SetFontPath(path);
+}
+
+const FilePath& TextFieldStbImpl::GetFontPath() const
+{
+    return staticText->GetFontPath();
 }
 
 Font* TextFieldStbImpl::GetFont() const
@@ -336,7 +381,7 @@ Font* TextFieldStbImpl::GetFont() const
 
 void TextFieldStbImpl::SetTextColor(const Color& c)
 {
-    staticText->SetTextColor(c);
+    staticText->SetColor(c);
 }
 
 void TextFieldStbImpl::SetShadowOffset(const Vector2& v)
@@ -351,49 +396,51 @@ void TextFieldStbImpl::SetShadowColor(const Color& c)
 
 void TextFieldStbImpl::SetTextAlign(int32 align)
 {
-    if (staticText->GetTextAlign() != align)
+    if (staticText->GetAlign() != align)
     {
         DropLastCursorAndSelection();
-        staticText->SetTextAlign(align);
+        staticText->SetAlign(align);
     }
 }
 
 TextBlock::eUseRtlAlign TextFieldStbImpl::GetTextUseRtlAlign()
 {
-    return staticText->GetTextUseRtlAlign();
+    return staticText->GetUseRtlAlign();
 }
 
 void TextFieldStbImpl::SetTextUseRtlAlign(TextBlock::eUseRtlAlign align)
 {
-    if (staticText->GetTextUseRtlAlign() != align)
+    if (staticText->GetUseRtlAlign() != align)
     {
         DropLastCursorAndSelection();
-        staticText->SetTextUseRtlAlign(align);
+        staticText->SetUseRtlAlign(align);
     }
 }
 
 void TextFieldStbImpl::SetSize(const Vector2 vector2)
 {
-    if (staticText->GetSize() != vector2)
-    {
-        DropLastCursorAndSelection();
-        staticText->SetSize(vector2);
-    }
+    DropLastCursorAndSelection();
+}
+
+void TextFieldStbImpl::SetRect(const Rect& rect)
+{
+    DropLastCursorAndSelection();
 }
 
 void TextFieldStbImpl::SetMultiline(bool is_multiline)
 {
-    if (staticText->GetMultiline() != is_multiline)
+    auto multiline = is_multiline ? UITextComponent::eTextMultiline::MULTILINE_ENABLED : UITextComponent::eTextMultiline::MULTILINE_DISABLED;
+    if (staticText->GetMultiline() != multiline)
     {
         DropLastCursorAndSelection();
-        staticText->SetMultiline(is_multiline);
+        staticText->SetMultiline(multiline);
         stb->SetSingleLineMode(!is_multiline);
     }
 }
 
 Color TextFieldStbImpl::GetTextColor()
 {
-    return staticText->GetTextColor();
+    return staticText->GetColor();
 }
 
 Vector2 TextFieldStbImpl::GetShadowOffset()
@@ -408,24 +455,11 @@ Color TextFieldStbImpl::GetShadowColor()
 
 rhi::int32 TextFieldStbImpl::GetTextAlign()
 {
-    return staticText->GetTextVisualAlign();
-}
-
-void TextFieldStbImpl::SetRect(const Rect& rect)
-{
-    if (staticText->GetSize() != rect.GetSize())
-    {
-        DropLastCursorAndSelection();
-        staticText->SetSize(rect.GetSize());
-    }
+    return GetTextBlock()->GetVisualAlign();
 }
 
 void TextFieldStbImpl::SystemDraw(const UIGeometricData& d)
 {
-    Rect clipRect = d.GetUnrotatedRect();
-    RenderSystem2D::Instance()->PushClip();
-    RenderSystem2D::Instance()->IntersectClipRect(clipRect);
-
     const Vector2& scale = d.scale;
     const Vector2& offset = d.GetUnrotatedRect().GetPosition();
 
@@ -441,16 +475,6 @@ void TextFieldStbImpl::SystemDraw(const UIGeometricData& d)
         RenderSystem2D::Instance()->FillRect(sr + offset, selectionColor);
     }
 
-    UIGeometricData staticGeometric = staticText->GetLocalGeometricData();
-    staticGeometric.AddGeometricData(d);
-    staticGeometric.position += staticTextOffset * scale;
-
-    // Send to staticText white color as parent color because under different platforms
-    // we can't mix colors for text fields and parent backgrounds
-    staticText->SetParentColor(Color::White);
-
-    staticText->Draw(staticGeometric);
-
     if (showCursor)
     {
         Rect sr = cursorRect;
@@ -460,10 +484,8 @@ void TextFieldStbImpl::SystemDraw(const UIGeometricData& d)
         sr.y *= scale.y;
         sr.dx *= scale.x;
         sr.dy *= scale.y;
-        RenderSystem2D::Instance()->FillRect(sr + offset, staticText->GetTextColor());
+        RenderSystem2D::Instance()->FillRect(sr + offset, staticText->GetColor());
     }
-
-    RenderSystem2D::Instance()->PopClip();
 }
 
 void TextFieldStbImpl::SetSelectionColor(const Color& _selectionColor)
@@ -529,7 +551,7 @@ uint32 TextFieldStbImpl::DeleteText(uint32 position, uint32 length)
 
 const TextBox* TextFieldStbImpl::GetTextBox() const
 {
-    return staticText->GetTextBlock()->GetTextBox();
+    return GetTextBlock()->GetTextBox();
 }
 
 uint32 TextFieldStbImpl::GetTextLength() const
@@ -587,7 +609,7 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
     selectionRects.clear();
     uint32 selStart = std::min(start, end);
     uint32 selEnd = std::max(start, end);
-    const TextBox* tb = staticText->GetTextBlock()->GetTextBox();
+    const TextBox* tb = GetTextBox();
     if (selStart < selEnd && selEnd <= tb->GetCharactersCount())
     {
         for (uint32 i = selStart; i < selEnd; ++i)
@@ -616,19 +638,17 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
 
 void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
 {
-    const TextBox* tb = staticText->GetTextBlock()->GetTextBox();
+    const TextBox* tb = GetTextBox();
 
     Rect r;
     r.dx = DEFAULT_CURSOR_WIDTH;
 
-#if defined(__DAVAENGINE_COREV2__)
     // Ensure cursor width is not less than 1 physical pixel for properly
     // drawing when window is very small
     VirtualCoordinatesSystem* vcs = window->GetUIControlSystem()->vcs;
     r.dx = vcs->ConvertVirtualToPhysicalX(r.dx);
     r.dx = std::max(r.dx, 1.f);
     r.dx = vcs->ConvertPhysicalToVirtualX(r.dx);
-#endif
 
     int32 charsCount = tb->GetCharactersCount();
     if (charsCount > 0)
@@ -649,7 +669,7 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
     }
     else
     {
-        r.dy = GetFont() ? GetFont()->GetFontHeight() : 0.f;
+        r.dy = GetRealFont() ? GetRealFont()->GetFontHeight(GetRealFontSize()) : 0.f;
 
         int32 ctrlAlign = control->GetTextAlign();
         if (ctrlAlign & ALIGN_RIGHT)
@@ -677,7 +697,7 @@ void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
 void TextFieldStbImpl::UpdateOffset(const Rect& visibleRect)
 {
     const Vector2& controlSize = control->GetSize();
-    const Vector2& textSize = staticText->GetTextSize();
+    const Vector2& textSize = GetTextBlock()->GetTextSize();
     const Vector2 offsetMoveDelta = controlSize * 0.25f;
 
     if (controlSize.dx < textSize.dx && stb->IsSingleLineMode())
@@ -717,7 +737,9 @@ void TextFieldStbImpl::UpdateOffset(const Rect& visibleRect)
 
 void TextFieldStbImpl::Input(UIEvent* currentInput)
 {
-    if (control != UIControlSystem::Instance()->GetFocusedControl())
+    using namespace TextFieldStbImplDetails;
+
+    if (control != GetEngineContext()->uiControlSystem->GetFocusedControl())
         return;
 
     if (currentInput->phase == UIEvent::Phase::ENDED)
@@ -734,18 +756,13 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
     bool textCanChanged = false;
     WideString prevText(text);
 
-#if defined(__DAVAENGINE_COREV2__)
     eModifierKeys modifiers = currentInput->modifiers;
     bool isAlt = (modifiers & eModifierKeys::ALT) == eModifierKeys::ALT;
-#else
-    uint32 modifiers = currentInput->modifiers;
-    bool isAlt = (modifiers & UIEvent::Modifier::ALT_DOWN) == UIEvent::Modifier::ALT_DOWN;
-#endif
 
     if (currentInput->phase == UIEvent::Phase::KEY_DOWN ||
         currentInput->phase == UIEvent::Phase::KEY_DOWN_REPEAT)
     {
-        if ((currentInput->key == Key::ENTER || currentInput->key == Key::NUMPADENTER) && !isAlt)
+        if ((currentInput->key == eInputElements::KB_ENTER || currentInput->key == eInputElements::KB_NUMPAD_ENTER) && !isAlt)
         {
             if (control->GetDelegate())
             {
@@ -753,7 +770,7 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
             }
             return;
         }
-        else if (currentInput->key == Key::ESCAPE)
+        else if (currentInput->key == eInputElements::KB_ESCAPE)
         {
             if (control->GetDelegate())
             {
@@ -798,7 +815,7 @@ void TextFieldStbImpl::Input(UIEvent* currentInput)
             delegate->TextFieldOnTextChanged(control, text, prevText, UITextFieldDelegate::eReason::USER);
         }
 
-        staticText->SetText(control->GetVisibleText(), UIStaticText::NO_REQUIRED_SIZE);
+        staticText->SetText(UTF8Utils::EncodeToUTF8(control->GetVisibleText()));
         needRedraw = true;
     }
 
@@ -815,5 +832,33 @@ void TextFieldStbImpl::DropLastCursorAndSelection()
     lastCursorPos = INVALID_POS;
     lastSelStart = INVALID_POS;
     lastSelEnd = INVALID_POS;
+}
+
+TextBlock* TextFieldStbImpl::GetTextBlock() const
+{
+    // Apply component changes to internal TextBlock
+    if (staticText->IsModified())
+    {
+        UIControlSystem* ucs = control->GetScene();
+        if (ucs)
+        {
+            ucs->GetTextSystem()->ApplyData(staticText.Get());
+        }
+        else // Legacy support
+        {
+            Engine::Instance()->GetContext()->uiControlSystem->GetTextSystem()->ApplyData(staticText.Get());
+        }
+    }
+    return staticText->GetLink()->GetTextBlock();
+}
+
+Font* TextFieldStbImpl::GetRealFont() const
+{
+    return GetFont() ? GetFont() : GetTextBlock()->GetFont();
+}
+
+float32 TextFieldStbImpl::GetRealFontSize() const
+{
+    return !FLOAT_EQUAL(GetFontSize(), 0.f) ? GetFontSize() : GetTextBlock()->GetFontSize();
 }
 }

@@ -5,7 +5,6 @@
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 #include "Base/StaticSingleton.h"
-#include "FileSystem/VariantType.h"
 #include "UI/Styles/UIStyleSheetStructs.h"
 #include <bitset>
 
@@ -16,7 +15,7 @@ public StaticSingleton<UIStyleSheetPropertyDataBase>
 {
 public:
     virtual ~UIStyleSheetPropertyDataBase();
-    static const int32 STYLE_SHEET_PROPERTY_COUNT = 74;
+    static const int32 STYLE_SHEET_PROPERTY_COUNT = 85;
 
     UIStyleSheetPropertyDataBase();
 
@@ -43,6 +42,7 @@ private:
     UIStyleSheetPropertyGroup ignoreLayoutGroup;
     UIStyleSheetPropertyGroup sizePolicyGroup;
     UIStyleSheetPropertyGroup anchorGroup;
+    UIStyleSheetPropertyGroup anchorSafeAreaGroup;
     UIStyleSheetPropertyGroup soundGroup;
 
     Array<UIStyleSheetPropertyDescriptor, STYLE_SHEET_PROPERTY_COUNT> properties; // have to be after groups declaration

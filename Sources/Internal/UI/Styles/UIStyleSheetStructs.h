@@ -16,7 +16,7 @@ namespace DAVA
 struct UIStyleSheetPropertyGroup
 {
     String prefix;
-    const Type* componentType; // -1 for UIControl
+    const Type* componentType; // nullptr for UIControl
     const ReflectedType* refType;
 
     UIStyleSheetPropertyGroup(const String& prefix_, const Type* componentType_, const ReflectedType* refType_)

@@ -12,7 +12,7 @@ namespace DAVA
 class DebugRenderComponent : public Component
 {
 public:
-    enum eDebugDrawFlags
+    enum eDebugDrawFlags : uint32
     {
         DEBUG_DRAW_NONE = 0x0,
         DEBUG_DRAW_AABBOX = 0x1,
@@ -35,8 +35,6 @@ protected:
 public:
     DebugRenderComponent();
 
-    IMPLEMENT_COMPONENT_TYPE(DEBUG_RENDER_COMPONENT);
-
     void SetDebugFlags(uint32 debugFlags);
     uint32 GetDebugFlags() const;
 
@@ -46,11 +44,6 @@ public:
 
 private:
     uint32 curDebugFlags;
-
-public:
-    INTROSPECTION_EXTEND(DebugRenderComponent, Component,
-                         PROPERTY("curDebugFlags", "Debug Flags ", GetDebugFlags, SetDebugFlags, I_SAVE | I_VIEW | I_EDIT)
-                         );
 
     DAVA_VIRTUAL_REFLECTION(DebugRenderComponent, Component);
 };

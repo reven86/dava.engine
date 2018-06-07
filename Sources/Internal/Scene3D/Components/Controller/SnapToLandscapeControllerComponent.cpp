@@ -5,6 +5,8 @@
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Reflection/ReflectionRegistrator.h"
 #include "Reflection/ReflectedMeta.h"
+#include "Entity/ComponentManager.h"
+#include "Engine/Engine.h"
 
 namespace DAVA
 {

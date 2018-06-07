@@ -61,6 +61,7 @@ void ReleasePerfQueryPool();
 
 namespace PipelineStateDX9
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 unsigned VertexLayoutStride(Handle ps, uint32 stream);
 void SetToRHI(Handle ps, uint32 layoutUID);
@@ -82,7 +83,7 @@ namespace TextureDX9
 void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void SetToRHI(Handle tex, unsigned unitIndex);
-void SetAsRenderTarget(Handle tex, unsigned target_i = 0);
+void SetAsRenderTarget(Handle tex, unsigned target_i = 0, TextureFace face = TEXTURE_FACE_NONE);
 void SetAsDepthStencil(Handle tex);
 void ReleaseAll();
 void ReCreateAll();
@@ -93,23 +94,27 @@ unsigned NeedRestoreCount();
 
 namespace DepthStencilStateDX9
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void SetToRHI(Handle state);
 }
 
 namespace SamplerStateDX9
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 void SetToRHI(Handle state);
 }
 
 namespace RenderPassDX9
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 }
 
 namespace CommandBufferDX9
 {
+void Init(uint32 maxCount);
 void SetupDispatch(Dispatch* dispatch);
 }
 
@@ -141,17 +146,18 @@ DX9Command
         UNLOCK_INDEX_BUFFER = 23,
         UPDATE_INDEX_BUFFER = 24,
 
-        CREATE_TEXTURE = 41,
-        CREATE_CUBE_TEXTURE = 42,
-        GET_TEXTURE_SURFACE_LEVEL = 43,
-        SET_TEXTURE_AUTOGEN_FILTER_TYPE = 44,
-        LOCK_TEXTURE_RECT = 45,
-        UNLOCK_TEXTURE_RECT = 46,
-        LOCK_CUBETEXTURE_RECT = 47,
-        UNLOCK_CUBETEXTURE_RECT = 48,
-        GET_RENDERTARGET_DATA = 49,
-        UPDATE_TEXTURE_LEVEL = 50,
-        UPDATE_CUBETEXTURE_LEVEL = 40,
+        CREATE_TEXTURE = 30,
+        CREATE_CUBE_TEXTURE = 31,
+        GET_TEXTURE_SURFACE_LEVEL = 32,
+        GET_CUBE_SURFACE_LEVEL = 33,
+        SET_TEXTURE_AUTOGEN_FILTER_TYPE = 34,
+        LOCK_TEXTURE_RECT = 35,
+        UNLOCK_TEXTURE_RECT = 36,
+        LOCK_CUBETEXTURE_RECT = 37,
+        UNLOCK_CUBETEXTURE_RECT = 38,
+        GET_RENDERTARGET_DATA = 39,
+        UPDATE_TEXTURE_LEVEL = 40,
+        UPDATE_CUBETEXTURE_LEVEL = 41,
 
         CREATE_VERTEX_SHADER = 51,
         CREATE_PIXEL_SHADER = 52,

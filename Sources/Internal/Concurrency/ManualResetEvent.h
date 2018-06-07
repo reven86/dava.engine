@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_MANUAL_RESET_EVENT_H__
-#define __DAVAENGINE_MANUAL_RESET_EVENT_H__
+#pragma once
 
 #include "SemaphoreLite.h"
 #include <atomic>
@@ -72,5 +71,3 @@ private:
 };
 
 } // namespace DAVA
-
-#endif // __DAVAENGINE_MANUAL_RESET_EVENT_H__

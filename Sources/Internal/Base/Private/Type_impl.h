@@ -108,7 +108,7 @@ private:
     Vector<Type**> types;
 };
 
-inline size_t Type::GetSize() const
+inline uint32_t Type::GetSize() const
 {
     return size;
 }
@@ -131,6 +131,12 @@ inline const TypeInheritance* Type::GetInheritance() const
 inline unsigned long Type::GetTypeFlags() const
 {
     return flags.to_ulong();
+}
+
+template <typename T>
+inline bool Type::Is() const
+{
+    return (this == Instance<T>());
 }
 
 inline bool Type::IsConst() const
@@ -173,6 +179,11 @@ inline bool Type::IsEnum() const
     return flags.test(static_cast<size_t>(eTypeFlag::isEnum));
 }
 
+inline bool Type::IsAbstract() const
+{
+    return flags.test(static_cast<size_t>(eTypeFlag::isAbstract));
+}
+
 inline Type::SeedCastOP Type::GetSeedCastOP() const
 {
     return seedCastOP;
@@ -212,7 +223,7 @@ Type* Type::Init()
     static const bool needPointer = (!std::is_pointer<T>::value);
     static const bool needSeed = (std::is_base_of<Type::Seed, T>::value || std::is_same<Type::Seed, T>::value);
 
-    type.size = TypeDetail::TypeSize<T>::size;
+    type.size = static_cast<uint32_t>(TypeDetail::TypeSize<T>::size);
     type.name = typeid(T).name();
     type.stdTypeInfo = &typeid(T);
 
@@ -226,6 +237,7 @@ Type* Type::Init()
     type.flags.set(isIntegral, std::is_integral<T>::value);
     type.flags.set(isFloatingPoint, std::is_floating_point<T>::value);
     type.flags.set(isEnum, std::is_enum<T>::value);
+    type.flags.set(isAbstract, std::is_abstract<T>::value);
 
     auto condSeed = std::integral_constant<bool, needSeed>();
     type.seedCastOP = TypeDetail::GetCastIfSeed<T>(condSeed);

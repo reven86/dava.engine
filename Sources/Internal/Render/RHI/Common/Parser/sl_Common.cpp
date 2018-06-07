@@ -8,7 +8,7 @@
 
 namespace sl
 {
-int32 String_PrintfArgList(char* buffer, int size, const char* format, va_list args)
+DAVA::int32 String_PrintfArgList(char* buffer, int size, const char* format, va_list args)
 {
     va_list tmp;
     va_copy(tmp, args);
@@ -26,7 +26,7 @@ int32 String_PrintfArgList(char* buffer, int size, const char* format, va_list a
     return n;
 }
 
-int32 String_FormatFloat(char* buffer, int size, float value)
+DAVA::int32 String_FormatFloat(char* buffer, int size, float value)
 {
     return Snprintf(buffer, size, "%f", value);
 }

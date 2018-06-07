@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_CONCURRENT_OBJECT_H__
-#define __DAVAENGINE_CONCURRENT_OBJECT_H__
+#pragma once
 
 #include "Concurrency/Mutex.h"
 #include "Concurrency/UniqueLock.h"
@@ -69,5 +68,3 @@ private:
     MutexType mutex;
 };
 }
-
-#endif //  __DAVAENGINE_CONCURRENT_OBJECT_H__

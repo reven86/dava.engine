@@ -3,13 +3,17 @@
 #include "UI/UIScreenManager.h"
 #include "UI/Update/UIUpdateComponent.h"
 #include "Debug/Replay.h"
+#include "Engine/Engine.h"
 #include "Job/JobManager.h"
 #include "Concurrency/Thread.h"
 #include "Time/SystemTimer.h"
 
 namespace DAVA
 {
+namespace UILoadingScreenDetails
+{
 static const uint32 LOADING_THREAD_STACK_SIZE = 1024 * 1024; // 1 mb
+}
 
 UILoadingScreen::UILoadingScreen()
 {
@@ -30,7 +34,7 @@ void UILoadingScreen::SetScreenToLoad(int32 screenId)
 
 void UILoadingScreen::ThreadMessage(BaseObject* obj, void* userData, void* callerData)
 {
-    UIScreen* nextScreen = (nextScreenId != -1) ? UIScreenManager::Instance()->GetScreen(nextScreenId) : nullptr;
+    UIScreen* nextScreen = (nextScreenId != -1) ? GetEngineContext()->uiScreenManager->GetScreen(nextScreenId) : nullptr;
     if (nextScreen != nullptr)
     {
         nextScreen->LoadGroup();
@@ -43,11 +47,11 @@ void UILoadingScreen::OnActive()
 
     if (!thread)
     {
-        UIControlSystem::Instance()->LockSwitch();
-        UIControlSystem::Instance()->LockInput();
+        GetEngineContext()->uiControlSystem->LockSwitch();
+        GetEngineContext()->uiControlSystem->LockInput();
 
         thread = Thread::Create(Message(this, &UILoadingScreen::ThreadMessage));
-        thread->SetStackSize(LOADING_THREAD_STACK_SIZE);
+        thread->SetStackSize(UILoadingScreenDetails::LOADING_THREAD_STACK_SIZE);
         thread->Start();
     }
 
@@ -63,12 +67,11 @@ void UILoadingScreen::Update(float32 timeElapsed)
 
     if ((thread) && (thread->GetState() == Thread::STATE_ENDED))
     {
-        JobManager::Instance()->WaitMainJobs(thread->GetId());
+        GetEngineContext()->jobManager->WaitMainJobs(thread->GetId());
 
-        UIControlSystem::Instance()->UnlockInput();
-        UIControlSystem::Instance()->UnlockSwitch();
-
-        UIScreenManager::Instance()->SetScreen(nextScreenId);
+        GetEngineContext()->uiControlSystem->UnlockInput();
+        GetEngineContext()->uiControlSystem->UnlockSwitch();
+        GetEngineContext()->uiScreenManager->SetScreen(nextScreenId);
 
         thread = nullptr;
     }

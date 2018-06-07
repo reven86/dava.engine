@@ -1,5 +1,6 @@
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
+#include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Lod/LodComponent.h"
@@ -10,6 +11,7 @@
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Reflection/ReflectionRegistrator.h"
 #include "Reflection/ReflectedMeta.h"
+#include <Math/Transform.h>
 
 namespace DAVA
 {
@@ -21,8 +23,10 @@ DAVA_VIRTUAL_REFLECTION_IMPL(ParticleEffectComponent)
     .Field("stopWhenEmpty", &ParticleEffectComponent::stopWhenEmpty)[M::DisplayName("Stop When Empty")]
     .Field("effectDuration", &ParticleEffectComponent::effectDuration)[M::DisplayName("Duration")]
     .Field("clearOnRestart", &ParticleEffectComponent::clearOnRestart)[M::DisplayName("Clear On Restart")]
+    .Field("startFromTime", &ParticleEffectComponent::GetStartFromTime, &ParticleEffectComponent::SetStartFromTime)[M::DisplayName("Start From Time")]
     .Field("visibleReflection", &ParticleEffectComponent::GetReflectionVisible, &ParticleEffectComponent::SetReflectionVisible)[M::DisplayName("Visible Reflection")]
     .Field("visibleRefraction", &ParticleEffectComponent::GetRefractionVisible, &ParticleEffectComponent::SetRefractionVisible)[M::DisplayName("Visible Refraction")]
+    .Field("clippingVisible", &ParticleEffectComponent::GetClippingVisible, &ParticleEffectComponent::SetClippingVisible)[M::DisplayName("Clipping always visible")]
     .End();
 }
 
@@ -34,7 +38,7 @@ ParticleEffectComponent::ParticleEffectComponent()
     // world transform doesn't effect particle render object drawing
     // instead particles are generated in corresponding world position
     effectRenderObject = new ParticleRenderObject(&effectData);
-    effectRenderObject->SetWorldTransformPtr(&Matrix4::IDENTITY);
+    effectRenderObject->SetWorldMatrixPtr(&Matrix4::IDENTITY);
 
     if (QualitySettingsSystem::Instance()->IsOptionEnabled(QualitySettingsSystem::QUALITY_OPTION_LOD0_EFFECTS))
     {
@@ -67,6 +71,8 @@ Component* ParticleEffectComponent::Clone(Entity* toEntity)
     newComponent->playbackComplete = playbackComplete;
     newComponent->effectDuration = effectDuration;
     newComponent->clearOnRestart = clearOnRestart;
+    newComponent->startFromTime = startFromTime;
+
     for (const auto& instance : emitterInstances)
     {
         newComponent->AddEmitterInstance(ScopedPtr<ParticleEmitterInstance>(instance->Clone()));
@@ -287,6 +293,7 @@ void ParticleEffectComponent::Serialize(KeyedArchive* archive, SerializationCont
     archive->SetUInt32("pe.repeatsCount", repeatsCount);
     archive->SetBool("pe.clearOnRestart", clearOnRestart);
     archive->SetUInt32("pe.emittersCount", static_cast<uint32>(emitterInstances.size()));
+    archive->SetFloat("pe.startFromTime", startFromTime);
     KeyedArchive* emittersArch = new KeyedArchive();
     for (uint32 i = 0; i < emitterInstances.size(); ++i)
     {
@@ -318,6 +325,7 @@ void ParticleEffectComponent::Deserialize(KeyedArchive* archive, SerializationCo
         repeatsCount = archive->GetUInt32("pe.repeatsCount");
         clearOnRestart = archive->GetBool("pe.clearOnRestart");
         uint32 emittersCount = archive->GetUInt32("pe.emittersCount");
+        startFromTime = archive->GetFloat("pe.startFromTime");
         KeyedArchive* emittersArch = archive->GetArchive("pe.emitters");
         emitterInstances.resize(emittersCount);
         for (uint32 i = 0; i < emittersCount; ++i)
@@ -357,14 +365,15 @@ void ParticleEffectComponent::CollapseOldEffect(SerializationContext* serializat
     Entity* currEntity = entity;
     while (currEntity)
     {
-        effectScale *= currEntity->GetLocalTransform().GetScaleVector();
+        TransformComponent* transform = currEntity->GetComponent<TransformComponent>();
+        effectScale *= transform->GetLocalMatrix().GetScaleVector();
         currEntity = currEntity->GetParent();
     }
     for (int32 i = 0, sz = entity->GetChildrenCount(); i < sz; ++i)
     {
         Entity* child = entity->GetChild(i);
         PartilceEmitterLoadProxy* emitterProxy = NULL;
-        RenderComponent* renderComponent = static_cast<RenderComponent*>(child->GetComponent(Component::RENDER_COMPONENT));
+        RenderComponent* renderComponent = child->GetComponent<RenderComponent>();
         if (renderComponent)
             emitterProxy = static_cast<PartilceEmitterLoadProxy*>(renderComponent->GetRenderObject());
         if (!emitterProxy)
@@ -391,12 +400,14 @@ void ParticleEffectComponent::CollapseOldEffect(SerializationContext* serializat
             instance->SetEmitter(new ParticleEmitter());
         }
         instance->GetEmitter()->name = child->GetName();
-        instance->SetSpawnPosition(child->GetLocalTransform().GetTranslationVector() * effectScale);
+
+        TransformComponent* transform = child->GetComponent<TransformComponent>();
+        instance->SetSpawnPosition(transform->GetLocalTransform().GetTranslation() * effectScale);
         emitterInstances.emplace_back(instance);
 
         if (!lodDefined)
         {
-            LodComponent* lodComponent = static_cast<LodComponent*>(child->GetComponent(Component::LOD_COMPONENT));
+            LodComponent* lodComponent = child->GetComponent<LodComponent>();
             if (lodComponent)
             {
                 entity->AddComponent(lodComponent->Clone(entity));
@@ -476,6 +487,7 @@ void ParticleEffectComponent::InsertEmitterInstanceAt(ParticleEmitterInstance* e
 {
     auto it = emitterInstances.begin();
     std::advance(it, DAVA::Min(position, GetEmittersCount()));
+    emitter->SetOwner(this);
     emitterInstances.emplace(it, SafeRetain(emitter));
 }
 
@@ -541,6 +553,14 @@ bool ParticleEffectComponent::GetRefractionVisible() const
 void ParticleEffectComponent::SetRefractionVisible(bool visible)
 {
     effectRenderObject->SetRefractionVisible(visible);
+}
+bool ParticleEffectComponent::GetClippingVisible() const
+{
+    return effectRenderObject->GetClippingVisible();
+}
+void ParticleEffectComponent::SetClippingVisible(bool visible)
+{
+    effectRenderObject->SetClippingVisible(visible);
 }
 
 void ParticleEffectComponent::ReloadEmitters()

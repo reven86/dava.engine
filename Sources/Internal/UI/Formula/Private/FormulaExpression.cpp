@@ -82,6 +82,30 @@ FormulaExpression* FormulaNotExpression::GetExp() const
     return exp.get();
 }
 
+FormulaWhenExpression::FormulaWhenExpression(const Vector<std::pair<std::shared_ptr<FormulaExpression>, std::shared_ptr<FormulaExpression>>>& branches_,
+                                             std::shared_ptr<FormulaExpression> elseBranch_,
+                                             int32 lineNumber_, int32 positionInLine_)
+    : FormulaExpression(lineNumber_, positionInLine_)
+    , branches(branches_)
+    , elseBranch(elseBranch_)
+{
+}
+
+void FormulaWhenExpression::Accept(FormulaExpressionVisitor* visitor)
+{
+    visitor->Visit(this);
+}
+
+const Vector<std::pair<std::shared_ptr<FormulaExpression>, std::shared_ptr<FormulaExpression>>>& FormulaWhenExpression::GetBranches() const
+{
+    return branches;
+}
+
+FormulaExpression* FormulaWhenExpression::GetElseBranch() const
+{
+    return elseBranch.get();
+}
+
 FormulaBinaryOperatorExpression::FormulaBinaryOperatorExpression(Operator op_, const std::shared_ptr<FormulaExpression>& lhs_, const std::shared_ptr<FormulaExpression>& rhs_, int32 lineNumber_, int32 positionInLine_)
     : FormulaExpression(lineNumber_, positionInLine_)
     , op(op_)

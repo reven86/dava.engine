@@ -2,6 +2,7 @@
 #define __DAVAENGINE_VARIANTTYPE_H__
 
 #include "Base/BaseTypes.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
@@ -63,6 +64,8 @@ public:
 
     VariantType();
     VariantType(const VariantType& value);
+    VariantType(VariantType&& value);
+
     explicit VariantType(bool value);
     explicit VariantType(int8 value);
     explicit VariantType(uint8 value);
@@ -121,7 +124,7 @@ public:
         TYPE_UINT16,
         TYPES_COUNT // every new type should be always added to the end for compatibility with old archives
     };
-    eVariantType type;
+    eVariantType type = TYPE_NONE;
 
     union {
         bool boolValue;
@@ -148,7 +151,9 @@ public:
         Matrix3* matrix3Value;
         Matrix4* matrix4Value;
 
-        void* pointerValue;
+        void* pointerValue = nullptr;
+
+        KeyedArchive* keyedArchiveValue;
 
         String* stringValue;
         WideString* wideStringValue;
@@ -518,6 +523,7 @@ public:
     bool operator!=(const VariantType& other) const;
 
     VariantType& operator=(const VariantType& other);
+    VariantType& operator=(VariantType&& other);
 
     const MetaInfo* Meta() const;
     void* MetaObject();
@@ -538,6 +544,24 @@ private:
     VariantType(void*);
 
     void ReleasePointer();
+
+    template <class T>
+    void SetValueWithAllocation(VariantType::eVariantType nextType, const T& value)
+    {
+        if (nextType != type)
+        {
+            ReleasePointer();
+
+            pointerValue = new T(value);
+            type = nextType;
+        }
+        else
+        {
+            DVASSERT(pointerValue != nullptr, "Invalid pointer");
+
+            *(static_cast<T*>(pointerValue)) = value;
+        }
+    }
 };
 
 VariantType::eVariantType VariantType::GetType() const

@@ -33,16 +33,24 @@ void ActionUpdateSystem::UnblockAllEvents()
 void ActionUpdateSystem::AddEntity(Entity* entity)
 {
     SceneSystem::AddEntity(entity);
-    ActionComponent* actionComponent = static_cast<ActionComponent*>(entity->GetComponent(Component::ACTION_COMPONENT));
+    ActionComponent* actionComponent = entity->GetComponent<ActionComponent>();
     actionComponent->StartAdd();
 }
 
 void ActionUpdateSystem::RemoveEntity(Entity* entity)
 {
-    ActionComponent* actionComponent = static_cast<ActionComponent*>(entity->GetComponent(Component::ACTION_COMPONENT));
+    ActionComponent* actionComponent = entity->GetComponent<ActionComponent>();
     if (actionComponent->IsStarted())
-        UnWatch(actionComponent);
+    {
+        actionComponent->StopAll();
+    }
     SceneSystem::RemoveEntity(entity);
+}
+
+void ActionUpdateSystem::PrepareForRemove()
+{
+    activeActions.clear();
+    deleteActions.clear();
 }
 
 void ActionUpdateSystem::Process(float32 timeElapsed)

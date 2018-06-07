@@ -1,9 +1,8 @@
-#ifndef __DAVAENGINE_SCENE3D_STATIC_OCCLUSION_SYSTEM_H__
-#define __DAVAENGINE_SCENE3D_STATIC_OCCLUSION_SYSTEM_H__
+#pragma once
 
-#include "Base/BaseTypes.h"
-#include "Entity/SceneSystem.h"
-#include "Base/Message.h"
+#include <Base/BaseTypes.h>
+#include <Entity/SceneSystem.h>
+#include <Base/Message.h>
 
 namespace DAVA
 {
@@ -31,6 +30,7 @@ public:
 
     void AddEntity(Entity* entity) override;
     void RemoveEntity(Entity* entity) override;
+    void PrepareForRemove() override;
     void Process(float32 timeElapsed) override;
 
     void AddRenderObjectToOcclusion(RenderObject* renderObject);
@@ -67,9 +67,7 @@ public:
     void AddEntity(Entity* entity) override;
     void RemoveEntity(Entity* entity) override;
     void ImmediateEvent(Component* component, uint32 event) override;
-
-    /*HVertexBuffer CreateStaticOcclusionDebugDrawGrid(const AABBox3& boundingBox, uint32 xSubdivisions, uint32 ySubdivisions, uint32 zSubdivisions, const float32 *cellHeightOffset);
-    PolygonGroup* CreateStaticOcclusionDebugDrawCover(const AABBox3& boundingBox, uint32 xSubdivisions, uint32 ySubdivisions, uint32 zSubdivisions, PolygonGroup *gridPolygonGroup);*/
+    void PrepareForRemove() override;
 
     ~StaticOcclusionDebugDrawSystem();
 
@@ -83,8 +81,11 @@ private:
     void CreateStaticOcclusionDebugDrawGridIndice(StaticOcclusionDebugDrawComponent* target, StaticOcclusionComponent* source);
     void CreateStaticOcclusionDebugDrawCoverIndice(StaticOcclusionDebugDrawComponent* target, StaticOcclusionComponent* source);
 
+    void RemoveComponentFromEntity(Entity* entity);
+
     NMaterial *gridMaterial, *coverMaterial;
     uint32 vertexLayoutId;
+    Vector<Entity*> entities;
 };
 
 inline void StaticOcclusionSystem::SetCamera(Camera* _camera)
@@ -93,5 +94,3 @@ inline void StaticOcclusionSystem::SetCamera(Camera* _camera)
 }
 
 } // ns
-
-#endif /* __DAVAENGINE_SCENE3D_STATIC_OCCLUSION_SYSTEM_H__ */

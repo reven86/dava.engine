@@ -5,6 +5,7 @@
 #include "FileSystem/YamlNode.h"
 #include "FileSystem/YamlEmitter.h"
 #include "Logger/Logger.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
@@ -40,13 +41,17 @@ void ParticleEmitter::Cleanup(bool needCleanupLayers)
     emitterType = EMITTER_POINT;
     emissionVector.Set(NULL);
     emissionVector = RefPtr<PropertyLineValue<Vector3>>(new PropertyLineValue<Vector3>(Vector3(1.0f, 0.0f, 0.0f)));
-    emissionAngle = NULL;
-    emissionAngleVariation = NULL;
-    emissionRange.Set(NULL);
+
+    emissionVelocityVector.Set(nullptr);
+
+    emissionAngle = nullptr;
+    emissionAngleVariation = nullptr;
+    emissionRange = nullptr;
     emissionRange = RefPtr<PropertyLineValue<float32>>(new PropertyLineValue<float32>(0.0f));
-    size = RefPtr<PropertyLineValue<Vector3>>(0);
-    colorOverLife = 0;
-    radius = 0;
+    size = nullptr;
+    colorOverLife = nullptr;
+    radius = nullptr;
+    innerRadius = nullptr;
     name = FastName("Particle Emitter");
 
     if (needCleanupLayers)
@@ -80,6 +85,11 @@ ParticleEmitter* ParticleEmitter::Clone()
         clonedEmitter->emissionVector = this->emissionVector->Clone();
         clonedEmitter->emissionVector->Release();
     }
+    if (this->emissionVelocityVector)
+    {
+        clonedEmitter->emissionVelocityVector = this->emissionVelocityVector->Clone();
+        clonedEmitter->emissionVelocityVector->Release();
+    }
     if (this->emissionAngle)
     {
         clonedEmitter->emissionAngle = this->emissionAngle->Clone();
@@ -100,6 +110,11 @@ ParticleEmitter* ParticleEmitter::Clone()
         clonedEmitter->radius = this->radius->Clone();
         clonedEmitter->radius->Release();
     }
+    if (this->innerRadius)
+    {
+        clonedEmitter->innerRadius = this->innerRadius->Clone();
+        clonedEmitter->innerRadius->Release();
+    }
     if (this->colorOverLife)
     {
         clonedEmitter->colorOverLife = this->colorOverLife->Clone();
@@ -113,6 +128,8 @@ ParticleEmitter* ParticleEmitter::Clone()
 
     clonedEmitter->emitterType = this->emitterType;
     clonedEmitter->shortEffect = shortEffect;
+    clonedEmitter->generateOnSurface = generateOnSurface;
+    clonedEmitter->shockwaveMode = shockwaveMode;
 
     clonedEmitter->layers.resize(layers.size());
     for (size_t i = 0, sz = layers.size(); i < sz; ++i)
@@ -168,19 +185,28 @@ void ParticleEmitter::InsertLayer(ParticleLayer* layer, ParticleLayer* beforeLay
     }
 }
 
-void ParticleEmitter::RemoveLayer(ParticleLayer* layer)
+void ParticleEmitter::InsertLayer(ParticleLayer* layer, int32 indexToInsert)
 {
+    DVASSERT(0 <= indexToInsert && indexToInsert <= static_cast<int32>(layers.size()));
+    layers.insert(layers.begin() + indexToInsert, SafeRetain(layer));
+}
+
+int32 ParticleEmitter::RemoveLayer(ParticleLayer* layer)
+{
+    int32 removedLayerIndex = -1;
     if (!layer)
     {
-        return;
+        return removedLayerIndex;
     }
 
     Vector<ParticleLayer*>::iterator layerIter = std::find(layers.begin(), layers.end(), layer);
     if (layerIter != this->layers.end())
     {
+        removedLayerIndex = static_cast<int32>(std::distance(layers.begin(), layerIter));
         layers.erase(layerIter);
         SafeRelease(layer);
     }
+    return removedLayerIndex;
 }
 
 void ParticleEmitter::RemoveLayer(int32 index)
@@ -261,7 +287,7 @@ bool ParticleEmitter::LoadFromYaml(const FilePath& filename, bool preserveInheri
 {
     Cleanup(true);
 
-    ScopedPtr<YamlParser> parser(YamlParser::Create(filename));
+    RefPtr<YamlParser> parser(YamlParser::Create(filename));
     if (!parser)
     {
         Logger::Error("ParticleEmitter::LoadFromYaml failed (%s)", filename.GetStringValue().c_str());
@@ -300,6 +326,9 @@ bool ParticleEmitter::LoadFromYaml(const FilePath& filename, bool preserveInheri
         if (emitterNode->Get("emissionVector"))
             emissionVector = PropertyLineYamlReader::CreatePropertyLine<Vector3>(emitterNode->Get("emissionVector"));
 
+        if (emitterNode->Get("emissionVelocityVector"))
+            emissionVelocityVector = PropertyLineYamlReader::CreatePropertyLine<Vector3>(emitterNode->Get("emissionVelocityVector"));
+
         const YamlNode* emissionVectorInvertedNode = emitterNode->Get("emissionVectorInverted");
         if (!emissionVectorInvertedNode)
         {
@@ -315,10 +344,26 @@ bool ParticleEmitter::LoadFromYaml(const FilePath& filename, bool preserveInheri
             colorOverLife = PropertyLineYamlReader::CreatePropertyLine<Color>(emitterNode->Get("colorOverLife"));
         if (emitterNode->Get("radius"))
             radius = PropertyLineYamlReader::CreatePropertyLine<float32>(emitterNode->Get("radius"));
+        if (emitterNode->Get("innerRadius"))
+            innerRadius = PropertyLineYamlReader::CreatePropertyLine<float32>(emitterNode->Get("innerRadius"));
 
         const YamlNode* shortEffectNode = emitterNode->Get("shortEffect");
         if (shortEffectNode)
             shortEffect = shortEffectNode->AsBool();
+
+        const YamlNode* generateOnSurfaceNode = emitterNode->Get("generateOnSurface");
+        if (generateOnSurfaceNode)
+            generateOnSurface = generateOnSurfaceNode->AsBool();
+
+        const YamlNode* shockwaveModeNode = emitterNode->Get("shockwaveMode");
+        shockwaveMode = SHOCKWAVE_DISABLED;
+        if (shockwaveModeNode)
+        {
+            if (shockwaveModeNode->AsString() == "shockNormal")
+                shockwaveMode = SHOCKWAVE_NORMAL;
+            else if (shockwaveModeNode->AsString() == "shockHorizontal")
+                shockwaveMode = SHOCKWAVE_HORIZONTAL;
+        }
 
         const YamlNode* typeNode = emitterNode->Get("type");
         if (typeNode)
@@ -335,8 +380,13 @@ bool ParticleEmitter::LoadFromYaml(const FilePath& filename, bool preserveInheri
                 emitterType = EMITTER_ONCIRCLE_VOLUME;
             else if (typeNode->AsString() == "oncircle_edges")
                 emitterType = EMITTER_ONCIRCLE_EDGES;
-            else if (typeNode->AsString() == "shockwave")
-                emitterType = EMITTER_SHOCKWAVE;
+            else if (typeNode->AsString() == "shockwave") // Deprecated.
+            {
+                emitterType = EMITTER_ONCIRCLE_EDGES;
+                shockwaveMode = SHOCKWAVE_NORMAL;
+            }
+            else if (typeNode->AsString() == "sphere")
+                emitterType = EMITTER_SPHERE;
             else
                 emitterType = EMITTER_POINT;
         }
@@ -345,7 +395,7 @@ bool ParticleEmitter::LoadFromYaml(const FilePath& filename, bool preserveInheri
 
         size = PropertyLineYamlReader::CreatePropertyLine<Vector3>(emitterNode->Get("size"));
 
-        if (size == 0)
+        if (size == nullptr)
         {
             Vector3 _size(0, 0, 0);
             const YamlNode* widthNode = emitterNode->Get("width");
@@ -385,25 +435,29 @@ void ParticleEmitter::SaveToYaml(const FilePath& filename)
 {
     configPath = filename;
 
-    YamlNode* rootYamlNode = new YamlNode(YamlNode::TYPE_MAP);
+    RefPtr<YamlNode> rootYamlNode = YamlNode::CreateMapNode(false);
     YamlNode* emitterYamlNode = new YamlNode(YamlNode::TYPE_MAP);
     rootYamlNode->AddNodeToMap("emitter", emitterYamlNode);
 
     emitterYamlNode->Set("name", (name.c_str() ? String(name.c_str()) : ""));
     emitterYamlNode->Set("type", GetEmitterTypeName());
     emitterYamlNode->Set("shortEffect", shortEffect);
+    emitterYamlNode->Set("generateOnSurface", generateOnSurface);
+    emitterYamlNode->Set("shockwaveMode", GetEmitterShockwaveModeName());
 
     // Write the property lines.
     PropertyLineYamlWriter::WritePropertyLineToYamlNode<float32>(emitterYamlNode, "emissionAngle", this->emissionAngle);
     PropertyLineYamlWriter::WritePropertyLineToYamlNode<float32>(emitterYamlNode, "emissionAngleVariation", this->emissionAngleVariation);
     PropertyLineYamlWriter::WritePropertyLineToYamlNode<float32>(emitterYamlNode, "emissionRange", this->emissionRange);
     PropertyLineYamlWriter::WritePropertyLineToYamlNode<Vector3>(emitterYamlNode, "emissionVector", this->emissionVector);
+    PropertyLineYamlWriter::WritePropertyLineToYamlNode<Vector3>(emitterYamlNode, "emissionVelocityVector", this->emissionVelocityVector);
 
     // Yuri Coder, 2013/04/12. After the coordinates inversion for the emission vector we need to introduce the
     // new "emissionVectorInverted" flag to mark we don't need to invert coordinates after re-loading the YAML.
     PropertyLineYamlWriter::WritePropertyValueToYamlNode<bool>(emitterYamlNode, "emissionVectorInverted", true);
 
     PropertyLineYamlWriter::WritePropertyLineToYamlNode<float32>(emitterYamlNode, "radius", this->radius);
+    PropertyLineYamlWriter::WritePropertyLineToYamlNode<float32>(emitterYamlNode, "innerRadius", this->innerRadius);
 
     PropertyLineYamlWriter::WritePropertyLineToYamlNode<Color>(emitterYamlNode, "colorOverLife", this->colorOverLife);
 
@@ -413,17 +467,19 @@ void ParticleEmitter::SaveToYaml(const FilePath& filename)
     int32 layersCount = static_cast<int32>(layers.size());
     for (int32 i = 0; i < layersCount; i++)
     {
-        this->layers[i]->SaveToYamlNode(configPath, rootYamlNode, i);
+        this->layers[i]->SaveToYamlNode(configPath, rootYamlNode.Get(), i);
     }
 
-    YamlEmitter::SaveToYamlFile(filename, rootYamlNode);
+    YamlEmitter::SaveToYamlFile(filename, rootYamlNode.Get());
 }
 
 void ParticleEmitter::GetModifableLines(List<ModifiablePropertyLineBase*>& modifiables)
 {
     PropertyLineHelper::AddIfModifiable(emissionVector.Get(), modifiables);
+    PropertyLineHelper::AddIfModifiable(emissionVelocityVector.Get(), modifiables);
     PropertyLineHelper::AddIfModifiable(emissionRange.Get(), modifiables);
     PropertyLineHelper::AddIfModifiable(radius.Get(), modifiables);
+    PropertyLineHelper::AddIfModifiable(innerRadius.Get(), modifiables);
     PropertyLineHelper::AddIfModifiable(size.Get(), modifiables);
     PropertyLineHelper::AddIfModifiable(colorOverLife.Get(), modifiables);
     int32 layersCount = static_cast<int32>(layers.size());
@@ -457,15 +513,30 @@ String ParticleEmitter::GetEmitterTypeName()
         return "oncircle_edges";
     }
 
-    case EMITTER_SHOCKWAVE:
+    case EMITTER_SPHERE:
     {
-        return "shockwave";
+        return "sphere";
     }
 
     default:
     {
         return "unknown";
     }
+    }
+}
+
+String ParticleEmitter::GetEmitterShockwaveModeName()
+{
+    switch (shockwaveMode)
+    {
+    case SHOCKWAVE_DISABLED:
+        return "shockDisabeld";
+    case SHOCKWAVE_NORMAL:
+        return "shockNormal";
+    case SHOCKWAVE_HORIZONTAL:
+        return "shockHorizontal";
+    default:
+        return "shockUnknown";
     }
 }
 
@@ -507,4 +578,10 @@ void ParticleEmitter::InvertEmissionVectorCoordinates()
         key.value *= -1;
     }
 }
-};
+
+DAVA_VIRTUAL_REFLECTION_IMPL(ParticleEmitter)
+{
+    DAVA::ReflectionRegistrator<ParticleEmitter>::Begin()
+    .End();
+}
+}

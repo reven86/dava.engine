@@ -107,19 +107,17 @@ VegetationRenderObject::VegetationRenderObject()
     : heightmap(nullptr)
     , halfWidth(0)
     , halfHeight(0)
+    , renderData(nullptr)
     , maxPerturbationDistance(1000000.0f)
     , layerVisibilityMask(0xFF)
     , vegetationVisible(true)
-    , vegetationGeometry(NULL)
-    , heightmapTexture(NULL)
-    ,
-    //cameraBias(25.0f)
-    cameraBias(0.0f)
-    , layersAnimationSpring(2.f, 2.f, 2.f, 2.f)
-    , layersAnimationDrag(1.4f, 1.4f, 1.4f, 1.4f)
-    , renderData(nullptr)
     , vertexCount(0)
     , indexCount(0)
+    , vegetationGeometry(NULL)
+    , heightmapTexture(NULL)
+    , cameraBias(0.0f)
+    , layersAnimationSpring(2.f, 2.f, 2.f, 2.f)
+    , layersAnimationDrag(1.4f, 1.4f, 1.4f, 1.4f)
 {
     bbox.AddPoint(Vector3(0, 0, 0));
     bbox.AddPoint(Vector3(1, 1, 1));
@@ -435,7 +433,7 @@ void VegetationRenderObject::PrepareToRender(Camera* camera)
         AddRenderBatch(ScopedPtr<RenderBatch>(CreateRenderBatch()));
         ++renderBatchCount;
     }
-
+    activeRenderBatchArray.clear();
     Vector<Vector<VegetationBufferItem>>& indexRenderDataObject = renderData->GetIndexBuffers();
 
     Vector3 posScale(0.0f, 0.0f, 0.0f);
@@ -460,7 +458,7 @@ void VegetationRenderObject::PrepareToRender(Camera* camera)
         rb->startIndex = bufferItem.startIndex;
         rb->indexCount = bufferItem.indexCount;
 
-        activeRenderBatchArray.push_back(rb);
+        activeRenderBatchArray.emplace_back(rb);
 
         float32 distanceScale = 1.0f;
 
@@ -929,7 +927,7 @@ void VegetationRenderObject::RestoreRenderData()
 bool VegetationRenderObject::ReadyToRender()
 {
     bool renderFlag = IsHardwareCapableToRenderVegetation() && Renderer::GetOptions()->IsOptionEnabled(RenderOptions::VEGETATION_DRAW);
-    
+
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__)
     //VI: case when vegetation was turned off and then qualit changed from low t high is not a real-world scenario
     //VI: real-world scenario is in resource editor when quality has been changed.
@@ -1270,7 +1268,7 @@ void VegetationRenderObject::GenerateDensityMapFromTransparencyMask(const FilePa
     }
 
     /*Image* outputImage = Image::Create(DENSITY_MAP_SIZE, DENSITY_MAP_SIZE, FORMAT_RGBA8888);
-    
+
     for(size_t i = 0; i < densityMapBits.size(); ++i)
     {
         if(false == densityMapBits[i])
@@ -1288,10 +1286,10 @@ void VegetationRenderObject::GenerateDensityMapFromTransparencyMask(const FilePa
             outputImage->data[i * 4 + 3] = 0xFF;
         }
     }
-    
+
     lightmapPath.ReplaceFilename("density_debug_output.png");
     outputImage->Save(lightmapPath);
-    
+
     SafeRelease(outputImage);*/
 }
 
@@ -1343,9 +1341,9 @@ uint32 VegetationRenderObject::MapCellSquareToResolutionIndex(uint32 cellSquare)
     return index;
 }
 
-void VegetationRenderObject::BindDynamicParameters(Camera* camera)
+void VegetationRenderObject::BindDynamicParameters(Camera* camera, RenderBatch* batch)
 {
-    RenderObject::BindDynamicParameters(camera);
+    RenderObject::BindDynamicParameters(camera, batch);
 
     if (heightmap != nullptr)
     {

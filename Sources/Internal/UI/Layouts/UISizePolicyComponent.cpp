@@ -1,4 +1,6 @@
 #include "UI/Layouts/UISizePolicyComponent.h"
+#include "Engine/Engine.h"
+#include "Entity/ComponentManager.h"
 #include "Reflection/ReflectionRegistrator.h"
 
 #include "UI/UIControl.h"
@@ -9,21 +11,23 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(UISizePolicyComponent)
 {
-    ReflectionRegistrator<UISizePolicyComponent>::Begin()
+    ReflectionRegistrator<UISizePolicyComponent>::Begin()[M::DisplayName("Size Policy"), M::Group("Layout")]
     .ConstructorByPointer()
     .DestructorByPointer([](UISizePolicyComponent* o) { o->Release(); })
-    .Field("horizontalPolicy", &UISizePolicyComponent::GetHorizontalPolicy, &UISizePolicyComponent::SetHorizontalPolicy)[M::EnumT<UISizePolicyComponent::eSizePolicy>()]
-    .Field("horizontalValue", &UISizePolicyComponent::GetHorizontalValue, &UISizePolicyComponent::SetHorizontalValue)
-    .Field("horizontalMin", &UISizePolicyComponent::GetHorizontalMinValue, &UISizePolicyComponent::SetHorizontalMinValue)
-    .Field("horizontalMax", &UISizePolicyComponent::GetHorizontalMaxValue, &UISizePolicyComponent::SetHorizontalMaxValue)
-    .Field("horizontalFormula", &UISizePolicyComponent::GetHorizontalFormula, &UISizePolicyComponent::SetHorizontalFormula)
-    .Field("verticalPolicy", &UISizePolicyComponent::GetVerticalPolicy, &UISizePolicyComponent::SetVerticalPolicy)[M::EnumT<UISizePolicyComponent::eSizePolicy>()]
-    .Field("verticalValue", &UISizePolicyComponent::GetVerticalValue, &UISizePolicyComponent::SetVerticalValue)
-    .Field("verticalMin", &UISizePolicyComponent::GetVerticalMinValue, &UISizePolicyComponent::SetVerticalMinValue)
-    .Field("verticalMax", &UISizePolicyComponent::GetVerticalMaxValue, &UISizePolicyComponent::SetVerticalMaxValue)
-    .Field("verticalFormula", &UISizePolicyComponent::GetVerticalFormula, &UISizePolicyComponent::SetVerticalFormula)
+    .Field("horizontalPolicy", &UISizePolicyComponent::GetHorizontalPolicy, &UISizePolicyComponent::SetHorizontalPolicy)[M::EnumT<UISizePolicyComponent::eSizePolicy>(), M::DisplayName("H. Policy")]
+    .Field("horizontalValue", &UISizePolicyComponent::GetHorizontalValue, &UISizePolicyComponent::SetHorizontalValue)[M::DisplayName("H. Value"), M::Bindable()]
+    .Field("horizontalMin", &UISizePolicyComponent::GetHorizontalMinValue, &UISizePolicyComponent::SetHorizontalMinValue)[M::DisplayName("H. Min")]
+    .Field("horizontalMax", &UISizePolicyComponent::GetHorizontalMaxValue, &UISizePolicyComponent::SetHorizontalMaxValue)[M::DisplayName("H. Max")]
+    .Field("horizontalFormula", &UISizePolicyComponent::GetHorizontalFormula, &UISizePolicyComponent::SetHorizontalFormula)[M::DisplayName("H. Formula")]
+    .Field("verticalPolicy", &UISizePolicyComponent::GetVerticalPolicy, &UISizePolicyComponent::SetVerticalPolicy)[M::EnumT<UISizePolicyComponent::eSizePolicy>(), M::DisplayName("V. Policy")]
+    .Field("verticalValue", &UISizePolicyComponent::GetVerticalValue, &UISizePolicyComponent::SetVerticalValue)[M::DisplayName("V. Value"), M::Bindable()]
+    .Field("verticalMin", &UISizePolicyComponent::GetVerticalMinValue, &UISizePolicyComponent::SetVerticalMinValue)[M::DisplayName("V. Min")]
+    .Field("verticalMax", &UISizePolicyComponent::GetVerticalMaxValue, &UISizePolicyComponent::SetVerticalMaxValue)[M::DisplayName("V. Max")]
+    .Field("verticalFormula", &UISizePolicyComponent::GetVerticalFormula, &UISizePolicyComponent::SetVerticalFormula)[M::DisplayName("V. Formula")]
     .End();
 }
+
+IMPLEMENT_UI_COMPONENT(UISizePolicyComponent);
 
 UISizePolicyComponent::UISizePolicyComponent()
 {

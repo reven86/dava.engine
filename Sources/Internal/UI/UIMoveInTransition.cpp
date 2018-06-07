@@ -1,5 +1,7 @@
 #include "UI/UIMoveInTransition.h"
+#include "Engine/Engine.h"
 #include "UI/UIControlSystem.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/RenderHelper.h"
 #include "Time/SystemTimer.h"
@@ -44,13 +46,13 @@ void UIMoveInTransition::Draw(const UIGeometricData& geometricData)
 	 FROM_BOTTOM,
 	 */
 
-    Sprite::DrawState drawState;
+    SpriteDrawState drawState;
     drawState.SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
 
     if (type <= FROM_BOTTOM)
     {
-        float32 endXPos[4] = { UIControlSystem::Instance()->vcs->GetFullScreenVirtualRect().dx, -UIControlSystem::Instance()->vcs->GetFullScreenVirtualRect().dx, 0.0f, 0.0f };
-        float32 endYPos[4] = { 0.0f, 0.0f, UIControlSystem::Instance()->vcs->GetFullScreenVirtualRect().dy, -UIControlSystem::Instance()->vcs->GetFullScreenVirtualRect().dy };
+        float32 endXPos[4] = { GetEngineContext()->uiControlSystem->vcs->GetFullScreenVirtualRect().dx, -GetEngineContext()->uiControlSystem->vcs->GetFullScreenVirtualRect().dx, 0.0f, 0.0f };
+        float32 endYPos[4] = { 0.0f, 0.0f, GetEngineContext()->uiControlSystem->vcs->GetFullScreenVirtualRect().dy, -GetEngineContext()->uiControlSystem->vcs->GetFullScreenVirtualRect().dy };
         float32 xPrevPosition = endXPos[type] * normalizedTime;
         float32 yPrevPosition = endYPos[type] * normalizedTime;
         float32 xNextPosition = xPrevPosition - endXPos[type];
@@ -71,8 +73,8 @@ void UIMoveInTransition::Draw(const UIGeometricData& geometricData)
     }
     else
     {
-        float32 endXPos[4] = { UIControlSystem::Instance()->vcs->GetFullScreenVirtualRect().dx, -UIControlSystem::Instance()->vcs->GetFullScreenVirtualRect().dx, 0.0f, 0.0f };
-        float32 endYPos[4] = { 0.0f, 0.0f, UIControlSystem::Instance()->vcs->GetFullScreenVirtualRect().dy, -UIControlSystem::Instance()->vcs->GetFullScreenVirtualRect().dy };
+        float32 endXPos[4] = { GetEngineContext()->uiControlSystem->vcs->GetFullScreenVirtualRect().dx, -GetEngineContext()->uiControlSystem->vcs->GetFullScreenVirtualRect().dx, 0.0f, 0.0f };
+        float32 endYPos[4] = { 0.0f, 0.0f, GetEngineContext()->uiControlSystem->vcs->GetFullScreenVirtualRect().dy, -GetEngineContext()->uiControlSystem->vcs->GetFullScreenVirtualRect().dy };
         float32 xPrevPosition = endXPos[type - 4] * normalizedTime;
         float32 yPrevPosition = endYPos[type - 4] * normalizedTime;
         float32 xNextPosition = xPrevPosition - endXPos[type - 4];

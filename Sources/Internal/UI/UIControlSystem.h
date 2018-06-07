@@ -1,19 +1,13 @@
-#ifndef __DAVAENGINE_UI_CONTROL_SYSTEM_H__
-#define __DAVAENGINE_UI_CONTROL_SYSTEM_H__
+#pragma once
 
 #include "Base/BaseMath.h"
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
-#include "Base/Singleton.h"
+#include "Base/RefPtr.h"
 #include "Engine/Private/EnginePrivateFwd.h"
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-
-#include "UI/UIControl.h"
+#include "Input/InputElements.h"
+#include "UI/Components/UISingleComponent.h"
 #include "UI/UIEvent.h"
-#if !defined(__DAVAENGINE_COREV2__)
-#include "UI/UIScreenTransition.h"
-#include "UI/UIPopup.h"
-#endif
 
 #define FRAME_SKIP 5
 
@@ -22,35 +16,26 @@
 */
 namespace DAVA
 {
-class UIScreen;
-class UISystem;
-class UILayoutSystem;
-class UIStyleSheetSystem;
+class Mouse;
+class ScreenSwitchListener;
+class UIComponent;
+class UIControl;
 class UIFocusSystem;
 class UIInputSystem;
+class UILayoutSystem;
+class UIPopup;
+class UIRenderSystem;
+class UIScreen;
+class UIScreenTransition;
 class UIScreenshoter;
 class UISoundSystem;
+class UIStyleSheetSystem;
+class UISystem;
+class UITextSystem;
 class UIUpdateSystem;
-class UIRenderSystem;
-
-#if defined(__DAVAENGINE_COREV2__)
-class UIScreenTransition;
-class UIPopup;
-#endif
-
-class ScreenSwitchListener
-{
-public:
-    virtual ~ScreenSwitchListener() = default;
-
-    virtual void OnScreenWillSwitch(UIScreen* newScreen)
-    {
-    }
-
-    virtual void OnScreenDidSwitch(UIScreen* newScreen)
-    {
-    }
-};
+class UIEventsSystem;
+class VirtualCoordinatesSystem;
+struct InputEvent;
 
 /**
 	 \brief	UIControlSystem it's a core of the all controls work.
@@ -59,15 +44,8 @@ public:
 		Also ControlSystem processed all user input events to the controls.
 	 */
 
-class UIControlSystem : public Singleton<UIControlSystem>
+class UIControlSystem final
 {
-protected:
-    ~UIControlSystem();
-    /**
-	 \brief Don't call this constructor!
-	 */
-    UIControlSystem();
-
 public:
     /**
 	 \brief Sets the requested screen as current.
@@ -76,7 +54,7 @@ public:
 	 \param[in] Screen you want to set as current
 	 \param[in] Transition you want to use for the screen setting.
 	 */
-    void SetScreen(UIScreen* newMainControl, UIScreenTransition* transition = 0);
+    void SetScreen(UIScreen* newMainControl);
 
     /**
 	 \brief Sets the requested screen as current.
@@ -107,8 +85,6 @@ public:
 	 \returns popup container
 	 */
     UIControl* GetPopupContainer() const;
-
-    UIScreenTransition* GetScreenTransition() const;
 
     /**
 	 \brief Disabled all controls inputs.
@@ -151,15 +127,23 @@ public:
 	 \brief Sets the current screen to 0 LOL.
 	 */
     void Reset();
+
+    bool HandleInputEvent(const InputEvent& inputEvent);
+
     /**
 	 \brief Calls by the system for input processing.
 	 */
     void OnInput(UIEvent* newEvent);
 
     /**
-	 \brief Callse very frame by the system for update.
+	 \brief Calls very frame by the system for update.
 	 */
     void Update();
+
+    /**
+	 \brief Update system with custom time elapsed value.
+	 */
+    void UpdateWithCustomTime(float32 timeElapsed);
 
     /**
      \brief Calls update logic for specific control. Used to make screenshoots.
@@ -296,6 +280,23 @@ public:
         return nullptr;
     }
 
+    void AddSingleComponent(std::unique_ptr<UISingleComponent> single);
+    std::unique_ptr<UISingleComponent> RemoveSingleComponent(const UISingleComponent* singleComponent);
+
+    template <typename T>
+    T* GetSingleComponent() const
+    {
+        for (auto& c : singleComponents)
+        {
+            if (IsPointerToExactClass<T>(c.get()))
+            {
+                return static_cast<T*>(c.get());
+            }
+        }
+        return nullptr;
+    }
+
+    UITextSystem* GetTextSystem() const;
     UILayoutSystem* GetLayoutSystem() const;
     UIInputSystem* GetInputSystem() const;
     UIFocusSystem* GetFocusSystem() const;
@@ -303,12 +304,23 @@ public:
     UIUpdateSystem* GetUpdateSystem() const;
     UIStyleSheetSystem* GetStyleSheetSystem() const;
     UIRenderSystem* GetRenderSystem() const;
+    UIEventsSystem* GetEventsSystem() const;
 
     void SetDoubleTapSettings(float32 time, float32 inch);
 
     VirtualCoordinatesSystem* vcs = nullptr; // TODO: Should be completely removed in favor of direct DAVA::Window methods
 
+    void SetFlowRoot(UIControl* root);
+    UIControl* GetFlowRoot() const;
+
+    void SetPhysicalSafeAreaInsets(float32 left, float32 top, float32 right, float32 bottom, bool isLeftNotch, bool isRightNotch);
+
 private:
+    UIControlSystem();
+    ~UIControlSystem();
+    void Init();
+    void Shutdown();
+
     void ProcessScreenLogic();
 
     void NotifyListenersWillSwitch(UIScreen* screen);
@@ -316,26 +328,28 @@ private:
     bool CheckTimeAndPosition(UIEvent* newEvent);
     int32 CalculatedTapCount(UIEvent* newEvent);
 
-#if defined(__DAVAENGINE_COREV2__)
+    UIEvent MakeUIEvent(const InputEvent& inputEvent) const;
+    eModifierKeys GetKeyboardModifierKeys() const;
+    static eMouseButtons TranslateMouseElementToButtons(eInputElements element);
+
     friend class Private::EngineBackend;
-#else
-    friend void Core::CreateSingletons();
-#endif
 
     Vector<std::unique_ptr<UISystem>> systems;
+    Vector<std::unique_ptr<UISingleComponent>> singleComponents;
+
+    UITextSystem* textSystem = nullptr;
     UILayoutSystem* layoutSystem = nullptr;
     UIStyleSheetSystem* styleSheetSystem = nullptr;
     UIInputSystem* inputSystem = nullptr;
     UISoundSystem* soundSystem = nullptr;
     UIUpdateSystem* updateSystem = nullptr;
     UIRenderSystem* renderSystem = nullptr;
+    UIEventsSystem* eventsSystem = nullptr;
 
     Vector<ScreenSwitchListener*> screenSwitchListeners;
 
     RefPtr<UIScreen> currentScreen;
     RefPtr<UIScreen> nextScreen;
-    RefPtr<UIScreenTransition> nextScreenTransition;
-    RefPtr<UIScreenTransition> currentScreenTransition;
     RefPtr<UIControl> popupContainer;
     Set<UIPopup*> popupsToRemove;
 
@@ -350,14 +364,7 @@ private:
     uint32 resizePerFrame = 0; //used for logging some strange crahses on android
 
     float32 doubleClickTime = 0.f;
-#if !defined(__DAVAENGINE_COREV2__)
-    float32 doubleClickPhysSquare = 0.f;
-    float32 doubleClickRadiusSquared = 0.f;
-    float32 defaultDoubleClickRadiusSquared = 0.f;
-    float32 defaultDoubleClickTime = 0.5f;
-#else
     float32 doubleClickInchSquare = 0.f;
-#endif
     struct LastClickData
     {
         uint32 touchId = 0;
@@ -368,7 +375,7 @@ private:
         RefPtr<UIControl> touchLocker; // last control has handled input
     };
     LastClickData lastClickData;
-};
-};
 
-#endif
+    RefPtr<UIControl> flowRoot;
+};
+}

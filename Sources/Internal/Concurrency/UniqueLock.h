@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_UNIQUE_LOCK_H__
-#define __DAVAENGINE_UNIQUE_LOCK_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
@@ -192,5 +191,3 @@ typename UniqueLock<MutexT>::MutexType* UniqueLock<MutexT>::Release() DAVA_NOEXC
 }
 
 } //  namespace DAVA
-
-#endif //  __DAVAENGINE_UNIQUE_LOCK_H__

@@ -1,10 +1,9 @@
-#ifndef __DAVAENGINE_FLOW_LAYOUT_ALGORITHM_H__
-#define __DAVAENGINE_FLOW_LAYOUT_ALGORITHM_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Math/Vector.h"
-
-#include "ControlLayoutData.h"
+#include "UI/Layouts/Private/ControlLayoutData.h"
+#include "UI/Layouts/Private/Layouter.h"
 
 namespace DAVA
 {
@@ -15,7 +14,7 @@ class UISizePolicyComponent;
 class FlowLayoutAlgorithm
 {
 public:
-    FlowLayoutAlgorithm(Vector<ControlLayoutData>& layoutData_, bool isRtl_);
+    FlowLayoutAlgorithm(Layouter& layouter);
     ~FlowLayoutAlgorithm();
 
     void Apply(ControlLayoutData& data, Vector2::eAxis axis);
@@ -33,28 +32,26 @@ private:
     void CalculateVerticalDynamicPaddingAndSpaces(ControlLayoutData& data);
     void LayoutLineVertically(ControlLayoutData& data, int32 firstIndex, int32 lastIndex, float32 top, float32 bottom);
 
-    void CorrectPaddingAndSpacing(float32& padding, float32& spacing, bool dynamicPadding, bool dynamicSpacing, float32 restSize, int32 childrenCount);
+    void CorrectPaddingAndSpacing(float32& leadingPadding, float32& trailingPadding, float32& spacing, bool dynamicPadding, bool dynamicSpacing, float32 restSize, int32 childrenCount);
     void SortLineItemsByContentDirection(int32 firstIndex, int32 lastIndex, List<uint32>& order, int32& realLastIndex);
 
 private:
-    Vector<ControlLayoutData>& layoutData;
-    const bool isRtl;
+    Layouter& layouter;
 
     bool inverse = false;
     bool skipInvisible = true;
 
-    float32 horizontalPadding = 0.0f;
+    float32 horizontalLeadingPadding = 0.0f;
+    float32 horizontalTrailingPadding = 0.0f;
     float32 horizontalSpacing = 0.0f;
     bool dynamicHorizontalPadding = false;
     bool dynamicHorizontalInLinePadding = false;
     bool dynamicHorizontalSpacing = false;
 
-    float32 verticalPadding = 0.0f;
+    float32 topPadding = 0.0f;
+    float32 bottomPadding = 0.0f;
     float32 verticalSpacing = 0.0f;
     bool dynamicVerticalPadding = false;
     bool dynamicVerticalSpacing = false;
 };
 }
-
-
-#endif //__DAVAENGINE_FLOW_LAYOUT_ALGORITHM_H__

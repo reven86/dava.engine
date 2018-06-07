@@ -14,10 +14,10 @@
 #include "Render/Highlevel/RenderPass.h"
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/RenderSystem.h"
-#include "Scene3D/Scene.h"
-#include "Time/SystemTimer.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
+#include "Scene3D/Scene.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -28,27 +28,40 @@ RenderUpdateSystem::RenderUpdateSystem(Scene* scene)
 
 void RenderUpdateSystem::AddEntity(Entity* entity)
 {
-    RenderObject* renderObject = (static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT)))->GetRenderObject();
+    RenderObject* renderObject = entity->GetComponent<RenderComponent>()->GetRenderObject();
     if (!renderObject)
         return;
-    Matrix4* worldTransformPointer = (static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT)))->GetWorldTransformPtr();
-    renderObject->SetWorldTransformPtr(worldTransformPointer);
+    Matrix4* worldTransformPointer = entity->GetComponent<TransformComponent>()->GetWorldMatrixPtr();
+    renderObject->SetWorldMatrixPtr(worldTransformPointer);
     UpdateActiveIndexes(entity, renderObject);
-    entityObjectMap.insert(entity, renderObject);
+    entityObjectMap.emplace(entity, renderObject);
     GetScene()->GetRenderSystem()->RenderPermanent(renderObject);
 }
 
 void RenderUpdateSystem::RemoveEntity(Entity* entity)
 {
-    RenderObject* renderObject = entityObjectMap.at(entity);
-    if (!renderObject)
+    auto renderObjectIter = entityObjectMap.find(entity);
+
+    if (renderObjectIter != entityObjectMap.end())
     {
-        return;
+        RenderObject* renderObject = renderObjectIter->second;
+
+        if (renderObject != nullptr)
+        {
+            GetScene()->GetRenderSystem()->RemoveFromRender(renderObject);
+            entityObjectMap.erase(entity);
+        }
     }
+}
 
-    GetScene()->GetRenderSystem()->RemoveFromRender(renderObject);
-
-    entityObjectMap.erase(entity);
+void RenderUpdateSystem::PrepareForRemove()
+{
+    RenderSystem* renderSystem = GetScene()->GetRenderSystem();
+    for (const auto& node : entityObjectMap)
+    {
+        renderSystem->RemoveFromRender(node.second);
+    }
+    entityObjectMap.clear();
 }
 
 void RenderUpdateSystem::Process(float32 timeElapsed)
@@ -56,20 +69,25 @@ void RenderUpdateSystem::Process(float32 timeElapsed)
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_RENDER_UPDATE_SYSTEM);
 
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+
     for (auto& pair : tsc->worldTransformChanged.map)
     {
-        if (pair.first->GetComponentsCount(Component::RENDER_COMPONENT) > 0)
+        if (pair.first->GetComponentsCount(Type::Instance<RenderComponent>()) > 0)
         {
             for (Entity* entity : pair.second)
             {
-                RenderComponent* rc = static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT));
-                if (rc->GetRenderObject())
+                RenderComponent* rc = entity->GetComponent<RenderComponent>();
+                RenderObject* renderObject = rc->GetRenderObject();
+                if (renderObject)
                 {
-                    RenderObject* object = rc->GetRenderObject();
                     // Update new transform pointer, and mark that transform is changed
-                    Matrix4* worldTransformPointer = (static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT)))->GetWorldTransformPtr();
-                    object->SetWorldTransformPtr(worldTransformPointer);
-                    entity->GetScene()->renderSystem->MarkForUpdate(object);
+                    Matrix4* worldTransformPointer = entity->GetComponent<TransformComponent>()->GetWorldMatrixPtr();
+                    renderObject->SetWorldMatrixPtr(worldTransformPointer);
+                    entity->GetScene()->renderSystem->MarkForUpdate(renderObject);
+
+                    Matrix4 inverseWorldTransform = Matrix4::IDENTITY;
+                    worldTransformPointer->GetInverse(inverseWorldTransform);
+                    renderObject->SetInverseTransform(inverseWorldTransform);
                 }
             }
         }

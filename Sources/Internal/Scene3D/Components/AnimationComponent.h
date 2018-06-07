@@ -20,8 +20,6 @@ protected:
 public:
     AnimationComponent();
 
-    IMPLEMENT_COMPONENT_TYPE(ANIMATION_COMPONENT);
-
     Component* Clone(Entity* toEntity) override;
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
@@ -70,13 +68,6 @@ private:
     Function<void(const AnimationComponent* const)> playbackComplete;
 
     Matrix4 animationTransform;
-
-public:
-    INTROSPECTION_EXTEND(AnimationComponent, Component,
-                         MEMBER(repeatsCount, "repeatsCount", I_VIEW | I_EDIT | I_SAVE)
-                         PROPERTY("isPlaying", "isPlaying", GetIsPlaying, SetIsPlaying, I_SAVE | I_EDIT | I_VIEW)
-                         MEMBER(animationTimeScale, "animationTimeScale", I_VIEW | I_EDIT | I_SAVE)
-                         );
 
     DAVA_VIRTUAL_REFLECTION(AnimationComponent, Component);
 };

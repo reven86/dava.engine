@@ -1,5 +1,6 @@
 #if defined(__DAVAENGINE_LINUX__)
 
+#include "Base/String.h"
 #include "Debug/DVAssert.h"
 
 namespace DAVA

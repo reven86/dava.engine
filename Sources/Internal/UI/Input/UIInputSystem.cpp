@@ -1,17 +1,18 @@
 #include "UIInputSystem.h"
 
-#include "UI/UIAnalitycs.h"
+#include "UI/UIAnalytics.h"
 #include "UI/UIControl.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIEvent.h"
 #include "UI/UIScreen.h"
 
+#include "UI/Events/UIEventsSingleComponent.h"
+#include "UI/Events/UIShortcutEventComponent.h"
+#include "UI/Events/UIEventsSystem.h"
 #include "UI/Focus/UIFocusSystem.h"
 #include "UI/Input/UIModalInputComponent.h"
-#include "UI/Input/UIActionBindingComponent.h"
-#include "UI/Input/UIActionComponent.h"
 
-#include "Input/InputSystem.h"
+#include "Engine/Engine.h"
 
 namespace DAVA
 {
@@ -29,24 +30,14 @@ const FastName UIInputSystem::ACTION_ESCAPE("Escape");
 UIInputSystem::UIInputSystem()
 {
     focusSystem = new UIFocusSystem();
-
-    BindGlobalAction(ACTION_FOCUS_LEFT, MakeFunction(this, &UIInputSystem::MoveFocusLeft));
-    BindGlobalAction(ACTION_FOCUS_RIGHT, MakeFunction(this, &UIInputSystem::MoveFocusRight));
-    BindGlobalAction(ACTION_FOCUS_UP, MakeFunction(this, &UIInputSystem::MoveFocusUp));
-    BindGlobalAction(ACTION_FOCUS_DOWN, MakeFunction(this, &UIInputSystem::MoveFocusDown));
-
-    BindGlobalAction(ACTION_FOCUS_NEXT, MakeFunction(this, &UIInputSystem::MoveFocusForward));
-    BindGlobalAction(ACTION_FOCUS_PREV, MakeFunction(this, &UIInputSystem::MoveFocusBackward));
-
-    BindGlobalAction(ACTION_PERFORM, MakeFunction(this, &UIInputSystem::PerformActionOnFocusedControl));
 }
 
 UIInputSystem::~UIInputSystem()
 {
     SafeDelete(focusSystem);
 
-    currentScreen = nullptr; // we are not owner
-    popupContainer = nullptr; // we are not owner
+    currentScreen = nullptr; // we are not an owner
+    popupContainer = nullptr; // we are not an owner
 }
 
 void UIInputSystem::SetCurrentScreen(UIScreen* screen)
@@ -212,9 +203,16 @@ const Vector<UIEvent>& UIInputSystem::GetAllInputs() const
     return touchEvents;
 }
 
+bool UIInputSystem::IsAnyInputLockedByControl(const UIControl* control) const
+{
+    return touchEvents.end() != std::find_if(touchEvents.begin(), touchEvents.end(), [control](const UIEvent& event) {
+               return event.touchLocker == control;
+           });
+}
+
 void UIInputSystem::SetExclusiveInputLocker(UIControl* locker, uint32 lockEventId)
 {
-    SafeRelease(exclusiveInputLocker);
+    exclusiveInputLocker = nullptr;
     if (locker != NULL)
     {
         for (Vector<UIEvent>::iterator it = touchEvents.begin(); it != touchEvents.end(); it++)
@@ -226,12 +224,12 @@ void UIInputSystem::SetExclusiveInputLocker(UIControl* locker, uint32 lockEventI
         }
     }
 
-    exclusiveInputLocker = SafeRetain(locker);
+    exclusiveInputLocker = locker;
 }
 
 UIControl* UIInputSystem::GetExclusiveInputLocker() const
 {
-    return exclusiveInputLocker;
+    return exclusiveInputLocker.Get();
 }
 
 void UIInputSystem::SetHoveredControl(UIControl* newHovered)
@@ -241,9 +239,8 @@ void UIInputSystem::SetHoveredControl(UIControl* newHovered)
         if (hovered)
         {
             hovered->SystemDidRemoveHovered();
-            hovered->Release();
         }
-        hovered = SafeRetain(newHovered);
+        hovered = newHovered;
         if (hovered)
         {
             hovered->SystemDidSetHovered();
@@ -253,7 +250,22 @@ void UIInputSystem::SetHoveredControl(UIControl* newHovered)
 
 UIControl* UIInputSystem::GetHoveredControl() const
 {
-    return hovered;
+    return hovered.Get();
+}
+
+UIControl* UIInputSystem::GetModalControl() const
+{
+    return modalControl.Get();
+}
+
+void UIInputSystem::BindGlobalShortcut(const KeyboardShortcut& shortcut, const FastName& actionName)
+{
+    GetScene()->GetSystem<UIEventsSystem>()->BindGlobalShortcut(shortcut, actionName);
+}
+
+void UIInputSystem::BindGlobalAction(const FastName& eventName, const UIActionMap::SimpleAction& action)
+{
+    GetScene()->GetSystem<UIEventsSystem>()->BindGlobalAction(eventName, action);
 }
 
 UIFocusSystem* UIInputSystem::GetFocusSystem() const
@@ -261,72 +273,34 @@ UIFocusSystem* UIInputSystem::GetFocusSystem() const
     return focusSystem;
 }
 
-void UIInputSystem::BindGlobalShortcut(const KeyboardShortcut& shortcut, const FastName& actionName)
-{
-    globalInputMap.BindAction(shortcut, actionName);
-}
-
-void UIInputSystem::BindGlobalAction(const FastName& actionName, const UIActionMap::Action& action)
-{
-    globalActions.Put(actionName, action);
-}
-
-void UIInputSystem::MoveFocusLeft()
+void UIInputSystem::MoveFocusLeft(const Any& data)
 {
     focusSystem->MoveFocus(UINavigationComponent::Direction::LEFT);
 }
 
-void UIInputSystem::MoveFocusRight()
+void UIInputSystem::MoveFocusRight(const Any& data)
 {
     focusSystem->MoveFocus(UINavigationComponent::Direction::RIGHT);
 }
 
-void UIInputSystem::MoveFocusUp()
+void UIInputSystem::MoveFocusUp(const Any& data)
 {
     focusSystem->MoveFocus(UINavigationComponent::Direction::UP);
 }
 
-void UIInputSystem::MoveFocusDown()
+void UIInputSystem::MoveFocusDown(const Any& data)
 {
     focusSystem->MoveFocus(UINavigationComponent::Direction::DOWN);
 }
 
-void UIInputSystem::MoveFocusForward()
+void UIInputSystem::MoveFocusForward(const Any& data)
 {
     focusSystem->MoveFocus(UITabOrderComponent::Direction::FORWARD, true);
 }
 
-void UIInputSystem::MoveFocusBackward()
+void UIInputSystem::MoveFocusBackward(const Any& data)
 {
     focusSystem->MoveFocus(UITabOrderComponent::Direction::BACKWARD, true);
-}
-
-void UIInputSystem::PerformActionOnControl(UIControl* control)
-{
-    if (control != nullptr)
-    {
-        UIActionComponent* actionComponent = control->GetComponent<UIActionComponent>();
-        if (actionComponent != nullptr && actionComponent->GetAction().IsValid())
-        {
-            UIControl* c = control;
-            bool processed = false;
-            while (!processed && c != nullptr)
-            {
-                UIActionBindingComponent* actionBindingComponent = c->GetComponent<UIActionBindingComponent>();
-                if (actionBindingComponent)
-                {
-                    processed = actionBindingComponent->GetActionMap().Perform(actionComponent->GetAction());
-                }
-
-                c = (c == modalControl.Get()) ? nullptr : c->GetParent();
-            }
-        }
-    }
-}
-
-void UIInputSystem::PerformActionOnFocusedControl()
-{
-    PerformActionOnControl(focusSystem->GetFocusedControl());
 }
 
 bool UIInputSystem::HandleTouchEvent(UIEvent* event)
@@ -344,12 +318,14 @@ bool UIInputSystem::HandleTouchEvent(UIEvent* event)
     }
     else
     {
-        it->timestamp = event->timestamp;
-        it->physPoint = event->physPoint;
         it->point = event->point;
-        it->tapCount = event->tapCount;
+        it->physPoint = event->physPoint;
+        it->isRelative = event->isRelative;
+        it->timestamp = event->timestamp;
         it->phase = event->phase;
+        it->tapCount = event->tapCount;
         it->inputHandledType = event->inputHandledType;
+        it->modifiers = event->modifiers;
 
         eventToHandle = &(*it);
     }
@@ -427,13 +403,20 @@ bool UIInputSystem::HandleKeyEvent(UIEvent* event)
 
             if (phase == UIEvent::Phase::KEY_DOWN)
             {
-                UIActionBindingComponent* actionBindingComponent = current->GetComponent<UIActionBindingComponent>();
-                if (actionBindingComponent)
+                if (c != nullptr)
                 {
-                    FastName action = actionBindingComponent->GetInputMap().FindAction(shortcut);
-                    if (action.IsValid() && actionBindingComponent->GetActionMap().Perform(action))
+                    UIShortcutEventComponent* shortcutEvents = c->GetComponent<UIShortcutEventComponent>();
+                    if (shortcutEvents != nullptr)
                     {
-                        break;
+                        FastName event = shortcutEvents->GetInputMap().FindEvent(shortcut);
+                        UIEventsSingleComponent* eventsSingle = GetScene()->GetSingleComponent<UIEventsSingleComponent>();
+                        if (eventsSingle && event.IsValid())
+                        {
+                            if (eventsSingle->SendEvent(c, event, Any()))
+                            {
+                                break;
+                            }
+                        }
                     }
                 }
             }
@@ -449,11 +432,7 @@ bool UIInputSystem::HandleKeyEvent(UIEvent* event)
 
     if (phase == UIEvent::Phase::KEY_DOWN || phase == UIEvent::Phase::KEY_DOWN_REPEAT)
     {
-        FastName action = globalInputMap.FindAction(shortcut);
-        if (action.IsValid())
-        {
-            globalActions.Perform(action);
-        }
+        GetScene()->GetEventsSystem()->PerformGlobalShortcut(shortcut);
     }
 
     return processed;
@@ -533,10 +512,10 @@ UIControl* UIInputSystem::FindNearestToUserModalControl() const
 
 UIControl* UIInputSystem::FindNearestToUserModalControlImpl(UIControl* current) const
 {
-    const List<UIControl*>& children = current->GetChildren();
+    const auto& children = current->GetChildren();
     for (auto it = children.rbegin(); it != children.rend(); ++it)
     {
-        UIControl* result = FindNearestToUserModalControlImpl(*it);
+        UIControl* result = FindNearestToUserModalControlImpl(it->Get());
         if (result != nullptr)
         {
             return result;

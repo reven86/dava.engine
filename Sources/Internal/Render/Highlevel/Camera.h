@@ -108,11 +108,6 @@ public:
      */
     void SetupDynamicParameters(bool invertProjection, Vector4* externalClipPlane = NULL);
 
-    /**     
-        \brief Restore camera transform to original camera transform that was set using 
-     */
-    void RestoreOriginalSceneTransform();
-
     /**
          \brief return current xmin of this camera
          \returns xmin for this camera
@@ -323,6 +318,12 @@ public:
     /// for camera math and use composition to merge math and rendering scene node.
     void CopyMathOnly(const Camera& c);
 
+    /*
+     * Projection matrix offset could be used for half-pixel offset in certain APIs
+     */
+    const Vector2& GetProjectionMatrixOffset() const;
+    void SetProjectionMatrixOffset(const Vector2& offset);
+
     enum eFlags
     {
         REQUIRE_REBUILD = 1,
@@ -342,7 +343,7 @@ protected:
     Vector3 target; //
     Vector3 up;
     Vector3 left;
-
+    Vector2 projectionMatrixOffset;
     Vector3 direction; // right now this variable updated only when you call GetDirection.
 
     //Quaternion rotation;	//
@@ -361,8 +362,6 @@ protected:
     // TODO: not necessary to be a pointer here.
     Frustum* currentFrustum;
 
-    void ExtractValuesFromMatrix();
-    void ConstructMatrixFromValues();
     void Recalc();
     void ValidateProperties();
 
@@ -370,32 +369,11 @@ protected:
 
     float32 zoomFactor;
 
-public:
-    INTROSPECTION_EXTEND(Camera, BaseObject,
-                         //PROPERTY("xmin", "xmin", GetXMin, SetXMin, I_SAVE | I_VIEW | I_EDIT)
-                         //PROPERTY("xmax", "xmax", GetXMax, SetXMax, I_SAVE | I_VIEW | I_EDIT)
-                         //PROPERTY("ymin", "ymin", GetYMin, SetYMin, I_SAVE | I_VIEW | I_EDIT)
-                         //PROPERTY("ymax", "ymax", GetYMax, SetYMax, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("aspect", "aspect", GetAspect, SetAspect, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("znear", "znear", GetZNear, SetZNear, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("zfar", "zfar", GetZFar, SetZFar, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("fovx", "fovx", GetFOV, SetFOV, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("ortho", "Is Ortho", GetIsOrtho, SetIsOrtho, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("orthoWidth", "orthoWidth", GetOrthoWidth, SetOrthoWidth, I_SAVE | I_VIEW | I_EDIT)
-
-                         //PROPERTY(zoomFactor, "Zoom factor", GetFOV, SetFOV, INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
-                         PROPERTY("position", "Position", GetPosition, SetPosition, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("target", "Target", GetTarget, SetTarget, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("up", "Up", GetUp, SetUp, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("left", "Left", GetLeft, SetLeft, I_SAVE | I_VIEW | I_EDIT)
-                         MEMBER(direction, "Direction", I_SAVE | I_VIEW)
-                         MEMBER(flags, "Flags", I_SAVE | I_VIEW | I_EDIT)
-
-                         MEMBER(cameraTransform, "Camera Transform", I_SAVE | I_VIEW)
-                         MEMBER(viewMatrix, "View Matrix", I_SAVE | I_VIEW)
-                         MEMBER(projMatrix, "Proj Matrix", I_SAVE | I_VIEW)
-                         );
-
     DAVA_VIRTUAL_REFLECTION(Camera, BaseObject);
 };
+
+inline const Vector2& Camera::GetProjectionMatrixOffset() const
+{
+    return projectionMatrixOffset;
+}
 }

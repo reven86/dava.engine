@@ -7,13 +7,13 @@
 
 #include "FileSystem/FileAPIHelper.h"
 #include "FileSystem/FileSystem.h"
+#include "FileSystem/FileSystemDelegate.h"
 #include "FileSystem/FileList.h"
 #include "FileSystem/YamlNode.h"
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
 #include "Logger/Logger.h"
 #include "FileSystem/ResourceArchive.h"
-#include "Core/Core.h"
 #include "Concurrency/LockGuard.h"
 
 #include "Engine/Private/EngineBackend.h"
@@ -23,6 +23,7 @@
 #include <libproc.h>
 #include <libgen.h>
 #include <unistd.h>
+#include <CoreServices/CoreServices.h>
 #elif defined(__DAVAENGINE_IPHONE__)
 #include <copyfile.h>
 #include <libgen.h>
@@ -38,12 +39,8 @@
 #include "Platform/DeviceInfo.h"
 #endif
 #elif defined(__DAVAENGINE_ANDROID__)
-#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
-#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/Private/Android/AssetsManagerAndroid.h"
 #include "Engine/Private/Android/AndroidBridge.h"
-#else
-#include "Platform/TemplateAndroid/CorePlatformAndroid.h"
-#endif
 #include <unistd.h>
 #elif defined(__DAVAENGINE_LINUX__)
 #include <sys/types.h>
@@ -329,7 +326,7 @@ bool FileSystem::DeleteDirectory(const FilePath& path, bool isRecursive)
                 return false;
         }
     }
-    
+
 #ifdef __DAVAENGINE_WINDOWS__
     WideString sysPath = UTF8Utils::EncodeToWideString(path.GetAbsolutePathname());
     int32 chmodres = _wchmod(sysPath.c_str(), _S_IWRITE); // change read-only file mode
@@ -418,6 +415,56 @@ FilePath FileSystem::GetTempDirectoryPath() const
         const char* tmp = std::getenv(envName);
         if (tmp != nullptr)
         {
+#if defined(__DAVAENGINE_MACOS__)
+            // On macos TEMP path by default contain a symlink as a part of path.
+            // This code try to resolve it.
+            CFStringRef path = CFStringCreateWithFileSystemRepresentation(0, tmp);
+            if (path != nullptr)
+            {
+                SCOPE_EXIT
+                {
+                    CFRelease(path);
+                };
+
+                CFURLRef url = CFURLCreateWithFileSystemPath(0, path, kCFURLPOSIXPathStyle, TRUE);
+                if (url != nullptr)
+                {
+                    SCOPE_EXIT
+                    {
+                        CFRelease(url);
+                    };
+
+                    CFDataRef bookmarkData = CFURLCreateBookmarkData(0, url, kCFURLBookmarkCreationSuitableForBookmarkFile, NULL, NULL, NULL);
+                    if (bookmarkData != nullptr)
+                    {
+                        SCOPE_EXIT
+                        {
+                            CFRelease(bookmarkData);
+                        };
+
+                        CFURLBookmarkResolutionOptions options = kCFBookmarkResolutionWithoutUIMask | kCFBookmarkResolutionWithoutMountingMask;
+                        CFURLRef resolvedUrl = CFURLCreateByResolvingBookmarkData(0, bookmarkData, options, NULL, NULL, NULL, NULL);
+                        if (resolvedUrl != nullptr)
+                        {
+                            CFStringRef cfstr(CFURLCopyFileSystemPath(resolvedUrl, kCFURLPOSIXPathStyle));
+                            SCOPE_EXIT
+                            {
+                                CFRelease(resolvedUrl);
+                                CFRelease(cfstr);
+                            };
+
+                            CFIndex bufLen = CFStringGetMaximumSizeForEncoding(CFStringGetLength(cfstr), kCFStringEncodingUTF8) + 1;
+
+                            Vector<char> buffer;
+                            buffer.resize(bufLen, 0);
+                            CFStringGetCString(cfstr, buffer.data(), bufLen, kCFStringEncodingUTF8);
+
+                            return FilePath(buffer.data());
+                        }
+                    }
+                }
+            }
+#endif
             return FilePath(tmp);
         }
     }
@@ -425,8 +472,9 @@ FilePath FileSystem::GetTempDirectoryPath() const
 #endif
 }
 
-const FilePath& FileSystem::GetCurrentWorkingDirectory()
+FilePath FileSystem::GetCurrentWorkingDirectory()
 {
+    FilePath currentWorkingDirectory;
 #if defined(__DAVAENGINE_WINDOWS__)
 
     Array<wchar_t, MAX_PATH> tempDir;
@@ -459,15 +507,9 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
     proc_pidpath(getpid(), tempDir.data(), PATH_MAX);
     currentExecuteDirectory = FilePath(dirname(tempDir.data()));
 #else
-
-#if defined(__DAVAENGINE_COREV2__)
     // dava.engine's internals can invoke GetCurrentExecutableDirectory before Engine instance is created
     const String& str = Private::EngineBackend::Instance()->GetCommandLine().at(0);
-#else
-    const String& str = Core::Instance()->GetCommandLine().at(0);
-#endif
     currentExecuteDirectory = FilePath(str).GetDirectory();
-
 #endif //PLATFORMS
 
     return currentExecuteDirectory.MakeDirectoryPathname();
@@ -509,6 +551,11 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
     // ~res:/ or c:/... or ~doc:/
     String nativePath = pathToCheck.GetAbsolutePathname();
 
+    if (fsDelegate != nullptr && fsDelegate->IsFileExists(nativePath) == false)
+    { // hooked check: can we continue work with file?
+        return false;
+    }
+
     if (FileAPI::IsRegularFile(nativePath))
     {
         return true;
@@ -536,13 +583,18 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
 
 bool FileSystem::IsDirectory(const FilePath& pathToCheck) const
 {
+    String pathToCheckStr = pathToCheck.GetAbsolutePathname();
+    if (fsDelegate != nullptr && fsDelegate->IsDirectoryExists(pathToCheckStr) == false)
+    { // hooked check: can we continue work with directory?
+        return false;
+    }
+
 #if defined(__DAVAENGINE_WIN32__)
-    WideString path = UTF8Utils::EncodeToWideString(pathToCheck.GetAbsolutePathname());
+    WideString path = UTF8Utils::EncodeToWideString(pathToCheckStr);
     DWORD stats = GetFileAttributesW(path.c_str());
     return (stats != -1) && (0 != (stats & FILE_ATTRIBUTE_DIRECTORY));
 #else
 
-    String pathToCheckStr = pathToCheck.GetAbsolutePathname();
     if (FileAPI::IsDirectory(pathToCheckStr))
     {
         return true;
@@ -733,7 +785,6 @@ void FileSystem::SetDefaultDocumentsDirectory()
     SetCurrentDocumentsDirectory(GetUserDocumentsPath() + "DAVAProject/");
 }
 
-
 #if defined(__DAVAENGINE_WINDOWS__)
 const FilePath FileSystem::GetUserDocumentsPath()
 {
@@ -778,7 +829,7 @@ const FilePath FileSystem::GetPublicDocumentsPath()
 #elif defined(__DAVAENGINE_WIN_UAP__)
 
     //take the first removable storage as public documents folder
-    auto storageList = DeviceInfo::GetStoragesList();
+    List<DeviceInfo::StorageInfo> storageList = DeviceInfo::GetStoragesList();
     for (const auto& x : storageList)
     {
         if (x.type == DeviceInfo::STORAGE_TYPE_PRIMARY_EXTERNAL ||
@@ -787,29 +838,20 @@ const FilePath FileSystem::GetPublicDocumentsPath()
             return x.path;
         }
     }
-    return FilePath();
+    // FIXME on desktop only one internal path available better then nothing
+    return GetUserDocumentsPath();
 
 #endif
 }
 #elif defined(__DAVAENGINE_ANDROID__)
 const FilePath FileSystem::GetUserDocumentsPath()
 {
-#if defined(__DAVAENGINE_COREV2__)
     return FilePath(Private::AndroidBridge::GetInternalDocumentsDir());
-#else
-    CorePlatformAndroid* core = static_cast<CorePlatformAndroid*>(Core::Instance());
-    return core->GetInternalStoragePathname();
-#endif
 }
 
 const FilePath FileSystem::GetPublicDocumentsPath()
 {
-#if defined(__DAVAENGINE_COREV2__)
     return FilePath(Private::AndroidBridge::GetExternalDocumentsDir());
-#else
-    CorePlatformAndroid* core = static_cast<CorePlatformAndroid*>(Core::Instance());
-    return core->GetExternalStoragePathname();
-#endif
 }
 #elif defined(__DAVAENGINE_LINUX__)
 const FilePath FileSystem::GetUserDocumentsPath()
@@ -1141,6 +1183,22 @@ bool FileSystem::Exists(const FilePath& filePath) const
     return IsFile(filePath);
 }
 
+bool FileSystem::ExistsInAndroidAssets(const FilePath& path) const
+{
+#if defined(__DAVAENGINE_ANDROID__)
+    {
+        // We do not use Mutex here because call const methods and only search for file, no extracting from minizip
+        AssetsManagerAndroid* assetsManager = AssetsManagerAndroid::Instance();
+        DVASSERT(assetsManager, "Need to create AssetsManagerAndroid before checking files in android APK");
+
+        String relativePath = path.GetAbsolutePathname();
+        return assetsManager->HasFile(relativePath);
+    }
+#else
+    return false;
+#endif // __DAVAENGINE_ANDROID__
+}
+
 bool FileSystem::RecursiveCopy(const DAVA::FilePath& src, const DAVA::FilePath& dst)
 {
     DVASSERT(src.IsDirectoryPathname() && dst.IsDirectoryPathname());
@@ -1169,5 +1227,25 @@ bool FileSystem::RecursiveCopy(const DAVA::FilePath& src, const DAVA::FilePath& 
         }
     }
     return retCode;
+}
+
+void FileSystem::SetFilenamesTag(const String& newTag)
+{
+    filenamesTag = newTag;
+}
+
+const String& FileSystem::GetFilenamesTag() const
+{
+    return filenamesTag;
+}
+
+void FileSystem::SetDelegate(FileSystemDelegate* delegate)
+{
+    fsDelegate = delegate;
+}
+
+FileSystemDelegate* FileSystem::GetDelegate() const
+{
+    return fsDelegate;
 }
 }

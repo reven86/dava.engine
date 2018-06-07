@@ -288,8 +288,8 @@ private:
 
 enum
 {
-    VATTR_POSITION = 0,
-    VATTR_NORMAL = 1,
+    VATTR_POSITION_0 = 0,
+    VATTR_NORMAL_0 = 1,
     VATTR_TEXCOORD_0 = 2,
     VATTR_TEXCOORD_1 = 4,
     VATTR_TEXCOORD_2 = 5,
@@ -305,7 +305,14 @@ enum
     VATTR_BLENDWEIGHT = 14,
     VATTR_BLENDINDEX = 15,
 
-    VATTR_COUNT = 16
+    VATTR_POSITION_1 = 16,
+    VATTR_POSITION_2 = 17,
+    VATTR_POSITION_3 = 18,
+    VATTR_NORMAL_1 = 19,
+    VATTR_NORMAL_2 = 20,
+    VATTR_NORMAL_3 = 21,
+
+    VATTR_COUNT = 24
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -398,7 +405,9 @@ enum TextureFace
     TEXTURE_FACE_POSITIVE_Y,
     TEXTURE_FACE_NEGATIVE_Y,
     TEXTURE_FACE_POSITIVE_Z,
-    TEXTURE_FACE_NEGATIVE_Z
+    TEXTURE_FACE_NEGATIVE_Z,
+
+    TEXTURE_FACE_NONE
 };
 
 enum TextureAddrMode
@@ -779,7 +788,7 @@ struct RenderPassConfig
     {
         Handle texture = InvalidHandle;
         Handle multisampleTexture = InvalidHandle;
-        TextureFace textureFace = TEXTURE_FACE_POSITIVE_X;
+        TextureFace textureFace = TEXTURE_FACE_NONE;
         uint32 textureLevel = 0;
         LoadAction loadAction = LOADACTION_CLEAR;
         StoreAction storeAction = STOREACTION_NONE;

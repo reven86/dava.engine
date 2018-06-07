@@ -63,10 +63,6 @@ int32 TCPServerTransport::DoStart()
     {
         error = acceptor.StartListen(MakeFunction(this, &TCPServerTransport::AcceptorHandleConnect));
     }
-    if (error != 0)
-    {
-        DoStop();
-    }
     return error;
 }
 

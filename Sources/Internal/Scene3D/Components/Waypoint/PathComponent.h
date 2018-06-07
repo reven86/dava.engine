@@ -39,14 +39,6 @@ public:
         void SetStarting(bool);
         bool IsStarting() const;
 
-        INTROSPECTION(Waypoint,
-                      MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
-                      MEMBER(position, "Waypoint position", I_SAVE | I_EDIT | I_VIEW)
-                      MEMBER(properties, "Waypoint Properties", I_SAVE | I_EDIT | I_VIEW)
-                      //MEMBER(isStarting, "Is waypoint starting", I_VIEW) // still editable on property editor. TODO: uncomment when fixed this
-                      COLLECTION(edges, "Edges", I_SAVE | I_VIEW | I_EDIT)
-                      );
-
         DAVA_VIRTUAL_REFLECTION(Waypoint, InspBase);
     };
 
@@ -72,18 +64,10 @@ public:
         void SetProperties(KeyedArchive* p);
         KeyedArchive* GetProperties() const;
 
-        INTROSPECTION(Edge,
-                      PROPERTY("DestinationName", "Destination Name", GetDestinationName, SetDestinationName, I_VIEW)
-                      PROPERTY("DestinationPoint", "Destination Point", GetDestinationPoint, SetDestinationPoint, I_VIEW)
-                      MEMBER(properties, "Edge Properties", I_SAVE | I_EDIT | I_VIEW)
-                      );
-
         DAVA_VIRTUAL_REFLECTION(Edge, InspBase);
     };
 
 public:
-    IMPLEMENT_COMPONENT_TYPE(PATH_COMPONENT);
-
     PathComponent();
     virtual ~PathComponent();
 
@@ -114,12 +98,6 @@ private:
     FastName name;
     Color color;
     Vector<Waypoint*> waypoints;
-
-public:
-    INTROSPECTION_EXTEND(PathComponent, Component,
-                         MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
-                         MEMBER(color, "Color", I_SAVE | I_VIEW | I_EDIT)
-                         );
 
     DAVA_VIRTUAL_REFLECTION(PathComponent, Component);
 };

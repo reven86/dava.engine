@@ -3,13 +3,9 @@
 #include "../Common/FrameLoop.h"
 #include "../Common/dbg_StatSet.h"
 
-#if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
 #include "DeviceManager/DeviceManager.h"
 #include "Platform/DeviceInfo.h"
-#else
-#include "Platform/DeviceInfo.h"
-#endif
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 #include <wrl/client.h>
@@ -548,14 +544,9 @@ void dx11_DetectUWPWorkaround(const InitParam& param)
 
     InitParam fullScreenParameters = param;
 
-#if defined(__DAVAENGINE_COREV2__)
     const DAVA::DisplayInfo& displayInfo = DAVA::GetEngineContext()->deviceManager->GetPrimaryDisplay();
     fullScreenParameters.width = static_cast<uint32>(displayInfo.rect.dx);
     fullScreenParameters.height = static_cast<uint32>(displayInfo.rect.dy);
-#else
-    fullScreenParameters.width = static_cast<uint32>(DAVA::DeviceInfo::GetScreenInfo().width);
-    fullScreenParameters.height = static_cast<uint32>(DAVA::DeviceInfo::GetScreenInfo().height);
-#endif
 
     DAVA::Logger::Info("[RHI-DX11] Detecting configuration by creating test device...");
     if (dx11_CreateDeviceWithAdapter(fullScreenParameters, adapter))
@@ -750,6 +741,17 @@ void dx11_Initialize(const InitParam& param)
         ConstBufferDX11::Init(param.maxConstBufferCount);
     if (param.maxTextureCount)
         TextureDX11::Init(param.maxTextureCount);
+
+    if (param.maxSamplerStateCount)
+        SamplerStateDX11::Init(param.maxSamplerStateCount);
+    if (param.maxPipelineStateCount)
+        PipelineStateDX11::Init(param.maxPipelineStateCount);
+    if (param.maxDepthStencilStateCount)
+        DepthStencilStateDX11::Init(param.maxDepthStencilStateCount);
+    if (param.maxRenderPassCount)
+        RenderPassDX11::Init(param.maxRenderPassCount);
+    if (param.maxCommandBuffer)
+        CommandBufferDX11::Init(param.maxCommandBuffer);
 
     stat_DIP = StatSet::AddStat("rhi'dip", "dip");
     stat_DP = StatSet::AddStat("rhi'dp", "dp");

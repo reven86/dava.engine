@@ -10,127 +10,155 @@ namespace DAVA
 {
 REGISTER_CLASS(SkeletonComponent)
 
-DAVA_VIRTUAL_REFLECTION_IMPL(SkeletonComponent::JointConfig)
+DAVA_VIRTUAL_REFLECTION_IMPL(SkeletonComponent::Joint)
 {
-    ReflectionRegistrator<SkeletonComponent::JointConfig>::Begin()
-    .Field("name", &SkeletonComponent::JointConfig::name)[M::DisplayName("Name")]
-    .Field("position", &SkeletonComponent::JointConfig::position)[M::DisplayName("Position")]
-    .Field("scale", &SkeletonComponent::JointConfig::scale)[M::DisplayName("Scale")]
-    .Field("bbox", &SkeletonComponent::JointConfig::bbox)[M::DisplayName("Bounding box")]
+    ReflectionRegistrator<SkeletonComponent::Joint>::Begin()
+    .Field("name", &SkeletonComponent::Joint::name)[M::DisplayName("Name")]
+    .Field("uid", &SkeletonComponent::Joint::uid)[M::DisplayName("UID")]
+    .Field("bbox", &SkeletonComponent::Joint::bbox)[M::DisplayName("Bounding box")]
+    .Field("bindTransformInv", &SkeletonComponent::Joint::bbox)[M::DisplayName("Bind Transform Inverse")]
     .End();
 }
 
 DAVA_VIRTUAL_REFLECTION_IMPL(SkeletonComponent)
 {
-    ReflectionRegistrator<SkeletonComponent>::Begin()
-    .ConstructorByPointer()
-    .Field("configJoints", &SkeletonComponent::configJoints)[M::DisplayName("Root Joints")]
+    ReflectionRegistrator<SkeletonComponent>::Begin()[M::CantBeCreatedManualyComponent(), M::CantBeDeletedManualyComponent()]
+    .Field("joints", &SkeletonComponent::jointsArray)[M::DisplayName("Joints")]
+    .Field("drawSkeleton", &SkeletonComponent::drawSkeleton)[M::DisplayName("Draw Skeleton")]
     .End();
 }
 
-SkeletonComponent::SkeletonComponent()
-{
-}
-
-SkeletonComponent::~SkeletonComponent()
-{
-}
-
-SkeletonComponent::JointConfig::JointConfig()
-    : parentIndex(INVALID_JOINT_INDEX)
-    , targetId(INVALID_JOINT_INDEX)
-    , orientation(0.0f, 0.0f, 0.0f, 1.0f)
-    , position(0.0f, 0.0f, 0.0f)
-    , scale(1.0f)
-{
-}
-SkeletonComponent::JointConfig::JointConfig(int32 _parentIndex, int32 _targetId, const FastName& _name, const Vector3& _position, const Quaternion& _orientation, float32 _scale, const AABBox3& _bbox)
-    : parentIndex(_parentIndex)
-    , targetId(_targetId)
-    , name(_name)
-    , orientation(_orientation)
-    , position(_position)
-    , scale(_scale)
-    , bbox(_bbox)
-{
-}
-
-bool SkeletonComponent::JointConfig::operator==(const JointConfig& other) const
+bool SkeletonComponent::Joint::operator==(const Joint& other) const
 {
     return parentIndex == other.parentIndex &&
-    targetId == other.targetId &&
     name == other.name &&
-    orientation == other.orientation &&
-    position == other.position &&
-    scale == other.scale &&
-    bbox == other.bbox;
+    uid == other.uid &&
+    bbox == other.bbox &&
+    bindTransform == other.bindTransform &&
+    bindTransformInv == other.bindTransformInv;
 }
 
-uint16 SkeletonComponent::GetConfigJointsCount()
+void SkeletonComponent::SetJoints(const Vector<Joint>& config)
 {
-    return uint16(configJoints.size());
-}
-void SkeletonComponent::SetConfigJoints(const Vector<JointConfig>& config)
-{
-    configJoints = config;
-    configUpdated = true;
-}
+    jointsArray = config;
 
-void SkeletonComponent::RebuildFromConfig()
-{
     GlobalEventSystem::Instance()->Event(this, EventSystem::SKELETON_CONFIG_CHANGED);
+
+    UpdateJointsMap();
+    UpdateDefaultPose();
+}
+
+void SkeletonComponent::UpdateDefaultPose()
+{
+    uint32 jointCount = uint32(jointsArray.size());
+
+    defaultPose.SetJointCount(jointCount);
+    for (uint32 j = 0; j < jointCount; ++j)
+    {
+        defaultPose.SetTransform(j, JointTransform(jointsArray[j].bindTransform));
+    }
+}
+
+const SkeletonPose& SkeletonComponent::GetDefaultPose() const
+{
+    return defaultPose;
+}
+
+void SkeletonComponent::ApplyPose(const SkeletonPose& pose)
+{
+    uint32 minJoints = Min(GetJointsCount(), pose.GetJointsCount());
+    for (uint32 j = 0; j < minJoints; ++j)
+    {
+        const JointTransform& poseTransform = pose.GetJointTransform(j);
+
+        if (poseTransform.IsEmpty())
+            continue;
+
+        JointTransform& transform = localSpaceTransforms[j];
+
+        if (poseTransform.HasPosition())
+            transform.SetPosition(poseTransform.GetPosition());
+        if (poseTransform.HasOrientation())
+            transform.SetOrientation(poseTransform.GetOrientation());
+        if (poseTransform.HasScale())
+            transform.SetScale(poseTransform.GetScale());
+
+        SetJointTransform(j, transform);
+    }
 }
 
 Component* SkeletonComponent::Clone(Entity* toEntity)
 {
     SkeletonComponent* newComponent = new SkeletonComponent();
     newComponent->SetEntity(toEntity);
-    newComponent->configJoints = configJoints;
+    newComponent->SetJoints(jointsArray);
     return newComponent;
 }
+
 void SkeletonComponent::Serialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     Component::Serialize(archive, serializationContext);
-    archive->SetUInt32("skeletoncomponent.jointsCount", static_cast<uint32>(configJoints.size()));
+    archive->SetUInt32("jointsCount", static_cast<uint32>(jointsArray.size()));
     ScopedPtr<KeyedArchive> jointsArch(new KeyedArchive());
-    for (size_t i = 0, sz = configJoints.size(); i < sz; ++i)
+    for (size_t i = 0, sz = jointsArray.size(); i < sz; ++i)
     {
-        const JointConfig& joint = configJoints[i];
+        const Joint& joint = jointsArray[i];
         ScopedPtr<KeyedArchive> jointArch(new KeyedArchive());
         jointArch->SetFastName("joint.name", joint.name);
-        jointArch->SetInt32("joint.parentIndex", joint.parentIndex);
-        jointArch->SetInt32("joint.targetId", joint.targetId);
-        jointArch->SetVector3("joint.position", joint.position);
-        jointArch->SetVector4("joint.orientation", Vector4(joint.orientation.x, joint.orientation.y, joint.orientation.z, joint.orientation.w));
-        jointArch->SetFloat("joint.scale", joint.scale);
+        jointArch->SetFastName("joint.uid", joint.uid);
+        jointArch->SetUInt32("joint.parentIndex", joint.parentIndex);
         jointArch->SetVector3("joint.bbox.min", joint.bbox.min);
         jointArch->SetVector3("joint.bbox.max", joint.bbox.max);
+        jointArch->SetMatrix4("joint.bindPose", joint.bindTransform);
+        jointArch->SetMatrix4("joint.invBindPose", joint.bindTransformInv);
 
-        jointsArch->SetArchive(KeyedArchive::GenKeyFromIndex(static_cast<int32>(i)), jointArch);
+        jointsArch->SetArchive(KeyedArchive::GenKeyFromIndex(static_cast<uint32>(i)), jointArch);
     }
 
-    archive->SetArchive("skeletoncomponent.joints", jointsArch);
+    archive->SetArchive("joints", jointsArch);
 }
+
 void SkeletonComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     Component::Deserialize(archive, serializationContext);
 
-    uint32 configJointsCount = archive->GetUInt32("skeletoncomponent.jointsCount", static_cast<uint32>(configJoints.size()));
-    configJoints.resize(configJointsCount);
-    KeyedArchive* jointsArch = archive->GetArchive("skeletoncomponent.joints");
-    for (uint32 i = 0; i < configJointsCount; ++i)
+    uint32 jointsCount = archive->GetUInt32("jointsCount", static_cast<uint32>(jointsArray.size()));
+    jointsArray.resize(jointsCount);
+
+    KeyedArchive* jointsArch = archive->GetArchive("joints");
+    for (uint32 i = 0; i < jointsCount; ++i)
     {
-        JointConfig& joint = configJoints[i];
+        Joint& joint = jointsArray[i];
         KeyedArchive* jointArch = jointsArch->GetArchive(KeyedArchive::GenKeyFromIndex(i));
         joint.name = jointArch->GetFastName("joint.name");
-        joint.parentIndex = jointArch->GetInt32("joint.parentIndex");
-        joint.targetId = jointArch->GetInt32("joint.targetId");
-        joint.position = jointArch->GetVector3("joint.position");
-        Vector4 qv = jointArch->GetVector4("joint.orientation");
-        joint.orientation = Quaternion(qv.x, qv.y, qv.z, qv.w);
-        joint.scale = jointArch->GetFloat("joint.scale");
+        joint.uid = jointArch->GetFastName("joint.uid");
+        joint.parentIndex = jointArch->GetUInt32("joint.parentIndex", INVALID_JOINT_INDEX);
         joint.bbox.min = jointArch->GetVector3("joint.bbox.min");
         joint.bbox.max = jointArch->GetVector3("joint.bbox.max");
+        joint.bindTransform = jointArch->GetMatrix4("joint.bindPose");
+        joint.bindTransformInv = jointArch->GetMatrix4("joint.invBindPose");
     }
+
+    UpdateJointsMap();
+    UpdateDefaultPose();
+}
+
+void SkeletonComponent::UpdateJointsMap()
+{
+    jointMap.clear();
+    uint32 jointCount = uint32(jointsArray.size());
+    for (uint32 j = 0; j < jointCount; ++j)
+    {
+        const FastName& jointUID = jointsArray[j].uid;
+        DVASSERT(jointMap.count(jointUID) == 0); //duplicate bone name
+
+        jointMap[jointUID] = j;
+    }
+}
+
+template <>
+bool AnyCompare<SkeletonComponent::Joint>::IsEqual(const Any& v1, const Any& v2)
+{
+    return v1.Get<SkeletonComponent::Joint>() == v2.Get<SkeletonComponent::Joint>();
 }
 }

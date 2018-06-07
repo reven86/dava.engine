@@ -1,22 +1,24 @@
-#include "UIWebView.h"
+#include "UI/UIWebView.h"
+
+#include "Engine/Engine.h"
+#include "FileSystem/File.h"
+#include "Reflection/ReflectionRegistrator.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/UIControlSystem.h"
 #include "UI/Update/UIUpdateComponent.h"
-#include "Engine/Engine.h"
-#include "Reflection/ReflectionRegistrator.h"
 
 #if defined(DISABLE_NATIVE_WEBVIEW) && !defined(ENABLE_CEF_WEBVIEW)
 #include "UI/Private/WebViewControlStub.h"
 #elif defined(ENABLE_CEF_WEBVIEW)
 #include "UI/Private/CEF/WebViewControl.h"
 #elif defined(__DAVAENGINE_MACOS__)
-#include "UI/Private/OSX/WebViewControlMacOS.h"
+#include "UI/Private/Mac/WebViewControl.Macos.h"
 #elif defined(__DAVAENGINE_IPHONE__)
-#include "UI/Private/iOS/WebViewControliOS.h"
+#include "UI/Private/Ios/WebViewControl.Ios.h"
 #elif defined(__DAVAENGINE_WIN_UAP__)
-#include "UI/Private/UWP/WebViewControlUWP.h"
+#include "UI/Private/Win10/WebViewControl.Win10.h"
 #elif defined(__DAVAENGINE_ANDROID__)
-#include "UI/Private/Android/WebViewControlAndroid.h"
+#include "UI/Private/Android/WebViewControl.Android.h"
 #else
 #error UIWEbView control is not implemented for this platform yet!
 #endif
@@ -25,20 +27,16 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(UIWebView)
 {
-    ReflectionRegistrator<UIWebView>::Begin()
+    ReflectionRegistrator<UIWebView>::Begin()[M::DisplayName("Web View")]
     .ConstructorByPointer()
     .DestructorByPointer([](UIWebView* o) { o->Release(); })
-    .Field("dataDetectorTypes", &UIWebView::GetDataDetectorTypes, &UIWebView::SetDataDetectorTypes)[M::EnumT<eDataDetectorType>()]
+    .Field("dataDetectorTypes", &UIWebView::GetDataDetectorTypes, &UIWebView::SetDataDetectorTypes)[M::EnumT<eDataDetectorType>(), M::DisplayName("Data Detector Type")]
     .End();
 }
 
 UIWebView::UIWebView(const Rect& rect)
     : UIControl(rect)
-#if defined(__DAVAENGINE_COREV2__)
     , webViewControl(std::make_shared<WebViewControl>(Engine::Instance()->PrimaryWindow(), this))
-#else
-    , webViewControl(std::make_shared<WebViewControl>(this))
-#endif
     , isNativeControlVisible(false)
 {
     Rect newRect = GetAbsoluteRect();
@@ -71,7 +69,12 @@ void UIWebView::OpenFile(const FilePath& path)
     String data;
     if (file && file->ReadString(data) > 0)
     {
-        webViewControl->OpenFromBuffer(data, path.GetDirectory());
+        // First we should resolve full path to the file and only then get
+        // directory path from resolved path
+        String fullPath = path.GetAbsolutePathname();
+        FilePath dir(fullPath);
+        dir = dir.GetDirectory();
+        webViewControl->OpenFromBuffer(data, dir);
     }
     else
     {

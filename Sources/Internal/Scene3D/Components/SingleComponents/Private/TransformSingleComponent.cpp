@@ -8,13 +8,18 @@ namespace TSCDetails
 void RemoveEntitiesFromVector(Vector<Entity*>& vector, const Entity* entity)
 {
     size_t size = vector.size();
-    for (size_t k = 0; k < size; ++k)
+    size_t k = 0;
+    while (k < size)
     {
         if (vector[k] == entity)
         {
-            vector[k] = vector[size - 1];
+            vector[k] = vector.back();
             vector.pop_back();
-            size--;
+            --size;
+        }
+        else
+        {
+            ++k;
         }
     }
 }

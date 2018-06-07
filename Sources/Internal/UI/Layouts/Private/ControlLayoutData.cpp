@@ -14,7 +14,7 @@ ControlLayoutData::ControlLayoutData(UIControl* control_)
 
     if (sourceRectComponent != nullptr)
     {
-        position = sourceRectComponent->GetPosition();
+        position = sourceRectComponent->GetPosition() - control->GetPivotPoint();
         size = sourceRectComponent->GetSize();
     }
     else
@@ -78,6 +78,16 @@ bool ControlLayoutData::HasFlag(eFlag flag) const
 void ControlLayoutData::SetFlag(eFlag flag)
 {
     flags |= flag;
+}
+
+int32 ControlLayoutData::GetParentIndex() const
+{
+    return parent;
+}
+
+void ControlLayoutData::SetParentIndex(int32 index)
+{
+    parent = index;
 }
 
 int32 ControlLayoutData::GetFirstChildIndex() const

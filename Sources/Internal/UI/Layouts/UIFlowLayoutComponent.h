@@ -1,6 +1,7 @@
 #ifndef __DAVAENGINE_UI_FLOW_LAYOUT_COMPONENT_H__
 #define __DAVAENGINE_UI_FLOW_LAYOUT_COMPONENT_H__
 
+#include "Math/Vector.h"
 #include "UI/Components/UIComponent.h"
 #include "Reflection/Reflection.h"
 #include <bitset>
@@ -10,7 +11,7 @@ namespace DAVA
 class UIFlowLayoutComponent : public UIComponent
 {
     DAVA_VIRTUAL_REFLECTION(UIFlowLayoutComponent, UIComponent);
-    IMPLEMENT_UI_COMPONENT(UIFlowLayoutComponent);
+    DECLARE_UI_COMPONENT(UIFlowLayoutComponent);
 
 public:
     enum eOrientation
@@ -50,6 +51,9 @@ public:
     bool IsDynamicHorizontalInLinePadding() const;
     void SetDynamicHorizontalInLinePadding(bool dynamic);
 
+    bool IsHorizontalSafeAreaPaddingInset() const;
+    void SetHorizontalSafeAreaPaddingInset(bool inset);
+
     bool IsDynamicHorizontalSpacing() const;
     void SetDynamicHorizontalSpacing(bool dynamic);
 
@@ -61,6 +65,9 @@ public:
 
     bool IsDynamicVerticalPadding() const;
     void SetDynamicVerticalPadding(bool dynamic);
+
+    bool IsVerticalSafeAreaPaddingInset() const;
+    void SetVerticalSafeAreaPaddingInset(bool inset);
 
     bool IsDynamicVerticalSpacing() const;
     void SetDynamicVerticalSpacing(bool dynamic);
@@ -80,8 +87,10 @@ private:
         FLAG_ENABLED,
         FLAG_DYNAMIC_HORIZONTAL_PADDING,
         FLAG_DYNAMIC_HORIZONTAL_IN_LINE_PADDING,
+        FLAG_HORIZONTAL_SAFE_AREA_PADDING,
         FLAG_DYNAMIC_HORIZONTAL_SPACING,
         FLAG_DYNAMIC_VERTICAL_PADDING,
+        FLAG_VERTICAL_SAFE_AREA_PADDING,
         FLAG_DYNAMIC_VERTICAL_SPACING,
         FLAG_USE_RTL,
         FLAG_SKIP_INVISIBLE_CONTROLS,

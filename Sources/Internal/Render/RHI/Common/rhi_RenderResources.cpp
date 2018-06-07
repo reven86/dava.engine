@@ -4,8 +4,6 @@
 #include "rhi_Pool.h"
 #include "RenderLoop.h"
 
-#include "Core/Core.h"
-
 namespace rhi
 {
 struct TextureSetInfo

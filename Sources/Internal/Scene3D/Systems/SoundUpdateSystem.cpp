@@ -38,7 +38,7 @@ void SoundUpdateSystem::ImmediateEvent(Component* component, uint32 event)
 {
     if (event == EventSystem::SOUND_COMPONENT_CHANGED)
     {
-        const Matrix4& worldTransform = GetTransformComponent(component->GetEntity())->GetWorldTransform();
+        const Matrix4& worldTransform = GetTransformComponent(component->GetEntity())->GetWorldMatrix();
         Vector3 translation = worldTransform.GetTranslationVector();
 
         SoundComponent* sc = GetSoundComponent(component->GetEntity());
@@ -61,19 +61,18 @@ void SoundUpdateSystem::ImmediateEvent(Component* component, uint32 event)
 
 void SoundUpdateSystem::Process(float32 timeElapsed)
 {
-    return;
-
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_SOUND_UPDATE_SYSTEM);
 
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+
     for (auto& pair : tsc->worldTransformChanged.map)
     {
-        if (pair.first->GetComponentsCount(Component::SOUND_COMPONENT) > 0)
+        if (pair.first->GetComponentsCount(Type::Instance<SoundComponent>()) > 0)
         {
             for (Entity* entity : pair.second)
             {
-                SoundComponent* sc = static_cast<SoundComponent*>(entity->GetComponent(Component::SOUND_COMPONENT));
-                const Matrix4& worldTransform = GetTransformComponent(entity)->GetWorldTransform();
+                SoundComponent* sc = entity->GetComponent<SoundComponent>();
+                const Matrix4& worldTransform = GetTransformComponent(entity)->GetWorldMatrix();
                 Vector3 translation = worldTransform.GetTranslationVector();
 
                 uint32 eventsCount = sc->GetEventsCount();
@@ -96,11 +95,7 @@ void SoundUpdateSystem::Process(float32 timeElapsed)
 
     if (activeCamera)
     {
-#if defined(__DAVAENGINE_COREV2__)
         SoundSystem* ss = GetEngineContext()->soundSystem;
-#else
-        SoundSystem* ss = SoundSystem::Instance();
-#endif
         const Vector3& listenerPosition = activeCamera->GetPosition();
         ss->SetListenerPosition(listenerPosition);
         ss->SetListenerOrientation(activeCamera->GetDirection(), activeCamera->GetLeft());
@@ -109,7 +104,7 @@ void SoundUpdateSystem::Process(float32 timeElapsed)
         for (uint32 i = 0; i < autoCount; ++i)
         {
             AutoTriggerSound& autoTriggerSound = autoTriggerSounds[i];
-            float32 distanceSq = (listenerPosition - autoTriggerSound.owner->GetWorldTransform().GetTranslationVector()).SquareLength();
+            float32 distanceSq = (listenerPosition - GetTransformComponent(autoTriggerSound.owner)->GetWorldMatrixPtr()->GetTranslationVector()).SquareLength();
             if (distanceSq < autoTriggerSound.maxSqDistance)
             {
                 if (!autoTriggerSound.soundEvent->IsActive())
@@ -155,6 +150,13 @@ void SoundUpdateSystem::RemoveEntity(Entity* entity)
 
     RemoveAutoTriggerSound(entity);
     FindAndRemoveExchangingWithLast(sounds, entity);
+}
+
+void SoundUpdateSystem::PrepareForRemove()
+{
+    autoTriggerSounds.clear();
+    sounds.clear();
+    pausedEvents.clear();
 }
 
 void SoundUpdateSystem::AddAutoTriggerSound(Entity* soundOwner, SoundEvent* sound)

@@ -36,6 +36,20 @@ KeyedArchive::KeyedArchive(const KeyedArchive& arc)
     }
 }
 
+KeyedArchive& KeyedArchive::operator=(const KeyedArchive& arc)
+{
+    if (this != &arc)
+    {
+        DeleteAllKeys();
+        for (const auto& obj : arc.GetArchieveData())
+        {
+            SetVariant(obj.first, *obj.second);
+        }
+    }
+
+    return *this;
+}
+
 KeyedArchive::~KeyedArchive()
 {
     DeleteAllKeys();
@@ -83,14 +97,13 @@ bool KeyedArchive::Load(File* archive)
             {
                 return false;
             }
-            VariantType* value = new VariantType();
-            if (!value->Read(archive))
+            VariantType value;
+            if (!value.Read(archive))
             {
-                SafeDelete(value);
                 return false;
             }
-            DeleteKey(key.AsString());
-            objectMap[key.AsString()] = value;
+
+            SetVariant(key.AsString(), std::move(value));
         }
         return true;
     }
@@ -122,14 +135,13 @@ bool KeyedArchive::Load(File* archive)
         {
             return false;
         }
-        VariantType* value = new VariantType();
-        if (!value->Read(archive))
+        VariantType value;
+        if (!value.Read(archive))
         {
-            SafeDelete(value);
             return false;
         }
-        DeleteKey(key.AsString());
-        objectMap[key.AsString()] = value;
+
+        SetVariant(key.AsString(), std::move(value));
     }
     return true;
 }
@@ -176,14 +188,18 @@ bool KeyedArchive::Save(File* archive) const
             return false;
         }
     }
-    return true;
+
+    return archive->Flush();
 }
 
 uint32 KeyedArchive::Save(uint8* data, uint32 size) const
 {
     ScopedPtr<DynamicMemoryFile> buffer(DynamicMemoryFile::Create(File::CREATE | File::WRITE));
 
-    Save(buffer);
+    if (!Save(buffer))
+    {
+        Logger::Error("failed to write KeyedArchive to memory_file");
+    }
 
     auto archieveSize = buffer->GetSize();
     if ((nullptr != data) && (size >= archieveSize))
@@ -211,8 +227,8 @@ bool KeyedArchive::Load(const uint8* data, uint32 size)
 
 bool KeyedArchive::LoadFromYamlFile(const FilePath& pathName)
 {
-    ScopedPtr<YamlParser> parser(YamlParser::Create(pathName));
-    return (parser.get() != nullptr) && LoadFromYamlNode(parser->GetRootNode());
+    RefPtr<YamlParser> parser(YamlParser::Create(pathName));
+    return (parser.Get() != nullptr) && LoadFromYamlNode(parser->GetRootNode());
 }
 
 bool KeyedArchive::LoadFromYamlNode(const YamlNode* rootNode)
@@ -234,15 +250,14 @@ bool KeyedArchive::LoadFromYamlNode(const YamlNode* rootNode)
         const YamlNode* node = archieveNode->Get(i);
         const String& variableNameToArchMap = archieveNode->GetItemKeyName(i);
 
-        VariantType* value = new VariantType(node->AsVariantType());
+        VariantType value(node->AsVariantType());
 
-        if (value->GetType() == VariantType::TYPE_NONE)
+        if (value.GetType() == VariantType::TYPE_NONE)
         {
-            SafeDelete(value);
             continue;
         }
 
-        objectMap[variableNameToArchMap] = value;
+        SetVariant(variableNameToArchMap, std::move(value));
     }
 
     return true;
@@ -250,93 +265,66 @@ bool KeyedArchive::LoadFromYamlNode(const YamlNode* rootNode)
 
 bool KeyedArchive::SaveToYamlFile(const FilePath& pathName) const
 {
-    ScopedPtr<YamlNode> node(YamlNode::CreateMapNode());
+    RefPtr<YamlNode> node(YamlNode::CreateMapNode());
     node->Set(VariantType::TYPENAME_KEYED_ARCHIVE, VariantType(const_cast<KeyedArchive*>(this)));
 
-    return YamlEmitter::SaveToYamlFile(pathName, node);
+    return YamlEmitter::SaveToYamlFile(pathName, node.Get());
 }
 
 void KeyedArchive::SetBool(const String& key, bool value)
 {
-    DeleteKey(key);
-    VariantType* variantValue = new VariantType();
-    variantValue->SetBool(value);
-    objectMap[key] = variantValue;
+    SetVariant(key, value, &VariantType::SetBool);
 }
 
 void KeyedArchive::SetInt32(const String& key, int32 value)
 {
-    DeleteKey(key);
-    VariantType* variantValue = new VariantType();
-    variantValue->SetInt32(value);
-    objectMap[key] = variantValue;
+    SetVariant(key, value, &VariantType::SetInt32);
 }
 
 void KeyedArchive::SetUInt32(const String& key, uint32 value)
 {
-    DeleteKey(key);
-    VariantType* variantValue = new VariantType();
-    variantValue->SetUInt32(value);
-    objectMap[key] = variantValue;
+    SetVariant(key, value, &VariantType::SetUInt32);
 }
 
 void KeyedArchive::SetFloat(const String& key, float32 value)
 {
-    DeleteKey(key);
-    VariantType* variantValue = new VariantType();
-    variantValue->SetFloat(value);
-    objectMap[key] = variantValue;
+    SetVariant(key, value, &VariantType::SetFloat);
 }
 
 void KeyedArchive::SetFloat64(const String& key, float64 value)
 {
-    DeleteKey(key);
-    VariantType* variantValue = new VariantType();
-    variantValue->SetFloat64(value);
-    objectMap[key] = variantValue;
+    SetVariant(key, value, &VariantType::SetFloat64);
 }
 
 void KeyedArchive::SetString(const String& key, const String& value)
 {
-    DeleteKey(key);
-    VariantType* variantValue = new VariantType();
-    variantValue->SetString(value);
-    objectMap[key] = variantValue;
+    SetVariant(key, value, &VariantType::SetString);
 }
 
 void KeyedArchive::SetWideString(const String& key, const WideString& value)
 {
-    DeleteKey(key);
-    VariantType* variantValue = new VariantType();
-    variantValue->SetWideString(value);
-    objectMap[key] = variantValue;
+    SetVariant(key, value, &VariantType::SetWideString);
 }
 
 void KeyedArchive::SetFastName(const String& key, const FastName& value)
 {
-    DeleteKey(key);
-    VariantType* variantValue = new VariantType();
-    variantValue->SetFastName(value);
-    objectMap[key] = variantValue;
+    SetVariant(key, value, &VariantType::SetFastName);
 }
 
 void KeyedArchive::SetByteArray(const String& key, const uint8* value, int32 arraySize)
 {
-    VariantType* variantValue = new VariantType();
-    variantValue->SetByteArray(value, arraySize);
-
-    DeleteKey(key);
-    objectMap[key] = variantValue;
+    auto iter = objectMap.find(key);
+    if (iter != objectMap.end())
+    {
+        (iter->second->SetByteArray)(value, arraySize);
+    }
+    else
+    {
+        objectMap[key] = new VariantType(value, arraySize);
+    }
 }
 
 void KeyedArchive::SetVariant(const String& key, const VariantType& value)
-{
-    DeleteKey(key);
-    VariantType* variantValue = new VariantType(value);
-    objectMap[key] = variantValue;
-}
-
-void KeyedArchive::SetVariantWithoutRealloc(const String& key, const VariantType& value)
 {
     auto iter = objectMap.find(key);
     if (iter != objectMap.end())
@@ -349,94 +337,79 @@ void KeyedArchive::SetVariantWithoutRealloc(const String& key, const VariantType
     }
 }
 
+void KeyedArchive::SetVariant(const String& key, VariantType&& value)
+{
+    auto iter = objectMap.find(key);
+    if (iter != objectMap.end())
+    {
+        *iter->second = std::move(value);
+    }
+    else
+    {
+        objectMap[key] = new VariantType(std::move(value));
+    }
+}
+
 void KeyedArchive::SetByteArrayFromArchive(const String& key, KeyedArchive* archive)
 {
     //DVWARNING(false, "Method is depriceted! Use SetArchive()");
     DynamicMemoryFile* file = DynamicMemoryFile::Create(File::CREATE | File::WRITE);
-    archive->Save(file);
+    if (!archive->Save(file))
+    {
+        Logger::Error("failed to write KeyedArchive to memory_file");
+    }
     SetByteArray(key, file->GetData(), static_cast<uint32>(file->GetSize()));
     SafeRelease(file);
 }
 
 void KeyedArchive::SetArchive(const String& key, KeyedArchive* archive)
 {
-    VariantType* variantValue = new VariantType();
-    variantValue->SetKeyedArchive(archive);
-
-    DeleteKey(key);
-    objectMap[key] = variantValue;
+    SetVariant(key, archive, &VariantType::SetKeyedArchive);
 }
 
 void KeyedArchive::SetInt64(const String& key, const int64& value)
 {
-    DeleteKey(key);
-    VariantType* variantValue = new VariantType();
-    variantValue->SetInt64(value);
-    objectMap[key] = variantValue;
+    SetVariant(key, value, &VariantType::SetInt64);
 }
 
 void KeyedArchive::SetUInt64(const String& key, const uint64& value)
 {
-    DeleteKey(key);
-    VariantType* variantValue = new VariantType();
-    variantValue->SetUInt64(value);
-    objectMap[key] = variantValue;
+    SetVariant(key, value, &VariantType::SetUInt64);
 }
 
 void KeyedArchive::SetVector2(const String& key, const Vector2& value)
 {
-    DeleteKey(key);
-    VariantType* variantValue = new VariantType();
-    variantValue->SetVector2(value);
-    objectMap[key] = variantValue;
+    SetVariant(key, value, &VariantType::SetVector2);
 }
 
 void KeyedArchive::SetVector3(const String& key, const Vector3& value)
 {
-    DeleteKey(key);
-    VariantType* variantValue = new VariantType();
-    variantValue->SetVector3(value);
-    objectMap[key] = variantValue;
+    SetVariant(key, value, &VariantType::SetVector3);
 }
 
 void KeyedArchive::SetVector4(const String& key, const Vector4& value)
 {
-    DeleteKey(key);
-    VariantType* variantValue = new VariantType();
-    variantValue->SetVector4(value);
-    objectMap[key] = variantValue;
+    SetVariant(key, value, &VariantType::SetVector4);
 }
 
 void KeyedArchive::SetMatrix2(const String& key, const Matrix2& value)
 {
-    DeleteKey(key);
-    VariantType* variantValue = new VariantType();
-    variantValue->SetMatrix2(value);
-    objectMap[key] = variantValue;
+    SetVariant(key, value, &VariantType::SetMatrix2);
 }
 
 void KeyedArchive::SetMatrix3(const String& key, const Matrix3& value)
 {
-    DeleteKey(key);
-    VariantType* variantValue = new VariantType();
-    variantValue->SetMatrix3(value);
-    objectMap[key] = variantValue;
+    SetVariant(key, value, &VariantType::SetMatrix3);
 }
 
 void KeyedArchive::SetMatrix4(const String& key, const Matrix4& value)
 {
-    DeleteKey(key);
-    VariantType* variantValue = new VariantType();
-    variantValue->SetMatrix4(value);
-    objectMap[key] = variantValue;
+    SetVariant(key, value, &VariantType::SetMatrix4);
 }
 
 void KeyedArchive::SetColor(const String& key, const Color& value)
 {
-    DeleteKey(key);
-    VariantType* variantValue = new VariantType();
-    variantValue->SetColor(value);
-    objectMap[key] = variantValue;
+    SetVariant(key, value, &VariantType::SetColor);
 }
 
 bool KeyedArchive::IsKeyExists(const String& key) const

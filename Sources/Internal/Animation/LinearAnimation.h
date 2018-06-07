@@ -5,6 +5,7 @@
 #include "Base/BaseObject.h"
 #include "Animation/Animation.h"
 #include "Animation/AnimatedObject.h"
+#include "Math/Rect.h"
 
 namespace DAVA
 {

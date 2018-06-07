@@ -2,34 +2,26 @@
 
 #include "Animation/AnimationManager.h"
 #include "Animation/LinearAnimation.h"
-#include "Components/UIComponent.h"
-#include "Components/UIControlFamily.h"
+#include "Base/RefPtrUtils.h"
 #include "Concurrency/LockGuard.h"
 #include "Debug/DVAssert.h"
 #include "Engine/Engine.h"
 #include "Entity/ComponentManager.h"
-#include "Input/InputSystem.h"
-#include "Input/MouseDevice.h"
 #include "Logger/Logger.h"
 #include "Reflection/ReflectionRegistrator.h"
-#include "Render/2D/Systems/RenderSystem2D.h"
-#include "Render/RenderHelper.h"
-#include "Render/Renderer.h"
 #include "UI/Components/UIComponent.h"
 #include "UI/Components/UIControlFamily.h"
 #include "UI/Focus/FocusHelpers.h"
-#include "UI/Input/UIInputSystem.h"
-#include "UI/Layouts/UIAnchorComponent.h"
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Render/UIClipContentComponent.h"
 #include "UI/Render/UIRenderSystem.h"
-#include "UI/Sound/UISoundSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
-#include "UI/Update/UIUpdateComponent.h"
-#include "UI/UIAnalitycs.h"
+#include "UI/UIAnalytics.h"
+#include "UI/UIControlBackground.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/UIControlPackageContext.h"
 #include "UI/UIControlSystem.h"
+#include "UI/Update/UIUpdateComponent.h"
 #include "Utils/StringFormat.h"
 
 #ifdef __DAVAENGINE_AUTOTESTING__
@@ -45,20 +37,25 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIControl)
     ReflectionRegistrator<UIControl>::Begin()
     .ConstructorByPointer()
     .DestructorByPointer([](UIControl* o) { o->Release(); })
-    .Field("position", &UIControl::GetPosition, &UIControl::SetPosition)
-    .Field("size", &UIControl::GetSize, &UIControl::SetSize)
-    .Field("scale", &UIControl::GetScale, &UIControl::SetScale)
-    .Field("pivot", &UIControl::GetPivot, &UIControl::SetPivot)
-    .Field("angle", &UIControl::GetAngleInDegrees, &UIControl::SetAngleInDegrees)
-    .Field("visible", &UIControl::GetVisibilityFlag, &UIControl::SetVisibilityFlag)
-    .Field("enabled", &UIControl::GetEnabled, &UIControl::SetEnabledNotHierarchic)
-    .Field("selected", &UIControl::GetSelected, &UIControl::SetSelectedNotHierarchic)
-    .Field("noInput", &UIControl::GetNoInput, &UIControl::SetNoInput)
-    .Field("exclusiveInput", &UIControl::GetExclusiveInput, &UIControl::SetExclusiveInputNotHierarchic)
-    .Field("wheelSensitivity", &UIControl::GetWheelSensitivity, &UIControl::SetWheelSensitivity)
-    .Field("tag", &UIControl::GetTag, &UIControl::SetTag)
-    .Field("classes", &UIControl::GetClassesAsString, &UIControl::SetClassesFromString)
-    //    .Field("components", &UIControl::GetComponents, nullptr)
+    .Field<const FastName& (UIControl::*)() const, void (UIControl::*)(const FastName&)>("name", &UIControl::GetName, &UIControl::SetName)[M::HiddenField()] // Hide because QE control Name property manually
+    .Field("position", &UIControl::GetPosition, &UIControl::SetPosition)[M::DisplayName("Position")]
+    .Field("absolutePosition", &UIControl::GetAbsolutePosition, nullptr)[M::HiddenField()]
+    .Field("size", &UIControl::GetSize, &UIControl::SetSize)[M::DisplayName("Size")]
+    .Field("scale", &UIControl::GetScale, &UIControl::SetScale)[M::DisplayName("Scale")]
+    .Field("pivot", &UIControl::GetPivot, &UIControl::SetPivot)[M::DisplayName("Pivot")]
+    .Field("angle", &UIControl::GetAngleInDegrees, &UIControl::SetAngleInDegrees)[M::DisplayName("Angle")]
+    .Field("visible", &UIControl::GetVisibilityFlag, &UIControl::SetVisibilityFlag)[M::DisplayName("Visible"), M::Bindable()]
+    .Field("enabled", &UIControl::GetEnabled, &UIControl::SetEnabledNotHierarchic)[M::DisplayName("Enabled"), M::Bindable()]
+    .Field("selected", &UIControl::GetSelected, &UIControl::SetSelectedNotHierarchic)[M::DisplayName("Selected"), M::Bindable()]
+    .Field("noInput", &UIControl::GetNoInput, &UIControl::SetNoInput)[M::DisplayName("No Input")]
+    .Field("exclusiveInput", &UIControl::GetExclusiveInput, &UIControl::SetExclusiveInputNotHierarchic)[M::DisplayName("Exclusive Input")]
+    .Field("wheelSensitivity", &UIControl::GetWheelSensitivity, &UIControl::SetWheelSensitivity)[M::DisplayName("Wheel Sensitivity")]
+    .Field("tag", &UIControl::GetTag, &UIControl::SetTag)[M::DisplayName("Tag")]
+    .Field("classes", &UIControl::GetClassesAsString, &UIControl::SetClassesFromString)[M::DisplayName("Style Classes"), M::Bindable()]
+    .Field("components", &UIControl::GetComponents, nullptr)[M::HiddenField()]
+    .Method<UIControl* (UIControl::*)(const String&)>("FindByPath", &UIControl::FindByPath)
+    .Method("GetComponentByName", &UIControl::GetComponentByName)
+    .Method("GetOrCreateComponentByName", &UIControl::GetOrCreateComponentByName)
     .End();
 }
 
@@ -82,54 +79,57 @@ static void StopControlTracking(const UIControl* control)
 }
 
 UIControl::UIControl(const Rect& rect)
-    : styleSheetDirty(true)
+    : exclusiveInput(false)
+    , isInputProcessed(false)
+    , visible(true)
+    , hiddenForDebug(false)
+    , multiInput(false)
+    , isIteratorCorrupted(false)
+    , styleSheetDirty(true)
     , styleSheetInitialized(false)
     , layoutDirty(true)
     , layoutPositionDirty(true)
-    , isInputProcessed(false)
     , layoutOrderDirty(true)
-    , family(nullptr)
-    , parentWithContext(nullptr)
+    , inputEnabled(true)
 {
     StartControlTracking(this);
-
-    parent = NULL;
-    controlState = STATE_NORMAL;
-    visible = true;
-
     UpdateFamily();
-    /*
-            VB:
-            please do not change anymore to false, it no make any sense to make all controls untouchable by default.
-            for particular controls it can be changed, but no make sense to make that for all controls.
-         */
-    inputEnabled = true;
-    inputProcessorsCount = 1;
-
-    eventDispatcher = NULL;
-
-    hiddenForDebug = false;
-    pivot = Vector2(0.0f, 0.0f);
-    scale = Vector2(1.0f, 1.0f);
-    angle = 0;
-
-    multiInput = false;
-    exclusiveInput = false;
-    currentInputID = 0;
-    touchesInside = 0;
-    totalTouches = 0;
-
     SetRect(rect);
 }
 
 UIControl::~UIControl()
 {
-    UIControlSystem::Instance()->CancelInputs(this);
-    SafeRelease(eventDispatcher);
+    if (scene)
+    {
+        scene->CancelInputs(this);
+    }
+    else
+    {
+        GetEngineContext()->uiControlSystem->CancelInputs(this);
+    }
+    eventDispatcher = nullptr;
     RemoveAllControls();
     RemoveAllComponents();
     UIControlFamily::Release(family);
     StopControlTracking(this);
+}
+
+UIControlSystem* UIControl::GetScene() const
+{
+    return scene;
+}
+
+void UIControl::SetScene(UIControlSystem* scene_)
+{
+    if (scene == scene_)
+    {
+        return;
+    }
+    scene = scene_;
+    for (const auto& child : children)
+    {
+        child->SetScene(scene);
+    }
 }
 
 void UIControl::SetParent(UIControl* newParent)
@@ -161,7 +161,7 @@ void UIControl::SetExclusiveInput(bool isExclusiveInput, bool hierarchic /* = tr
 
     if (hierarchic)
     {
-        List<UIControl*>::iterator it = children.begin();
+        auto it = children.begin();
         for (; it != children.end(); ++it)
         {
             (*it)->SetExclusiveInput(isExclusiveInput, hierarchic);
@@ -175,7 +175,7 @@ void UIControl::SetMultiInput(bool isMultiInput, bool hierarchic /* = true*/)
 
     if (hierarchic)
     {
-        List<UIControl*>::iterator it = children.begin();
+        auto it = children.begin();
         for (; it != children.end(); ++it)
         {
             (*it)->SetMultiInput(isMultiInput, hierarchic);
@@ -187,7 +187,7 @@ void UIControl::AddEvent(int32 eventType, const Message& msg)
 {
     if (!eventDispatcher)
     {
-        eventDispatcher = new EventDispatcher();
+        eventDispatcher = MakeRef<EventDispatcher>();
     }
     eventDispatcher->AddEvent(eventType, msg);
 }
@@ -211,7 +211,14 @@ bool UIControl::RemoveAllEvents()
 
 void UIControl::PerformEvent(int32 eventType, const UIEvent* uiEvent /* = nullptr*/)
 {
-    UIControlSystem::Instance()->ProcessControlEvent(eventType, uiEvent, this);
+    if (scene)
+    {
+        scene->ProcessControlEvent(eventType, uiEvent, this);
+    }
+    else
+    {
+        GetEngineContext()->uiControlSystem->ProcessControlEvent(eventType, uiEvent, this);
+    }
 
     if (eventDispatcher)
     {
@@ -221,7 +228,14 @@ void UIControl::PerformEvent(int32 eventType, const UIEvent* uiEvent /* = nullpt
 
 void UIControl::PerformEventWithData(int32 eventType, void* callerData, const UIEvent* uiEvent /* = nullptr*/)
 {
-    UIControlSystem::Instance()->ProcessControlEvent(eventType, uiEvent, this);
+    if (scene)
+    {
+        scene->ProcessControlEvent(eventType, uiEvent, this);
+    }
+    else
+    {
+        GetEngineContext()->uiControlSystem->ProcessControlEvent(eventType, uiEvent, this);
+    }
 
     if (eventDispatcher)
     {
@@ -229,21 +243,17 @@ void UIControl::PerformEventWithData(int32 eventType, void* callerData, const UI
     }
 }
 
-const List<UIControl*>& UIControl::GetChildren() const
+const List<RefPtr<UIControl>>& UIControl::GetChildren() const
 {
     return children;
 }
 
-bool UIControl::AddControlToList(List<UIControl*>& controlsList, const String& controlName, bool isRecursive)
+void UIControl::SortChildren(const SortFunction& predicate)
 {
-    UIControl* control = FindByName(controlName, isRecursive);
-    if (control)
-    {
-        controlsList.push_back(control);
-        return true;
-    }
+    children.sort(predicate); // std::stable_sort and std::sort are not allowed for list
 
-    return false;
+    isIteratorCorrupted = true;
+    SetLayoutOrderDirty();
 }
 
 void UIControl::SetName(const String& name_)
@@ -258,18 +268,16 @@ void UIControl::SetName(const FastName& name_)
         return;
     }
 
-#if defined(__DAVAENGINE_DEBUG__)
-    DVASSERT(UIControlHelpers::IsControlNameValid(name_));
-#endif
+    DVASSERT(UIControlHelpers::IsControlNameValid(name_), Format("Control name '%s' contains incorrect symbols", name_.c_str()).c_str());
 
     name = name_;
 
     SetStyleSheetDirty();
 }
 
-void UIControl::SetTag(int32 _tag)
+void UIControl::SetTag(int32 tag_)
 {
-    tag = _tag;
+    tag = tag_;
 }
 
 // return first control with given name
@@ -312,76 +320,9 @@ void UIControl::RemoveState(int32 state)
     SetState(controlState & ~state);
 }
 
-Sprite* UIControl::GetSprite() const
-{
-    return GetBackground()->GetSprite();
-}
-
 int32 UIControl::GetFrame() const
 {
-    return GetBackground()->GetFrame();
-}
-
-UIControlBackground::eDrawType UIControl::GetSpriteDrawType() const
-{
-    return GetBackground()->GetDrawType();
-}
-
-int32 UIControl::GetSpriteAlign() const
-{
-    return GetBackground()->GetAlign();
-}
-
-void UIControl::SetSprite(const FilePath& spriteName, int32 spriteFrame)
-{
-    GetBackground()->SetSprite(spriteName, spriteFrame);
-}
-
-void UIControl::SetSprite(Sprite* newSprite, int32 spriteFrame)
-{
-    GetBackground()->SetSprite(newSprite, spriteFrame);
-}
-
-void UIControl::SetSpriteFrame(int32 spriteFrame)
-{
-    GetBackground()->SetFrame(spriteFrame);
-}
-
-void UIControl::SetSpriteFrame(const FastName& frameName)
-{
-    GetBackground()->SetFrame(frameName);
-}
-
-void UIControl::SetSpriteDrawType(UIControlBackground::eDrawType drawType)
-{
-    GetBackground()->SetDrawType(drawType);
-}
-
-void UIControl::SetSpriteAlign(int32 align)
-{
-    GetBackground()->SetAlign(align);
-}
-
-void UIControl::SetBackground(UIControlBackground* newBg)
-{
-    UIControlBackground* currentBg = GetComponent<UIControlBackground>();
-    if (currentBg != newBg)
-    {
-        if (currentBg != nullptr)
-        {
-            RemoveComponent(currentBg);
-        }
-
-        if (newBg != nullptr)
-        {
-            AddComponent(newBg);
-        }
-    }
-}
-
-UIControlBackground* UIControl::GetBackground() const
-{
-    return GetComponent<UIControlBackground>();
+    return GetComponent<UIControlBackground>()->GetFrame();
 }
 
 const UIGeometricData& UIControl::GetGeometricData() const
@@ -398,10 +339,20 @@ const UIGeometricData& UIControl::GetGeometricData() const
 
     if (!parent)
     {
-        tempGeometricData.AddGeometricData(UIControlSystem::Instance()->GetRenderSystem()->GetBaseGeometricData());
-        return tempGeometricData;
+        if (scene)
+        {
+            tempGeometricData.AddGeometricData(scene->GetRenderSystem()->GetBaseGeometricData());
+        }
+        else
+        {
+            tempGeometricData.AddGeometricData(GetEngineContext()->uiControlSystem->GetRenderSystem()->GetBaseGeometricData());
+        }
     }
-    tempGeometricData.AddGeometricData(parent->GetGeometricData());
+    else
+    {
+        tempGeometricData.AddGeometricData(parent->GetGeometricData());
+    }
+
     return tempGeometricData;
 }
 
@@ -531,36 +482,9 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
     }
 }
 
-Vector2 UIControl::GetContentPreferredSize(const Vector2& constraints) const
+float32 UIControl::GetAngleInDegrees() const
 {
-    UIControlBackground* bg = GetComponent<UIControlBackground>();
-    if (bg != nullptr && bg->GetSprite() != nullptr)
-    {
-        if (constraints.dx > 0)
-        {
-            Vector2 size;
-            size.dx = constraints.dx;
-            size.dy = bg->GetSprite()->GetHeight() * size.dx / bg->GetSprite()->GetWidth();
-            return size;
-        }
-        else
-        {
-            return bg->GetSprite()->GetSize();
-        }
-    }
-    return Vector2(0.0f, 0.0f);
-}
-
-bool UIControl::IsHeightDependsOnWidth() const
-{
-    UIControlBackground* bg = GetComponent<UIControlBackground>();
-    if (bg == nullptr || bg->GetSprite() == nullptr)
-    {
-        return false;
-    }
-
-    UIControlBackground::eDrawType dt = bg->GetDrawType();
-    return dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL || dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL_ONE;
+    return RadToDeg(angle);
 }
 
 void UIControl::SetVisibilityFlag(bool isVisible)
@@ -581,7 +505,8 @@ void UIControl::SetVisibilityFlag(bool isVisible)
         }
         else
         {
-            if (UIControlSystem::Instance()->IsHostControl(this))
+            if ((scene && scene->IsHostControl(this))
+                || GetEngineContext()->uiControlSystem->IsHostControl(this))
             {
                 parentViewState = eViewState::VISIBLE;
             }
@@ -613,7 +538,7 @@ void UIControl::SetInputEnabled(bool isEnabled, bool hierarchic /* = true*/)
     }
     if (hierarchic)
     {
-        List<UIControl*>::iterator it = children.begin();
+        auto it = children.begin();
         for (; it != children.end(); ++it)
         {
             (*it)->SetInputEnabled(isEnabled, hierarchic);
@@ -633,7 +558,14 @@ void UIControl::SetDisabled(bool isDisabled, bool hierarchic /* = true*/)
         AddState(STATE_DISABLED);
 
         // Cancel all inputs because of DF-2943.
-        UIControlSystem::Instance()->CancelInputs(this);
+        if (scene)
+        {
+            scene->CancelInputs(this);
+        }
+        else
+        {
+            GetEngineContext()->uiControlSystem->CancelInputs(this);
+        }
     }
     else
     {
@@ -642,7 +574,7 @@ void UIControl::SetDisabled(bool isDisabled, bool hierarchic /* = true*/)
 
     if (hierarchic)
     {
-        List<UIControl*>::iterator it = children.begin();
+        auto it = children.begin();
         for (; it != children.end(); ++it)
         {
             (*it)->SetDisabled(isDisabled, hierarchic);
@@ -668,7 +600,7 @@ void UIControl::SetSelected(bool isSelected, bool hierarchic /* = true*/)
 
     if (hierarchic)
     {
-        List<UIControl*>::iterator it = children.begin();
+        auto it = children.begin();
         for (; it != children.end(); ++it)
         {
             (*it)->SetSelected(isSelected, hierarchic);
@@ -681,12 +613,14 @@ bool UIControl::GetHover() const
     return (controlState & STATE_HOVER) != 0;
 }
 
-void UIControl::AddControl(UIControl* control)
+void UIControl::AddControl(UIControl* control_)
 {
-    control->Retain();
+    RefPtr<UIControl> control(RefPtr<UIControl>::ConstructWithRetain(control_));
+
     control->RemoveFromParent();
 
     control->isInputProcessed = false;
+    control->SetScene(GetScene());
     control->SetParent(this);
     children.push_back(control);
 
@@ -696,28 +630,40 @@ void UIControl::AddControl(UIControl* control)
     SetLayoutDirty();
 }
 
-void UIControl::RemoveControl(UIControl* control)
+void UIControl::AddControl(RefPtr<UIControl> control)
 {
-    if (nullptr == control)
+    AddControl(control.Get());
+}
+
+void UIControl::RemoveControl(UIControl* control_)
+{
+    if (nullptr == control_)
     {
         return;
     }
 
-    List<UIControl*>::iterator it = children.begin();
+    RefPtr<UIControl> control(RefPtr<UIControl>::ConstructWithRetain(control_));
+
+    auto it = children.begin();
     for (; it != children.end(); ++it)
     {
         if ((*it) == control)
         {
             control->InvokeInactive();
 
+            control->SetScene(nullptr);
             control->SetParent(NULL);
             children.erase(it);
-            control->Release();
             isIteratorCorrupted = true;
             SetLayoutDirty();
             return;
         }
     }
+}
+
+void UIControl::RemoveControl(RefPtr<UIControl> control)
+{
+    RemoveControl(control.Get());
 }
 
 void UIControl::RemoveFromParent()
@@ -736,30 +682,17 @@ void UIControl::RemoveAllControls()
         RemoveControl(children.front());
     }
 }
-void UIControl::BringChildFront(UIControl* _control)
+
+void UIControl::BringChildFront(const UIControl* control_)
 {
-    List<UIControl*>::iterator it = children.begin();
+    auto it = children.begin();
     for (; it != children.end(); ++it)
     {
-        if ((*it) == _control)
+        if ((*it).Get() == control_)
         {
+            RefPtr<UIControl> control(*it);
             children.erase(it);
-            children.push_back(_control);
-            isIteratorCorrupted = true;
-            SetLayoutOrderDirty();
-            return;
-        }
-    }
-}
-void UIControl::BringChildBack(UIControl* _control)
-{
-    List<UIControl*>::iterator it = children.begin();
-    for (; it != children.end(); ++it)
-    {
-        if ((*it) == _control)
-        {
-            children.erase(it);
-            children.push_front(_control);
+            children.push_back(control);
             isIteratorCorrupted = true;
             SetLayoutOrderDirty();
             return;
@@ -767,17 +700,34 @@ void UIControl::BringChildBack(UIControl* _control)
     }
 }
 
-void UIControl::InsertChildBelow(UIControl* control, UIControl* _belowThisChild)
+void UIControl::BringChildBack(const UIControl* control_)
 {
-    List<UIControl*>::iterator it = children.begin();
+    auto it = children.begin();
     for (; it != children.end(); ++it)
     {
-        if ((*it) == _belowThisChild)
+        if ((*it) == control_)
         {
-            control->Retain();
+            RefPtr<UIControl> control(*it);
+            children.erase(it);
+            children.push_front(control);
+            isIteratorCorrupted = true;
+            SetLayoutOrderDirty();
+            return;
+        }
+    }
+}
+void UIControl::InsertChildBelow(UIControl* control_, const UIControl* belowThisChild_)
+{
+    RefPtr<UIControl> control(RefPtr<UIControl>::ConstructWithRetain(control_));
+    auto it = children.begin();
+    for (; it != children.end(); ++it)
+    {
+        if ((*it) == belowThisChild_)
+        {
             control->RemoveFromParent();
 
             children.insert(it, control);
+            control->SetScene(GetScene());
             control->SetParent(this);
 
             control->InvokeActive(viewState);
@@ -791,17 +741,23 @@ void UIControl::InsertChildBelow(UIControl* control, UIControl* _belowThisChild)
     AddControl(control);
 }
 
-void UIControl::InsertChildAbove(UIControl* control, UIControl* _aboveThisChild)
+void UIControl::InsertChildBelow(RefPtr<UIControl> control, const UIControl* belowThisChild_)
 {
-    List<UIControl*>::iterator it = children.begin();
+    InsertChildBelow(control.Get(), belowThisChild_);
+}
+
+void UIControl::InsertChildAbove(UIControl* control_, const UIControl* aboveThisChild_)
+{
+    RefPtr<UIControl> control(RefPtr<UIControl>::ConstructWithRetain(control_));
+    auto it = children.begin();
     for (; it != children.end(); ++it)
     {
-        if ((*it) == _aboveThisChild)
+        if ((*it) == aboveThisChild_)
         {
-            control->Retain();
             control->RemoveFromParent();
 
             children.insert(++it, control);
+            control->SetScene(GetScene());
             control->SetParent(this);
 
             control->InvokeActive(viewState);
@@ -815,65 +771,86 @@ void UIControl::InsertChildAbove(UIControl* control, UIControl* _aboveThisChild)
     AddControl(control);
 }
 
-void UIControl::SendChildBelow(UIControl* _control, UIControl* _belowThisChild)
+void UIControl::InsertChildAbove(RefPtr<UIControl> control, const UIControl* aboveThisChild_)
+{
+    InsertChildAbove(control.Get(), aboveThisChild_);
+}
+
+void UIControl::SendChildBelow(const UIControl* control_, const UIControl* belowThisChild_)
 {
     //TODO: Fix situation when controls not from this hierarchy
 
     // firstly find control in list and erase it
-    List<UIControl*>::iterator it = children.begin();
+    RefPtr<UIControl> control;
+    auto it = children.begin();
     for (; it != children.end(); ++it)
     {
-        if ((*it) == _control)
+        if ((*it) == control_)
         {
+            control = *it;
             children.erase(it);
             isIteratorCorrupted = true;
             break;
         }
     }
+
+    if (control == nullptr)
+    {
+        DVASSERT(control != nullptr, Format("[UIControl::SendChildBelow] Control \"%s\" not found in current hierarchy", control_->GetName().c_str()).c_str());
+        return;
+    }
+
     // after that find place where we should put the control and do that
     it = children.begin();
     for (; it != children.end(); ++it)
     {
-        if ((*it) == _belowThisChild)
+        if ((*it) == belowThisChild_)
         {
-            children.insert(it, _control);
+            children.insert(it, control);
             isIteratorCorrupted = true;
             SetLayoutOrderDirty();
             return;
         }
     }
-    DVASSERT(0, "Control _belowThisChild not found");
+    DVASSERT(0, Format("[UIControl::SendChildBelow] Control \"%s\" not found in current hierarchy", belowThisChild_->GetName().c_str()).c_str());
 }
 
-void UIControl::SendChildAbove(UIControl* _control, UIControl* _aboveThisChild)
+void UIControl::SendChildAbove(const UIControl* control_, const UIControl* aboveThisChild_)
 {
     //TODO: Fix situation when controls not from this hierarhy
 
     // firstly find control in list and erase it
-    List<UIControl*>::iterator it = children.begin();
+    RefPtr<UIControl> control;
+    auto it = children.begin();
     for (; it != children.end(); ++it)
     {
-        if ((*it) == _control)
+        if ((*it) == control_)
         {
+            control = *it;
             children.erase(it);
             isIteratorCorrupted = true;
             break;
         }
     }
+    if (control == nullptr)
+    {
+        DVASSERT(control != nullptr, Format("[UIControl::SendChildAbove] Control \"%s\" not found in current hierarchy", control_->GetName().c_str()).c_str());
+        return;
+    }
     // after that find place where we should put the control and do that
     it = children.begin();
     for (; it != children.end(); ++it)
     {
-        if ((*it) == _aboveThisChild)
+        if ((*it) == aboveThisChild_)
         {
-            children.insert(++it, _control);
+            children.insert(++it, control);
             isIteratorCorrupted = true;
             SetLayoutOrderDirty();
             return;
         }
     }
 
-    DVASSERT(0, "Control _aboveThisChild not found");
+    DVASSERT(0, Format("[UIControl::SendChildAbove] Control \"%s\" not found in current hierarchy", aboveThisChild_->GetName().c_str()).c_str());
 }
 
 UIControl* UIControl::Clone()
@@ -915,7 +892,7 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
     layoutOrderDirty = srcControl->layoutOrderDirty;
     packageContext = srcControl->packageContext;
 
-    SafeRelease(eventDispatcher);
+    eventDispatcher = nullptr;
     if (srcControl->eventDispatcher != nullptr && srcControl->eventDispatcher->GetEventsCount() != 0)
     {
         Logger::FrameworkDebug("[UIControl::CopyDataFrom] Source control \"%s:%s\" have events."
@@ -939,9 +916,9 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
         inputProcessorsCount = 0;
     }
 
-    for (UIControl* srcChild : srcControl->GetChildren())
+    for (const auto& srcChild : srcControl->GetChildren())
     {
-        AddControl(srcChild->SafeClone().Get());
+        AddControl(srcChild->SafeClone());
     }
 }
 
@@ -964,24 +941,15 @@ void UIControl::SetParentColor(const Color& parentColor)
     }
 }
 
-bool UIControl::IsPointInside(const Vector2& _point, bool expandWithFocus /* = false*/) const
+bool UIControl::IsPointInside(const Vector2& point_, bool expandWithFocus /* = false*/) const
 {
-    Vector2 point = _point;
-#if defined(__DAVAENGINE_COREV2__)
+    Vector2 point = point_;
     if (GetPrimaryWindow()->GetCursorCapture() == eCursorCapture::PINNING)
     {
         Size2f sz = GetPrimaryWindow()->GetVirtualSize();
         point.x = sz.dx / 2.f;
         point.y = sz.dy / 2.f;
     }
-#else
-    if (InputSystem::Instance()->GetMouseDevice().IsPinningEnabled())
-    {
-        const Size2i& virtScreenSize = UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
-        point.x = virtScreenSize.dx / 2.f;
-        point.y = virtScreenSize.dy / 2.f;
-    }
-#endif // !defined(__DAVAENGINE_COREV2__)
     const UIGeometricData& gd = GetGeometricData();
     Rect rect = gd.GetUnrotatedRect();
     if (expandWithFocus)
@@ -1008,7 +976,8 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
     {
         return false;
     }
-    if (UIControlSystem::Instance()->GetExclusiveInputLocker() && UIControlSystem::Instance()->GetExclusiveInputLocker() != this)
+    if ((scene && scene->GetExclusiveInputLocker() && scene->GetExclusiveInputLocker() != this)
+        || (GetEngineContext()->uiControlSystem->GetExclusiveInputLocker() && GetEngineContext()->uiControlSystem->GetExclusiveInputLocker() != this))
     {
         return false;
     }
@@ -1033,7 +1002,14 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
     {
         if (!currentInput->touchLocker && IsPointInside(currentInput->point))
         {
-            UIControlSystem::Instance()->SetHoveredControl(this);
+            if (scene)
+            {
+                scene->SetHoveredControl(this);
+            }
+            else
+            {
+                GetEngineContext()->uiControlSystem->SetHoveredControl(this);
+            }
             Input(currentInput);
             return true;
         }
@@ -1065,12 +1041,29 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                 currentInput->touchLocker = this;
                 if (exclusiveInput)
                 {
-                    UIControlSystem::Instance()->SetExclusiveInputLocker(this, currentInput->touchId);
+                    if (scene)
+                    {
+                        scene->SetExclusiveInputLocker(this, currentInput->touchId);
+                    }
+                    else
+                    {
+                        GetEngineContext()->uiControlSystem->SetExclusiveInputLocker(this, currentInput->touchId);
+                    }
                 }
 
-                if (UIControlSystem::Instance()->GetFocusedControl() != this && FocusHelpers::CanFocusControl(this))
+                if (scene)
                 {
-                    UIControlSystem::Instance()->SetFocusedControl(this);
+                    if (scene->GetFocusedControl() != this && FocusHelpers::CanFocusControl(this))
+                    {
+                        scene->SetFocusedControl(this);
+                    }
+                }
+                else
+                {
+                    if (GetEngineContext()->uiControlSystem->GetFocusedControl() != this && FocusHelpers::CanFocusControl(this))
+                    {
+                        GetEngineContext()->uiControlSystem->SetFocusedControl(this);
+                    }
                 }
 
                 if (!multiInput)
@@ -1175,16 +1168,21 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
 #endif
                         PerformEventWithData(event, currentInput, currentInput);
 
-                        if (isPointInside)
-                        {
-                            UIControlSystem::Instance()->GetInputSystem()->PerformActionOnControl(this);
-                        }
-
                         AddState(STATE_NORMAL);
                         RemoveState(STATE_PRESSED_INSIDE | STATE_PRESSED_OUTSIDE);
-                        if (UIControlSystem::Instance()->GetExclusiveInputLocker() == this)
+                        if (scene)
                         {
-                            UIControlSystem::Instance()->SetExclusiveInputLocker(nullptr, -1);
+                            if (scene->GetExclusiveInputLocker() == this)
+                            {
+                                scene->SetExclusiveInputLocker(nullptr, -1);
+                            }
+                        }
+                        else
+                        {
+                            if (GetEngineContext()->uiControlSystem->GetExclusiveInputLocker() == this)
+                            {
+                                GetEngineContext()->uiControlSystem->SetExclusiveInputLocker(nullptr, -1);
+                            }
                         }
                     }
                     else if (touchesInside <= 0)
@@ -1224,7 +1222,8 @@ bool UIControl::SystemInput(UIEvent* currentInput)
 
     //if(currentInput->touchLocker != this)
     {
-        bool clipContents = (GetComponentCount<UIClipContentComponent>() != 0);
+        UIClipContentComponent* clipContent = GetComponent<UIClipContentComponent>();
+        bool clipContents = (clipContent != nullptr && clipContent->IsEnabled());
         if (clipContents &&
             (UIEvent::Phase::BEGAN == currentInput->phase || UIEvent::Phase::MOVE == currentInput->phase || UIEvent::Phase::WHEEL == currentInput->phase || UIEvent::Phase::CANCELLED == currentInput->phase))
         {
@@ -1234,28 +1233,26 @@ bool UIControl::SystemInput(UIEvent* currentInput)
             }
         }
 
-        std::for_each(begin(children), end(children), [](UIControl* c) {
-            c->isInputProcessed = false;
-        });
+        for (const auto& child : children)
+        {
+            child->isInputProcessed = false;
+        };
 
-        List<UIControl*>::reverse_iterator it = children.rbegin();
-        List<UIControl*>::reverse_iterator itEnd = children.rend();
+        auto it = children.rbegin();
+        auto itEnd = children.rend();
         while (it != itEnd)
         {
             isIteratorCorrupted = false;
-            UIControl* current = *it;
+            RefPtr<UIControl> current = *it;
             if (!current->isInputProcessed)
             {
-                current->Retain();
                 if (current->inputProcessorsCount > 0)
                 {
                     if (current->SystemInput(currentInput))
                     {
-                        current->Release();
                         return true;
                     }
                 }
-                current->Release();
                 if (isIteratorCorrupted)
                 {
                     it = children.rbegin();
@@ -1283,9 +1280,19 @@ void UIControl::SystemInputCancelled(UIEvent* currentInput)
     {
         RemoveState(STATE_PRESSED_INSIDE | STATE_PRESSED_OUTSIDE);
         AddState(STATE_NORMAL);
-        if (UIControlSystem::Instance()->GetExclusiveInputLocker() == this)
+        if (scene)
         {
-            UIControlSystem::Instance()->SetExclusiveInputLocker(NULL, -1);
+            if (scene->GetExclusiveInputLocker() == this)
+            {
+                scene->SetExclusiveInputLocker(nullptr, -1);
+            }
+        }
+        else
+        {
+            if (GetEngineContext()->uiControlSystem->GetExclusiveInputLocker() == this)
+            {
+                GetEngineContext()->uiControlSystem->SetExclusiveInputLocker(nullptr, -1);
+            }
         }
     }
 
@@ -1356,7 +1363,14 @@ void UIControl::SystemVisible()
     }
 
     ChangeViewState(eViewState::VISIBLE);
-    UIControlSystem::Instance()->RegisterVisibleControl(this);
+    if (scene)
+    {
+        scene->RegisterVisibleControl(this);
+    }
+    else
+    {
+        GetEngineContext()->uiControlSystem->RegisterVisibleControl(this);
+    }
 
     SetStyleSheetDirty();
     OnVisible();
@@ -1410,7 +1424,14 @@ void UIControl::SystemInvisible()
     }
 
     ChangeViewState(eViewState::ACTIVE);
-    UIControlSystem::Instance()->UnregisterVisibleControl(this);
+    if (scene)
+    {
+        scene->UnregisterVisibleControl(this);
+    }
+    else
+    {
+        GetEngineContext()->uiControlSystem->UnregisterVisibleControl(this);
+    }
     OnInvisible();
 }
 
@@ -1431,7 +1452,14 @@ void UIControl::SystemActive()
     }
 
     ChangeViewState(eViewState::ACTIVE);
-    UIControlSystem::Instance()->RegisterControl(this);
+    if (scene)
+    {
+        scene->RegisterControl(this);
+    }
+    else
+    {
+        GetEngineContext()->uiControlSystem->RegisterControl(this);
+    }
 
     OnActive();
 
@@ -1482,7 +1510,15 @@ void UIControl::SystemInactive()
     }
 
     ChangeViewState(eViewState::INACTIVE);
-    UIControlSystem::Instance()->UnregisterControl(this);
+
+    if (scene)
+    {
+        scene->UnregisterControl(this);
+    }
+    else
+    {
+        GetEngineContext()->uiControlSystem->UnregisterControl(this);
+    }
 
     OnInactive();
 }
@@ -1564,7 +1600,14 @@ bool IsControlActive(const UIControl* control)
         control = control->GetParent();
     }
 
-    return UIControlSystem::Instance()->IsHostControl(control);
+    if (control->GetScene())
+    {
+        return control->GetScene()->IsHostControl(control);
+    }
+    else
+    {
+        return GetEngineContext()->uiControlSystem->IsHostControl(control);
+    }
 }
 
 bool IsControlVisible(const UIControl* control)
@@ -1577,7 +1620,14 @@ bool IsControlVisible(const UIControl* control)
         control = control->GetParent();
     }
 
-    return UIControlSystem::Instance()->IsHostControl(control) ? control->GetVisibilityFlag() : false;
+    if (control->GetScene())
+    {
+        return control->GetScene()->IsHostControl(control) ? control->GetVisibilityFlag() : false;
+    }
+    else
+    {
+        return GetEngineContext()->uiControlSystem->IsHostControl(control) ? control->GetVisibilityFlag() : false;
+    }
 }
 
 void UIControl::ChangeViewState(eViewState newViewState)
@@ -1629,16 +1679,16 @@ Animation* UIControl::WaitAnimation(float32 time, int32 track)
     return animation;
 }
 
-Animation* UIControl::PositionAnimation(const Vector2& _position, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+Animation* UIControl::PositionAnimation(const Vector2& position_, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
 {
-    LinearAnimation<Vector2>* animation = new LinearAnimation<Vector2>(this, &relativePosition, _position, time, interpolationFunc);
+    LinearAnimation<Vector2>* animation = new LinearAnimation<Vector2>(this, &relativePosition, position_, time, interpolationFunc);
     animation->Start(track);
     return animation;
 }
 
-Animation* UIControl::SizeAnimation(const Vector2& _size, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
+Animation* UIControl::SizeAnimation(const Vector2& size_, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
 {
-    LinearAnimation<Vector2>* animation = new LinearAnimation<Vector2>(this, &size, _size, time, interpolationFunc);
+    LinearAnimation<Vector2>* animation = new LinearAnimation<Vector2>(this, &size, size_, time, interpolationFunc);
     animation->Start(track);
     return animation;
 }
@@ -1866,7 +1916,7 @@ void UIControl::DumpInputs(int32 depthLevel)
         outStr += " ***";
     }
     Logger::Info("%s", outStr.c_str());
-    List<UIControl*>::iterator it = children.begin();
+    auto it = children.begin();
     for (; it != children.end(); ++it)
     {
         (*it)->DumpInputs(depthLevel + 1);
@@ -1902,7 +1952,14 @@ void UIControl::DumpControls(bool onlyOrphans)
 
 void UIControl::UpdateLayout()
 {
-    UIControlSystem::Instance()->GetLayoutSystem()->ManualApplyLayout(this);
+    if (scene)
+    {
+        scene->GetLayoutSystem()->ManualApplyLayout(this);
+    }
+    else
+    {
+        GetEngineContext()->uiControlSystem->GetLayoutSystem()->ManualApplyLayout(this);
+    }
 }
 
 void UIControl::OnSizeChanged()
@@ -1923,7 +1980,14 @@ void UIControl::AddComponent(UIComponent* component)
 
     if (viewState >= eViewState::ACTIVE)
     {
-        UIControlSystem::Instance()->RegisterComponent(this, component);
+        if (scene)
+        {
+            scene->RegisterComponent(this, component);
+        }
+        else
+        {
+            GetEngineContext()->uiControlSystem->RegisterComponent(this, component);
+        }
     }
     SetStyleSheetDirty();
     SetLayoutDirty();
@@ -1948,7 +2012,14 @@ void UIControl::InsertComponentAt(UIComponent* component, uint32 index)
 
         if (viewState >= eViewState::ACTIVE)
         {
-            UIControlSystem::Instance()->RegisterComponent(this, component);
+            if (scene)
+            {
+                scene->RegisterComponent(this, component);
+            }
+            else
+            {
+                GetEngineContext()->uiControlSystem->RegisterComponent(this, component);
+            }
         }
 
         SetStyleSheetDirty();
@@ -1969,7 +2040,12 @@ UIComponent* UIControl::GetComponent(int32 runtimeType, uint32 index) const
 UIComponent* UIControl::GetComponent(const Type* type, uint32 index /*= 0*/) const
 {
     ComponentManager* cm = GetEngineContext()->componentManager;
-    return GetComponent(cm->GetRuntimeType(type), index);
+    return GetComponent(cm->GetRuntimeComponentId(type), index);
+}
+
+UIComponent* UIControl::GetComponentByName(const String& typeName, uint32 index) const
+{
+    return UIControlHelpers::GetComponentByName(this, typeName, index);
 }
 
 int32 UIControl::GetComponentIndex(const UIComponent* component) const
@@ -1987,7 +2063,7 @@ int32 UIControl::GetComponentIndex(const UIComponent* component) const
 UIComponent* UIControl::GetOrCreateComponent(const Type* type, uint32 index)
 {
     ComponentManager* cm = GetEngineContext()->componentManager;
-    UIComponent* ret = GetComponent(cm->GetRuntimeType(type), index);
+    UIComponent* ret = GetComponent(cm->GetRuntimeComponentId(type), index);
     if (!ret)
     {
         DVASSERT(index == 0);
@@ -2008,6 +2084,11 @@ void UIControl::UpdateFamily()
     family = UIControlFamily::GetOrCreate(components);
 }
 
+int32 UIControl::TypeToRuntimeType(const Type* type)
+{
+    return GetEngineContext()->componentManager->GetRuntimeComponentId(type);
+}
+
 void UIControl::RemoveAllComponents()
 {
     while (!components.empty())
@@ -2017,7 +2098,14 @@ void UIControl::RemoveAllComponents()
 
         if (viewState >= eViewState::ACTIVE)
         {
-            UIControlSystem::Instance()->UnregisterComponent(this, component);
+            if (scene)
+            {
+                scene->UnregisterComponent(this, component);
+            }
+            else
+            {
+                GetEngineContext()->uiControlSystem->UnregisterComponent(this, component);
+            }
         }
 
         components.erase(it);
@@ -2038,7 +2126,14 @@ void UIControl::RemoveComponent(const Vector<UIComponent*>::iterator& it)
 
         if (viewState >= eViewState::ACTIVE)
         {
-            UIControlSystem::Instance()->UnregisterComponent(this, component);
+            if (scene)
+            {
+                scene->UnregisterComponent(this, component);
+            }
+            else
+            {
+                GetEngineContext()->uiControlSystem->UnregisterComponent(this, component);
+            }
         }
 
         components.erase(it);
@@ -2086,10 +2181,15 @@ uint32 UIControl::GetComponentCount(int32 runtimeType) const
     return family->GetComponentsCount(runtimeType);
 }
 
+UIComponent* UIControl::GetOrCreateComponentByName(const String& typeName, uint32 index)
+{
+    return UIControlHelpers::GetOrCreateComponentByName(this, typeName, index);
+}
+
 uint32 UIControl::GetComponentCount(const Type* type) const
 {
     ComponentManager* cm = GetEngineContext()->componentManager;
-    return family->GetComponentsCount(cm->GetRuntimeType(type));
+    return family->GetComponentsCount(cm->GetRuntimeComponentId(type));
 }
 
 const Vector<UIComponent*>& UIControl::GetComponents()
@@ -2198,7 +2298,14 @@ bool UIControl::IsStyleSheetDirty() const
 void UIControl::SetStyleSheetDirty()
 {
     styleSheetDirty = true;
-    UIControlSystem::Instance()->GetStyleSheetSystem()->SetDirty();
+    if (scene)
+    {
+        scene->GetStyleSheetSystem()->SetDirty();
+    }
+    else
+    {
+        GetEngineContext()->uiControlSystem->GetStyleSheetSystem()->SetDirty();
+    }
 }
 
 void UIControl::ResetStyleSheetDirty()
@@ -2209,7 +2316,14 @@ void UIControl::ResetStyleSheetDirty()
 void UIControl::SetLayoutDirty()
 {
     layoutDirty = true;
-    UIControlSystem::Instance()->GetLayoutSystem()->SetDirty();
+    if (scene)
+    {
+        scene->GetLayoutSystem()->SetDirty();
+    }
+    else
+    {
+        GetEngineContext()->uiControlSystem->GetLayoutSystem()->SetDirty();
+    }
 }
 
 void UIControl::ResetLayoutDirty()
@@ -2222,7 +2336,14 @@ void UIControl::ResetLayoutDirty()
 void UIControl::SetLayoutPositionDirty()
 {
     layoutPositionDirty = true;
-    UIControlSystem::Instance()->GetLayoutSystem()->SetDirty();
+    if (scene)
+    {
+        scene->GetLayoutSystem()->SetDirty();
+    }
+    else
+    {
+        GetEngineContext()->uiControlSystem->GetLayoutSystem()->SetDirty();
+    }
 }
 
 void UIControl::ResetLayoutPositionDirty()
@@ -2240,7 +2361,7 @@ void UIControl::ResetLayoutOrderDirty()
     layoutOrderDirty = false;
 }
 
-void UIControl::SetPackageContext(UIControlPackageContext* newPackageContext)
+void UIControl::SetPackageContext(const RefPtr<UIControlPackageContext>& newPackageContext)
 {
     if (packageContext != newPackageContext)
     {
@@ -2248,7 +2369,7 @@ void UIControl::SetPackageContext(UIControlPackageContext* newPackageContext)
     }
 
     packageContext = newPackageContext;
-    for (UIControl* child : children)
+    for (const auto& child : children)
         child->PropagateParentWithContext(packageContext ? this : parentWithContext);
 }
 
@@ -2264,23 +2385,23 @@ void UIControl::PropagateParentWithContext(UIControl* newParentWithContext)
     parentWithContext = newParentWithContext;
     if (packageContext == nullptr)
     {
-        for (UIControl* child : children)
+        for (const auto& child : children)
         {
             child->PropagateParentWithContext(newParentWithContext);
         }
     }
 }
 
-UIControlPackageContext* UIControl::GetPackageContext() const
+RefPtr<UIControlPackageContext> UIControl::GetPackageContext() const
 {
     return packageContext.Valid() ?
-    packageContext.Get() :
-    (parentWithContext ? parentWithContext->GetLocalPackageContext() : nullptr);
+    packageContext :
+    (parentWithContext ? parentWithContext->GetLocalPackageContext() : RefPtr<UIControlPackageContext>());
 }
 
-UIControlPackageContext* UIControl::GetLocalPackageContext() const
+const RefPtr<UIControlPackageContext>& UIControl::GetLocalPackageContext() const
 {
-    return packageContext.Get();
+    return packageContext;
 }
 
 /* Styles */

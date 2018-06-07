@@ -24,13 +24,13 @@ protected:
 
 public:
     // This method creates the parser and parses the input file.
-    static YamlParser* Create(const FilePath& fileName)
+    static RefPtr<YamlParser> Create(const FilePath& fileName)
     {
         return YamlParser::CreateAndParse(fileName);
     }
 
     // This method creates the parser and parses the data string.
-    static YamlParser* CreateAndParseString(const String& data)
+    static RefPtr<YamlParser> CreateAndParseString(const String& data)
     {
         return YamlParser::CreateAndParse(data);
     }
@@ -47,16 +47,15 @@ public:
 
 protected:
     template <typename T>
-    static YamlParser* CreateAndParse(const T& data)
+    static RefPtr<YamlParser> CreateAndParse(const T& data)
     {
-        YamlParser* parser = new YamlParser();
+        RefPtr<YamlParser> parser(new YamlParser());
         if (parser)
         {
             bool parseResult = parser->Parse(data);
             if (!parseResult)
             {
-                SafeRelease(parser);
-                return 0;
+                return RefPtr<YamlParser>();
             }
         }
         return parser;
@@ -67,9 +66,9 @@ protected:
     bool Parse(YamlDataHolder* dataHolder);
 
 private:
-    YamlNode* rootObject;
+    RefPtr<YamlNode> rootObject;
 
-    Stack<YamlNode*> objectStack;
+    Stack<RefPtr<YamlNode>> objectStack;
 };
 };
 

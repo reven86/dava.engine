@@ -68,15 +68,24 @@ void Announcer::DoStart()
         errorA = acceptor.StartListen(MakeFunction(this, &Announcer::AcceptorHandleConnect));
     }
 
-    // Restart only if both UDP socket and TCP acceptor failed
-    if (error != 0 && errorA != 0 && false == isTerminating)
+    if ((error != 0 || errorA != 0) && false == isTerminating)
     {
+        status = START_FAILED;
         DoStop();
+    }
+    else
+    {
+        status = STARTED;
     }
 }
 
 void Announcer::DoStop()
 {
+    if (status != START_FAILED)
+    {
+        status = NOT_STARTED;
+    }
+
     if (socket.IsOpen() && !socket.IsClosing())
     {
         runningObjects += 1;
@@ -163,7 +172,7 @@ void Announcer::AcceptorHandleConnect(TCPAcceptor* acceptor, int32 error)
         size_t length = dataCallback(sizeof(tcpBuffer), tcpBuffer);
         if (length > 0)
         {
-            auto socketWriteHandler = [this, socketCloseHandler](TCPSocket* socket, int32, const Buffer*, size_t) {
+            auto socketWriteHandler = [socketCloseHandler](TCPSocket* socket, int32, const Buffer*, size_t) {
                 socket->Close(socketCloseHandler);
             };
 

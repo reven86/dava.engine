@@ -1,4 +1,6 @@
 #include "UI/Layouts/UILinearLayoutComponent.h"
+#include "Engine/Engine.h"
+#include "Entity/ComponentManager.h"
 #include "Reflection/ReflectionRegistrator.h"
 #include "UI/UIControl.h"
 
@@ -6,22 +8,22 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(UILinearLayoutComponent)
 {
-    ReflectionRegistrator<UILinearLayoutComponent>::Begin()
+    ReflectionRegistrator<UILinearLayoutComponent>::Begin()[M::DisplayName("Linear Layout"), M::Group("Layout")]
     .ConstructorByPointer()
     .DestructorByPointer([](UILinearLayoutComponent* o) { o->Release(); })
-    .Field("enabled", &UILinearLayoutComponent::IsEnabled, &UILinearLayoutComponent::SetEnabled)
-    .Field("orientation", &UILinearLayoutComponent::GetOrientation, &UILinearLayoutComponent::SetOrientation)
-    [
-    M::EnumT<eOrientation>()
-    ]
-    .Field("padding", &UILinearLayoutComponent::GetPadding, &UILinearLayoutComponent::SetPadding)
-    .Field("dynamicPadding", &UILinearLayoutComponent::IsDynamicPadding, &UILinearLayoutComponent::SetDynamicPadding)
-    .Field("spacing", &UILinearLayoutComponent::GetSpacing, &UILinearLayoutComponent::SetSpacing)
-    .Field("dynamicSpacing", &UILinearLayoutComponent::IsDynamicSpacing, &UILinearLayoutComponent::SetDynamicSpacing)
-    .Field("skipInvisible", &UILinearLayoutComponent::IsSkipInvisibleControls, &UILinearLayoutComponent::SetSkipInvisibleControls)
-    .Field("useRtl", &UILinearLayoutComponent::IsUseRtl, &UILinearLayoutComponent::SetUseRtl)
+    .Field("enabled", &UILinearLayoutComponent::IsEnabled, &UILinearLayoutComponent::SetEnabled)[M::DisplayName("Enabled")]
+    .Field("orientation", &UILinearLayoutComponent::GetOrientation, &UILinearLayoutComponent::SetOrientation)[M::EnumT<eOrientation>(), M::DisplayName("Orientation")]
+    .Field("padding", &UILinearLayoutComponent::GetPadding, &UILinearLayoutComponent::SetPadding)[M::DisplayName("Padding")]
+    .Field("dynamicPadding", &UILinearLayoutComponent::IsDynamicPadding, &UILinearLayoutComponent::SetDynamicPadding)[M::DisplayName("Dynamic Padding")]
+    .Field("safeAreaPaddingInset", &UILinearLayoutComponent::IsSafeAreaPaddingInset, &UILinearLayoutComponent::SetSafeAreaPaddingInset)[M::DisplayName("Safe Area Inset")]
+    .Field("spacing", &UILinearLayoutComponent::GetSpacing, &UILinearLayoutComponent::SetSpacing)[M::DisplayName("Spacing")]
+    .Field("dynamicSpacing", &UILinearLayoutComponent::IsDynamicSpacing, &UILinearLayoutComponent::SetDynamicSpacing)[M::DisplayName("Dynamic Spacing")]
+    .Field("skipInvisible", &UILinearLayoutComponent::IsSkipInvisibleControls, &UILinearLayoutComponent::SetSkipInvisibleControls)[M::DisplayName("Skip Invisible")]
+    .Field("useRtl", &UILinearLayoutComponent::IsUseRtl, &UILinearLayoutComponent::SetUseRtl)[M::DisplayName("Use RTL")]
     .End();
 }
+
+IMPLEMENT_UI_COMPONENT(UILinearLayoutComponent);
 
 UILinearLayoutComponent::UILinearLayoutComponent()
 {
@@ -145,6 +147,16 @@ bool UILinearLayoutComponent::IsDynamicPadding() const
 void UILinearLayoutComponent::SetDynamicPadding(bool dynamic)
 {
     SetFlag(FLAG_DYNAMIC_PADDING, dynamic);
+}
+
+bool UILinearLayoutComponent::IsSafeAreaPaddingInset() const
+{
+    return flags.test(FLAG_SAFE_AREA_PADDING_INSET);
+}
+
+void UILinearLayoutComponent::SetSafeAreaPaddingInset(bool inset)
+{
+    SetFlag(FLAG_SAFE_AREA_PADDING_INSET, inset);
 }
 
 bool UILinearLayoutComponent::IsDynamicSpacing() const

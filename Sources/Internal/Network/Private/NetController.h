@@ -1,7 +1,7 @@
-#ifndef __DAVAENGINE_NETCONTROLLER_H__
-#define __DAVAENGINE_NETCONTROLLER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
+#include "Concurrency/Atomic.h"
 
 #include "Network/NetworkCommon.h"
 #include "Network/IController.h"
@@ -16,10 +16,8 @@ class ServiceRegistrar;
 class NetConfig;
 class ProtoDriver;
 
-class NetController : public IController
-                      ,
-                      public IServerListener
-                      ,
+class NetController : public IController,
+                      public IServerListener,
                       public IClientListener
 {
 private:
@@ -41,21 +39,22 @@ public:
     bool ApplyConfig(const NetConfig& config, size_t trIndex = 0);
 
     // IController
-    virtual void Start();
-    virtual void Stop(Function<void(IController*)> handler);
-    virtual void Restart();
+    Status GetStatus() const override;
+    void Start() override;
+    void Stop(Function<void(IController*)> handler) override;
+    void Restart() override;
 
     // IServerListener
-    virtual void OnTransportSpawned(IServerTransport* parent, IClientTransport* child);
-    virtual void OnTransportTerminated(IServerTransport* tr);
+    void OnTransportSpawned(IServerTransport* parent, IClientTransport* child) override;
+    void OnTransportTerminated(IServerTransport* tr) override;
 
     // IClientListener
-    virtual void OnTransportTerminated(IClientTransport* tr);
-    virtual void OnTransportConnected(IClientTransport* tr, const Endpoint& endp);
-    virtual void OnTransportDisconnected(IClientTransport* tr, int32 error);
-    virtual void OnTransportDataReceived(IClientTransport* tr, const void* buffer, size_t length);
-    virtual void OnTransportSendComplete(IClientTransport* tr);
-    virtual void OnTransportReadTimeout(IClientTransport* tr);
+    void OnTransportTerminated(IClientTransport* tr) override;
+    void OnTransportConnected(IClientTransport* tr, const Endpoint& endp) override;
+    void OnTransportDisconnected(IClientTransport* tr, int32 error) override;
+    void OnTransportDataReceived(IClientTransport* tr, const void* buffer, size_t length) override;
+    void OnTransportSendComplete(IClientTransport* tr) override;
+    void OnTransportReadTimeout(IClientTransport* tr) override;
 
 private:
     void DoStartServers();
@@ -79,6 +78,8 @@ private:
     bool isTerminating;
     uint32 readTimeout = 0;
 
+    Atomic<Status> status{ NOT_STARTED };
+
     Vector<uint32> serviceIds;
     Vector<IServerTransport*> servers;
     List<ClientEntry> clients;
@@ -97,7 +98,10 @@ inline bool operator==(const NetController::ClientEntry& entry, const IClientTra
     return entry.client == obj;
 }
 
+inline IController::Status NetController::GetStatus() const
+{
+    return status.Get();
+}
+
 } // namespace Net
 } // namespace DAVA
-
-#endif // __DAVAENGINE_NETCONTROLLER_H__

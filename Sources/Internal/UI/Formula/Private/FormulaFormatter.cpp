@@ -63,6 +63,10 @@ String FormulaFormatter::AnyToString(const Any& val)
     {
         return DAVA::Format("%f", val.Get<float32>());
     }
+    else if (val.CanGet<float64>())
+    {
+        return DAVA::Format("%lf", val.Get<float64>());
+    }
     else if (val.CanGet<String>())
     {
         return val.Get<String>();
@@ -120,6 +124,10 @@ String FormulaFormatter::AnyTypeToString(const Any& val)
     {
         return "float32";
     }
+    else if (val.CanGet<float64>())
+    {
+        return "float64";
+    }
     else if (val.CanGet<String>())
     {
         return "String";
@@ -154,9 +162,9 @@ String FormulaFormatter::BinaryOpToString(FormulaBinaryOperatorExpression::Opera
     case FormulaBinaryOperatorExpression::OP_MOD:
         return "%";
     case FormulaBinaryOperatorExpression::OP_AND:
-        return "&&";
+        return "and";
     case FormulaBinaryOperatorExpression::OP_OR:
-        return "||";
+        return "or";
     case FormulaBinaryOperatorExpression::OP_EQ:
         return "==";
     case FormulaBinaryOperatorExpression::OP_NOT_EQ:
@@ -210,7 +218,7 @@ void FormulaFormatter::Visit(FormulaNegExpression* exp)
 
 void FormulaFormatter::Visit(FormulaNotExpression* exp)
 {
-    stream << "!";
+    stream << "not ";
 
     bool squares = dynamic_cast<FormulaBinaryOperatorExpression*>(exp->GetExp()) != nullptr;
     if (squares)
@@ -224,6 +232,19 @@ void FormulaFormatter::Visit(FormulaNotExpression* exp)
     {
         stream << ")";
     }
+}
+
+void FormulaFormatter::Visit(FormulaWhenExpression* exp)
+{
+    stream << "when ";
+    for (const auto& branch : exp->GetBranches())
+    {
+        branch.first->Accept(this);
+        stream << " -> ";
+        branch.second->Accept(this);
+        stream << ", ";
+    }
+    exp->GetElseBranch()->Accept(this);
 }
 
 void FormulaFormatter::Visit(FormulaBinaryOperatorExpression* exp)

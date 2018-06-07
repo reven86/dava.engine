@@ -31,6 +31,7 @@ struct IOErrorTypes
     bool seekFailed = false;
     bool closeFailed = false;
     bool truncateFailed = false;
+    bool moveFailed = false;
 };
 void GenerateIOErrorOnNextOperation(IOErrorTypes types);
 bool GenErrorOnOpenOrCreateFailed();
@@ -39,5 +40,6 @@ bool GenErrorOnReadFailed();
 bool GenErrorOnSeekFailed();
 bool GenErrorOnCloseFailed();
 bool GenErrorOnTruncateFailed();
+bool GenErrorOnMoveFailed();
 }
 } // end namespace DAVA

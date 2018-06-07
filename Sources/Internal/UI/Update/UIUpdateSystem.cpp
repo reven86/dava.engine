@@ -156,8 +156,7 @@ void UIUpdateSystem::ProcessControlHierarchy(float32 elapsedTime, UIControl* con
     control->isIteratorCorrupted = false;
     while (it != control->GetChildren().end())
     {
-        RefPtr<UIControl> child;
-        child = *it;
+        RefPtr<UIControl> child(*it);
         if (!child->isUpdated)
         {
             ProcessControlHierarchy(elapsedTime, child.Get());

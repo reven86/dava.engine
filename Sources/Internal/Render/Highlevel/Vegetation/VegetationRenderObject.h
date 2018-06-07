@@ -71,7 +71,7 @@ public:
     void Save(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Load(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
-    void BindDynamicParameters(Camera* camera) override;
+    void BindDynamicParameters(Camera* camera, RenderBatch* batch) override;
     void PrepareToRender(Camera* camera) override;
     void RecalcBoundingBox() override;
 
@@ -253,22 +253,6 @@ private:
     Vector<uint8> densityMap;
 
     Vector<VegetationLayerParams> layerParams;
-
-public:
-    INTROSPECTION_EXTEND(VegetationRenderObject, RenderObject,
-                         PROPERTY("density", "Base density", GetLayerClusterLimit, SetLayerClusterLimit, I_SAVE | I_EDIT | I_VIEW)
-                         PROPERTY("scaleVariation", "Scale variation", GetScaleVariation, SetScaleVariation, I_SAVE | I_EDIT | I_VIEW)
-                         PROPERTY("rotationVariation", "Rotation variation", GetRotationVariation, SetRotationVariation, I_SAVE | I_EDIT | I_VIEW)
-                         PROPERTY("lightmap", "Lightmap", GetLightmapPath, SetLightmapAndGenerateDensityMap, I_SAVE | I_EDIT | I_VIEW)
-                         PROPERTY("lodRanges", "Lod ranges", GetLodRange, SetLodRange, I_EDIT | I_VIEW)
-                         PROPERTY("visibilityDistance", "Visibility distances", GetVisibilityDistance, SetVisibilityDistance, I_EDIT | I_VIEW)
-                         PROPERTY("maxVisibleQuads", "Max visible quads", GetMaxVisibleQuads, SetMaxVisibleQuads, I_EDIT | I_VIEW)
-                         PROPERTY("customGeometry", "Custom geometry", GetCustomGeometryPath, SetCustomGeometryPath, I_SAVE | I_EDIT | I_VIEW)
-                         PROPERTY("cameraBias", "Camera Bias", GetCameraBias, SetCameraBias, I_EDIT | I_VIEW)
-                         PROPERTY("animationAmplitude", "Animation Amplitude", GetLayersAnimationAmplitude, SetLayersAnimationAmplitude, I_SAVE | I_EDIT | I_VIEW)
-                         PROPERTY("animationSpring", "Animation Spring", GetLayersAnimationSpring, SetLayersAnimationSpring, I_SAVE | I_EDIT | I_VIEW)
-                         PROPERTY("animationDrag", "Animation Drag", GetLayerAnimationDragCoefficient, SetLayerAnimationDragCoefficient, I_SAVE | I_EDIT | I_VIEW)
-                         );
 
     DAVA_VIRTUAL_REFLECTION(VegetationRenderObject, RenderObject);
 

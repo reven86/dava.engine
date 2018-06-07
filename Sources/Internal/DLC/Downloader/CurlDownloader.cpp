@@ -3,7 +3,9 @@
 #include "FileSystem/File.h"
 #include "Concurrency/Thread.h"
 #include "DLCManager/Private/DLCDownloaderImpl.h"
+#include "Engine/EngineContext.h"
 
+#define CURL_STATICLIB
 #include <curl/curl.h>
 
 namespace DAVA
@@ -50,12 +52,12 @@ CurlDownloader::CurlDownloader()
     , maxChunkSize(20 * 1024 * 1024)
     , minChunkSize(16 * 1024)
 {
-    CurlGlobalInit();
+    Context::CurlGlobalInit();
 }
 
 CurlDownloader::~CurlDownloader()
 {
-    CurlGlobalDeinit();
+    Context::CurlGlobalDeinit();
 }
 
 size_t CurlDownloader::CurlDataRecvHandler(void* ptr, size_t size, size_t nmemb, void* part)

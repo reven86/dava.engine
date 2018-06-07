@@ -1,9 +1,9 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-#include "Base/FastNameMap.h"
 #include "Debug/Private/RingArray.h"
 #include "Debug/TraceEvent.h"
+#include "Math/Math2D.h"
 
 namespace DAVA
 {
@@ -129,8 +129,8 @@ protected:
         };
         using HistoryArray = RingArray<HistoryInstance>;
 
-        HistoryArray values;
-        uint32 updatesCount;
+        HistoryArray values = HistoryArray(MARKER_HISTORY_LENGTH);
+        uint32 updatesCount = 0U;
     };
 
     struct TraceData
@@ -211,8 +211,8 @@ protected:
     void SetTraceHistoryOffset(uint32 offset);
     uint32 GetTraceHistoryOffset() const;
 
-    FastNameMap<MarkerHistory> markersHistory = FastNameMap<MarkerHistory>(128, MarkerHistory({ MarkerHistory::HistoryArray(MARKER_HISTORY_LENGTH), 0 }));
-    FastNameMap<uint32> markersColor;
+    UnorderedMap<FastName, MarkerHistory> markersHistory = UnorderedMap<FastName, MarkerHistory>(128);
+    UnorderedMap<FastName, uint32> markersColor;
     Vector<FastName> interestMarkers;
 
     RingArray<TraceData> tracesData[TRACE_COUNT];

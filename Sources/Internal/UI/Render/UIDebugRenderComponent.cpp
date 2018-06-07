@@ -1,4 +1,6 @@
 #include "UIDebugRenderComponent.h"
+#include "Engine/Engine.h"
+#include "Entity/ComponentManager.h"
 #include "Reflection/ReflectionRegistrator.h"
 #include "Base/GlobalEnum.h"
 
@@ -13,17 +15,18 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(UIDebugRenderComponent)
 {
-    ReflectionRegistrator<UIDebugRenderComponent>::Begin()
+    ReflectionRegistrator<UIDebugRenderComponent>::Begin()[M::DisplayName("Debug Render"), M::Group("Content")]
     .ConstructorByPointer()
     .DestructorByPointer([](UIDebugRenderComponent* c) { SafeRelease(c); })
-    .Field("enabled", &UIDebugRenderComponent::IsEnabled, &UIDebugRenderComponent::SetEnabled)
-    .Field("drawColor", &UIDebugRenderComponent::GetDrawColor, &UIDebugRenderComponent::SetDrawColor)
+    .Field("enabled", &UIDebugRenderComponent::IsEnabled, &UIDebugRenderComponent::SetEnabled)[M::DisplayName("Enabled")]
+    .Field("drawColor", &UIDebugRenderComponent::GetDrawColor, &UIDebugRenderComponent::SetDrawColor)[M::DisplayName("Color")]
     .Field("pivotPointDrawMode", &UIDebugRenderComponent::GetPivotPointDrawMode, &UIDebugRenderComponent::SetPivotPointDrawMode)
     [
-    M::EnumT<ePivotPointDrawMode>()
+    M::EnumT<ePivotPointDrawMode>(), M::DisplayName("Pivot")
     ]
     .End();
 }
+IMPLEMENT_UI_COMPONENT(UIDebugRenderComponent);
 
 UIDebugRenderComponent::UIDebugRenderComponent()
 {

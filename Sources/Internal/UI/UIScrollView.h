@@ -3,7 +3,7 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
-#include "UI/UIScrollBar.h"
+#include "UI/UIScrollBarDelegate.h"
 #include "Reflection/Reflection.h"
 
 namespace DAVA
@@ -61,8 +61,15 @@ public:
 
     //Sets how fast scroll container will return to its bounds
     void SetReturnSpeed(float32 speedInSeconds);
+
+    //Returns how fast scroll container will return to its bounds
+    float32 GetReturnSpeed() const;
+
     //Sets how fast scroll speed will be reduced
     void SetScrollSpeed(float32 speedInSeconds);
+
+    //Returns how fast scroll speed will be reduced
+    float32 GetScrollSpeed() const;
 
     // UIScrollBarDelegate implementation.
     float32 VisibleAreaSize(UIScrollBar* forScrollBar) override;

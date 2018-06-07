@@ -1,19 +1,22 @@
 #include "UI/Focus/UINavigationComponent.h"
+#include "Engine/Engine.h"
+#include "Entity/ComponentManager.h"
 #include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(UINavigationComponent)
 {
-    ReflectionRegistrator<UINavigationComponent>::Begin()
+    ReflectionRegistrator<UINavigationComponent>::Begin()[M::DisplayName("Navigation"), M::Group("Input")]
     .ConstructorByPointer()
     .DestructorByPointer([](UINavigationComponent* o) { o->Release(); })
-    .Field("left", &UINavigationComponent::GetNextFocusLeft, &UINavigationComponent::SetNextFocusLeft)
-    .Field("right", &UINavigationComponent::GetNextFocusRight, &UINavigationComponent::SetNextFocusRight)
-    .Field("up", &UINavigationComponent::GetNextFocusUp, &UINavigationComponent::SetNextFocusUp)
-    .Field("down", &UINavigationComponent::GetNextFocusDown, &UINavigationComponent::SetNextFocusDown)
+    .Field("left", &UINavigationComponent::GetNextFocusLeft, &UINavigationComponent::SetNextFocusLeft)[M::DisplayName("Left")]
+    .Field("right", &UINavigationComponent::GetNextFocusRight, &UINavigationComponent::SetNextFocusRight)[M::DisplayName("Rigth")]
+    .Field("up", &UINavigationComponent::GetNextFocusUp, &UINavigationComponent::SetNextFocusUp)[M::DisplayName("Up")]
+    .Field("down", &UINavigationComponent::GetNextFocusDown, &UINavigationComponent::SetNextFocusDown)[M::DisplayName("Down")]
     .End();
 }
+IMPLEMENT_UI_COMPONENT(UINavigationComponent);
 
 UINavigationComponent::UINavigationComponent()
 {

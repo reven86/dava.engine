@@ -1,8 +1,7 @@
 #pragma once
 
+#include "Base/BaseTypes.h"
 #include "Debug/DVAssert.h"
-
-using DAVA::int32;
 
 namespace sl
 {
@@ -31,8 +30,8 @@ public:
     }
 };
 
-int32 String_PrintfArgList(char* buffer, int size, const char* format, va_list args);
-int32 String_FormatFloat(char* buffer, int size, float value);
+DAVA::int32 String_PrintfArgList(char* buffer, int size, const char* format, va_list args);
+DAVA::int32 String_FormatFloat(char* buffer, int size, float value);
 bool String_Equal(const char* a, const char* b);
 bool String_EqualNoCase(const char* a, const char* b);
 double String_ToDouble(const char* str, char** end);

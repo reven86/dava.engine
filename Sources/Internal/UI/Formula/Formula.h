@@ -39,7 +39,7 @@ public:
     /**
      Calculates prepared formula with data from context.
      */
-    Any Calculate(FormulaContext* context);
+    Any Calculate(const std::shared_ptr<FormulaContext>& context);
 
     /**
      Calculates prepared formula with data from reflection.

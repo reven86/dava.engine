@@ -65,6 +65,11 @@ void LandscapeSystem::RemoveEntity(Entity* entity)
     }
 }
 
+void LandscapeSystem::PrepareForRemove()
+{
+    landscapeEntities.clear();
+}
+
 void LandscapeSystem::Process(float32 timeElapsed)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_LANDSCAPE_SYSTEM);

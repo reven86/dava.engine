@@ -103,8 +103,8 @@ void AddressResolver::GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, 
     {
         LockGuard<Mutex> lock(resolver->handleMutex);
         DVASSERT(resolver->handle == handle);
-        resolver->GotAddrInfo(status, response);
         resolver->handle = nullptr;
+        resolver->GotAddrInfo(status, response);
     }
 
     SafeDelete(handle);

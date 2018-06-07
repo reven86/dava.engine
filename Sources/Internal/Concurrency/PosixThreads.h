@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_POSIX_THREADS_H__
-#define __DAVAENGINE_POSIX_THREADS_H__ 
+#pragma once
 
 #include "Base/Platform.h"
 #ifndef __DAVAENGINE_WINDOWS__
@@ -44,5 +43,3 @@ int pthread_mutex_destroy(pthread_mutex_t* mutex);
 };
 
 #endif //  !__DAVAENGINE_WINDOWS__
-
-#endif // __DAVAENGINE_POSIX_THREADS_H__

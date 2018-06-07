@@ -17,8 +17,6 @@ protected:
 public:
     LightComponent(Light* _light = 0);
 
-    IMPLEMENT_COMPONENT_TYPE(LIGHT_COMPONENT);
-
     Component* Clone(Entity* toEntity) override;
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
@@ -48,21 +46,6 @@ private:
     Light* light;
 
     void NotifyRenderSystemLightChanged();
-
-public:
-    INTROSPECTION_EXTEND(LightComponent, Component,
-                         //MEMBER(light, "Light", I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("isDynamic", "isDynamic", IsDynamic, SetDynamic, I_VIEW | I_EDIT)
-
-                         PROPERTY("lightType", InspDesc("type", GlobalEnumMap<Light::eType>::Instance()), GetLightType, SetLightType, I_VIEW | I_EDIT)
-                         PROPERTY("Ambient Color", "Ambient Color", GetAmbientColor, SetAmbientColor, I_VIEW | I_EDIT)
-                         PROPERTY("Color", "Color", GetDiffuseColor, SetDiffuseColor, I_VIEW | I_EDIT)
-                         PROPERTY("Intensity", "Intensity", GetIntensity, SetIntensity, I_VIEW | I_EDIT)
-
-                         //VI: seems we don't need this
-                         //PROPERTY("position", "position", GetPosition, SetPosition, I_VIEW)
-                         //PROPERTY("direction", "direction", GetDirection, SetDirection, I_VIEW)
-                         );
 
     DAVA_VIRTUAL_REFLECTION(LightComponent, Component);
 };

@@ -4,20 +4,20 @@
 #include "Animation/Interpolation.h"
 #include "Base/BaseTypes.h"
 #include "UI/Styles/UIStyleSheetPropertyDataBase.h"
-#include "UI/UIControlBackground.h"
 #include "UI/UIGeometricData.h"
 
 namespace DAVA
 {
-class UIYamlLoader;
 class Animation;
 class EventDispatcher;
-class UIEvent;
-class UIControlBackground;
 class Message;
+class Sprite;
 class UIComponent;
+class UIControlBackground;
 class UIControlFamily;
 class UIControlPackageContext;
+class UIControlSystem;
+class UIEvent;
 
 #define CONTROL_TOUCH_AREA 15
 
@@ -67,10 +67,8 @@ class UIControl : public AnimatedObject
     friend class UIInputSystem;
     friend class UIControlSystem;
     friend class UILayoutSystem; // Need for isIteratorCorrupted. See UILayoutSystem::UpdateControl.
-
+    friend class UIRenderSystem; // Need for isIteratorCorrupted. See UILayoutSystem::UpdateControl.
     DAVA_VIRTUAL_REFLECTION(UIControl, AnimatedObject);
-    // Need for isIteratorCorrupted. See UILayoutSystem::UpdateControl.
-    friend class UIRenderSystem;
 
 public:
     /**
@@ -118,73 +116,11 @@ public:
     UIControl(const Rect& rect = Rect());
 
     /**
-     \brief Returns Sprite used for draw in the current UIControlBackground object.
-        You can call this function directly for the controlBackgound.
-     \returns Sprite used for draw.
-     */
-    DAVA_DEPRECATED(Sprite* GetSprite() const);
-    /**
      \brief Returns Sprite frame used for draw in the current UIControlBackground object.
         You can call this function directly for the controlBackgound.
      \returns Sprite frame used for draw.
      */
     DAVA_DEPRECATED(int32 GetFrame() const);
-    /**
-     \brief Returns draw type used for draw in the current UIControlBackground object.
-        You can call this function directly for the controlBackgound.
-     \returns Draw type used for draw.
-     */
-    DAVA_DEPRECATED(virtual UIControlBackground::eDrawType GetSpriteDrawType() const);
-    /**
-     \brief Returns Sprite align used for draw in the current UIControlBackground object.
-        You can call this function directly for the controlBackgound.
-     \returns Sprite eAlign bit mask used for draw.
-     */
-    DAVA_DEPRECATED(virtual int32 GetSpriteAlign() const);
-    /**
-     \brief Sets Sprite for the control UIControlBackground object.
-     \param[in] spriteName Sprite path-name.
-     \param[in] spriteFrame Sprite frame you want to use for draw.
-     */
-    DAVA_DEPRECATED(virtual void SetSprite(const FilePath& spriteName, int32 spriteFrame));
-    /**
-     \brief Sets Sprite for the control UIControlBackground object.
-     \param[in] newSprite Pointer for a Sprite.
-     \param[in] spriteFrame Sprite frame you want to use for draw.
-     */
-    DAVA_DEPRECATED(virtual void SetSprite(Sprite* newSprite, int32 spriteFrame));
-    /**
-     \brief Sets Sprite frame you want to use for draw for the control UIControlBackground object.
-     \param[in] spriteFrame Sprite frame.
-     */
-    DAVA_DEPRECATED(virtual void SetSpriteFrame(int32 spriteFrame));
-    /**
-     \brief Sets Sprite frame you want to use for draw for the control UIControlBackground object.
-     \param[in] frame Sprite frame name.
-     */
-    DAVA_DEPRECATED(virtual void SetSpriteFrame(const FastName& frameName));
-    /**
-     \brief Sets draw type you want to use the control UIControlBackground object.
-     \param[in] drawType Draw type to use for drawing.
-     */
-    DAVA_DEPRECATED(virtual void SetSpriteDrawType(UIControlBackground::eDrawType drawType));
-    /**
-     \brief Sets Sprite align you want to use for draw for the control UIControlBackground object.
-     \param[in] drawAlign Sprite eAlign bit mask.
-     */
-    DAVA_DEPRECATED(virtual void SetSpriteAlign(int32 align));
-
-    /**
-     \brief Sets background what will be used for draw.
-        Background is cloned inside control.
-     \param[in] newBg control background you want to use for draw.
-     */
-    DAVA_DEPRECATED(void SetBackground(UIControlBackground* newBg));
-    /**
-     \brief Returns current background used for draw.
-     \returns background used for draw.
-     */
-    DAVA_DEPRECATED(UIControlBackground* GetBackground() const);
 
     /**
      \brief Returns untransformed control rect.
@@ -317,7 +253,7 @@ public:
      \returns control angle in radians.
      */
     inline float32 GetAngle() const;
-    inline float32 GetAngleInDegrees() const;
+    float32 GetAngleInDegrees() const;
 
     /**
      \brief Sets control rotation angle in radians.
@@ -327,9 +263,6 @@ public:
     virtual void SetAngle(float32 angleInRad);
 
     void SetAngleInDegrees(float32 angle);
-
-    virtual Vector2 GetContentPreferredSize(const Vector2& constraints) const; // -1.0f means no constraint for axis
-    virtual bool IsHeightDependsOnWidth() const;
 
     /**
      \brief Returns control visibility.
@@ -448,12 +381,13 @@ public:
     Function uses stable sort, sets layout dirty flag and invalidates iteration.
     \param[in] predicate sorting predicate. All predicates for std::list<>::sort are allowed for this function too.
     */
-    template <class T>
-    inline void SortChildren(const T& predicate);
+    using SortFunction = Function<bool(const RefPtr<UIControl>&, const RefPtr<UIControl>&)>;
+    void SortChildren(const SortFunction& predicate);
+
     /*
-     \brief Sets the conrtol name.
+     \brief Sets the control name.
         Later you can find control by this name.
-     \param[in] _name new control name.
+     \param[in] name_ new control name.
      */
     void SetName(const String& name_);
     void SetName(const FastName& name_);
@@ -512,6 +446,8 @@ public:
      */
     void SetState(int32 state);
 
+    UIControlSystem* GetScene() const;
+
     /**
      \brief Returns control parent.
      \returns if control hasn't parent returns NULL.
@@ -522,20 +458,22 @@ public:
      \brief Returns list of control children.
      \returns list of control children.
      */
-    const List<UIControl*>& GetChildren() const;
+    const List<RefPtr<UIControl>>& GetChildren() const;
     /**
      \brief Add control as a child.
         Children draws in the sequence of adding. If child has another parent
         this child removes from the parent firstly.
      \param[in] control control to add.
      */
-    virtual void AddControl(UIControl* control);
+    void AddControl(RefPtr<UIControl> control);
+    DAVA_DEPRECATED(virtual void AddControl(UIControl* control));
     /**
      \brief Removes control from the children list.
         If child isn't present in the method owners list nothing happens.
      \param[in] control control to remove.
      */
-    virtual void RemoveControl(UIControl* control);
+    void RemoveControl(RefPtr<UIControl> control);
+    DAVA_DEPRECATED(virtual void RemoveControl(UIControl* control));
     /**
      \brief Remove this control from its parent, if any.
      */
@@ -550,42 +488,44 @@ public:
         If child isn't present in the owners list nothing happens.
      \param[in] _control control to bring front.
      */
-    virtual void BringChildFront(UIControl* _control);
+    virtual void BringChildFront(const UIControl* _control);
     /**
      \brief Brings given child back.
         This child will be drawn at the bottom of the control children.
         If child isn't present in the owners list nothing happens.
      \param[in] _control control to bring back.
      */
-    virtual void BringChildBack(UIControl* _control);
+    virtual void BringChildBack(const UIControl* _control);
     /**
      \brief Inserts given child before the requested.
      \param[in] _control control to insert.
      \param[in] _belowThisChild control to insert before. If this control isn't present in the
         children list new child adds at the top of the list.
      */
-    virtual void InsertChildBelow(UIControl* _control, UIControl* _belowThisChild);
+    void InsertChildBelow(RefPtr<UIControl> _control, const UIControl* _belowThisChild);
+    DAVA_DEPRECATED(virtual void InsertChildBelow(UIControl* _control, const UIControl* _belowThisChild));
     /**
      \brief Inserts given child after the requested.
      \param[in] _control control to insert.
      \param[in] _aboveThisChild control to insert after. If this control isn't present in the
      children list new child adds at the top of the list.
      */
-    virtual void InsertChildAbove(UIControl* _control, UIControl* _aboveThisChild);
+    void InsertChildAbove(RefPtr<UIControl> _control, const UIControl* _aboveThisChild);
+    DAVA_DEPRECATED(virtual void InsertChildAbove(UIControl* _control, const UIControl* _aboveThisChild));
     /**
      \brief Sends given child before the requested.
         If one of the given children isn't present in the owners list nothing happens.
      \param[in] _control control to move.
      \param[in] _belowThisChild control to sends before.
      */
-    virtual void SendChildBelow(UIControl* _control, UIControl* _belowThisChild);
+    virtual void SendChildBelow(const UIControl* _control, const UIControl* _belowThisChild);
     /**
      \brief Sends given child after the requested.
         If one of the given children isn't present in the owners list nothing happens.
      \param[in] _control control to move.
      \param[in] _aboveThisChild control to sends after.
      */
-    virtual void SendChildAbove(UIControl* _control, UIControl* _aboveThisChild);
+    virtual void SendChildAbove(const UIControl* _control, const UIControl* _aboveThisChild);
 
     /**
      \brief Adds callback message for the event trigger.
@@ -924,19 +864,18 @@ public:
     virtual void UpdateLayout();
     virtual void OnSizeChanged();
 
-    // Find the control by name and add it to the list, if found.
-    bool AddControlToList(List<UIControl*>& controlsList, const String& controlName, bool isRecursive = false);
-
     void DumpInputs(int32 depthLevel);
 
     static void DumpControls(bool onlyOrphans);
 
 private:
     FastName name;
-    Vector2 pivot; //!<control pivot. Top left control corner by default.
+    Vector2 pivot = Vector2(0.0f, 0.0f); //!<control pivot. Top left control corner by default.
 
-    UIControl* parent;
-    List<UIControl*> children;
+    UIControlSystem* scene = nullptr;
+
+    UIControl* parent = nullptr;
+    List<RefPtr<UIControl>> children;
 
     DAVA_DEPRECATED(bool isUpdated = false);
     // Need for old implementation of SystemUpdate.
@@ -947,8 +886,8 @@ public:
     Vector2 relativePosition; //!<position in the parent control.
     Vector2 size; //!<control size.
 
-    Vector2 scale; //!<control scale. Scale relative to pivot point.
-    float32 angle; //!<control rotation angle. Rotation around pivot point.
+    Vector2 scale = Vector2(1.0f, 1.0f); //!<control scale. Scale relative to pivot point.
+    float32 angle = 0.0f; //!<control rotation angle. Rotation around pivot point.
 
 protected:
     float32 wheelSensitivity = 30.f;
@@ -968,16 +907,17 @@ protected:
     bool layoutPositionDirty : 1;
     bool layoutOrderDirty : 1;
 
-    int32 inputProcessorsCount;
+    int32 inputProcessorsCount = 1;
 
-    int32 currentInputID;
-    int32 touchesInside;
-    int32 totalTouches;
+    int32 currentInputID = 0;
+    int32 touchesInside = 0;
+    int32 totalTouches = 0;
 
     mutable UIGeometricData tempGeometricData;
 
-    EventDispatcher* eventDispatcher;
+    RefPtr<EventDispatcher> eventDispatcher;
 
+    void SetScene(UIControlSystem* scene);
     void SetParent(UIControl* newParent);
 
     virtual ~UIControl();
@@ -990,7 +930,7 @@ protected:
 private:
     int32 tag = 0;
     eViewState viewState = eViewState::INACTIVE;
-    int32 controlState;
+    int32 controlState = eControlState::STATE_NORMAL;
 
     bool inputEnabled : 1;
 
@@ -1026,7 +966,8 @@ public:
     template <class T>
     void RemoveComponent(int32 index = 0)
     {
-        RemoveComponent(Type::Instance<T>(), index);
+        static int32 runtimeType = TypeToRuntimeType(Type::Instance<T>());
+        RemoveComponent(runtimeType, index);
     }
 
     /** Remove all components. */
@@ -1042,8 +983,13 @@ public:
     template <class T>
     inline T* GetComponent(uint32 index = 0) const
     {
-        return DynamicTypeCheck<T*>(GetComponent(Type::Instance<T>(), index));
+        static int32 runtimeType = TypeToRuntimeType(Type::Instance<T>());
+        return DynamicTypeCheck<T*>(GetComponent(runtimeType, index));
     }
+
+    /** Return UIComponent with specified 'typeName' (reflection permament name) at specified 'index'.
+        Return nullptr if such component is not found. */
+    UIComponent* GetComponentByName(const String& typeName, uint32 index = 0) const;
 
     /**
     Return index in UIControl::components of specified 'component'. Return -1 if 'component' is not found in control.
@@ -1065,6 +1011,11 @@ public:
         return DynamicTypeCheck<T*>(GetOrCreateComponent(Type::Instance<T>(), index));
     }
 
+    /** Return UIComponent with specified 'typeName' at specified 'index'.
+    If such component is not found, new component with 'typeName' is created, added to control and returned.
+    In case of creation, the behavior is undefined until 'index' is 0. */
+    UIComponent* GetOrCreateComponentByName(const String& typeName, uint32 index = 0);
+
     /** Return total number of components. */
     uint32 GetComponentCount() const;
 
@@ -1077,7 +1028,8 @@ public:
     template <class T>
     inline uint32 GetComponentCount() const
     {
-        return GetComponentCount(Type::Instance<T>());
+        static int32 runtimeType = TypeToRuntimeType(Type::Instance<T>());
+        return GetComponentCount(runtimeType);
     }
 
     /** Return UIControl::components reference. */
@@ -1086,9 +1038,11 @@ public:
 
 private:
     Vector<UIComponent*> components;
-    UIControlFamily* family;
+    UIControlFamily* family = nullptr;
     void RemoveComponent(const Vector<UIComponent*>::iterator& it);
     void UpdateFamily();
+
+    static int32 TypeToRuntimeType(const Type* type);
 
     /* Styles */
 public:
@@ -1128,9 +1082,9 @@ public:
     void SetLayoutOrderDirty();
     void ResetLayoutOrderDirty();
 
-    UIControlPackageContext* GetPackageContext() const;
-    UIControlPackageContext* GetLocalPackageContext() const;
-    void SetPackageContext(UIControlPackageContext* packageContext);
+    RefPtr<UIControlPackageContext> GetPackageContext() const;
+    const RefPtr<UIControlPackageContext>& GetLocalPackageContext() const;
+    void SetPackageContext(const RefPtr<UIControlPackageContext>& packageContext);
     UIControl* GetParentWithContext() const;
 
 private:
@@ -1138,7 +1092,7 @@ private:
     UIStyleSheetPropertySet localProperties;
     UIStyleSheetPropertySet styledProperties;
     RefPtr<UIControlPackageContext> packageContext;
-    UIControl* parentWithContext;
+    UIControl* parentWithContext = nullptr;
 
     void PropagateParentWithContext(UIControl* newParentWithContext);
     /* Styles */
@@ -1191,11 +1145,6 @@ inline float32 UIControl::GetAngle() const
     return angle;
 }
 
-inline float32 UIControl::GetAngleInDegrees() const
-{
-    return RadToDeg(angle);
-}
-
 inline const FastName& UIControl::GetName() const
 {
     return name;
@@ -1229,15 +1178,6 @@ inline bool UIControl::GetExclusiveInput() const
 inline bool UIControl::GetMultiInput() const
 {
     return multiInput;
-}
-
-template <class T>
-inline void UIControl::SortChildren(const T& predicate)
-{
-    children.sort(predicate); // std::stable_sort and std::sort are not allowed for list
-
-    isIteratorCorrupted = true;
-    SetLayoutOrderDirty();
 }
 
 inline int32 UIControl::GetState() const

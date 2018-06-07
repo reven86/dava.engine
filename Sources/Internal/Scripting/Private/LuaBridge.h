@@ -21,6 +21,11 @@ Register in Lua new DV namespace with service functions.
 void RegisterDava(lua_State* L);
 
 /**
+Register in lua::package library our modules loader.
+*/
+void RegisterModulesLoader(lua_State* L);
+
+/**
 Register in Lua metatable for Any userdata type.
 */
 void RegisterAny(lua_State* L);

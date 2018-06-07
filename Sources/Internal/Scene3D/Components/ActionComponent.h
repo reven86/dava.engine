@@ -67,9 +67,6 @@ public:
 
         void actualizeDelay();
 
-        INTROSPECTION(Action,
-                      NULL);
-
         DAVA_VIRTUAL_REFLECTION(Action, InspBase);
     };
 
@@ -102,8 +99,6 @@ public:
     static ActionComponent::Action MakeAction(ActionComponent::Action::eType type, const FastName& targetName, float32 delay);
     static ActionComponent::Action MakeAction(ActionComponent::Action::eType type, const FastName& targetName, float32 delay, int32 switchIndex);
 
-    IMPLEMENT_COMPONENT_TYPE(ACTION_COMPONENT);
-
     struct ActionContainer : public InspBase
     {
         Action action;
@@ -128,9 +123,6 @@ public:
 
         bool operator==(const ActionContainer& container) const;
 
-        INTROSPECTION(ActionContainer,
-                      NULL);
-
         DAVA_VIRTUAL_REFLECTION(ActionContainer, InspBase);
     };
 
@@ -150,11 +142,6 @@ private:
     Vector<ActionComponent::ActionContainer> actions;
     bool started;
     bool allActionsActive; //skip processing when all actions are active
-
-public:
-    INTROSPECTION_EXTEND(ActionComponent, Component,
-                         COLLECTION(actions, "Actions Array", I_VIEW | I_EDIT)
-                         );
 
     DAVA_VIRTUAL_REFLECTION(ActionComponent, Component);
 };

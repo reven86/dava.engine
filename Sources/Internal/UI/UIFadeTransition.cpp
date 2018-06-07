@@ -37,7 +37,7 @@ void UIFadeTransition::Draw(const UIGeometricData& geometricData)
 	 renderTargetNextScreen->SetPosition(240, 0);
 	 renderTargetNextScreen->Draw(); 
 	 */
-    Sprite::DrawState drawState;
+    SpriteDrawState drawState;
     drawState.SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_MATERIAL);
     if (type == FADE_MIX)
     {

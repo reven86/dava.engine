@@ -8,16 +8,7 @@
 #include <objc/objc.h>
 #endif
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 #include "Render/Image/Private/PVRDefines.h"
-#else //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-#if defined(__DAVAENGINE_WIN_UAP__)
-#include "libpvr/PVRTextureDefines.h"
-#else
-#include "libpvr/PVRTextureHeader.h"
-#endif
-
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
 
 namespace DAVA
 {
@@ -69,8 +60,6 @@ bool GetCRCFromMetaData(const PVRFile& pvrFile, uint32* outputCRC);
 void AddCRCToMetaData(PVRFile& pvrFile, uint32 crc);
 
 bool LoadImages(File* infile, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams);
-
-bool DecodeToRGBA8888(const Image* encodedImage, Image* decodedImage);
 
 PixelFormat GetPixelFormat(const PVRHeaderV3& textureHeader);
 }

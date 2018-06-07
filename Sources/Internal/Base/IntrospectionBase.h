@@ -25,7 +25,10 @@ public:
     InspBase();
 
     // Возвращает интроспекцию класса
-    virtual const InspInfo* GetTypeInfo() const = 0;
+    virtual const InspInfo* GetTypeInfo() const
+    {
+        return nullptr;
+    };
 
 protected:
     virtual ~InspBase();

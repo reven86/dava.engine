@@ -1,17 +1,17 @@
-#include "Engine/Private/iOS/CoreNativeBridgeiOS.h"
+#include "Engine/Private/Ios/CoreNativeBridgeIos.h"
 
-#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Engine.h"
-#include "Engine/Ios/PlatformApi.h"
+#include "Engine/PlatformApiIos.h"
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/iOS/PlatformCoreiOS.h"
-#include "Engine/Private/iOS/Window/WindowBackendiOS.h"
+#include "Engine/Private/Ios/PlatformCoreIos.h"
+#include "Engine/Private/Ios/WindowImplIos.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
 #include "Logger/Logger.h"
 #include "Time/SystemTimer.h"
+#include "Utils/NSStringUtils.h"
 
 #import <UIKit/UIKit.h>
 
@@ -22,11 +22,11 @@
 {
     DAVA::Private::CoreNativeBridge* bridge;
     CADisplayLink* displayLink;
-    DAVA::int32 curInterval;
+    DAVA::int32 currentFPS;
 }
 
 - (id)init:(DAVA::Private::CoreNativeBridge*)nativeBridge;
-- (void)setDisplayLinkInterval:(DAVA::int32)interval;
+- (void)setDisplayLinkPreferredFPS:(DAVA::int32)fps;
 - (void)pauseDisplayLink;
 - (void)resumeDisplayLink;
 - (void)cancelDisplayLink;
@@ -42,23 +42,30 @@
     if (self != nil)
     {
         bridge = nativeBridge;
-        curInterval = 1;
+        currentFPS = 60;
         displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(displayLinkTimerFired:)];
         [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+        [self setDisplayLinkPreferredFPS:currentFPS];
     }
     return self;
 }
 
-- (void)setDisplayLinkInterval:(DAVA::int32)interval
+- (void)setDisplayLinkPreferredFPS:(DAVA::int32)fps
 {
-    if (interval <= 0)
+    if (currentFPS != fps)
     {
-        interval = 1;
-    }
-    if (curInterval != interval)
-    {
-        [displayLink setFrameInterval:interval];
-        curInterval = interval;
+        NSString* currSysVer = [[UIDevice currentDevice] systemVersion];
+        if ([currSysVer compare:@"10.0" options:NSNumericSearch] != NSOrderedAscending)
+        {
+            [displayLink setPreferredFramesPerSecond:fps];
+        }
+        else
+        {
+            DAVA::int32 interval = DAVA::Max(DAVA::int32(60.0 / fps + 0.5), 1);
+            [displayLink setFrameInterval:interval];
+        }
+
+        currentFPS = fps;
     }
 }
 
@@ -155,13 +162,8 @@ void CoreNativeBridge::OnFrameTimer()
     if (!EngineBackend::showingModalMessageBox)
     {
         int32 fps = core->OnFrame();
-        if (fps <= 0)
-        {
-            fps = std::numeric_limits<int32>::max();
-        }
 
-        int32 interval = static_cast<int32>(60.0 / fps + 0.5);
-        [objcInterop setDisplayLinkInterval:interval];
+        [objcInterop setDisplayLinkPreferredFPS:fps];
     }
 }
 
@@ -176,16 +178,43 @@ BOOL CoreNativeBridge::ApplicationDidFinishLaunchingWithOptions(UIApplication* a
 {
     Logger::FrameworkDebug("******** applicationDidFinishLaunchingWithOptions");
 
+    NSURL* launchUrl = static_cast<NSURL*>(launchOptions[UIApplicationLaunchOptionsURLKey]);
+    if (launchUrl != nil)
+    {
+        CollectActivationFilenames(launchUrl);
+        ignoreOpenUrlJustAfterStartup = true;
+    }
+
     engineBackend->OnGameLoopStarted();
 
-    WindowBackend* primaryWindowBackend = EngineBackend::GetWindowBackend(engineBackend->GetPrimaryWindow());
-    primaryWindowBackend->Create();
+    WindowImpl* primaryWindowImpl = EngineBackend::GetWindowImpl(engineBackend->GetPrimaryWindow());
+    primaryWindowImpl->Create();
 
     objcInterop = [[ObjectiveCInterop alloc] init:this];
-    [objcInterop setDisplayLinkInterval:1];
     [objcInterop enableGameControllerObserver:YES];
 
     return NotifyListeners(ON_DID_FINISH_LAUNCHING, app, launchOptions);
+}
+
+BOOL CoreNativeBridge::ApplicationOpenUrl(NSURL* url)
+{
+    if (!ignoreOpenUrlJustAfterStartup && CollectActivationFilenames(url))
+    {
+        engineBackend->OnFileActivated();
+        return YES;
+    }
+    ignoreOpenUrlJustAfterStartup = false;
+    return NO;
+}
+
+bool CoreNativeBridge::CollectActivationFilenames(NSURL* url)
+{
+    if ([[url scheme] isEqualToString:@"file"])
+    {
+        engineBackend->AddActivationFilename(StringFromNSString([url path]));
+        return true;
+    }
+    return false;
 }
 
 void CoreNativeBridge::ApplicationDidBecomeActive(UIApplication* app)
@@ -246,13 +275,15 @@ void CoreNativeBridge::ApplicationWillTerminate(UIApplication* app)
     [objcInterop cancelDisplayLink];
     [objcInterop enableGameControllerObserver:NO];
 
-    WindowBackend* primaryWindowBackend = EngineBackend::GetWindowBackend(engineBackend->GetPrimaryWindow());
-    primaryWindowBackend->Close(true);
+    WindowImpl* primaryWindowImpl = EngineBackend::GetWindowImpl(engineBackend->GetPrimaryWindow());
+    primaryWindowImpl->Close(true);
 }
 
 void CoreNativeBridge::ApplicationDidReceiveMemoryWarning(UIApplication* app)
 {
     Logger::FrameworkDebug("******** applicationDidReceiveMemoryWarning");
+
+    mainDispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::LOW_MEMORY));
 
     NotifyListeners(ON_DID_RECEIVE_MEMORY_WARNING, app);
 }
@@ -289,7 +320,9 @@ void CoreNativeBridge::HandleActionWithIdentifier(UIApplication* app, NSString* 
 
 BOOL CoreNativeBridge::OpenURL(UIApplication* app, NSURL* url, NSString* sourceApplication, id annotation)
 {
-    return NotifyListeners(ON_OPEN_URL, app, url, sourceApplication, annotation);
+    BOOL r = ApplicationOpenUrl(url);
+    r |= NotifyListeners(ON_OPEN_URL, app, url, sourceApplication, annotation);
+    return r;
 }
 
 BOOL CoreNativeBridge::ContinueUserActivity(UIApplication* app, NSUserActivity* userActivity, id restorationHandler)
@@ -463,4 +496,3 @@ BOOL CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
 } // namespace DAVA
 
 #endif // __DAVAENGINE_IPHONE__
-#endif // __DAVAENGINE_COREV2__

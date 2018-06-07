@@ -9,7 +9,6 @@
 #include "Logger/Logger.h"
 using DAVA::Logger;
 
-#include "Core/Core.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Concurrency/Thread.h"
@@ -175,6 +174,10 @@ static void dx9_RenderPass_End(Handle pass)
 
 namespace RenderPassDX9
 {
+void Init(uint32 maxCount)
+{
+    RenderPassPoolDX9::Reserve(maxCount);
+}
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_Renderpass_Allocate = &dx9_RenderPass_Allocate;
@@ -478,9 +481,9 @@ static bool dx9_SyncObject_IsSignaled(Handle obj)
 }
 
 CommandBufferDX9_t::CommandBufferDX9_t()
-    : isFirstInPass(true)
+    : sync(InvalidHandle)
+    , isFirstInPass(true)
     , isLastInPass(true)
-    , sync(InvalidHandle)
 {
 }
 
@@ -524,11 +527,11 @@ void CommandBufferDX9_t::Execute()
                             _D3D9_Device->GetRenderTarget(0, &_D3D9_BackBuf);
 
                             if (passCfg.UsingMSAA())
-                                TextureDX9::SetAsRenderTarget(passCfg.colorBuffer[i].multisampleTexture, i);
+                                TextureDX9::SetAsRenderTarget(passCfg.colorBuffer[i].multisampleTexture, i, passCfg.colorBuffer[i].textureFace);
                         }
 
                         if (!passCfg.UsingMSAA())
-                            TextureDX9::SetAsRenderTarget(passCfg.colorBuffer[i].texture, i);
+                            TextureDX9::SetAsRenderTarget(passCfg.colorBuffer[i].texture, i, passCfg.colorBuffer[i].textureFace);
                         ++_D3D9_TargetCount;
                     }
 
@@ -539,17 +542,24 @@ void CommandBufferDX9_t::Execute()
                     }
                 }
 
-                if ((passCfg.depthStencilBuffer.texture != rhi::InvalidHandle && passCfg.depthStencilBuffer.texture != rhi::DefaultDepthBuffer)
-                    || passCfg.UsingMSAA()
-                    )
-                {
-                    DVASSERT(_D3D9_DepthBuf == nullptr);
-                    _D3D9_Device->GetDepthStencilSurface(&_D3D9_DepthBuf);
+                _D3D9_Device->GetDepthStencilSurface(&_D3D9_DepthBuf);
 
-                    if (passCfg.UsingMSAA())
-                        TextureDX9::SetAsDepthStencil(passCfg.depthStencilBuffer.multisampleTexture);
-                    else
+                bool hasDepthBuf = true;
+                if (passCfg.UsingMSAA() && passCfg.depthStencilBuffer.multisampleTexture != rhi::InvalidHandle)
+                {
+                    TextureDX9::SetAsDepthStencil(passCfg.depthStencilBuffer.multisampleTexture);
+                }
+                else if (passCfg.depthStencilBuffer.texture != rhi::DefaultDepthBuffer)
+                {
+                    if (passCfg.depthStencilBuffer.texture != rhi::InvalidHandle)
+                    {
                         TextureDX9::SetAsDepthStencil(passCfg.depthStencilBuffer.texture);
+                    }
+                    else
+                    {
+                        DX9_CALL(_D3D9_Device->SetDepthStencilSurface(NULL), "SetDepthStencilSurface");
+                        hasDepthBuf = false;
+                    }
                 }
 
                 IDirect3DSurface9* rt = nullptr;
@@ -570,12 +580,15 @@ void CommandBufferDX9_t::Execute()
                 }
 
                 bool clear_color = passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR;
-                bool clear_depth = passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR;
+                bool clear_depth = hasDepthBuf && (passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR);
 
                 DX9_CALL(_D3D9_Device->BeginScene(), "BeginScene");
 
                 if (clear_color || clear_depth)
                 {
+                    _D3D9_Device->SetViewport(&def_viewport);
+                    _D3D9_Device->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
+
                     DWORD flags = 0;
                     int r = int(passCfg.colorBuffer[0].clearColor[0] * 255.0f);
                     int g = int(passCfg.colorBuffer[0].clearColor[1] * 255.0f);
@@ -1126,7 +1139,7 @@ static void _DX9_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 bool _DX9_PresentBuffer()
 {
     bool result = true;
-    HRESULT hr = _D3D9_Device->Present(NULL, NULL, NULL, NULL);
+    HRESULT hr = _D3D9_Device->Present(_DX9_PresentRectPtr, _DX9_PresentRectPtr, NULL, NULL);
     if (FAILED(hr))
     {
         if (hr == D3DERR_DEVICELOST)
@@ -1186,7 +1199,7 @@ void _DX9_ResetBlock()
 #if !defined(DAVA_DISABLE_CLEAR_ON_RESET)
     //clear buffer
     DX9_CALL(_D3D9_Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_RGBA(0, 0, 0, 1), 1.0, 0), "Clear");
-    _D3D9_Device->Present(NULL, NULL, NULL, NULL);
+    _D3D9_Device->Present(_DX9_PresentRectPtr, _DX9_PresentRectPtr, NULL, NULL);
 #endif
 
     _DX9_FramesWithRestoreAttempt = 0;
@@ -1350,6 +1363,15 @@ static void _DX9_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
             IDirect3DTexture9* tex = *((IDirect3DTexture9**)(arg[0]));
             DVASSERT(*(IDirect3DSurface9**)(arg[2]) == nullptr);
             cmd->retval = tex->GetSurfaceLevel(UINT(arg[1]), (IDirect3DSurface9**)(arg[2]));
+            CHECK_HR(cmd->retval);
+        }
+        break;
+
+        case DX9Command::GET_CUBE_SURFACE_LEVEL:
+        {
+            IDirect3DCubeTexture9* tex = *((IDirect3DCubeTexture9**)(arg[0]));
+            DVASSERT(*(IDirect3DSurface9**)(arg[3]) == nullptr);
+            cmd->retval = tex->GetCubeMapSurface(D3DCUBEMAP_FACES(arg[1]), UINT(arg[2]), (IDirect3DSurface9**)(arg[3]));
             CHECK_HR(cmd->retval);
         }
         break;
@@ -1592,7 +1614,7 @@ static void _DX9_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
 
         case DX9Command::RELEASE:
         {
-            IUnknown* ptr = *(IUnknown**)(arg[0]);
+            IUnknown* ptr = *(reinterpret_cast<IUnknown**>(arg[0]));
             cmd->retval = ptr->Release();
         }
         break;
@@ -1689,6 +1711,11 @@ void ExecDX9(DX9Command* command, uint32 cmdCount, bool forceExecute)
 
 namespace CommandBufferDX9
 {
+void Init(uint32 maxCount)
+{
+    CommandBufferPoolDX9::Reserve(maxCount);
+}
+
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_CommandBuffer_Begin = &dx9_CommandBuffer_Begin;

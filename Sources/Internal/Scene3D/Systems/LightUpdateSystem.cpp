@@ -24,9 +24,10 @@ LightUpdateSystem::LightUpdateSystem(Scene* scene)
 void LightUpdateSystem::Process(float32 timeElapsed)
 {
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+
     for (auto& pair : tsc->worldTransformChanged.map)
     {
-        if (pair.first->GetComponentsCount(Component::LIGHT_COMPONENT) > 0)
+        if (pair.first->GetComponentsCount(Type::Instance<LightComponent>()) > 0)
         {
             for (Entity* entity : pair.second)
             {
@@ -39,19 +40,19 @@ void LightUpdateSystem::Process(float32 timeElapsed)
 void LightUpdateSystem::RecalcLight(Entity* entity)
 {
     // Update new transform pointer, and mark that transform is changed
-    Matrix4* worldTransformPointer = (static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT)))->GetWorldTransformPtr();
-    Light* light = (static_cast<LightComponent*>(entity->GetComponent(Component::LIGHT_COMPONENT)))->GetLightObject();
+    Matrix4* worldTransformPointer = entity->GetComponent<TransformComponent>()->GetWorldMatrixPtr();
+    Light* light = entity->GetComponent<LightComponent>()->GetLightObject();
     light->SetPositionDirectionFromMatrix(*worldTransformPointer);
     entity->GetScene()->renderSystem->MarkForUpdate(light);
 }
 
 void LightUpdateSystem::AddEntity(Entity* entity)
 {
-    Light* lightObject = (static_cast<LightComponent*>(entity->GetComponent(Component::LIGHT_COMPONENT)))->GetLightObject();
+    Light* lightObject = entity->GetComponent<LightComponent>()->GetLightObject();
     if (!lightObject)
         return;
 
-    entityObjectMap.insert(entity, lightObject);
+    entityObjectMap[entity] = lightObject;
     GetScene()->GetRenderSystem()->AddLight(lightObject);
 
     RecalcLight(entity);
@@ -59,13 +60,27 @@ void LightUpdateSystem::AddEntity(Entity* entity)
 
 void LightUpdateSystem::RemoveEntity(Entity* entity)
 {
-    Light* lightObject = entityObjectMap.at(entity);
-    if (!lightObject)
-    {
-        return;
-    }
+    auto lightObjectIter = entityObjectMap.find(entity);
 
-    GetScene()->GetRenderSystem()->RemoveLight(lightObject);
-    entityObjectMap.erase(entity);
+    if (lightObjectIter != entityObjectMap.end())
+    {
+        Light* lightObject = lightObjectIter->second;
+
+        if (lightObject != nullptr)
+        {
+            GetScene()->GetRenderSystem()->RemoveLight(lightObject);
+            entityObjectMap.erase(entity);
+        }
+    }
+}
+
+void LightUpdateSystem::PrepareForRemove()
+{
+    RenderSystem* renderSystem = GetScene()->GetRenderSystem();
+    for (const auto& node : entityObjectMap)
+    {
+        renderSystem->RemoveLight(node.second);
+    }
+    entityObjectMap.clear();
 }
 };

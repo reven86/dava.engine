@@ -1,20 +1,17 @@
-#ifndef __DAVAENGINE_UI_EVENT_H__
-#define __DAVAENGINE_UI_EVENT_H__
-
-#include "Math/Vector.h"
-#include "Input/KeyboardDevice.h"
-#include "Input/GamepadDevice.h"
+#pragma once
 
 #include "Engine/EngineTypes.h"
+#include "Math/Vector.h"
+#include "Input/InputElements.h"
 
 namespace DAVA
 {
 class UIControl;
 class Window;
 /**
-\ingroup controlsystem
-\brief User input representation.
-	Represent user input event used in the control system. Contains all input data.
+    \ingroup controlsystem
+    \brief User input representation.
+    Represent user input event used in the control system. Contains all input data.
 */
 class UIEvent
 {
@@ -38,8 +35,8 @@ public:
     };
 
     /**
-	 \enum Input state accordingly to control.
-	 */
+     \enum Input state accordingly to control.
+     */
     enum eControlInputState
     {
         CONTROL_STATE_RELEASED = 0, //!<Input is released
@@ -48,29 +45,16 @@ public:
     };
 
     /**
-	 \ Input can be handled in the different ways.
-	 */
+     \ Input can be handled in the different ways.
+     */
     enum eInputHandledType
     {
         INPUT_NOT_HANDLED = 0, //!<Input is not handled at all.
-        INPUT_HANDLED_SOFT = 1, //!<Input is handled, but input control can be changed by UIControlSystem::Instance()->SwitchInputToControl() method.
+        INPUT_HANDLED_SOFT = 1, //!<Input is handled, but input control can be changed by GetEngineContext()->uiControlSystem->SwitchInputToControl() method.
         INPUT_HANDLED_HARD = 2, //!<Input is handled completely, input control can't be changed.
     };
 
     friend class UIControlSystem;
-
-#if !defined(__DAVAENGINE_COREV2__)
-    enum Modifier
-    {
-        NONE = 0, // Used to denote no flags explicitly
-        SHIFT_DOWN = 1 << 0,
-        CONTROL_DOWN = 1 << 1,
-        ALT_DOWN = 1 << 2,
-        COMMAND_DOWN = 1 << 3, // Command on OS X
-
-        LAST = COMMAND_DOWN
-    };
-#endif
 
     UIEvent() = default;
 
@@ -109,14 +93,10 @@ public:
 
     union {
         uint32 touchId;
-        Key key;
+        eInputElements key;
         char32_t keyChar; // unicode utf32 char
         eMouseButtons mouseButton;
-#if defined(__DAVAENGINE_COREV2__)
         eGamepadElements element;
-#else
-        GamepadDevice::eDavaGamepadElement element;
-#endif
         WheelDelta wheelDelta; // scroll delta in mouse wheel clicks (or lines)
         Gesture gesture; // pinch/rotate/swipe
     };
@@ -130,13 +110,7 @@ public:
     uint32 tapCount = 0; // (TODO not all platforms) count of the continuous inputs (clicks for mouse)
     eInputHandledType inputHandledType = INPUT_NOT_HANDLED; //!< input handled type, INPUT_NOT_HANDLED by default.
     eInputDevices device = eInputDevices::UNKNOWN;
-#if defined(__DAVAENGINE_COREV2__)
     Window* window = nullptr;
     eModifierKeys modifiers = eModifierKeys::NONE;
-#else
-    uint32 modifiers = 0;
-#endif
 };
-};
-
-#endif
+}

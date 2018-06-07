@@ -3,7 +3,7 @@
 namespace DAVA
 {
 UIPriorityStyleSheet::UIPriorityStyleSheet(UIStyleSheet* aStyleSheet, int32 aPriority)
-    : styleSheet(SafeRetain(aStyleSheet))
+    : styleSheet(RefPtr<UIStyleSheet>::ConstructWithRetain(aStyleSheet))
     , priority(aPriority)
 {
 }

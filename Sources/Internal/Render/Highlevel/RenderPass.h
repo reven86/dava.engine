@@ -67,11 +67,6 @@ protected:
         PixelFormat format = PixelFormat::FORMAT_INVALID;
     } renderTargetProperties;
 
-public:
-    INTROSPECTION(RenderPass,
-                  COLLECTION(renderLayers, "Render Layers", I_VIEW | I_EDIT)
-                  MEMBER(passName, "Name", I_VIEW));
-
     friend class RenderSystem;
 };
 

@@ -1,5 +1,6 @@
 #include "Animation/AnimatedObject.h"
 #include "Animation/AnimationManager.h"
+#include "Engine/Engine.h"
 #include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
@@ -10,10 +11,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(AnimatedObject)
     .End();
 }
 
-AnimatedObject::AnimatedObject()
-//	: animationsStorage(0)
-{
-}
+AnimatedObject::AnimatedObject() = default;
 
 AnimatedObject::~AnimatedObject()
 {
@@ -22,39 +20,16 @@ AnimatedObject::~AnimatedObject()
 
 void AnimatedObject::StopAnimations(int32 track)
 {
-    AnimationManager::Instance()->DeleteAnimations(this, track);
+    GetEngineContext()->animationManager->DeleteAnimations(this, track);
 }
 
 bool AnimatedObject::IsAnimating(int32 track) const
 {
-    return AnimationManager::Instance()->IsAnimating(this, track);
+    return GetEngineContext()->animationManager->IsAnimating(this, track);
 }
 
-Animation* AnimatedObject::FindPlayingAnimation(int32 track /*= -1*/)
+Animation* AnimatedObject::FindPlayingAnimation(int32 track /*= -1*/) const
 {
-    return AnimationManager::Instance()->FindPlayingAnimation(this, track);
+    return GetEngineContext()->animationManager->FindPlayingAnimation(this, track);
 }
 }
-
-/*
-void AnimatedObject::AddAnimation(Animation * animation)
-{
-	
-}
-void RemoveAnimation(Animation * animation);
-{
-	
-}*/
-/*virtual Animation * FindNextAnimationForTrack(int track)
-{
-
-}
-
-void Animation::Update()
-{
-	for (int k = 0; k < MAX_NUMBER_OF_TRACKS; ++k)
-	{
-		
-		
-	}
-}*/

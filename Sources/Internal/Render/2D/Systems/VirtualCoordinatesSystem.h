@@ -2,17 +2,11 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
-#include "Base/Singleton.h"
 #include "Functional/Signal.h"
 
 namespace DAVA
 {
-
-#if !defined(__DAVAENGINE_COREV2__)
-class VirtualCoordinatesSystem : public Singleton<VirtualCoordinatesSystem>
-#else
 class VirtualCoordinatesSystem final
-#endif
 {
     struct ResourceSpaceSize
     {
@@ -74,6 +68,7 @@ public:
     inline Rect ConvertInputToVirtual(const Rect& rect) const;
     inline Rect ConvertVirtualToInput(const Rect& rect) const;
 
+    DAVA_DEPRECATED(inline uint32 GetResourceFoldersCount() const);
     DAVA_DEPRECATED(inline const String& GetResourceFolder(int32 resourceIndex) const);
     DAVA_DEPRECATED(inline int32 GetDesirableResourceIndex() const);
     DAVA_DEPRECATED(inline void SetDesirableResourceIndex(int32 resourceIndex));
@@ -299,6 +294,11 @@ inline Rect VirtualCoordinatesSystem::ConvertInputToVirtual(const Rect& rect) co
 inline Rect VirtualCoordinatesSystem::ConvertVirtualToInput(const Rect& rect) const
 {
     return Rect(ConvertVirtualToInput(rect.GetPosition()), ConvertVirtualToInput(rect.GetSize() + inputOffset));
+}
+
+inline uint32 VirtualCoordinatesSystem::GetResourceFoldersCount() const
+{
+    return static_cast<uint32>(allowedSizes.size());
 }
 
 inline const String& VirtualCoordinatesSystem::GetResourceFolder(int32 resourceIndex) const

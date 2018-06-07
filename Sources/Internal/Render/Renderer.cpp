@@ -113,6 +113,7 @@ void Initialize(rhi::Api _api, rhi::InitParam& params)
 #endif //android
 
     Texture::SetGPULoadingOrder(gpuLoadingOrder);
+    Logger::Info("MAX FPS: %d", rhi::DeviceCaps().maxFPS);
 }
 
 void Uninitialize()

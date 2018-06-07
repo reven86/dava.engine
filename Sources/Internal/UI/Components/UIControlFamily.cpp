@@ -5,9 +5,9 @@
 namespace DAVA
 {
 // call constructor on first use not globally
-BaseFamilyRepository<UIControlFamily>& GetUIControlFamilyRepository()
+FamilyRepository<UIControlFamily>& GetUIControlFamilyRepository()
 {
-    static BaseFamilyRepository<UIControlFamily> repository;
+    static FamilyRepository<UIControlFamily> repository;
     return repository;
 }
 
@@ -17,11 +17,10 @@ UIControlFamily* UIControlFamily::GetOrCreate(const Vector<UIComponent*>& compon
 }
 
 UIControlFamily::UIControlFamily(const Vector<UIComponent*>& components)
-    : refCount(0)
 {
     ComponentManager* cm = GetEngineContext()->componentManager;
-    componentIndices.resize(cm->GetComponentsCount());
-    componentsCount.resize(cm->GetComponentsCount());
+    componentIndices.resize(cm->GetUIComponentsCount());
+    componentsCount.resize(cm->GetUIComponentsCount());
 
     int32 size = static_cast<int32>(components.size());
     hash = size;
@@ -32,6 +31,14 @@ UIControlFamily::UIControlFamily(const Vector<UIComponent*>& components)
         componentIndices[type] = i;
         componentsCount[type]++;
     }
+}
+
+UIControlFamily::UIControlFamily(const UIControlFamily& other)
+{
+    componentIndices = other.componentIndices;
+    componentsCount = other.componentsCount;
+    hash = other.hash;
+    refCount.Set(other.refCount.Get());
 }
 
 uint32 UIControlFamily::GetComponentIndex(int32 runtimeType, uint32 index) const

@@ -1,13 +1,12 @@
-#ifndef __DAVAENGINE_TEXTBLOCK_H__
-#define __DAVAENGINE_TEXTBLOCK_H__
+#pragma once
 
+#include "Base/BaseMath.h"
 #include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
+#include "Render/2D/Font.h"
+#include "Render/2D/Sprite.h"
 #include "Render/RenderBase.h"
 #include "Render/Texture.h"
-#include "Render/2D/Sprite.h"
-#include "Render/2D/Font.h"
 
 namespace DAVA
 {
@@ -88,12 +87,8 @@ public:
     \returns size in pixels
     */
     virtual float32 GetRenderSize();
-
-    /**
-    \brief Set the render size.
-    \param[in] size in points
-    */
-    virtual void SetRenderSize(float32 renderSize);
+    void SetFontSize(float32 size);
+    float32 GetFontSize() const;
 
     Sprite* GetSprite();
     bool IsSpriteReady();
@@ -108,12 +103,10 @@ public:
     void CopyDataFrom(TextBlock* block);
 
     const Vector<float32>& GetStringSizes();
-        
 
-#if defined(LOCALIZATION_DEBUG)
+    /** Calculated fitting */
     int32 GetFittingOptionUsed();
     bool IsVisualTextCroped();
-#endif
 
     TextBlockRender* GetRenderer()
     {
@@ -172,6 +165,7 @@ private:
     } cachedLayoutData;
 
     float32 renderSize;
+    float32 fontSize;
 
     int32 cacheDx;
     int32 cacheDy;
@@ -180,10 +174,8 @@ private:
     int32 cacheOy;
 
     int32 fittingType = 0;
-#if defined(LOCALIZATION_DEBUG)
     int32 fittingTypeUsed = 0;
     bool visualTextCroped = false;
-#endif //LOCALIZATION_DEBUG
     int32 align;
     eUseRtlAlign useRtlAlign;
     int32 visualAlign;
@@ -283,5 +275,3 @@ inline bool TextBlock::IsBiDiSupportEnabled()
 }
 
 }; //end of namespace
-
-#endif // __DAVAENGINE_TEXTBLOCK_H__

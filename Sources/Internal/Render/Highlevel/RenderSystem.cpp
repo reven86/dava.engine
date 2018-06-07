@@ -10,7 +10,7 @@
 #include "Render/Highlevel/Frustum.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/Highlevel/Light.h"
-#include "Render/Highlevel/SpatialTree.h"
+#include "Render/Highlevel/VisibilityQuadTree.h"
 #include "Render/ShaderCache.h"
 
 #include "Utils/Utils.h"
@@ -23,6 +23,7 @@ RenderSystem::RenderSystem()
     renderHierarchy = new QuadTree(10);
     markedObjects.reserve(100);
     debugDrawer = new RenderHelper();
+    geoDecalManager = new GeoDecalManager();
 }
 
 RenderSystem::~RenderSystem()
@@ -36,6 +37,7 @@ RenderSystem::~RenderSystem()
     SafeDelete(mainRenderPass);
 
     SafeDelete(debugDrawer);
+    SafeDelete(geoDecalManager);
 }
 
 void RenderSystem::RenderPermanent(RenderObject* renderObject)
@@ -92,8 +94,10 @@ void RenderSystem::RemoveRenderObject(RenderObject* renderObject)
         UnregisterBatch(batch);
     }
 
+    geoDecalManager->RemoveRenderObject(renderObject);
     renderHierarchy->RemoveRenderObject(renderObject);
-    renderObject->SetRenderSystem(0);
+
+    renderObject->SetRenderSystem(nullptr);
 }
 
 void RenderSystem::PrebuildMaterial(NMaterial* material)
@@ -144,6 +148,11 @@ void RenderSystem::UnregisterMaterial(NMaterial* material)
     */
 }
 
+void RenderSystem::PrepareForShutdown()
+{
+    renderHierarchy->PrepareForShutdown();
+}
+
 void RenderSystem::SetGlobalMaterial(NMaterial* newGlobalMaterial)
 {
     Set<DataNode*> dataNodes;
@@ -181,6 +190,7 @@ void RenderSystem::MarkForUpdate(RenderObject* renderObject)
     uint32 flags = renderObject->GetFlags();
     if (flags & RenderObject::MARKED_FOR_UPDATE)
         return;
+
     flags |= RenderObject::NEED_UPDATE;
     if ((flags & RenderObject::CLIPPING_VISIBILITY_CRITERIA) == RenderObject::CLIPPING_VISIBILITY_CRITERIA)
     {
@@ -214,34 +224,29 @@ void RenderSystem::UnregisterFromUpdate(IRenderUpdatable* updatable)
     }
 }
 
-void RenderSystem::FindNearestLights(RenderObject* renderObject)
+void RenderSystem::UpdateNearestLights(RenderObject* renderObject)
 {
-    Light* nearestLight = 0;
-    float32 squareMinDistance = 10000000.0f;
+    Light* nearestLight = nullptr;
+    float32 squareMinDistance = std::numeric_limits<float>::max();
     Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
 
-    uint32 size = static_cast<uint32>(lights.size());
-
-    if (1 == size)
+    if (lights.size() == 1)
     {
-        nearestLight = (lights[0] && lights[0]->IsDynamic()) ? lights[0] : NULL;
+        nearestLight = (lights.front() && lights.front()->IsDynamic()) ? lights.front() : nullptr;
     }
     else
     {
-        for (uint32 k = 0; k < size; ++k)
+        for (Light* light : lights)
         {
-            Light* light = lights[k];
-
-            if (!light->IsDynamic())
-                continue;
-
-            const Vector3& lightPosition = light->GetPosition();
-
-            float32 squareDistanceToLight = (position - lightPosition).SquareLength();
-            if ((!nearestLight) || (squareDistanceToLight < squareMinDistance))
+            if (light->IsDynamic())
             {
-                squareMinDistance = squareDistanceToLight;
-                nearestLight = light;
+                const Vector3& lightPosition = light->GetPosition();
+                float32 squareDistanceToLight = (position - lightPosition).SquareLength();
+                if ((!nearestLight) || (squareDistanceToLight < squareMinDistance))
+                {
+                    squareMinDistance = squareDistanceToLight;
+                    nearestLight = light;
+                }
             }
         }
     }
@@ -254,7 +259,7 @@ void RenderSystem::FindNearestLights()
     size_t size = renderObjectArray.size();
     for (size_t k = 0; k < size; ++k)
     {
-        FindNearestLights(renderObjectArray[k]);
+        UpdateNearestLights(renderObjectArray[k]);
     }
 }
 
@@ -290,20 +295,15 @@ void RenderSystem::Update(float32 timeElapsed)
         hierarchyInitialized = true;
     }
 
-    int32 objectBoxesUpdated = 0;
-    Vector<RenderObject*>::iterator end = markedObjects.end();
-    for (Vector<RenderObject*>::iterator it = markedObjects.begin(); it != end; ++it)
+    for (RenderObject* obj : markedObjects)
     {
-        RenderObject* obj = *it;
-
         obj->RecalculateWorldBoundingBox();
+        UpdateNearestLights(obj);
 
-        FindNearestLights(obj);
-        if (obj->GetTreeNodeIndex() != INVALID_TREE_NODE_INDEX)
+        if (obj->GetTreeNodeIndex() != QuadTree::INVALID_TREE_NODE_INDEX)
             renderHierarchy->ObjectUpdated(obj);
 
         obj->RemoveFlag(RenderObject::NEED_UPDATE | RenderObject::MARKED_FOR_UPDATE);
-        objectBoxesUpdated++;
     }
     markedObjects.clear();
 
@@ -312,7 +312,6 @@ void RenderSystem::Update(float32 timeElapsed)
     if (movedLights.size() > 0 || forceUpdateLights)
     {
         FindNearestLights();
-
         forceUpdateLights = false;
         movedLights.clear();
     }
@@ -327,7 +326,7 @@ void RenderSystem::Update(float32 timeElapsed)
 void RenderSystem::DebugDrawHierarchy(const Matrix4& cameraMatrix)
 {
     if (renderHierarchy)
-        renderHierarchy->DebugDraw(cameraMatrix);
+        renderHierarchy->DebugDraw(cameraMatrix, debugDrawer);
 }
 
 void RenderSystem::Render()

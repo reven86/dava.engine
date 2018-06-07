@@ -71,6 +71,8 @@ private:
     bool ParsePass(HLSLPass*& pass);
     bool ParsePipeline(HLSLStatement*& pipeline);
     bool ParseStage(HLSLStatement*& stage);
+    bool ParseBlending(unsigned target_i = 0);
+    bool ParseTargetColorMask(unsigned target_i = 0);
 
     bool ParseAttributeList(HLSLAttribute*& attribute);
     bool ParseAttributeBlock(HLSLAttribute*& attribute);

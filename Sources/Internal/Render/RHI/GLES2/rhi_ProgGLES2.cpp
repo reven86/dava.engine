@@ -59,9 +59,9 @@ DumpShaderTextGLES2(const char* code, unsigned code_sz)
 //==============================================================================
 
 ProgGLES2::ProgGLES2(ProgType t)
-    : type(t)
+    : shader(0)
     , prog(0)
-    , shader(0)
+    , type(t)
     , texunitCount(0)
     , texunitInited(false)
 {
@@ -286,13 +286,14 @@ ProgGLES2::InstanceConstBuffer(unsigned bufIndex) const
 
 //------------------------------------------------------------------------------
 
-void ProgGLES2::SetupTextureUnits(unsigned baseUnit) const
+void ProgGLES2::SetupTextureUnits(uint32 baseUnit, GLCommand* commands, uint32& commandsCount) const
 {
     for (unsigned i = 0; i != countof(texunitLoc); ++i)
     {
         if (texunitLoc[i] != -1)
         {
-            GL_CALL(glUniform1i(texunitLoc[i], baseUnit + i));
+            commands[commandsCount] = { GLCommand::SET_UNIFORM_1I, { texunitLoc[i], baseUnit + i } };
+            ++commandsCount;
         }
     }
 }

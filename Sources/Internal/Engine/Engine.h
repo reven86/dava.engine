@@ -1,24 +1,19 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-
-#if defined(__DAVAENGINE_COREV2__)
-
-#include "Functional/Functional.h"
-
 #include "Engine/EngineTypes.h"
 #include "Engine/EngineContext.h"
-#include "Engine/PlatformApi.h"
 #include "Engine/Window.h"
+#include "Functional/Functional.h"
+#include "Render/RHI/rhi_Type.h"
 
 /**
     \defgroup engine Engine
 */
 
-#include "Render/RHI/rhi_Type.h"
-
 namespace DAVA
 {
+class AppInstanceMonitor;
 class KeyedArchive;
 class Window;
 namespace Private
@@ -30,7 +25,7 @@ class EngineBackend;
     \ingroup engine
     Utility function to get engine context.
 
-    Behaviour is undefined when called before `Engine` instantiated or after 'Engine::cleanup' signal emited.
+    Behaviour is undefined when called before `Engine` instantiated or after 'Engine::cleanup' signal emitted.
     Another but longer way to get context is to call `Engine::Instance()->GetContext()`.
 */
 const EngineContext* GetEngineContext();
@@ -39,7 +34,7 @@ const EngineContext* GetEngineContext();
     \ingroup engine
     Utility function to get primary window.
 
-    Behaviour is undefined when called before `Engine` instantiated or after 'Engine::cleanup' signal has emited.
+    Behaviour is undefined when called before `Engine` instantiated or after 'Engine::cleanup' signal has emitted.
     Return `nullptr` if called before `Engine::Init` or if `Engine` has been initialized with `eEngineRunMode::CONSOLE_MODE` mode.
     Another but longer way to get primary window is to call `Engine::Instance()->PrimaryWindow()`.
 */
@@ -49,7 +44,7 @@ Window* GetPrimaryWindow();
     \ingroup engine
     Utility function to run asynchronous task on DAVA main thread.
 
-    Behaviour is undefined when called after `Engine::cleanup` signal has emited.
+    Behaviour is undefined when called after `Engine::cleanup` signal has emitted.
 */
 void RunOnMainThreadAsync(const Function<void()>& task);
 
@@ -58,7 +53,7 @@ void RunOnMainThreadAsync(const Function<void()>& task);
     Utility function to run task on DAVA main thread and wait its completion blocking caller thread.
 
     This function should not be called before `Engine::Run` is executed since it can lead to deadlock.
-    Behaviour is undefined when called after `Engine::cleanup` signal has emited.
+    Behaviour is undefined when called after `Engine::cleanup` signal has emitted.
 */
 void RunOnMainThread(const Function<void()>& task);
 
@@ -69,7 +64,7 @@ void RunOnMainThread(const Function<void()>& task);
     Behaviour is undefined:
         - if Engine is initialized with console run mode.
         - if called before `Engine::Init` method which create instance of primary window.
-        - if called after `Engine::windowDestroyed` signal emited for primary window.
+        - if called after `Engine::windowDestroyed` signal emitted for primary window.
 */
 void RunOnUIThreadAsync(const Function<void()>& task);
 
@@ -79,10 +74,23 @@ void RunOnUIThreadAsync(const Function<void()>& task);
 
     Behaviour is undefined:
         - if Engine is initialized with console run mode.
-        - if called before `Engine::windowCreated` signal emited for primary window.
-        - if called after `Engine::windowDestroyed` signal emited for primary window.
+        - if called before `Engine::windowCreated` signal emitted for primary window.
+        - if called after `Engine::windowDestroyed` signal emitted for primary window.
 */
 void RunOnUIThread(const Function<void()>& task);
+
+/**
+    \ingroup engine
+    Utility function for obtaining AppInstanceMonitor instance which can check whether another application instance is
+    running and pass activation filename to that running instance.
+
+    Each application should pass some arbitrary string. This string should be as unique as possible, e.g. you can generate UUID.
+    \note `uniqueAppId` is not null pointer or empty string.
+
+    This function always returns the same object not regarding how many times you have called this function. Value of
+    `uniqueAppId` is taken into account only on first call.
+*/
+AppInstanceMonitor* GetAppInstanceMonitor(const char* uniqueAppId);
 
 /**
     \ingroup engine
@@ -139,6 +147,25 @@ void RunOnUIThread(const Function<void()>& task);
         return engine.Run(); // Run game loop
     }
     \endcode
+
+    Application can be finished in two ways:
+    1. user or system quits application or closes primary window which leads to application exit
+    2. application decides to quit and calls `Engine::QuitAsync`
+
+    User can finish application by using system shortcuts (Alt+F4, Cmd+Q, etc) or mouse click on system button which closes window,
+    or by swiping application from task manager on mobile devices.
+
+    Generally when application exits termination signals are emitted in the following sequence:
+    1. `Engine::windowDestroyed`, not emitted when application runs in console mode
+    2. `Engine::gameLoopStopped`
+    3. `Engine::cleanup`
+
+    Note that all those termination signals may **not** be emitted on some platforms when user decides to quit application.
+    Such a behavior is applied for systems which do not notify application about termination (mobile platforms,
+    also Universal Windows Platform for desktops). In such cases signal `Engine::suspended` can be used as notification
+    that `application may terminate soon`.
+
+    Termination signal sequence specified above is guaranteed when application exits through `Engine::QuitAsync` call.
 */
 class Engine final
 {
@@ -332,23 +359,35 @@ public:
     */
     void SetScreenTimeoutEnabled(bool enabled);
 
-public:
-    Signal<> gameLoopStarted; //!< Emited just before entring game loop. Note: native windows are not created yet and renderer is not initialized.
-    Signal<> gameLoopStopped; //!< Emited after exiting game loop, application should prepare to terminate.
-    Signal<> cleanup; //!< Last signal emited by Engine, after this signal dava.engine is dead.
-    Signal<Window*> windowCreated; //!< Emited when native window is created and renderer is initialized.
-    Signal<Window*> windowDestroyed; //!< Emited just before native window is destroyed. After this signal no one should use window.
-    Signal<> beginFrame; //!< Emited at the beginning of frame when application is in foreground.
-    Signal<float32> update; //!< Emited on each frame when application is in foreground (not suspended). Note: rendering should be performed on `Window::update`, `Window::draw` signals.
-    Signal<> endFrame; //!< Emited at the end of frame when application is in foreground.
-    Signal<float32> backgroundUpdate; //!< Emited on each frame when application is suspended.
-    Signal<> suspended; //!< Emited when application has entered suspended state. This signal is fired only on platforms
-    //!< that support suspending: Win10, iOS, Android. Rendering is stopped but `backgroundUpdate` signal is emited if system permits.
-    Signal<> resumed; //!< Emited when application exits suspended state.
+    /**
+        Get list of filenames application was started with.
+        Application can retrieve that list only in `Engine::gameLoopStarted` signal handler. If you want to get filenames
+        later then save the list.
+    */
+    Vector<String> GetStartupActivationFilenames() const;
 
-    Signal<rhi::RenderingError> renderingError; //!< Emited when rendering is not possible anymore, can be invoked from any thread.
+public:
+    Signal<> registerUserTypes; //!< Emitted just before initializing subsystems, place here user types/reflections/components/systems registration. Note: should be connected before Engine::Init(...) call.
+    Signal<> gameLoopStarted; //!< Emitted just before entering game loop. Note: native windows are not created yet and renderer is not initialized.
+    Signal<> gameLoopStopped; //!< Emitted after exiting game loop, application should prepare to terminate.
+    Signal<> cleanup; //!< Last signal emitted by Engine, after this signal dava.engine is dead.
+    Signal<Window*> windowCreated; //!< Emitted when native window is created and renderer is initialized.
+    Signal<Window*> windowDestroyed; //!< Emitted just before native window is destroyed. After this signal no one should use window.
+    Signal<> beginFrame; //!< Emitted at the beginning of frame when application is in foreground.
+    Signal<float32> update; //!< Emitted on each frame when application is in foreground (not suspended). Note: rendering should be performed on `Window::update`, `Window::draw` signals.
+    Signal<> endFrame; //!< Emitted at the end of frame when application is in foreground.
+    Signal<float32> backgroundUpdate; //!< Emitted on each frame when application is suspended.
+    Signal<> suspended; //!< Emitted when application has entered suspended state. This signal is fired only on platforms
+    //!< that support suspending: Win10, iOS, Android. Rendering is stopped but `backgroundUpdate` signal is emitted if system permits.
+    Signal<> resumed; //!< Emitted when application exits suspended state.
+
+    Signal<rhi::RenderingError> renderingError; //!< Emitted when rendering is not possible anymore, can be invoked from any thread.
     //!< Application should be gracefully closed (with optional message to user depending on error value)
     //!< Ignoring this signal or continuing work after it may lead to undefined behaviour
+
+    Signal<> lowMemory; //!< Emitted when OS running low on memory and corresponding event received by engine. (works on Android, iOS, Win64 and UWP on some devices).
+
+    Signal<Vector<String>> fileActivated; //!< Emitted when already running application was activated with given filenames.
 
 private:
     Private::EngineBackend* engineBackend = nullptr;
@@ -358,5 +397,3 @@ private:
 };
 
 } // namespace DAVA
-
-#endif // __DAVAENGINE_COREV2__

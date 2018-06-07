@@ -1,8 +1,9 @@
-#ifndef __DAVAENGINE_ICHANNEL_H__
-#define __DAVAENGINE_ICHANNEL_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Network/NetworkCommon.h"
+
+#include <memory>
 
 namespace DAVA
 {
@@ -18,15 +19,15 @@ struct IChannelListener
     virtual ~IChannelListener();
 
     // Channel is open (underlying transport has connection) and can receive and send data through IChannel interface
-    virtual void OnChannelOpen(IChannel* channel) = 0;
+    virtual void OnChannelOpen(const std::shared_ptr<IChannel>& channel) = 0;
     // Channel is closed (underlying transport has disconnected) with reason
-    virtual void OnChannelClosed(IChannel* channel, const char8* message) = 0;
+    virtual void OnChannelClosed(const std::shared_ptr<IChannel>& channel, const char8* message) = 0;
     // Some data arrived into channel
-    virtual void OnPacketReceived(IChannel* channel, const void* buffer, size_t length) = 0;
+    virtual void OnPacketReceived(const std::shared_ptr<IChannel>& channel, const void* buffer, size_t length) = 0;
     // Buffer has been sent and can be reused or freed
-    virtual void OnPacketSent(IChannel* channel, const void* buffer, size_t length) = 0;
+    virtual void OnPacketSent(const std::shared_ptr<IChannel>& channel, const void* buffer, size_t length) = 0;
     // Data packet with given ID has been delivered to other side
-    virtual void OnPacketDelivered(IChannel* channel, uint32 packetId) = 0;
+    virtual void OnPacketDelivered(const std::shared_ptr<IChannel>& channel, uint32 packetId) = 0;
 };
 
 /*
@@ -44,5 +45,3 @@ struct IChannel
 
 } // namespace Net
 } // namespace DAVA
-
-#endif // __DAVAENGINE_ICHANNEL_H__

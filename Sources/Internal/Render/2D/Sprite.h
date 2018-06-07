@@ -7,23 +7,61 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Render/RenderBase.h"
-#include "Render/Texture.h"
-#include "Render/Material/NMaterial.h"
-
 #include "FileSystem/FilePath.h"
 
 #include "Render/UniqueStateSet.h"
+#include "Concurrency/Mutex.h"
 
 namespace DAVA
 {
+class Image;
+class NMaterial;
+class Texture;
+class RenderSystem2D;
+
 enum eSpriteModification
 {
     ESM_HFLIP = 1,
     ESM_VFLIP = 1 << 1
 };
 
-class Texture;
-class RenderSystem2D;
+class SpriteDrawState
+{
+    friend class RenderSystem2D;
+
+public:
+    SpriteDrawState();
+
+    Vector2 position;
+    Vector2 pivotPoint;
+    Vector2 scale;
+    float32 angle;
+    int32 frame;
+    uint32 flags;
+    float32 sinA;
+    float32 cosA;
+    float32 precomputedAngle;
+    bool usePerPixelAccuracy;
+
+    inline void Reset();
+    inline void SetPosition(float32 x, float32 y);
+    inline void SetPosition(const Vector2& drawPos);
+    inline void SetPivotPoint(float32 x, float32 y);
+    inline void SetScale(float32 x, float32 y);
+    inline void SetScaleSize(float32 x, float32 y,
+                             float32 width, float32 height);
+    inline void SetAngle(float32 a);
+    inline void SetFrame(uint32 frame);
+    inline void SetFlags(uint32 flags);
+    inline void SetPerPixelAccuracyUsage(bool needToUse);
+    void BuildStateFromParentAndLocal(const SpriteDrawState& parentState, const SpriteDrawState& localState);
+
+    inline void SetMaterial(NMaterial* material);
+    inline NMaterial* GetMaterial() const;
+
+private:
+    NMaterial* material;
+};
 
 /**
 	\ingroup render_2d
@@ -35,44 +73,6 @@ class RenderSystem2D;
 class Sprite : public BaseObject
 {
 public:
-    class DrawState
-    {
-        friend class RenderSystem2D;
-
-    public:
-        DrawState();
-
-        Vector2 position;
-        Vector2 pivotPoint;
-        Vector2 scale;
-        float32 angle;
-        int32 frame;
-        uint32 flags;
-        float32 sinA;
-        float32 cosA;
-        float32 precomputedAngle;
-        bool usePerPixelAccuracy;
-
-        inline void Reset();
-        inline void SetPosition(float32 x, float32 y);
-        inline void SetPosition(const Vector2& drawPos);
-        inline void SetPivotPoint(float32 x, float32 y);
-        inline void SetScale(float32 x, float32 y);
-        inline void SetScaleSize(float32 x, float32 y,
-                                 float32 width, float32 height);
-        inline void SetAngle(float32 a);
-        inline void SetFrame(uint32 frame);
-        inline void SetFlags(uint32 flags);
-        inline void SetPerPixelAccuracyUsage(bool needToUse);
-        void BuildStateFromParentAndLocal(const Sprite::DrawState& parentState, const Sprite::DrawState& localState);
-
-        inline void SetMaterial(NMaterial* material);
-        inline NMaterial* GetMaterial() const;
-
-    private:
-        NMaterial* material;
-    };
-
     enum eSpriteType
     {
         SPRITE_FROM_FILE = 0,
@@ -134,8 +134,6 @@ public:
 
     static String GetPathString(const Sprite* sprite);
 
-    void SetOffsetsForFrame(int frame, float32 xOff, float32 yOff);
-
     Texture* GetTexture() const;
     Texture* GetTexture(int32 frameNumber) const;
 
@@ -152,9 +150,6 @@ public:
     void SetDefaultPivotPoint(float32 x, float32 y);
     void SetDefaultPivotPoint(const Vector2& newPivotPoint);
 
-    void SetModification(int32 modif);
-
-    void ResetModification();
     void Reset(); //Reset do not resets the pivot point
 
     /**
@@ -219,16 +214,17 @@ public:
     /**
 	 \brief Reloads the sprite.
 	 */
-    void Reload(eGPUFamily gpu = Texture::GetPrimaryGPUForLoading());
+    void Reload();
+    void Reload(eGPUFamily gpu);
 
     /**
 	 \brief Reloads all sprites.
 	 */
-    static void ReloadSprites(eGPUFamily gpu = Texture::GetPrimaryGPUForLoading());
+    static void ReloadSprites();
+    static void ReloadSprites(eGPUFamily gpu);
 
 protected:
     Sprite();
-    Sprite(int32 sprWidth, int32 sprHeight, PixelFormat format);
     virtual ~Sprite();
 
     static Sprite* GetSpriteFromMap(const FilePath& pathname);
@@ -240,6 +236,8 @@ protected:
     void ReloadExistingTextures(eGPUFamily gpu);
 
     void SetRelativePathname(const FilePath& path);
+
+    void UpdateFrameGeometry(int32 x, int32 y, int32 frameIdx);
 
     static Mutex spriteMapMutex;
 
@@ -285,12 +283,18 @@ protected:
 
     FilePath relativePathname;
 
+    /** Original rectsAndOffsets data from sprite file. Used for recalculating vertex data in DynamicAtlasSystem. */
+    Vector<Array<int32, 6>> rectsAndOffsetsOriginal;
+    /** Is sprite registered in DynamicAtlasSystem? */
+    volatile bool inDynamicAtlas = false;
+
     friend class RenderSystem2D;
+    friend class DynamicAtlasSystem;
 };
 
 // inline functions implementation
 
-inline void Sprite::DrawState::Reset()
+inline void SpriteDrawState::Reset()
 {
     position.x = 0.0f;
     position.y = 0.0f;
@@ -307,51 +311,51 @@ inline void Sprite::DrawState::Reset()
     cosA = 1.0f; // values for precomputed angle
 }
 
-inline void Sprite::DrawState::SetPosition(float32 x, float32 y)
+inline void SpriteDrawState::SetPosition(float32 x, float32 y)
 {
     position.x = x;
     position.y = y;
 }
 
-inline void Sprite::DrawState::SetPosition(const Vector2& drawPos)
+inline void SpriteDrawState::SetPosition(const Vector2& drawPos)
 {
     position = drawPos;
 }
 
-inline void Sprite::DrawState::SetPivotPoint(float32 x, float32 y)
+inline void SpriteDrawState::SetPivotPoint(float32 x, float32 y)
 {
     pivotPoint.x = x;
     pivotPoint.y = y;
 }
 
-inline void Sprite::DrawState::SetScale(float32 x, float32 y)
+inline void SpriteDrawState::SetScale(float32 x, float32 y)
 {
     scale.x = x;
     scale.y = y;
 }
 
-inline void Sprite::DrawState::SetScaleSize(float32 x, float32 y, float32 width, float32 height)
+inline void SpriteDrawState::SetScaleSize(float32 x, float32 y, float32 width, float32 height)
 {
     scale.x = x / width;
     scale.y = y / height;
 }
 
-inline void Sprite::DrawState::SetAngle(float32 a)
+inline void SpriteDrawState::SetAngle(float32 a)
 {
     angle = a;
 }
 
-inline void Sprite::DrawState::SetFrame(uint32 _frame)
+inline void SpriteDrawState::SetFrame(uint32 _frame)
 {
     frame = _frame;
 }
 
-inline void Sprite::DrawState::SetFlags(uint32 _flags)
+inline void SpriteDrawState::SetFlags(uint32 _flags)
 {
     flags = _flags;
 }
 
-inline void Sprite::DrawState::SetPerPixelAccuracyUsage(bool needToUse)
+inline void SpriteDrawState::SetPerPixelAccuracyUsage(bool needToUse)
 {
     usePerPixelAccuracy = needToUse;
 }
@@ -361,12 +365,12 @@ inline int32 Sprite::GetResourceSizeIndex() const
     return resourceSizeIndex;
 }
 
-inline NMaterial* Sprite::DrawState::GetMaterial() const
+inline NMaterial* SpriteDrawState::GetMaterial() const
 {
     return material;
 }
 
-void Sprite::DrawState::SetMaterial(NMaterial* _material)
+void SpriteDrawState::SetMaterial(NMaterial* _material)
 {
     material = _material;
 }

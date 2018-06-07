@@ -241,14 +241,14 @@ PropertyLine<T>* ModifiablePropertyLine<T>::Clone()
         clone->valueLine->Release();
     }
     else
-        clone->valueLine = NULL;
+        clone->valueLine = nullptr;
     if (modificationLine)
     {
         clone->modificationLine = modificationLine->Clone();
         clone->modificationLine->Release();
     }
     else
-        modificationLine = NULL;
+        modificationLine = nullptr;
     clone->modifier = modifier; //not use set modifier!
     return clone;
 };

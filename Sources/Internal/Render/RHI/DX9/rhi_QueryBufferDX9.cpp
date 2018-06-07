@@ -253,13 +253,13 @@ bool QueryIsCompleted(Handle handle)
 
 void ReleaseQueryPool()
 {
-    std::vector<DX9Command> cmd;
-    for (IDirect3DQuery9* iq : QueryDX9Pool)
+    std::vector<DX9Command> commands;
+    commands.reserve(QueryDX9Pool.size());
+    for (size_t i = 0; i < QueryDX9Pool.size(); ++i)
     {
-        cmd.push_back({ DX9Command::RELEASE, { uint64(&iq) } });
+        commands.push_back({ DX9Command::RELEASE, { reinterpret_cast<uint64>(QueryDX9Pool.data() + i) } });
     }
-    ExecDX9(cmd.data(), uint32(cmd.size()), false);
-
+    ExecDX9(commands.data(), uint32(commands.size()), false);
     QueryDX9Pool.clear();
 }
 

@@ -80,6 +80,8 @@ const char* GLESGenerator::GetTypeName(const HLSLType& type)
         return "sampler";
     case HLSLBaseType_Sampler2D:
         return "sampler2D";
+    case HLSLBaseType_Sampler2DShadow:
+        return "sampler2DShadow";
     case HLSLBaseType_Sampler3D:
         return "sampler3D";
     case HLSLBaseType_SamplerCube:
@@ -381,6 +383,7 @@ void GLESGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
 
         if (identifierExpression->expressionType.baseType == HLSLBaseType_Sampler2D
             || identifierExpression->expressionType.baseType == HLSLBaseType_SamplerCube
+            || identifierExpression->expressionType.baseType == HLSLBaseType_Sampler2DShadow
             )
         {
             HLSLDeclaration* declaration = tree->FindGlobalDeclaration(name);
@@ -785,6 +788,10 @@ void GLESGenerator::OutputIdentifier(const char* name)
 {
     // Remap intrinstic functions.
     if (String_Equal(name, "tex2D"))
+    {
+        name = "texture2D";
+    }
+    else if (String_Equal(name, "tex2Dcmp"))
     {
         name = "texture2D";
     }
@@ -1250,6 +1257,14 @@ void GLESGenerator::OutputDeclaration(HLSLDeclaration* declaration)
             samplerType = "lowp samplerCube";
             #else
             samplerType = "samplerCube";
+            #endif
+        }
+        else if (declaration->type.baseType == HLSLBaseType_Sampler2DShadow)
+        {
+            #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+            samplerType = "lowp sampler2DShadow";
+            #else
+            samplerType = "sampler2DShadow";
             #endif
         }
 

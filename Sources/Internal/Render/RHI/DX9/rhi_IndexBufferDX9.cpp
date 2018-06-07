@@ -75,9 +75,10 @@ bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool forceExe
         DVASSERT(buffer == nullptr);
 
         uint32 cmd_cnt = 2;
+        uint64 indexSizeParam = static_cast<uint64>((desc.indexSize == INDEX_SIZE_32BIT) ? D3DFMT_INDEX32 : D3DFMT_INDEX16);
         DX9Command cmd[] =
         {
-          { DX9Command::CREATE_INDEX_BUFFER, { desc.size, usage, (desc.indexSize == INDEX_SIZE_32BIT) ? D3DFMT_INDEX32 : D3DFMT_INDEX16, D3DPOOL_DEFAULT, uint64_t(&buffer), NULL } },
+          { DX9Command::CREATE_INDEX_BUFFER, { desc.size, usage, indexSizeParam, D3DPOOL_DEFAULT, uint64_t(&buffer), NULL } },
           { DX9Command::UPDATE_INDEX_BUFFER, { uint64_t(&buffer), uint64_t(desc.initialData), desc.size } }
         };
 

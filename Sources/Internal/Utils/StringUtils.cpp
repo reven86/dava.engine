@@ -8,6 +8,12 @@ namespace DAVA
 {
 namespace StringUtils
 {
+void GetLineBreaks(const String& string, Vector<uint8>& breaks, const char8* locale)
+{
+    breaks.resize(string.length(), LB_NOBREAK); // By default all characters not breakable
+    set_linebreaks_utf8(reinterpret_cast<const utf8_t*>(string.c_str()), string.length(), locale, reinterpret_cast<char*>(&breaks.front()));
+}
+
 void GetLineBreaks(const WideString& string, Vector<uint8>& breaks, const char8* locale)
 {
     breaks.resize(string.length(), LB_NOBREAK); // By default all characters not breakable
@@ -53,58 +59,6 @@ WideString RemoveNonPrintable(const WideString& string, const int8 tabRule /*= -
     return out;
 }
 
-bool IsEmoji(int32 sym)
-{
-    // ranges of symbol codes with unicode emojies.
-    static Vector<std::pair<int32, int32>> ranges = { { 0x2190, 0x21FF }, { 0x2300, 0x243F }, { 0x2600, 0x26FF }, { 0x2700, 0x27BF }, { 0x3000, 0x303F }, /*{ 0x1F1E6, 0x1F1FF },*/ { 0x1F300, 0x1F6FF }, { 0x1F900, 0x1F9FF } };
-    for (auto range : ranges)
-    {
-        if (sym >= range.first && sym <= range.second)
-        {
-            return true;
-        }
-    }
-    return false;
-}
-
-bool RemoveEmoji(WideString& string)
-{
-    WideString ret;
-    bool isChanged = false;
-
-    auto data = string.data();
-    size_t length = string.length();
-    for (size_t i = 0; i < length; ++i)
-    {
-        int32 sym;
-        Memcpy(&sym, data + i, sizeof(int32));
-
-        if (!IsEmoji(sym))
-        {
-            ret += sym;
-        }
-        else
-        {
-            while (i + 1 < length)
-            {
-                i++;
-                Memcpy(&sym, data + i, sizeof(int32));
-                if (sym != 0x200D && sym != 0xFE0F)
-                {
-                    i--;
-                    break;
-                }
-            }
-            isChanged = true;
-        }
-    }
-
-    string = ret;
-
-    // true means "we removed some emojies".
-    return isChanged;
-}
-
 void ReplaceAll(WideString& string, const WideString& search, const WideString& replacement)
 {
     size_t pos = 0;
@@ -114,6 +68,51 @@ void ReplaceAll(WideString& string, const WideString& search, const WideString& 
         string.replace(pos, oldSubStringLength, replacement);
         pos += 1;
     }
+}
+
+String SubstituteParams(const String& str, const DAVA::UnorderedMap<DAVA::String, DAVA::String>& replacements)
+{
+    String result;
+    result.reserve(static_cast<int32>(str.length() * 1.5f));
+
+    String::size_type pos = 0;
+    String::size_type next = 0;
+    while ((next = str.find("%(", pos)) != String::npos)
+    {
+        if (next > pos)
+        {
+            result += str.substr(pos, next - pos);
+        }
+
+        pos = next;
+        next = str.find(")", pos + 1);
+        if (next == String::npos)
+        {
+            DVASSERT(false, str.c_str());
+            return str;
+        }
+
+        String key = str.substr(pos + 2, next - pos - 2);
+        auto it = replacements.find(key);
+        if (it != replacements.end())
+        {
+            result += it->second;
+        }
+        else
+        {
+            result += "%(";
+            result += key;
+            result += ")";
+        }
+        pos = next + 1;
+    }
+
+    if (pos < str.length())
+    {
+        result += str.substr(pos, str.length() - pos);
+    }
+
+    return result;
 }
 }
 }

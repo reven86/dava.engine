@@ -1,12 +1,14 @@
 #include "UI/UIButton.h"
-#include "UI/UIStaticText.h"
-#include "UI/UIEvent.h"
-#include "Utils/StringFormat.h"
-#include "Utils/Utils.h"
 #include "FileSystem/LocalizationSystem.h"
 #include "FileSystem/VariantType.h"
-#include "Render/2D/FontManager.h"
 #include "Reflection/ReflectionRegistrator.h"
+#include "Render/2D/FontManager.h"
+#include "UI/UIControlBackground.h"
+#include "UI/UIEvent.h"
+#include "UI/UIStaticText.h"
+#include "UI/Update/UIUpdateComponent.h"
+#include "Utils/StringFormat.h"
+#include "Utils/Utils.h"
 
 namespace DAVA
 {
@@ -26,6 +28,8 @@ UIButton::UIButton(const Rect& rect)
     , selectedTextBlock(NULL)
     , oldControlState(0)
 {
+    GetOrCreateComponent<UIUpdateComponent>();
+
     UIControlBackground* bg = GetOrCreateComponent<UIControlBackground>();
     for (int32 i = 0; i < DRAW_STATE_COUNT; i++)
     {
@@ -38,7 +42,7 @@ UIButton::UIButton(const Rect& rect)
     SetExclusiveInput(true, false);
     SetInputEnabled(true, false);
 
-    UIControl::SetBackground(GetActualBackgroundForState(GetState()));
+    SetBackground(GetActualBackgroundForState(GetState()));
 }
 
 UIButton::~UIButton()
@@ -259,6 +263,18 @@ void UIButton::SetStateFont(int32 state, Font* font)
     }
 }
 
+void UIButton::SetStateFontSize(int32 state, float32 size)
+{
+    for (int i = 0; i < DRAW_STATE_COUNT && state; i++)
+    {
+        if (state & 0x01)
+        {
+            GetOrCreateTextBlock(static_cast<eButtonDrawState>(i))->SetFontSize(size);
+        }
+        state >>= 1;
+    }
+}
+
 void UIButton::SetStateFontColor(int32 state, const Color& fontColor)
 {
     for (int i = 0; i < DRAW_STATE_COUNT && state; i++)
@@ -278,8 +294,7 @@ void UIButton::SetStateTextColorInheritType(int32 state, UIControlBackground::eC
         if (state & 0x01)
         {
             UIStaticText* staticText = GetOrCreateTextBlock(static_cast<eButtonDrawState>(i));
-            staticText->GetTextBackground()->SetColorInheritType(colorInheritType);
-            staticText->GetShadowBackground()->SetColorInheritType(colorInheritType);
+            staticText->SetTextColorInheritType(colorInheritType);
         }
 
         state >>= 1;
@@ -293,8 +308,7 @@ void UIButton::SetStateTextPerPixelAccuracyType(int32 state, UIControlBackground
         if (state & 0x01)
         {
             UIStaticText* staticText = GetOrCreateTextBlock(static_cast<eButtonDrawState>(i));
-            staticText->GetTextBackground()->SetPerPixelAccuracyType(pixelAccuracyType);
-            staticText->GetShadowBackground()->SetPerPixelAccuracyType(pixelAccuracyType);
+            staticText->SetTextPerPixelAccuracyType(pixelAccuracyType);
         }
 
         state >>= 1;
@@ -422,20 +436,31 @@ void UIButton::Input(UIEvent* currentInput)
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_SOFT); // Drag is not handled - see please DF-2508.
 }
 
-void UIButton::Draw(const UIGeometricData& geometricData)
+void UIButton::Update(float32 timeElapsed)
 {
     if (oldControlState != GetState())
     {
         oldControlState = GetState();
-        selectedTextBlock = GetActualTextBlockForState(GetState());
-        UIControl::SetBackground(GetActualBackgroundForState(GetState()));
+        UpdateSelectedTextBlock();
+        SetBackground(GetActualBackgroundForState(GetState()));
     }
+}
 
-    UIControl::Draw(geometricData);
-
-    if (selectedTextBlock)
+void UIButton::UpdateSelectedTextBlock()
+{
+    UIStaticText* control = GetActualTextBlockForState(GetState());
+    if (selectedTextBlock != control)
     {
-        selectedTextBlock->Draw(geometricData);
+        if (selectedTextBlock)
+        {
+            RemoveControl(selectedTextBlock);
+        }
+        selectedTextBlock = control;
+        if (control)
+        {
+            control->SetInputEnabled(false, false);
+            AddControl(control);
+        }
     }
 }
 
@@ -443,12 +468,17 @@ void UIButton::SetParentColor(const Color& parentColor)
 {
     UIControl::SetParentColor(parentColor);
     if (selectedTextBlock && GetBackground())
-        selectedTextBlock->SetParentColor(GetBackground()->GetDrawColor());
+        selectedTextBlock->SetParentColor(GetComponent<UIControlBackground>()->GetDrawColor());
 }
 
 UIControlBackground* UIButton::GetActualBackgroundForState(int32 state) const
 {
     return GetActualBackground(ControlStateToDrawState(state));
+}
+
+UIControlBackground* UIButton::GetBackground() const
+{
+    return GetComponent<UIControlBackground>();
 }
 
 UIStaticText* UIButton::GetActualTextBlockForState(int32 state) const
@@ -476,7 +506,29 @@ void UIButton::SetBackground(eButtonDrawState drawState, UIControlBackground* ne
     SafeRelease(stateBacks[drawState]);
     stateBacks[drawState] = newBackground;
 
-    UIControl::SetBackground(GetActualBackgroundForState(GetState()));
+    SetBackground(GetActualBackgroundForState(GetState()));
+}
+
+void UIButton::SetBackground(UIControlBackground* newBg)
+{
+    UIControlBackground* currentBg = GetComponent<UIControlBackground>();
+    if (currentBg != newBg)
+    {
+        if (currentBg != nullptr)
+        {
+            RemoveComponent(currentBg);
+        }
+
+        if (newBg != nullptr)
+        {
+            AddComponent(newBg);
+        }
+    }
+}
+
+UIControlBackground* UIButton::CreateDefaultBackground() const
+{
+    return new UIControlBackground();
 }
 
 UIStaticText* UIButton::GetOrCreateTextBlock(eButtonDrawState drawState)
@@ -568,7 +620,7 @@ void UIButton::SetTextBlock(eButtonDrawState drawState, UIStaticText* newTextBlo
 {
     SafeRelease(stateTexts[drawState]);
     stateTexts[drawState] = SafeRetain(newTextBlock);
-    selectedTextBlock = GetActualTextBlockForState(GetState());
+    UpdateSelectedTextBlock();
 }
 
 void UIButton::UpdateStateTextControlSize()

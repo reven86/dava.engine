@@ -11,7 +11,7 @@ struct RenderPassDescriptor
 {
     FastName passName;
     FastName shaderFileName;
-    HashMap<FastName, int> templateDefines = HashMap<FastName, int>(8);
+    UnorderedMap<FastName, int> templateDefines = UnorderedMap<FastName, int>(8);
     ShaderDescriptor* shader = nullptr;
     bool hasBlend = false;
     rhi::DepthStencilState::Descriptor depthStateDescriptor;
@@ -27,7 +27,7 @@ struct FXDescriptor
 
     //for storing and further debug simplification
     FastName fxName;
-    HashMap<FastName, int32> defines = HashMap<FastName, int32>(16);
+    UnorderedMap<FastName, int32> defines = UnorderedMap<FastName, int32>(16);
 };
 
 namespace FXCache
@@ -35,7 +35,7 @@ namespace FXCache
 void Initialize();
 void Uninitialize();
 void Clear();
-const FXDescriptor& GetFXDescriptor(const FastName& fxName, HashMap<FastName, int32>& defines, const FastName& quality = NMaterialQualityName::DEFAULT_QUALITY_NAME);
+const FXDescriptor& GetFXDescriptor(const FastName& fxName, UnorderedMap<FastName, int32>& defines, const FastName& quality = NMaterialQualityName::DEFAULT_QUALITY_NAME);
 }
 }
 

@@ -21,7 +21,7 @@ struct FramebufferGLES2_t
     uint32 colorCount = 0;
     Handle depthStencil = InvalidHandle;
     GLuint depthStencilUID = 0;
-    TextureFace face = TextureFace::TEXTURE_FACE_POSITIVE_X;
+    TextureFace face = TextureFace::TEXTURE_FACE_NONE;
     uint32_t level = 0;
     GLuint frameBuffer = 0;
 };
@@ -377,16 +377,19 @@ void TextureGLES2_t::Destroy(bool forceExecute)
         {
             bool do_delete = false;
 
-            for (const GLuint *t = f->colorUID, *t_end = f->colorUID + f->colorCount; t != t_end; ++t)
+            if (!isRenderBuffer)
             {
-                if (*t == uid)
+                for (const GLuint *t = f->colorUID, *t_end = f->colorUID + f->colorCount; t != t_end; ++t)
                 {
-                    do_delete = true;
-                    break;
+                    if (*t == uid)
+                    {
+                        do_delete = true;
+                        break;
+                    }
                 }
             }
 
-            if (f->depthStencilUID != 0 && (f->depthStencilUID == uid || f->depthStencilUID == uid2))
+            if (isRenderBuffer && f->depthStencilUID != 0 && (f->depthStencilUID == uid || f->depthStencilUID == uid2))
                 do_delete = true;
 
             if (do_delete)
@@ -477,7 +480,7 @@ static void* gles2_Texture_Map(Handle tex, unsigned level, TextureFace face)
         if (self->isRenderTarget)
         {
             DVASSERT(level == 0);
-            DVASSERT(self->fbo != 0);
+            //DVASSERT(self->fbo != 0);
             GLint internalFormat;
             GLint format;
             GLenum type;
@@ -502,28 +505,7 @@ static void* gles2_Texture_Map(Handle tex, unsigned level, TextureFace face)
             data = self->mappedData;
             self->mappedLevel = level;
             self->isMapped = true;
-
-            switch (face)
-            {
-            case TEXTURE_FACE_POSITIVE_X:
-                self->mappedFace = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
-                break;
-            case TEXTURE_FACE_NEGATIVE_X:
-                self->mappedFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
-                break;
-            case TEXTURE_FACE_POSITIVE_Y:
-                self->mappedFace = GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
-                break;
-            case TEXTURE_FACE_NEGATIVE_Y:
-                self->mappedFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
-                break;
-            case TEXTURE_FACE_POSITIVE_Z:
-                self->mappedFace = GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
-                break;
-            case TEXTURE_FACE_NEGATIVE_Z:
-                self->mappedFace = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
-                break;
-            }
+            self->mappedFace = face;
         }
     }
 
@@ -588,6 +570,8 @@ gles2_Texture_Unmap(Handle tex)
             break;
         case TEXTURE_FACE_NEGATIVE_Z:
             target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+            break;
+        default:
             break;
         }
     }
@@ -657,6 +641,8 @@ void gles2_Texture_Update(Handle tex, const void* data, uint32 level, TextureFac
             case TEXTURE_FACE_NEGATIVE_Z:
                 target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
                 break;
+            default:
+                DVASSERT(0, "Invalid TextureFace provided");
             }
         }
 
@@ -1036,7 +1022,7 @@ void ResolveMultisampling(Handle fromTexture, Handle toTexture)
         {
             // force create frame-buffer object
             Handle colorTex = toTexture;
-            TextureFace colorFace = TEXTURE_FACE_POSITIVE_X;
+            TextureFace colorFace = TEXTURE_FACE_NONE;
             unsigned colorLevel = 0;
 
             GetFrameBuffer(&colorTex, &colorFace, &colorLevel, 1, InvalidHandle);

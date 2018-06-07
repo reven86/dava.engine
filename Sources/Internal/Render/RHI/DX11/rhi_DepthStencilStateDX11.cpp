@@ -49,6 +49,11 @@ static void dx11_DepthStencilState_Delete(Handle hstate)
     DepthStencilStateDX11Pool::Free(hstate);
 }
 
+void DepthStencilStateDX11::Init(uint32 maxCount)
+{
+    DepthStencilStateDX11Pool::Reserve(maxCount);
+}
+
 void DepthStencilStateDX11::SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_DepthStencilState_Create = &dx11_DepthStencilState_Create;

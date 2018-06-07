@@ -17,15 +17,15 @@ namespace DAVA
 {
 /**
 	\ingroup render
-	\brief Class that represents texture objects in our SDK. 
-	This class support the following formats: RGBA8888, RGB565, RGBA4444, A8 on all platforms. 
+	\brief Class that represents texture objects in our SDK.
+	This class support the following formats: RGBA8888, RGB565, RGBA4444, A8 on all platforms.
 	For iOS it also support compressed PVR formats. (PVR2 and PVR4)
  */
 class Image;
 class TextureDescriptor;
 class File;
 class Texture;
-	
+
 #ifdef USE_FILEPATH_IN_MAP
 using TexturesMap = Map<FilePath, Texture*>;
 #else //#ifdef USE_FILEPATH_IN_MAP
@@ -36,7 +36,7 @@ class Texture : public BaseObject
 {
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_TEXTURE)
 public:
-    enum TextureState
+    enum TextureState : uint8
     {
         STATE_INVALID = 0,
         STATE_DATA_LOADED,
@@ -68,9 +68,9 @@ public:
     /**
         \brief Create texture from data arrray
         This function creates texture from given format, data pointer and width + height
-     
+
         \param[in] format desired pixel format
-        \param[in] data desired data 
+        \param[in] data desired data
         \param[in] width width of new texture
         \param[in] height height of new texture
         \param[in] generateMipMaps generate mipmaps or not
@@ -80,7 +80,7 @@ public:
     /**
         \brief Create texture from data arrray stored at Image
         This function creates texture from given image
-     
+
         \param[in] image stores data
         \param[in] generateMipMaps generate mipmaps or not
      */
@@ -91,9 +91,9 @@ public:
     /**
         \brief Create text texture from data arrray
         This function creates texture from given format, data pointer and width + height, but adds addInfo string to relativePathname variable for easy identification of textures
-        
+
         \param[in] format desired pixel format
-        \param[in] data desired data 
+        \param[in] data desired data
         \param[in] width width of new texture
         \param[in] height height of new texture
         \param[in] addInfo additional info
@@ -101,14 +101,14 @@ public:
     static Texture* CreateTextFromData(PixelFormat format, uint8* data, uint32 width, uint32 height, bool generateMipMaps, const char* addInfo = 0);
 
     /**
-        \brief Create texture from given file. Supported formats .png, .pvr (only on iOS). 
+        \brief Create texture from given file. Supported formats .png, .pvr (only on iOS).
 		If file cannot be opened, returns "pink placeholder" texture.
         \param[in] pathName path to the png or pvr file
      */
     static Texture* CreateFromFile(const FilePath& pathName, const FastName& group = FastName(), rhi::TextureType typeHint = rhi::TEXTURE_TYPE_2D);
 
     /**
-        \brief Create texture from given file. Supported formats .png, .pvr (only on iOS). 
+        \brief Create texture from given file. Supported formats .png, .pvr (only on iOS).
 		If file cannot be opened, returns 0
         \param[in] pathName path to the png or pvr file
      */
@@ -186,6 +186,8 @@ public:
 
     static rhi::HSamplerState CreateSamplerStateHandle(const rhi::SamplerState::Descriptor::Sampler& samplerState);
 
+    static eGPUFamily GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor* descriptor);
+
 protected:
     void RestoreRenderResource();
 
@@ -205,14 +207,10 @@ protected:
 
     void MakePink(bool checkers = true);
 
-    void GenerateMipmapsInternal();
-
     Texture();
     virtual ~Texture();
 
     bool IsLoadAvailable(const eGPUFamily gpuFamily) const;
-
-    static eGPUFamily GetGPUForLoading(const eGPUFamily requestedGPU, const TextureDescriptor* descriptor);
 
 public: // properties for fast access
     rhi::HTexture handle;

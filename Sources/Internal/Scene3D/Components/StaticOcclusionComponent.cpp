@@ -32,7 +32,8 @@ DAVA_VIRTUAL_REFLECTION_IMPL(StaticOcclusionComponent)
 
 DAVA_VIRTUAL_REFLECTION_IMPL(StaticOcclusionDebugDrawComponent)
 {
-    ReflectionRegistrator<StaticOcclusionDebugDrawComponent>::Begin()[M::CantBeCreatedManualyComponent(), M::CantBeDeletedManualyComponent()]
+    ReflectionRegistrator<StaticOcclusionDebugDrawComponent>::Begin()
+    [M::CantBeCreatedManualyComponent(), M::CantBeDeletedManualyComponent(), M::NonExportableComponent(), M::NonSerializableComponent()]
     .ConstructorByPointer()
     .End();
 }

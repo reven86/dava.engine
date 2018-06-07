@@ -4,8 +4,9 @@
 
 namespace DAVA
 {
-class UIControl;
 class UIComponent;
+class UIControl;
+class UIControlSystem;
 
 class UISystem
 {
@@ -15,6 +16,11 @@ public:
     virtual ~UISystem() = default;
 
 protected:
+    /** Called after adding this system to scene. */
+    virtual void RegisterSystem(){};
+    /** Called before removing this system from scene. */
+    virtual void UnregisterSystem(){};
+
     virtual void RegisterControl(UIControl* control){};
     virtual void UnregisterControl(UIControl* control){};
     virtual void RegisterComponent(UIControl* control, UIComponent* component){};
@@ -25,5 +31,16 @@ protected:
 
     virtual void Process(float32 elapsedTime){};
     virtual void ForceProcessControl(float32 elapsedTime, UIControl* control){};
+
+    void SetScene(UIControlSystem* scene);
+    UIControlSystem* GetScene() const;
+
+private:
+    UIControlSystem* scene = nullptr;
 };
+
+inline UIControlSystem* UISystem::GetScene() const
+{
+    return scene;
+}
 }

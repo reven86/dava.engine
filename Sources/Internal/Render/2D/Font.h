@@ -1,10 +1,9 @@
-#ifndef __DAVAENGINE_FONT_H__
-#define __DAVAENGINE_FONT_H__
+#pragma once
 
-#include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
-#include "Base/Singleton.h"
+#include "Base/BaseTypes.h"
 #include "Base/EventDispatcher.h"
+#include "Base/Singleton.h"
 
 namespace DAVA
 {
@@ -63,18 +62,6 @@ public:
     static int32 GetDPI();
 
     /**
-		\brief Set size.
-		\param[in] size in points
-	*/
-    virtual void SetSize(float32 size);
-
-    /**
-		\brief Get size.
-		\returns size in pixels
-	*/
-    virtual float32 GetSize() const;
-
-    /**
 	 \brief Set vertical spacing.
 	 Spacing value is added to vertical range between lines in multiline text.
 	 \param[in] verticalSpacing value in pixels
@@ -117,7 +104,7 @@ public:
 		\param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str 
 		\returns bounding rect for string in pixels
 	*/
-    virtual Size2i GetStringSize(const WideString& str, Vector<float32>* charSizes = 0);
+    virtual Size2i GetStringSize(float32 size, const WideString& str, Vector<float32>* charSizes = 0);
 
     /**
 	 \brief Get string metrics.
@@ -125,7 +112,7 @@ public:
 	 \param[in, out] charSizes - if present(not NULL), will contain widths of every symbol in str
 	 \returns StringMetrics structure
 	 */
-    virtual StringMetrics GetStringMetrics(const WideString& str, Vector<float32>* charSizes = 0) const = 0;
+    virtual StringMetrics GetStringMetrics(float32 size, const WideString& str, Vector<float32>* charSizes = 0) const = 0;
 
     /**
 		\brief Checks if symbol is present in font.
@@ -138,7 +125,7 @@ public:
 		\brief Get height of highest symbol in font.
 		\returns height in pixels
 	*/
-    virtual uint32 GetFontHeight() const = 0;
+    virtual uint32 GetFontHeight(float32 size) const = 0;
 
     /**
 		\brief Clone font.
@@ -151,14 +138,8 @@ public:
     virtual bool IsEqual(const Font* font) const;
 
     //TODO: get rid of this
-    virtual bool IsTextSupportsSoftwareRendering() const
-    {
-        return false;
-    }
-    virtual bool IsTextSupportsHardwareRendering() const
-    {
-        return false;
-    }
+    virtual bool IsTextSupportsSoftwareRendering() const;
+    virtual bool IsTextSupportsHardwareRendering() const;
 
     //This will allow to determine font type
     virtual eFontType GetFontType() const;
@@ -175,10 +156,7 @@ protected:
 
     static int32 globalFontDPI;
 
-    float32 size;
-    int32 verticalSpacing;
-    eFontType fontType;
+    int32 verticalSpacing = 0;
+    eFontType fontType = TYPE_FT;
 };
 };
-
-#endif // __DAVAENGINE_FONT_H__

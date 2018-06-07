@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_WASD_CONTROLLER_SYSTEM_H__
-#define __DAVAENGINE_WASD_CONTROLLER_SYSTEM_H__
+#pragma once
 
 #include "Entity/SceneSystem.h"
 
@@ -21,10 +20,11 @@ public:
     WASDControllerSystem(Scene* scene);
     virtual ~WASDControllerSystem();
 
-    virtual void AddEntity(Entity* entity);
-    virtual void RemoveEntity(Entity* entity);
+    void AddEntity(Entity* entity) override;
+    void RemoveEntity(Entity* entity) override;
+    void PrepareForRemove() override;
 
-    virtual void Process(float32 timeElapsed);
+    void Process(float32 timeElapsed) override;
 
     float32 GetMoveSpeeed() const;
     void SetMoveSpeed(float32 moveSpeed);
@@ -48,5 +48,3 @@ inline void WASDControllerSystem::SetMoveSpeed(float32 _moveSpeed)
     moveSpeed = _moveSpeed;
 }
 };
-
-#endif //__DAVAENGINE_WASD_CONTROLLER_SYSTEM_H__

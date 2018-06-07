@@ -1,6 +1,5 @@
 #include "DeviceManager/Private/Android/DeviceManagerImplAndroid.h"
 
-#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "DeviceManager/DeviceManager.h"
@@ -42,6 +41,7 @@ DeviceManagerImpl::DeviceManagerImpl(DeviceManager* devManager, Private::MainDis
     javaDisplayInfoHeightField = env->GetFieldID(javaDisplayInfoClass, "height", JNI::TypeSignature<jint>::value());
     javaDisplayInfoDpiXField = env->GetFieldID(javaDisplayInfoClass, "dpiX", JNI::TypeSignature<jfloat>::value());
     javaDisplayInfoDpiYField = env->GetFieldID(javaDisplayInfoClass, "dpiY", JNI::TypeSignature<jfloat>::value());
+    javaDisplayInfoMaxFps = env->GetFieldID(javaDisplayInfoClass, "maxFps", JNI::TypeSignature<jfloat>::value());
 
     // Get displays
     const jDisplayInfoArray displaysInfo = javaDeviceManagerGetDisplaysInfoMethod(javaDeviceManagerInstance);
@@ -83,6 +83,7 @@ DisplayInfo DeviceManagerImpl::ConvertFromJavaDisplayInfo(JNIEnv* env, const job
     displayInfo.rect.dy = static_cast<float32>(env->GetIntField(javaDisplayInfo, javaDisplayInfoHeightField));
     displayInfo.rawDpiX = static_cast<float32>(env->GetFloatField(javaDisplayInfo, javaDisplayInfoDpiXField));
     displayInfo.rawDpiY = static_cast<float32>(env->GetFloatField(javaDisplayInfo, javaDisplayInfoDpiYField));
+    displayInfo.maxFps = static_cast<int32>(env->GetFloatField(javaDisplayInfo, javaDisplayInfoMaxFps));
     displayInfo.primary = isPrimary;
     return displayInfo;
 }
@@ -96,4 +97,3 @@ float32 DeviceManagerImpl::GetCpuTemperature() const
 } // namespace DAVA
 
 #endif // __DAVAENGINE_ANDROID__
-#endif // __DAVAENGINE_COREV2__

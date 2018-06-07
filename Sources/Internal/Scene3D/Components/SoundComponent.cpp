@@ -12,6 +12,8 @@
 #include "Utils/Utils.h"
 #include "Reflection/ReflectionRegistrator.h"
 #include "Reflection/ReflectedMeta.h"
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
 
 namespace DAVA
 {
@@ -160,7 +162,7 @@ Component* SoundComponent::Clone(Entity* toEntity)
     SoundComponent* soundComponent = new SoundComponent();
     soundComponent->SetEntity(toEntity);
 
-    SoundSystem* soundSystem = SoundSystem::Instance();
+    SoundSystem* soundSystem = GetEngineContext()->soundSystem;
     int32 eventCount = static_cast<int32>(events.size());
     for (int32 i = 0; i < eventCount; ++i)
     {
@@ -184,7 +186,7 @@ void SoundComponent::Serialize(KeyedArchive* archive, SerializationContext* seri
         {
             KeyedArchive* eventArchive = new KeyedArchive();
 
-            SoundSystem::Instance()->SerializeEvent(events[i].soundEvent, eventArchive);
+            GetEngineContext()->soundSystem->SerializeEvent(events[i].soundEvent, eventArchive);
             eventArchive->SetUInt32("sce.flags", events[i].flags);
             eventArchive->SetVector3("sce.localDirection", events[i].localDirection);
 
@@ -204,7 +206,7 @@ void SoundComponent::Deserialize(KeyedArchive* archive, SerializationContext* se
         for (uint32 i = 0; i < eventsCount; ++i)
         {
             //KeyedArchive* eventArchive = archive->GetArchive(KeyedArchive::GenKeyFromIndex(i));
-            //SoundEvent* sEvent = SoundSystem::Instance()->DeserializeEvent(eventArchive);
+            //SoundEvent* sEvent = GetEngineContext()->soundSystem->DeserializeEvent(eventArchive);
             //AddSoundEvent(sEvent, eventArchive->GetUInt32("sce.flags"), eventArchive->GetVector3("sce.localDirection", Vector3(1.f, 0.f, 0.f)));
             //SafeRelease(sEvent);
         }

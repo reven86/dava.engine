@@ -8,6 +8,7 @@ namespace DAVA
 class FormulaValueExpression;
 class FormulaNegExpression;
 class FormulaNotExpression;
+class FormulaWhenExpression;
 class FormulaBinaryOperatorExpression;
 class FormulaFunctionExpression;
 class FormulaFieldAccessExpression;
@@ -23,6 +24,7 @@ public:
     virtual void Visit(FormulaValueExpression* exp) = 0;
     virtual void Visit(FormulaNegExpression* exp) = 0;
     virtual void Visit(FormulaNotExpression* exp) = 0;
+    virtual void Visit(FormulaWhenExpression* exp) = 0;
     virtual void Visit(FormulaBinaryOperatorExpression* exp) = 0;
     virtual void Visit(FormulaFunctionExpression* exp) = 0;
     virtual void Visit(FormulaFieldAccessExpression* exp) = 0;
@@ -104,6 +106,28 @@ public:
 
 private:
     std::shared_ptr<FormulaExpression> exp;
+};
+
+/**
+ \ingroup formula
+ 
+ Stores node for conditional when operator (select for execution only one branch).
+ */
+class FormulaWhenExpression : public FormulaExpression
+{
+public:
+    FormulaWhenExpression(const Vector<std::pair<std::shared_ptr<FormulaExpression>, std::shared_ptr<FormulaExpression>>>& branches,
+                          std::shared_ptr<FormulaExpression> elseBranch,
+                          int32 lineNumber, int32 positionInLine);
+
+    void Accept(FormulaExpressionVisitor* visitor) override;
+
+    const Vector<std::pair<std::shared_ptr<FormulaExpression>, std::shared_ptr<FormulaExpression>>>& GetBranches() const;
+    FormulaExpression* GetElseBranch() const;
+
+private:
+    Vector<std::pair<std::shared_ptr<FormulaExpression>, std::shared_ptr<FormulaExpression>>> branches;
+    std::shared_ptr<FormulaExpression> elseBranch;
 };
 
 /**

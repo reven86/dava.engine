@@ -79,10 +79,10 @@ namespace Texture
 Handle Create(const Descriptor& desc);
 void Delete(Handle tex, bool forceExecute = false);
 
-void* Map(Handle tex, unsigned level = 0, TextureFace face = TEXTURE_FACE_NEGATIVE_X);
+void* Map(Handle tex, unsigned level = 0, TextureFace face = TEXTURE_FACE_NONE);
 void Unmap(Handle tex);
 
-void Update(Handle tex, const void* data, uint32 level, TextureFace face = TEXTURE_FACE_NEGATIVE_X);
+void Update(Handle tex, const void* data, uint32 level, TextureFace face = TEXTURE_FACE_NONE);
 
 bool NeedRestore(Handle tex);
 };

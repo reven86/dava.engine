@@ -54,12 +54,7 @@ static bool metal_TextureFormatSupported(TextureFormat format, ProgType)
 
     case TEXTURE_FORMAT_PVRTC_4BPP_RGBA:
     case TEXTURE_FORMAT_PVRTC_2BPP_RGBA:
-    /*
-    case TEXTURE_FORMAT_PVRTC2_4BPP_RGB:
-    case TEXTURE_FORMAT_PVRTC2_4BPP_RGBA:
-    case TEXTURE_FORMAT_PVRTC2_2BPP_RGB:
-    case TEXTURE_FORMAT_PVRTC2_2BPP_RGBA:
-*/
+
     case TEXTURE_FORMAT_ETC2_R8G8B8:
     case TEXTURE_FORMAT_ETC2_R8G8B8A1:
     case TEXTURE_FORMAT_EAC_R11_UNSIGNED:
@@ -67,6 +62,15 @@ static bool metal_TextureFormatSupported(TextureFormat format, ProgType)
 
     case TEXTURE_FORMAT_D24S8:
     case TEXTURE_FORMAT_D16:
+
+    case TEXTURE_FORMAT_R16F:
+    case TEXTURE_FORMAT_RG16F:
+    case TEXTURE_FORMAT_RGBA16F:
+
+    case TEXTURE_FORMAT_R32F:
+    case TEXTURE_FORMAT_RG32F:
+    case TEXTURE_FORMAT_RGBA32F:
+
         supported = true;
         break;
 
@@ -173,8 +177,16 @@ void Metal_InitContext()
 
     if (iosVersion10 && !([_Metal_Device supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily2_v1]))
     {
-        DAVA::Logger::Error("A7 ios 10 detected");
+        DAVA::Logger::Warning("A7 ios 10 detected");
         _Metal_DrawableDispatchSemaphore = new DAVA::Semaphore(_Metal_DrawableDispatchSemaphoreFrameCount);
+    }
+
+    NSString* minPromotionSysVer = @"10.3";
+    if ([currSysVer compare:minPromotionSysVer options:NSNumericSearch] != NSOrderedAscending)
+    {
+        ::UIScreen* screen = [ ::UIScreen mainScreen];
+        int maxFPS = [screen maximumFramesPerSecond];
+        MutableDeviceCaps::Get().maxFPS = uint32(maxFPS);
     }
 
     DAVA::uint32 maxTextureSize = 4096u;
@@ -254,6 +266,17 @@ void metal_Initialize(const InitParam& param)
         ConstBufferMetal::Init(param.maxConstBufferCount);
     if (param.maxTextureCount)
         TextureMetal::Init(param.maxTextureCount);
+
+    if (param.maxSamplerStateCount)
+        SamplerStateMetal::Init(param.maxSamplerStateCount);
+    if (param.maxPipelineStateCount)
+        PipelineStateMetal::Init(param.maxPipelineStateCount);
+    if (param.maxDepthStencilStateCount)
+        DepthStencilStateMetal::Init(param.maxDepthStencilStateCount);
+    if (param.maxRenderPassCount)
+        RenderPassMetal::Init(param.maxRenderPassCount);
+    if (param.maxCommandBuffer)
+        CommandBufferMetal::Init(param.maxCommandBuffer);
 
     MutableDeviceCaps::Get().is32BitIndicesSupported = true;
     MutableDeviceCaps::Get().isFramebufferFetchSupported = true;

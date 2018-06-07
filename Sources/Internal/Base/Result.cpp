@@ -1,8 +1,8 @@
 #include "Base/Result.h"
 #include "Debug/DVAssert.h"
 
-using namespace DAVA;
-
+namespace DAVA
+{
 Result::Result(ResultType type_, const DAVA::String& message_)
     : type(type_)
     , message(message_)
@@ -134,4 +134,5 @@ String ResultList::GetResultMessages() const
         stream << result.message;
     }
     return stream.str();
+}
 }

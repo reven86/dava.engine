@@ -4,9 +4,6 @@
 
 namespace DAVA
 {
-
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-
 /*****************************************************************************
 * Texture related constants and enumerations. 
 *****************************************************************************/
@@ -177,7 +174,4 @@ struct MetaDataBlock
         Data = nullptr;
     }
 };
-    
-
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-};
+} //DAVA

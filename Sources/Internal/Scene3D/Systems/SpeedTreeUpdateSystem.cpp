@@ -17,6 +17,8 @@
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Render/Renderer.h"
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
 
 namespace DAVA
 {
@@ -52,7 +54,7 @@ void SpeedTreeUpdateSystem::AddEntity(Entity* entity)
 {
     SpeedTreeComponent* component = GetSpeedTreeComponent(entity);
     DVASSERT(component != nullptr);
-    component->leafTime = static_cast<float32>(Random::Instance()->RandFloat(1000.f));
+    component->leafTime = static_cast<float32>(GetEngineContext()->random->RandFloat(1000.f));
     allTrees.push_back(component);
 }
 
@@ -67,6 +69,11 @@ void SpeedTreeUpdateSystem::RemoveEntity(Entity* entity)
             break;
         }
     }
+}
+
+void SpeedTreeUpdateSystem::PrepareForRemove()
+{
+    allTrees.clear();
 }
 
 void SpeedTreeUpdateSystem::UpdateAnimationFlag(Entity* entity)
@@ -84,14 +91,15 @@ void SpeedTreeUpdateSystem::Process(float32 timeElapsed)
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_SPEEDTREE_SYSTEM);
 
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+
     for (auto& pair : tsc->worldTransformChanged.map)
     {
-        if (pair.first->GetComponentsCount(Component::SPEEDTREE_COMPONENT) > 0)
+        if (pair.first->GetComponentsCount(Type::Instance<SpeedTreeComponent>()) > 0)
         {
             for (Entity* entity : pair.second)
             {
-                SpeedTreeComponent* component = static_cast<SpeedTreeComponent*>(entity->GetComponent(Component::SPEEDTREE_COMPONENT));
-                Matrix4* wtMxPrt = GetTransformComponent(component->GetEntity())->GetWorldTransformPtr();
+                SpeedTreeComponent* component = entity->GetComponent<SpeedTreeComponent>();
+                Matrix4* wtMxPrt = GetTransformComponent(component->GetEntity())->GetWorldMatrixPtr();
                 component->wtPosition = wtMxPrt->GetTranslationVector();
                 wtMxPrt->GetInverse(component->wtInvMx);
 

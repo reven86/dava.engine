@@ -47,7 +47,7 @@ public:
     * \param[in] input text to process
     * \param[in] font font for detecting characters sizes
     */
-    DAVA_DEPRECATED(void Reset(const WideString& input, const Font& font));
+    DAVA_DEPRECATED(void Reset(const WideString& input, const Font& font, float32 size));
 
     /**
      * \brief Set sizes for characters of text
@@ -65,7 +65,7 @@ public:
     * \brief Calculate sizes for characters of text from font
     * \param[in] font specified font
     */
-    void CalculateCharSizes(const Font& font);
+    void CalculateCharSizes(const Font& font, float32 size);
 
     /**
      * \brief Puts cursor to given position

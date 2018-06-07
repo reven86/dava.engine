@@ -1,10 +1,12 @@
 #include "LuaBridge.h"
-#include "Scripting/LuaException.h"
-#include "Reflection/ReflectedTypeDB.h"
-#include "Logger/Logger.h"
-#include "Utils/UTF8Utils.h"
-#include "Utils/StringFormat.h"
 #include "Debug/DVAssert.h"
+#include "FileSystem/FileSystem.h"
+#include "FileSystem/KeyedArchive.h"
+#include "Logger/Logger.h"
+#include "Reflection/ReflectedTypeDB.h"
+#include "Scripting/LuaException.h"
+#include "Utils/StringFormat.h"
+#include "Utils/UTF8Utils.h"
 
 namespace DAVA
 {
@@ -69,6 +71,35 @@ void RegisterDava(lua_State* L)
     lua_pop(L, 1);
 }
 
+int LuaModulesLoader(lua_State* L)
+{
+    String module = lua_tostring(L, 1);
+    FilePath path = path.CreateWithNewExtension(module, ".lua");
+    luaL_loadfile(L, path.GetAbsolutePathname().c_str());
+    return 1;
+}
+
+void RegisterModulesLoader(lua_State* L)
+{
+    lua_getfield(L, LUA_GLOBALSINDEX, "package"); // push "package"
+    lua_getfield(L, -1, "loaders"); // push "package.loaders"
+    lua_remove(L, -2); // remove "package"
+    // Count the number of entries in package.loaders.
+    // Table is now at index -2, since 'nil' is right on top of it.
+    // lua_next pushes a key and a value onto the stack.
+    int numLoaders = 0;
+    lua_pushnil(L);
+    while (lua_next(L, -2) != 0)
+    {
+        lua_pop(L, 1);
+        numLoaders++;
+    }
+    lua_pushinteger(L, numLoaders + 1);
+    lua_pushcfunction(L, LuaModulesLoader);
+    lua_rawset(L, -3);
+    lua_pop(L, 1); // table is still on the stack.  Get rid of it now.
+}
+
 /******************************************************************************/
 
 // Any metatable type name
@@ -120,10 +151,22 @@ int32 Any__tostring(lua_State* L)
     return 1;
 }
 
+/*
+Meta method for presentation Any as string.
+Lua stack changes [-0, +0, -]
+*/
+int32 Any__gc(lua_State* L)
+{
+    Any* pAny = lua_checkdvany(L, 1);
+    pAny->~Any();
+    return 0;
+}
+
 void RegisterAny(lua_State* L)
 {
     static const luaL_reg Any_meta[] = {
         { "__tostring", &Any__tostring }, // Control string representation
+        { "__gc", &Any__gc }, // Garbage collector function
         // { "__call",  }, // Treat a table like a function
         // { "__len",  }, // Control table length
         // { "__mode",  }, // Control weak references
@@ -251,52 +294,52 @@ int32 AnyFn__call(lua_State* L)
         }
         case 1:
         {
-            Any a1 = LuaToAny(L, 2, argsTypes[0]);
+            Any a1 = LuaToAny(L, 2, argsTypes[0]->Decay());
             result = self->Invoke(a1);
             break;
         }
         case 2:
         {
-            Any a1 = LuaToAny(L, 2, argsTypes[0]);
-            Any a2 = LuaToAny(L, 3, argsTypes[1]);
+            Any a1 = LuaToAny(L, 2, argsTypes[0]->Decay());
+            Any a2 = LuaToAny(L, 3, argsTypes[1]->Decay());
             result = self->Invoke(a1, a2);
             break;
         }
         case 3:
         {
-            Any a1 = LuaToAny(L, 2, argsTypes[0]);
-            Any a2 = LuaToAny(L, 3, argsTypes[1]);
-            Any a3 = LuaToAny(L, 4, argsTypes[2]);
+            Any a1 = LuaToAny(L, 2, argsTypes[0]->Decay());
+            Any a2 = LuaToAny(L, 3, argsTypes[1]->Decay());
+            Any a3 = LuaToAny(L, 4, argsTypes[2]->Decay());
             result = self->Invoke(a1, a2, a3);
             break;
         }
         case 4:
         {
-            Any a1 = LuaToAny(L, 2, argsTypes[0]);
-            Any a2 = LuaToAny(L, 3, argsTypes[1]);
-            Any a3 = LuaToAny(L, 4, argsTypes[2]);
-            Any a4 = LuaToAny(L, 5, argsTypes[3]);
+            Any a1 = LuaToAny(L, 2, argsTypes[0]->Decay());
+            Any a2 = LuaToAny(L, 3, argsTypes[1]->Decay());
+            Any a3 = LuaToAny(L, 4, argsTypes[2]->Decay());
+            Any a4 = LuaToAny(L, 5, argsTypes[3]->Decay());
             result = self->Invoke(a1, a2, a3, a4);
             break;
         }
         case 5:
         {
-            Any a1 = LuaToAny(L, 2, argsTypes[0]);
-            Any a2 = LuaToAny(L, 3, argsTypes[1]);
-            Any a3 = LuaToAny(L, 4, argsTypes[2]);
-            Any a4 = LuaToAny(L, 5, argsTypes[3]);
-            Any a5 = LuaToAny(L, 6, argsTypes[4]);
+            Any a1 = LuaToAny(L, 2, argsTypes[0]->Decay());
+            Any a2 = LuaToAny(L, 3, argsTypes[1]->Decay());
+            Any a3 = LuaToAny(L, 4, argsTypes[2]->Decay());
+            Any a4 = LuaToAny(L, 5, argsTypes[3]->Decay());
+            Any a5 = LuaToAny(L, 6, argsTypes[4]->Decay());
             result = self->Invoke(a1, a2, a3, a4, a5);
             break;
         }
         case 6:
         {
-            Any a1 = LuaToAny(L, 2, argsTypes[0]);
-            Any a2 = LuaToAny(L, 3, argsTypes[1]);
-            Any a3 = LuaToAny(L, 4, argsTypes[2]);
-            Any a4 = LuaToAny(L, 5, argsTypes[3]);
-            Any a5 = LuaToAny(L, 6, argsTypes[4]);
-            Any a6 = LuaToAny(L, 7, argsTypes[5]);
+            Any a1 = LuaToAny(L, 2, argsTypes[0]->Decay());
+            Any a2 = LuaToAny(L, 3, argsTypes[1]->Decay());
+            Any a3 = LuaToAny(L, 4, argsTypes[2]->Decay());
+            Any a4 = LuaToAny(L, 5, argsTypes[3]->Decay());
+            Any a5 = LuaToAny(L, 6, argsTypes[4]->Decay());
+            Any a6 = LuaToAny(L, 7, argsTypes[5]->Decay());
             result = self->Invoke(a1, a2, a3, a4, a5, a6);
             break;
         }
@@ -376,7 +419,16 @@ Lua stack changes [-0, +1, -]
 int32 Reflection__tostring(lua_State* L)
 {
     Reflection* pRefl = lua_checkdvreflection(L, 1);
-    lua_pushfstring(L, "Reflection: %s (%p)", pRefl->IsValid() ? pRefl->GetValueType()->GetName() : "<non valid>", pRefl);
+    const char* name = "<invalid>";
+    if (pRefl->IsValid())
+    {
+        const Type* valType = pRefl->GetValueType();
+        if (valType)
+        {
+            name = valType->GetName();
+        }
+    }
+    lua_pushfstring(L, "Reflection: %s (%p)", name, pRefl);
     return 1;
 }
 
@@ -386,6 +438,9 @@ Lua stack changes [-0, +1, v]
 */
 int32 Reflection__index(lua_State* L)
 {
+    static const FastName VAL_KEY = FastName("_val");
+    static const FastName OBJ_KEY = FastName("_obj");
+
     Reflection* self = lua_checkdvreflection(L, 1);
 
     Any name;
@@ -396,10 +451,34 @@ int32 Reflection__index(lua_State* L)
         name.Set(size_t(lua_tointeger(L, 2)) - 1); // -1 because in Lua first item in array has index 1
         break;
     case LUA_TSTRING:
+        //Logger::Debug("-----> Name: %s", lua_tostring(L, 2));
         name.Set(FastName(lua_tostring(L, 2)));
         break;
     default:
         return luaL_error(L, "Wrong key type \"%s\"!", lua_typename(L, ltype));
+    }
+
+    if (name == VAL_KEY)
+    {
+        // If val is pointer push it as Any!!!
+        // AnyToLua makes Reflection for pointers if cans
+        const Any& val = self->GetValue();
+        if (val.GetType()->IsPointer())
+        {
+            lua_pushdvany(L, val);
+        }
+        else
+        {
+            AnyToLua(L, val);
+        }
+        return 1;
+    }
+
+    if (name == OBJ_KEY)
+    {
+        const ReflectedObject& obj = self->GetValueObject();
+        lua_pushdvany(L, Any(obj));
+        return 1;
     }
 
     Reflection refl = self->GetField(name);
@@ -442,9 +521,11 @@ int32 Reflection__newindex(lua_State* L)
     switch (ltype)
     {
     case LUA_TNUMBER:
+        Logger::Debug("-----> Index: %s", lua_tointeger(L, 2) - 1);
         name.Set(size_t(lua_tointeger(L, 2)) - 1); // -1 because in Lua first item in array has index 1
         break;
     case LUA_TSTRING:
+        //Logger::Debug("-----> Name: %s", lua_tostring(L, 2));
         name.Set(FastName(lua_tostring(L, 2)));
         break;
     default:
@@ -452,22 +533,46 @@ int32 Reflection__newindex(lua_State* L)
     }
 
     Reflection refl = self->GetField(name);
-    if (refl.IsValid())
+    Reflection* valRef = lua_todvreflection(L, 3);
+
+    try
     {
-        try
+        if (refl.IsValid())
         {
-            Any value = LuaToAny(L, 3, refl.GetValueType());
-            refl.SetValue(value);
+            if (valRef && valRef->IsValid())
+            {
+                const Any& value = valRef->GetValue();
+                refl.SetValueWithCast(value);
+            }
+            else
+            {
+                const Any& value = LuaToAny(L, 3, refl.GetValueType());
+                refl.SetValueWithCast(value);
+            }
         }
-        catch (const std::exception& e)
+        else if (self->GetFieldsCaps().canAddField)
         {
-            return luaL_error(L, e.what());
-        }
-        catch (...)
-        {
-            return luaL_error(L, "Unknown C++ exception");
+            if (valRef && valRef->IsValid())
+            {
+                const Any& value = valRef->GetValue();
+                self->AddField(name, value);
+            }
+            else
+            {
+                const Any& value = LuaToAny(L, 3);
+                self->AddField(name, value);
+            }
         }
     }
+    catch (const std::exception& e)
+    {
+        return luaL_error(L, e.what());
+    }
+    catch (...)
+    {
+        return luaL_error(L, "Unknown C++ exception");
+    }
+
     return 0;
 }
 
@@ -499,12 +604,14 @@ bool lua_equalmetatable(lua_State* L, const char* metatableName)
     return eq == 1;
 }
 
+// clang-format off
+
 Any LuaToAny(lua_State* L, int32 index, const Type* preferredType /*= nullptr*/)
 {
 #define ISTYPE(t) (preferredType == Type::Instance<t>())
 #define CASTTYPE(t, ex) (Any(static_cast<t>(ex)))
 #define IFCAST(t, luaFn) if ISTYPE(t) { return CASTTYPE(t, luaFn(L, index)); }
-#define THROWTYPE DAVA_THROW(LuaException, LUA_ERRRUN, Format("Can cast Lua type (%s) to preferred type (%s)", lua_typename(L, ltype), preferredType->GetName()));
+#define THROWTYPE DAVA_THROW(LuaException, LUA_ERRRUN, Format("Can cast Lua type (%s) to preferred type (%s)", lua_typename(L, ltype), preferredType->GetName()))
 
     int ltype = lua_type(L, index);
     switch (ltype)
@@ -512,7 +619,14 @@ Any LuaToAny(lua_State* L, int32 index, const Type* preferredType /*= nullptr*/)
     case LUA_TNIL:
         if (preferredType)
         {
-            THROWTYPE
+            if (preferredType->IsPointer())
+            {
+                return Any(nullptr).ReinterpretCast(preferredType);
+            }
+            else
+            {
+                THROWTYPE;
+            }
         }
         else
         {
@@ -521,17 +635,19 @@ Any LuaToAny(lua_State* L, int32 index, const Type* preferredType /*= nullptr*/)
     case LUA_TBOOLEAN:
         if (preferredType)
         {
-            if
-                ISTYPE(bool)
-                {
-                    return CASTTYPE(bool, lua_toboolean(L, index) != 0);
-                }
-            else
-                IFCAST(int8, lua_tointeger)
+            if ISTYPE(bool)
+            {
+                return CASTTYPE(bool, lua_toboolean(L, index) != 0);
+            }
+            else IFCAST(int8, lua_tointeger)
             else IFCAST(int16, lua_tointeger)
             else IFCAST(int32, lua_tointeger)
-            else IFCAST(int64, lua_tonumber)
-            else THROWTYPE
+            else IFCAST(int64, lua_tointeger)
+            else IFCAST(uint8, lua_tointeger)
+            else IFCAST(uint16, lua_tointeger)
+            else IFCAST(uint32, lua_tointeger)
+            else IFCAST(uint64, lua_tointeger)
+            else THROWTYPE;
         }
         else
         {
@@ -545,14 +661,22 @@ Any LuaToAny(lua_State* L, int32 index, const Type* preferredType /*= nullptr*/)
             else IFCAST(int8, lua_tointeger)
             else IFCAST(int16, lua_tointeger)
             else IFCAST(int32, lua_tointeger)
-            else IFCAST(int64, lua_tonumber)
+            else IFCAST(int64, lua_tointeger)
+            else IFCAST(uint8, lua_tointeger)
+            else IFCAST(uint16, lua_tointeger)
+            else IFCAST(uint32, lua_tointeger)
+            else IFCAST(uint64, lua_tointeger)
             else IFCAST(char8, lua_tointeger)
             else IFCAST(char16, lua_tointeger)
-            else THROWTYPE
+            else THROWTYPE;
         }
         else
         {
-            return CASTTYPE(float64, lua_tonumber(L, index));
+            // Workaround: Detect integer value from Lua (before Lua 5.3)
+            float64 n = static_cast<float64>(lua_tonumber(L, index));
+            float64 fractPart, intPart;
+            fractPart = modf(n, &intPart);
+            return fractPart != 0.0 ? Any(n) : Any(static_cast<int32>(intPart));
         }
     case LUA_TSTRING:
         if (preferredType)
@@ -564,7 +688,9 @@ Any LuaToAny(lua_State* L, int32 index, const Type* preferredType /*= nullptr*/)
                 const WideString wstr(UTF8Utils::EncodeToWideString(str));
                 return Any(wstr);
             }
-            else THROWTYPE
+            else IFCAST(FastName, lua_tostring)
+            else IFCAST(FilePath, lua_tostring)
+            else THROWTYPE;
         }
         else
         {
@@ -577,9 +703,7 @@ Any LuaToAny(lua_State* L, int32 index, const Type* preferredType /*= nullptr*/)
             {
                 lua_pop(L, 1); // stack -1
                 Any* any = lua_todvany(L, index);
-                if (preferredType
-                    && !ISTYPE(Any)
-                    && any->GetType() != preferredType)
+                if (preferredType && !ISTYPE(Any) && any->GetType() != preferredType)
                 {
                     THROWTYPE;
                 }
@@ -590,16 +714,16 @@ Any LuaToAny(lua_State* L, int32 index, const Type* preferredType /*= nullptr*/)
                 lua_pop(L, 1); // stack -1
                 AnyFn* pAnyFn = lua_todvanyfn(L, index);
                 if (preferredType && !ISTYPE(AnyFn))
+                {
                     THROWTYPE;
+                }
                 return Any(*pAnyFn);
             }
             else if (lua_equalmetatable(L, ReflectionTName))
             {
                 lua_pop(L, 1); // stack -1
                 Reflection* pRefl = lua_todvreflection(L, index);
-                if (preferredType
-                    && !ISTYPE(Reflection)
-                    && pRefl->GetValueType() != preferredType)
+                if (preferredType && !ISTYPE(Reflection) && pRefl->GetValueType() != preferredType)
                 {
                     THROWTYPE;
                 }
@@ -615,8 +739,73 @@ Any LuaToAny(lua_State* L, int32 index, const Type* preferredType /*= nullptr*/)
         {
             DAVA_THROW(LuaException, LUA_ERRRUN, "Unknown userdata type without metatable!");
         }
-    case LUA_TLIGHTUSERDATA:
     case LUA_TTABLE:
+        if (preferredType && preferredType != Type::Instance<KeyedArchive*>() && preferredType != Type::Instance<RefPtr<KeyedArchive>>())
+        {
+            THROWTYPE;
+        }
+        else
+        {
+            RefPtr<KeyedArchive> table(new KeyedArchive());
+
+            lua_pushnil(L);
+            while (lua_next(L, -2) != 0)
+            {
+                String key;
+                switch (lua_type(L, -2))
+                {
+                case LUA_TNUMBER:
+                    key = Format("%d", lua_tointeger(L, -2) - 1); // Lua first item in array has index 1 !!!
+                    break;
+                case LUA_TSTRING:
+                    key = lua_tostring(L, -2);
+                    break;
+                default:
+                    DVASSERT(false);
+                }
+
+                switch (lua_type(L, -1))
+                {
+                case LUA_TBOOLEAN:
+                    table->SetBool(key, lua_toboolean(L, -1) != 0);
+                    break;
+                case LUA_TNUMBER:
+                    {
+                        // Workaround: Detect integer value from Lua (before Lua 5.3)
+                        float64 n = static_cast<float64>(lua_tonumber(L, -1));
+                        float64 fractPart, intPart;
+                        fractPart = modf(n, &intPart);
+                        if (fractPart != 0.f)
+                        {
+                            table->SetFloat64(key, n);
+                        }
+                        else
+                        {
+                            table->SetInt32(key, static_cast<int32>(intPart));
+                        }
+                    }
+                    
+                    break;
+                case LUA_TSTRING:
+                    table->SetString(key, lua_tostring(L, -1));
+                    break;
+                case LUA_TTABLE:
+                {
+                    Any any = LuaToAny(L, -1);
+                    RefPtr<KeyedArchive> subTable = any.Get<RefPtr<KeyedArchive>>();
+                    table->SetArchive(key, subTable.Get());
+                    break;
+                }
+                default:
+                    break;
+                }
+
+                lua_pop(L, 1);
+            }
+
+            return Any(table);
+        }
+    case LUA_TLIGHTUSERDATA:
     case LUA_TFUNCTION:
     case LUA_TTHREAD:
     default:
@@ -633,19 +822,20 @@ void AnyToLua(lua_State* L, const Any& value)
 {
 #define CANGET(t) (value.CanGet<t>())
 #define IFPUSH(t, luaFn) if CANGET(t) { luaFn(L, value.Get<t>()); }
+#define IFPUSH_WITH_CAST(t, luaFn, luaType) if CANGET(t) { luaFn(L, static_cast<luaType>(value.Get<t>())); }
 
     if (value.IsEmpty())
     {
         lua_pushnil(L); // Push nil if any is empty
     }
-    else
-        IFPUSH(int8, lua_pushinteger)
+    else IFPUSH(int8, lua_pushinteger)
     else IFPUSH(int16, lua_pushinteger)
     else IFPUSH(int32, lua_pushinteger)
-    else if (CANGET(int64))
-    {
-        lua_pushnumber(L, static_cast<lua_Number>(value.Get<int64>()));
-    }
+    else IFPUSH_WITH_CAST(int64, lua_pushinteger, lua_Integer)
+    else IFPUSH(uint8, lua_pushinteger)
+    else IFPUSH(uint16, lua_pushinteger)
+    else IFPUSH(uint32, lua_pushinteger)
+    else IFPUSH_WITH_CAST(uint64, lua_pushinteger, lua_Integer)
     else IFPUSH(float32, lua_pushnumber)
     else IFPUSH(float64, lua_pushnumber)
     else IFPUSH(char8, lua_pushinteger)
@@ -661,7 +851,12 @@ void AnyToLua(lua_State* L, const Any& value)
     {
         const WideString& res = value.Get<WideString>();
         const String& utf = UTF8Utils::EncodeToUTF8(res);
-        lua_pushlstring(L, utf.c_str(), res.length());
+        lua_pushlstring(L, utf.c_str(), utf.length());
+    }
+    else if CANGET(FastName)
+    {
+        String str = value.Get<FastName>().c_str();
+        lua_pushlstring(L, str.c_str(), str.length());
     }
     else if CANGET(Reflection)
     {
@@ -675,15 +870,41 @@ void AnyToLua(lua_State* L, const Any& value)
             lua_pushnil(L); // Push nil if reflection isn't valid
         }
     }
-    else IFPUSH(AnyFn, lua_pushdvanyfn)
-    else // unknown type, push as is
+    else IFPUSH(AnyFn, lua_pushdvanyfn) else // unknown type
     {
+        // Try get reflection of type and push it
+        const Type* vType = value.GetType();
+        if (vType && vType->IsPointer())
+        {
+            void* rawPtr = value.Cast<void*>();
+            if (rawPtr == nullptr)
+            {
+                lua_pushnil(L);
+                return;
+            }
+            
+            const ReflectedType* rType = ReflectedTypeDB::GetByPointer(rawPtr, vType->Deref());
+            if (rType)
+            {
+                Reflection ref = Reflection::Create(ReflectedObject(rawPtr, rType));
+                if (ref.IsValid())
+                {
+                    // push reflection
+                    lua_pushdvreflection(L, ref);
+                    return;
+                }
+            }
+        }
+
+        // Otherwise push as is
         lua_pushdvany(L, value);
     }
 
 #undef CANGET
 #undef IFPUSH
 }
+
+// clang-format on
 
 String PopString(lua_State* L)
 {

@@ -163,6 +163,10 @@ metal_SamplerState_Delete(Handle state)
 
 namespace SamplerStateMetal
 {
+void Init(uint32 maxCount)
+{
+    SamplerStateMetalPool::Reserve(maxCount);
+}
 void SetupDispatch(Dispatch* dispatch)
 {
     dispatch->impl_SamplerState_Create = &metal_SamplerState_Create;

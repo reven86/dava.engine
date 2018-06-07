@@ -3,6 +3,8 @@
 #include "FileSystem/YamlNode.h"
 #include "Logger/Logger.h"
 #include "Utils/Utils.h"
+
+#define YAML_DECLARE_STATIC
 #include "yaml/yaml.h"
 
 namespace DAVA
@@ -19,7 +21,7 @@ bool YamlParser::Parse(const String& data)
 
 bool YamlParser::Parse(const FilePath& pathName)
 {
-    File* yamlFile = File::Create(pathName, File::OPEN | File::READ);
+    RefPtr<File> yamlFile(File::Create(pathName, File::OPEN | File::READ));
     if (!yamlFile)
     {
         Logger::Error("[YamlParser::Parse] Can't Open file %s for read", pathName.GetAbsolutePathname().c_str());
@@ -31,7 +33,6 @@ bool YamlParser::Parse(const FilePath& pathName)
     dataHolder.data = new uint8[dataHolder.fileSize];
     dataHolder.dataOffset = 0;
     yamlFile->Read(dataHolder.data, dataHolder.fileSize);
-    SafeRelease(yamlFile);
 
     bool result = Parse(&dataHolder);
     SafeDeleteArray(dataHolder.data);
@@ -80,13 +81,13 @@ bool YamlParser::Parse(YamlDataHolder* dataHolder)
 
             if (objectStack.empty())
             {
-                YamlNode* node = YamlNode::CreateStringNode();
+                RefPtr<YamlNode> node = YamlNode::CreateStringNode();
                 node->Set(scalarValue);
                 rootObject = node;
             }
             else
             {
-                YamlNode* topContainer = objectStack.top();
+                RefPtr<YamlNode> topContainer = objectStack.top();
                 DVASSERT(topContainer->GetType() != YamlNode::TYPE_STRING);
                 if (topContainer->GetType() == YamlNode::TYPE_MAP)
                 {
@@ -118,14 +119,14 @@ bool YamlParser::Parse(YamlDataHolder* dataHolder)
 
         case YAML_SEQUENCE_START_EVENT:
         {
-            YamlNode* node = YamlNode::CreateArrayNode();
+            RefPtr<YamlNode> node = YamlNode::CreateArrayNode();
             if (objectStack.empty())
             {
                 rootObject = node;
             }
             else
             {
-                YamlNode* topContainer = objectStack.top();
+                RefPtr<YamlNode> topContainer = objectStack.top();
                 DVASSERT(topContainer->GetType() != YamlNode::TYPE_STRING);
                 if (topContainer->GetType() == YamlNode::TYPE_MAP)
                 {
@@ -150,14 +151,14 @@ bool YamlParser::Parse(YamlDataHolder* dataHolder)
 
         case YAML_MAPPING_START_EVENT:
         {
-            YamlNode* node = YamlNode::CreateMapNode();
+            RefPtr<YamlNode> node = YamlNode::CreateMapNode();
             if (objectStack.empty())
             {
                 rootObject = node;
             }
             else
             {
-                YamlNode* topContainer = objectStack.top();
+                RefPtr<YamlNode> topContainer = objectStack.top();
                 if (topContainer->GetType() == YamlNode::TYPE_MAP)
                 {
                     DVASSERT(isKeyPresent);
@@ -203,16 +204,14 @@ bool YamlParser::Parse(YamlDataHolder* dataHolder)
 
 YamlParser::YamlParser()
 {
-    rootObject = 0;
 }
 
 YamlParser::~YamlParser()
 {
-    SafeRelease(rootObject);
 }
 
 YamlNode* YamlParser::GetRootNode() const
 {
-    return rootObject;
+    return rootObject.Get();
 }
 }

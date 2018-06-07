@@ -245,12 +245,12 @@ struct HLSLRoot : public HLSLNode
     HLSLRoot()
     {
         statement = NULL;
-        blend = NULL;
-        color_mask = NULL;
+        memset(blend, 0, sizeof(blend));
+        memset(color_mask, 0, sizeof(color_mask));
     }
     HLSLStatement* statement; // First statement.
-    HLSLBlend* blend;
-    HLSLColorMask* color_mask;
+    HLSLBlend* blend[16];
+    HLSLColorMask* color_mask[16];
 };
 
 struct HLSLStatement : public HLSLNode

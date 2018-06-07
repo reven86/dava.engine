@@ -9,8 +9,6 @@ namespace DAVA
 class SnapToLandscapeControllerComponent : public Component
 {
 public:
-    IMPLEMENT_COMPONENT_TYPE(SNAP_TO_LANDSCAPE_CONTROLLER_COMPONENT);
-
     SnapToLandscapeControllerComponent();
 
     Component* Clone(Entity* toEntity) override;
@@ -22,11 +20,6 @@ public:
 
 protected:
     float32 heightOnLandscape;
-
-public:
-    INTROSPECTION_EXTEND(SnapToLandscapeControllerComponent, Component,
-                         PROPERTY("heightOnLandscape", "Height On Landscape", GetHeightOnLandscape, SetHeightOnLandscape, I_VIEW | I_EDIT | I_SAVE)
-                         );
 
     DAVA_VIRTUAL_REFLECTION(SnapToLandscapeControllerComponent, Component);
 };

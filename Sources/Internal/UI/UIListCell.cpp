@@ -6,10 +6,10 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(UIListCell)
 {
-    ReflectionRegistrator<UIListCell>::Begin()
+    ReflectionRegistrator<UIListCell>::Begin()[M::DisplayName("List Cell")]
     .ConstructorByPointer()
     .DestructorByPointer([](UIListCell* o) { o->Release(); })
-    .Field("identifier", &UIListCell::GetIdentifier, &UIListCell::SetIdentifier)
+    .Field("identifier", &UIListCell::GetIdentifier, &UIListCell::SetIdentifier)[M::DisplayName("Identifier")]
     .End();
 }
 

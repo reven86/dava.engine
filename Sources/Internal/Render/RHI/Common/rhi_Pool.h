@@ -33,7 +33,7 @@
 
 namespace rhi
 {
-enum
+enum eHandleMasks : uint32
 {
     HANDLE_INDEX_MASK = 0x0000FFFFU,
     HANDLE_INDEX_SHIFT = 0,

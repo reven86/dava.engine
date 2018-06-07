@@ -2,14 +2,14 @@
 #define __DAVAENGINE_UI_SCREEN_TRANSITION_H__
 
 #include "Base/BaseTypes.h"
-#include "UI/UIScreen.h"
+#include "UI/UIControl.h"
 #include "Reflection/Reflection.h"
 
 namespace DAVA
 {
-class UIScreenTransition : public UIScreen
+class UIScreenTransition : public UIControl
 {
-    DAVA_VIRTUAL_REFLECTION(UIScreenTransition, UIScreen);
+    DAVA_VIRTUAL_REFLECTION(UIScreenTransition, UIControl);
 
 public:
     UIScreenTransition();
@@ -21,8 +21,10 @@ public:
     void Update(float32 timeElapsed) override;
     void Draw(const UIGeometricData& geometricData) override;
 
-    virtual void SetSourceScreen(UIControl* prevScreen, bool updateScreen = true);
-    virtual void SetDestinationScreen(UIControl* nextScreen, bool updateScreen = true);
+    DAVA_DEPRECATED(virtual void SetSourceScreen(UIControl* prevScreen, bool updateScreen = true));
+    DAVA_DEPRECATED(virtual void SetDestinationScreen(UIControl* nextScreen, bool updateScreen = true));
+    virtual void SetSourceControl(UIControl* prevScreen, bool updateScreen = true);
+    virtual void SetDestinationControl(UIControl* nextScreen, bool updateScreen = true);
     virtual void StartTransition();
     virtual void EndTransition();
 

@@ -25,18 +25,8 @@ public:
 
     ImageInfo GetImageInfo(File* infile) const override;
 
-    static bool DecompressImageToRGBA(const DAVA::Image& image, Vector<DAVA::Image*>& imageSet, bool forceSoftwareConvertation = false);
-
-    static bool CanCompressTo(PixelFormat format);
-    static bool CompressFromRGBA(const Image* image, Image* dstImage);
-
-    static bool CanDecompressFrom(PixelFormat format);
-    static bool DecompressToRGBA(const Image* image, Image* dstImage);
-
 protected:
     bool CanProcessFileInternal(File* infile) const override;
-
-    static eErrorCode ReadFile(File* file, Vector<Image*>& imageSet, const ImageSystem::LoadingParams& loadingParams, bool forceSoftwareConvertation = false);
 
 private:
     eErrorCode WriteFileInternal(const FilePath& fileName, const Vector<Vector<Image*>>& imageSet, PixelFormat compressionFormat, ImageQuality quality) const;

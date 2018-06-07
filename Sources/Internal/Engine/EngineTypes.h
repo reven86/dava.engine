@@ -47,6 +47,8 @@ enum class eInputDevices : uint32
     CLASS_GAMEPAD = GAMEPAD,
 };
 
+using eInputDeviceTypes = eInputDevices;
+
 DAVA_DEFINE_ENUM_BITWISE_OPERATORS(eInputDevices)
 
 /**

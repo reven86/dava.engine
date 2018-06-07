@@ -1,12 +1,12 @@
 #include "UI/UISlider.h"
-#include "Render/RenderHelper.h"
 #include "Base/ObjectFactory.h"
-#include "Utils/Utils.h"
-#include "Core/Core.h"
-#include "UI/UIEvent.h"
-#include "Render/2D/Systems/RenderSystem2D.h"
-#include "UI/UIControlSystem.h"
 #include "Reflection/ReflectionRegistrator.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/RenderHelper.h"
+#include "UI/UIControlBackground.h"
+#include "UI/UIControlSystem.h"
+#include "UI/UIEvent.h"
+#include "Utils/Utils.h"
 
 namespace DAVA
 {
@@ -17,12 +17,12 @@ const FastName UISlider::MAX_SPRITE_CONTROL_NAME("maxSpriteControl");
 
 DAVA_VIRTUAL_REFLECTION_IMPL(UISlider)
 {
-    ReflectionRegistrator<UISlider>::Begin()
+    ReflectionRegistrator<UISlider>::Begin()[M::DisplayName("Slider")]
     .ConstructorByPointer()
     .DestructorByPointer([](UISlider* o) { o->Release(); })
-    .Field("minValue", &UISlider::GetMinValue, &UISlider::SetMinValue)
-    .Field("maxValue", &UISlider::GetMaxValue, &UISlider::SetMaxValue)
-    .Field("value", &UISlider::GetValue, &UISlider::SetValue)
+    .Field("minValue", &UISlider::GetMinValue, &UISlider::SetMinValue)[M::DisplayName("Min")]
+    .Field("maxValue", &UISlider::GetMaxValue, &UISlider::SetMaxValue)[M::DisplayName("Max")]
+    .Field("value", &UISlider::GetValue, &UISlider::SetValue)[M::DisplayName("Value")]
     .End();
 }
 

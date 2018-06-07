@@ -17,8 +17,6 @@ protected:
     ~WaypointComponent();
 
 public:
-    IMPLEMENT_COMPONENT_TYPE(WAYPOINT_COMPONENT);
-
     WaypointComponent();
 
     void Init(PathComponent* path, PathComponent::Waypoint* waypoint);
@@ -40,12 +38,6 @@ public:
 private:
     PathComponent* path = nullptr;
     PathComponent::Waypoint* waypoint = nullptr;
-
-public:
-    INTROSPECTION_EXTEND(WaypointComponent, Component,
-                         PROPERTY("Path Name", "Path Name", GetPathName, SetPathName, I_VIEW)
-                         PROPERTY("Waypoint properties", "Waypoint properties", GetProperties, SetProperties, I_VIEW | I_EDIT)
-                         );
 
     DAVA_VIRTUAL_REFLECTION(WaypointComponent, Component);
 };

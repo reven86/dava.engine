@@ -1,10 +1,10 @@
 #include "Render/Highlevel/Vegetation/VegetationGeometryData.h"
 
+#include "Engine/Engine.h"
+#include "Job/JobManager.h"
+#include "Logger/Logger.h"
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
-#include "Job/JobManager.h"
-
-#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -175,7 +175,7 @@ VegetationGeometryDataPtr VegetationGeometryDataReader::ReadScene(const FilePath
 
     //VI: wait for all scene objects to initialize
     //VI: in order to avoid crashes when scene released
-    JobManager::Instance()->WaitMainJobs();
+    GetEngineContext()->jobManager->WaitMainJobs();
 
     Entity* currentVariation = scene->FindByName(VEGETATION_ENTITY_VARIATION_0);
     if (!currentVariation)

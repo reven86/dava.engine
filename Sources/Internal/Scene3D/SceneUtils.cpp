@@ -1,37 +1,35 @@
 #include "Scene3D/SceneUtils.h"
 
 #include "Utils/StringFormat.h"
+#include "Math/Transform.h"
+#include "Math/TransformUtils.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/Mesh.h"
+#include "Render/Highlevel/SkinnedMesh.h"
 #include "Scene3D/Entity.h"
 #include "Entity/Component.h"
 #include "Scene3D/Components/AnimationComponent.h"
-#include "Scene3D/Lod/LodComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/CustomPropertiesComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
+#include "Scene3D/Components/SkeletonComponent.h"
+#include "Scene3D/Lod/LodComponent.h"
 #include "Logger/Logger.h"
 #include "Base/Map.h"
 
 namespace DAVA
 {
-namespace SceneUtils
+namespace SceneUtilsDetails
 {
-bool CombineLods(Scene* scene)
+void RetainRenderEntitiesRecursive(Entity* node, Vector<Entity*>& entities)
 {
-    bool result = true;
-    for (auto child : scene->children)
-    {
-        result = result && CombineEntityLods(child);
-    }
+    for (Entity* child : node->children)
+        RetainRenderEntitiesRecursive(child, entities);
 
-    return result;
-}
-
-String LodNameForIndex(const String& pattern, uint32 lodIndex)
-{
-    return Format(pattern.c_str(), lodIndex);
+    if (GetRenderObject(node) != nullptr)
+        entities.push_back(SafeRetain(node));
 }
 
 bool VerifyNames(const List<Entity*>& lodNodes, const String& lodSubString)
@@ -58,29 +56,96 @@ bool VerifyNames(const List<Entity*>& lodNodes, const String& lodSubString)
     return allNamesAreDifferent;
 }
 
-bool CombineEntityLods(Entity* forRootNode)
+bool RemoveEmptyEntitiesRecursive(Entity* entity)
+{
+    for (int32 c = 0; c < entity->GetChildrenCount(); ++c)
+    {
+        Entity* childNode = entity->GetChild(c);
+        bool removed = RemoveEmptyEntitiesRecursive(childNode);
+        if (removed)
+        {
+            c--;
+        }
+    }
+
+    if ((entity->GetChildrenCount() == 0) && (typeid(*entity) == typeid(Entity)))
+    {
+        KeyedArchive* customProperties = GetCustomPropertiesArchieve(entity);
+        bool doNotRemove = customProperties && customProperties->IsKeyExists("editor.donotremove");
+
+        uint32 componentCount = entity->GetComponentCount();
+
+        Component* tr = entity->GetComponent(Type::Instance<TransformComponent>());
+        Component* cp = entity->GetComponent(Type::Instance<CustomPropertiesComponent>());
+        if (((componentCount == 2) && (!cp || !tr)) || (componentCount > 2))
+        {
+            doNotRemove = true;
+        }
+
+        if (entity->GetName().find("dummy") != String::npos)
+        {
+            doNotRemove = true;
+        }
+
+        if (!doNotRemove)
+        {
+            Entity* parent = entity->GetParent();
+            if (parent)
+            {
+                parent->RemoveNode(entity);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+} //SceneUtilsDetails
+
+bool SceneUtils::CombineLods(Scene* scene)
+{
+    bool result = true;
+    Vector<Entity*> childrenCopy = scene->children;
+
+    for (Entity* child : childrenCopy)
+        child->Retain();
+
+    for (Entity* child : childrenCopy)
+        result &= CombineEntityLods(child);
+
+    for (Entity* child : childrenCopy)
+        child->Release();
+
+    return result;
+}
+
+String SceneUtils::LodNameForIndex(const String& pattern, uint32 lodIndex)
+{
+    return Format(pattern.c_str(), lodIndex);
+}
+
+bool SceneUtils::CombineEntityLods(Entity* forRootNode)
 {
     const String lodNamePattern("_lod%d");
     const String dummyLodNamePattern("_lod%ddummy");
 
-    List<Entity*> lodNodes;
+    List<Entity*> lod0Nodes;
 
     // try to find nodes which have lodNamePattrn.
     const String lod0 = LodNameForIndex(lodNamePattern, 0);
-    if (!forRootNode->FindNodesByNamePart(lod0, lodNodes))
+    if (!forRootNode->FindNodesByNamePart(lod0, lod0Nodes))
     {
         // There is no lods.
         return true;
     }
 
     //model validation step: we should ignore combination of lods if we found several geometry meshes per lod
-    if (VerifyNames(lodNodes, lod0) == false)
+    if (SceneUtilsDetails::VerifyNames(lod0Nodes, lod0) == false)
     {
         return false;
     }
 
     // ok. We have some nodes with lod 0 in the name. Try to find other lods for same name.
-    for (Entity* oneLodNode : lodNodes)
+    for (Entity* oneLodNode : lod0Nodes)
     {
         // node name which contains lods
         const String lodName(oneLodNode->GetName().c_str());
@@ -91,19 +156,18 @@ bool CombineEntityLods(Entity* forRootNode)
         ScopedPtr<Entity> newNodeWithLods(new Entity());
         newNodeWithLods->SetName(nodeWithLodsName.c_str());
 
-        ScopedPtr<Mesh> newMesh(new Mesh());
+        Array<Vector<Entity*>, LodComponent::MAX_LOD_LAYERS> lodEntities;
 
         int32 lodCount = 0;
-        for (int lodNo = 0; lodNo < LodComponent::MAX_LOD_LAYERS; ++lodNo)
+        for (int32 lodNo = 0; lodNo < LodComponent::MAX_LOD_LAYERS; ++lodNo)
         {
             // Try to find node with same name but with other lod
             const FastName lodIName(nodeWithLodsName + LodNameForIndex(lodNamePattern, lodNo));
             Entity* ln = oldParent->FindByName(lodIName.c_str());
 
-            // Lod found. Move render batches from entity to NewMesh as lod.
             if (nullptr != ln)
             {
-                CollapseRenderBatchesRecursiveAsLod(ln, lodNo, newMesh);
+                SceneUtilsDetails::RetainRenderEntitiesRecursive(ln, lodEntities[lodNo]);
                 CollapseAnimationsUpToFarParent(ln, newNodeWithLods);
 
                 oldParent->RemoveNode(ln);
@@ -134,8 +198,67 @@ bool CombineEntityLods(Entity* forRootNode)
             }
         }
 
+        SkeletonComponent* skeleton = nullptr;
+        for (int32 lodNo = 0; lodNo < LodComponent::MAX_LOD_LAYERS; ++lodNo)
+        {
+            for (Entity* node : lodEntities[lodNo])
+            {
+                //Search any skeleton. Skeleton should be the same in all lods
+                skeleton = GetSkeletonComponent(node);
+                if (skeleton)
+                {
+                    node->DetachComponent(skeleton);
+                    newNodeWithLods->AddComponent(skeleton);
+                    break;
+                }
+            }
+            if (skeleton)
+                break;
+        }
+
+        RenderObject* newMesh = nullptr;
+        if (skeleton)
+        {
+            newMesh = new SkinnedMesh();
+        }
+        else
+        {
+            newMesh = new Mesh();
+        }
+
+        for (int32 lodNo = 0; lodNo < LodComponent::MAX_LOD_LAYERS; ++lodNo)
+        {
+            for (Entity* node : lodEntities[lodNo])
+            {
+                RenderObject* lodRenderObject = GetRenderObject(node);
+
+                while (lodRenderObject->GetRenderBatchCount() > 0)
+                {
+                    ScopedPtr<RenderBatch> batch(SafeRetain(lodRenderObject->GetRenderBatch(0)));
+
+                    lodRenderObject->RemoveRenderBatch(batch);
+                    newMesh->AddRenderBatch(batch, lodNo, -1);
+
+                    if (lodRenderObject->GetType() == RenderObject::TYPE_SKINNED_MESH)
+                    {
+                        SkinnedMesh* newSkinnedMesh = static_cast<SkinnedMesh*>(newMesh);
+                        SkinnedMesh* lodSkinnedMesh = static_cast<SkinnedMesh*>(lodRenderObject);
+
+                        SkinnedMesh::JointTargets targets = lodSkinnedMesh->GetJointTargets(batch);
+                        if (!targets.empty())
+                        {
+                            newSkinnedMesh->SetJointTargets(batch, targets);
+                        }
+                    }
+                };
+
+                SafeRelease(node);
+            }
+        }
+
         RenderComponent* rc = new RenderComponent();
         rc->SetRenderObject(newMesh);
+        SafeRelease(newMesh);
 
         newNodeWithLods->AddComponent(rc);
         oldParent->AddNode(newNodeWithLods);
@@ -147,9 +270,9 @@ bool CombineEntityLods(Entity* forRootNode)
     return true;
 }
 
-void BakeTransformsUpToFarParent(Entity* parent, Entity* currentNode)
+void SceneUtils::BakeTransformsUpToFarParent(Entity* parent, Entity* currentNode)
 {
-    for (auto child : currentNode->children)
+    for (Entity* child : currentNode->children)
     {
         BakeTransformsUpToFarParent(parent, child);
     }
@@ -164,34 +287,13 @@ void BakeTransformsUpToFarParent(Entity* parent, Entity* currentNode)
     }
 
     // Set local transform as Ident because transform is already baked up into geometry
-    auto transformComponent = GetTransformComponent(currentNode);
-    transformComponent->SetLocalTransform(&Matrix4::IDENTITY);
+    TransformComponent* transform = currentNode->GetComponent<TransformComponent>();
+    transform->SetLocalTransform(TransformUtils::IDENTITY);
 }
 
-void CollapseRenderBatchesRecursiveAsLod(Entity* node, uint32 lod, RenderObject* ro)
+void SceneUtils::CollapseAnimationsUpToFarParent(Entity* node, Entity* parent)
 {
-    for (auto child : node->children)
-    {
-        CollapseRenderBatchesRecursiveAsLod(child, lod, ro);
-    }
-
-    RenderObject* lodRenderObject = GetRenderObject(node);
-    if (nullptr != lodRenderObject)
-    {
-        while (lodRenderObject->GetRenderBatchCount() > 0)
-        {
-            RenderBatch* batch = lodRenderObject->GetRenderBatch(0);
-            batch->Retain();
-            lodRenderObject->RemoveRenderBatch(batch);
-            ro->AddRenderBatch(batch, lod, -1);
-            batch->Release();
-        };
-    }
-}
-
-void CollapseAnimationsUpToFarParent(Entity* node, Entity* parent)
-{
-    for (auto child : parent->children)
+    for (Entity* child : parent->children)
     {
         CollapseAnimationsUpToFarParent(child, parent);
     }
@@ -204,6 +306,9 @@ void CollapseAnimationsUpToFarParent(Entity* node, Entity* parent)
     }
 }
 
-} //namespace SceneUtils
+bool SceneUtils::RemoveEmptyEntities(Scene* scene)
+{
+    return SceneUtilsDetails::RemoveEmptyEntitiesRecursive(scene);
+}
 
 } //namespace DAVA

@@ -1,4 +1,6 @@
 #include "UI/Layouts/UIIgnoreLayoutComponent.h"
+#include "Engine/Engine.h"
+#include "Entity/ComponentManager.h"
 #include "Reflection/ReflectionRegistrator.h"
 
 #include "Math/Vector.h"
@@ -8,12 +10,14 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(UIIgnoreLayoutComponent)
 {
-    ReflectionRegistrator<UIIgnoreLayoutComponent>::Begin()
+    ReflectionRegistrator<UIIgnoreLayoutComponent>::Begin()[M::DisplayName("Ignore Layout"), M::Group("Layout")]
     .ConstructorByPointer()
     .DestructorByPointer([](UIIgnoreLayoutComponent* o) { o->Release(); })
-    .Field("enabled", &UIIgnoreLayoutComponent::IsEnabled, &UIIgnoreLayoutComponent::SetEnabled)
+    .Field("enabled", &UIIgnoreLayoutComponent::IsEnabled, &UIIgnoreLayoutComponent::SetEnabled)[M::DisplayName("Enabled")]
     .End();
 }
+
+IMPLEMENT_UI_COMPONENT(UIIgnoreLayoutComponent);
 
 UIIgnoreLayoutComponent::UIIgnoreLayoutComponent(const UIIgnoreLayoutComponent& src)
     : enabled(src.enabled)

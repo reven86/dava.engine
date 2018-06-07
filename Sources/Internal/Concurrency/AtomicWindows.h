@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_ATOMIC_WINDOWS_H__
-#define __DAVAENGINE_ATOMIC_WINDOWS_H__
+#pragma once
 
 #include "Base/Platform.h"
 #ifndef USE_CPP11_CONCURRENCY
@@ -202,4 +201,3 @@ bool Atomic<bool>::Cast(Y val)
 } //  namespace DAVA
 
 #endif //  !USE_CPP11_CONCURRENCY
-#endif //  __DAVAENGINE_ATOMIC_WINDOWS_H__

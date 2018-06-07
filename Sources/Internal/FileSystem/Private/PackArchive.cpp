@@ -128,6 +128,7 @@ PackArchive::PackArchive(RefPtr<File>& file_, const FilePath& archiveName_)
         DAVA_THROW(DAVA::Exception, "incorrect marker in pack file: " + fileName);
     }
 
+    String fileNames;
     if (footerBlock.info.numFiles > 0)
     {
         uint64 startFilesTableBlock = size - (sizeof(packFile.footer) + packFile.footer.info.filesTableSize);
@@ -152,8 +153,6 @@ PackArchive::PackArchive(RefPtr<File>& file_, const FilePath& archiveName_)
             DAVA_THROW(DAVA::Exception, "crc32 not match in filesTable in file: " + fileName);
         }
 
-        String fileNames;
-
         ExtractFileTableData(footerBlock, tmpBuffer, fileNames, packFile.filesTable);
 
         FillFilesInfo(packFile, fileNames, mapFileData, filesInfo);
@@ -173,7 +172,7 @@ PackArchive::PackArchive(RefPtr<File>& file_, const FilePath& archiveName_)
         {
             DAVA_THROW(Exception, "can't read meta");
         }
-        packMeta.reset(new PackMetaData(&metaBlock[0], metaBlock.size()));
+        packMeta.reset(new PackMetaData(&metaBlock[0], metaBlock.size(), fileNames));
     }
 }
 
@@ -281,7 +280,8 @@ bool PackArchive::LoadFile(const String& relativeFilePath, Vector<uint8>& output
     // check crc32 for file content
     if (fileEntry.originalCrc32 != 0 && fileEntry.originalCrc32 != CRC32::ForBuffer(output.data(), output.size()))
     {
-        throw FileCrc32FromPackNotMatch("original crc32 not match for: " + relativeFilePath + " during decompress from pack: " + archiveName.GetStringValue());
+        String msg = "original crc32 not match for: " + relativeFilePath + " during decompress from pack: " + archiveName.GetStringValue();
+        throw FileCrc32FromPackNotMatch(msg, __FILE__, __LINE__);
     }
 
     return true;
@@ -308,6 +308,11 @@ bool PackArchive::HasMeta() const
 const PackMetaData& PackArchive::GetMeta() const
 {
     return *packMeta;
+}
+
+const PackFormat::PackFile& PackArchive::GetPackFile() const
+{
+    return packFile;
 }
 
 } // end namespace DAVA

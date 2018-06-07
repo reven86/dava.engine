@@ -1,14 +1,18 @@
 #include "UI/UIList.h"
-
+#include "Base/Message.h"
 #include "Base/ObjectFactory.h"
 #include "Debug/DVAssert.h"
+#include "Engine/Engine.h"
 #include "Reflection/ReflectionRegistrator.h"
 #include "Time/SystemTimer.h"
-#include "UI/UIControlSystem.h"
-#include "UI/UIControlHelpers.h"
-#include "UI/Update/UIUpdateComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Render/UIClipContentComponent.h"
+#include "UI/ScrollHelper.h"
+#include "UI/UIControlHelpers.h"
+#include "UI/UIControlSystem.h"
+#include "UI/UIListCell.h"
+#include "UI/UIListDelegate.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {
@@ -16,33 +20,15 @@ static const int32 INVALID_INDEX = -1;
 
 DAVA_VIRTUAL_REFLECTION_IMPL(UIList)
 {
-    ReflectionRegistrator<UIList>::Begin()
+    ReflectionRegistrator<UIList>::Begin()[M::DisplayName("List")]
     .ConstructorByPointer()
     .DestructorByPointer([](UIList* o) { o->Release(); })
-    .Field("orientation", &UIList::GetOrientation, &UIList::SetOrientation)
-    [
-    M::EnumT<eListOrientation>()
-    ]
+    .Field("orientation", &UIList::GetOrientation, &UIList::SetOrientation)[M::EnumT<eListOrientation>(), M::DisplayName("Orientation")]
+    .Field("slowDownTime", &UIList::GetSlowDownTime, &UIList::SetSlowDownTime)[M::DisplayName("Slow Down Time")]
+    .Field("borderMoveModifer", &UIList::GetBorderMoveModifer, &UIList::SetBorderMoveModifer)[M::DisplayName("Border Move Modifier")]
+    .Field("touchHoldDelta", &UIList::GetTouchHoldDelta, &UIList::SetTouchHoldDelta)[M::DisplayName("Touch Hold Delta")]
     .End();
 }
-
-float32 UIListDelegate::CellWidth(UIList* /*list*/, int32 /*index*/)
-{
-    return 20.0f;
-};
-
-float32 UIListDelegate::CellHeight(UIList* /*list*/, int32 /*index*/)
-{
-    return 20.0f;
-};
-
-void UIListDelegate::OnCellSelected(UIList* /*forList*/, UIListCell* /*selectedCell*/)
-{
-};
-
-void UIListDelegate::SaveToYaml(UIList* /*forList*/, YamlNode* /*node*/)
-{
-};
 
 UIList::UIList(const Rect& rect /* = Rect()*/, eListOrientation requiredOrientation /* = ORIENTATION_VERTICAL*/)
     : UIControl(rect)
@@ -102,15 +88,7 @@ UIList::~UIList()
     SafeRelease(scrollContainer);
     SafeRelease(scroll);
 
-    for (Map<String, Vector<UIListCell*>*>::iterator mit = cellStore.begin(); mit != cellStore.end(); mit++)
-    {
-        for (Vector<UIListCell*>::iterator it = mit->second->begin(); it != mit->second->end(); it++)
-        {
-            SafeRelease(*it);
-        }
-        delete mit->second;
-        mit->second = NULL;
-    }
+    ClearReusableCells();
 }
 
 void UIList::ScrollTo(float delta)
@@ -327,15 +305,14 @@ void UIList::Update(float32 timeElapsed)
         scrollContainer->SetPosition(r.GetPosition());
     }
 
-    List<UIControl*>::const_iterator it;
     Rect viewRect = GetGeometricData().GetUnrotatedRect();
-    const List<UIControl*>& scrollList = scrollContainer->GetChildren();
+    const auto& scrollList = scrollContainer->GetChildren();
     List<UIListCell*> removeList;
 
     //removing invisible elements
-    for (it = scrollList.begin(); it != scrollList.end(); it++)
+    for (auto it = scrollList.begin(); it != scrollList.end(); it++)
     {
-        UIListCell* cell = DynamicTypeCheck<UIListCell*>(*it);
+        UIListCell* cell = DynamicTypeCheck<UIListCell*>(it->Get());
 
         Rect crect = cell->GetGeometricData().GetUnrotatedRect();
         if (orientation == ORIENTATION_HORIZONTAL)
@@ -363,9 +340,9 @@ void UIList::Update(float32 timeElapsed)
         //adding elements at the list end
         int32 ind = -1;
         UIListCell* fc = NULL;
-        for (it = scrollList.begin(); it != scrollList.end(); it++)
+        for (auto it = scrollList.begin(); it != scrollList.end(); it++)
         {
-            UIListCell* lc = static_cast<UIListCell*>(*it);
+            UIListCell* lc = static_cast<UIListCell*>(it->Get());
             int32 i = lc->GetIndex();
             if (i > ind)
             {
@@ -414,9 +391,9 @@ void UIList::Update(float32 timeElapsed)
         //adding elements at the list begin
         ind = maximumElementsCount;
         fc = NULL;
-        for (it = scrollList.begin(); it != scrollList.end(); it++)
+        for (auto it = scrollList.begin(); it != scrollList.end(); it++)
         {
-            UIListCell* lc = static_cast<UIListCell*>(*it);
+            UIListCell* lc = static_cast<UIListCell*>(it->Get());
             int32 i = lc->GetIndex();
             if (i < ind)
             {
@@ -570,7 +547,7 @@ bool UIList::SystemInput(UIEvent* currentInput)
             {
                 if (Abs(currentInput->point.x - newPos) > touchHoldSize)
                 {
-                    UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
+                    GetEngineContext()->uiControlSystem->SwitchInputToControl(mainTouch, this);
                     newPos = currentInput->point.x;
                     return true;
                 }
@@ -579,7 +556,7 @@ bool UIList::SystemInput(UIEvent* currentInput)
             {
                 if (Abs(currentInput->point.y - newPos) > touchHoldSize)
                 {
-                    UIControlSystem::Instance()->SwitchInputToControl(mainTouch, this);
+                    GetEngineContext()->uiControlSystem->SwitchInputToControl(mainTouch, this);
                     newPos = currentInput->point.y;
                     return true;
                 }
@@ -697,7 +674,7 @@ UIListCell* UIList::GetReusableCell(const String& cellIdentifier)
     return NULL;
 }
 
-const List<UIControl*>& UIList::GetVisibleCells()
+const List<RefPtr<UIControl>>& UIList::GetVisibleCells() const
 {
     return scrollContainer->GetChildren();
 }
@@ -706,18 +683,30 @@ void UIList::SetTouchHoldDelta(int32 holdDelta)
 {
     touchHoldSize = holdDelta;
 }
-int32 UIList::GetTouchHoldDelta()
+
+int32 UIList::GetTouchHoldDelta() const
 {
     return touchHoldSize;
 }
 
-void UIList::SetSlowDownTime(float newValue)
+void UIList::SetSlowDownTime(float32 newValue)
 {
     scroll->SetSlowDownTime(newValue);
 }
-void UIList::SetBorderMoveModifer(float newValue)
+
+float32 UIList::GetSlowDownTime() const
+{
+    return scroll->GetSlowDownTime();
+}
+
+void UIList::SetBorderMoveModifer(float32 newValue)
 {
     scroll->SetBorderMoveModifer(newValue);
+}
+
+float32 UIList::GetBorderMoveModifer() const
+{
+    return scroll->GetBorderMoveModifer();
 }
 
 void UIList::OnActive()
@@ -764,5 +753,26 @@ void UIList::OnViewPositionChanged(UIScrollBar* byScrollBar, float32 newPosition
 void UIList::ScrollToPosition(float32 position, float32 timeSec /*= 0.3f*/)
 {
     scroll->ScrollToPosition(-position);
+}
+
+void UIList::ImmediateClearCells()
+{
+    ClearReusableCells();
+    RemoveAllCells();
+    Refresh();
+}
+
+void UIList::ClearReusableCells()
+{
+    for (const std::pair<String, Vector<UIListCell*>*>& mit : cellStore)
+    {
+        for (UIListCell* cell : *(mit.second))
+        {
+            cell->cellStore = nullptr;
+            cell->Release();
+        }
+        delete mit.second;
+    }
+    cellStore.clear();
 }
 };

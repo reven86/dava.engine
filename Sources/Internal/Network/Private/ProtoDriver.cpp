@@ -29,6 +29,10 @@ ProtoDriver::ProtoDriver(IOLoop* aLoop, eNetworkRole aRole, const ServiceRegistr
 
 ProtoDriver::~ProtoDriver()
 {
+    for (std::shared_ptr<Channel>& ch : channels)
+    {
+        ch->driver = nullptr;
+    }
 }
 
 void ProtoDriver::SetTransport(IClientTransport* aTransport, const uint32* sourceChannels, size_t channelCount)
@@ -39,7 +43,7 @@ void ProtoDriver::SetTransport(IClientTransport* aTransport, const uint32* sourc
     channels.reserve(channelCount);
     for (size_t i = 0; i < channelCount; ++i)
     {
-        channels.push_back(Channel(sourceChannels[i], this));
+        channels.push_back(std::make_shared<Channel>(sourceChannels[i], this));
     }
 }
 
@@ -83,12 +87,12 @@ void ProtoDriver::SendControl(uint32 code, uint32 channelId, uint32 packetId)
 
 void ProtoDriver::ReleaseServices()
 {
-    for (size_t i = 0, n = channels.size(); i < n; ++i)
+    for (std::shared_ptr<Channel>& channel : channels)
     {
-        if (channels[i].service != NULL)
+        if (channel->service != nullptr)
         {
-            registrar.Delete(channels[i].channelId, channels[i].service, serviceContext);
-            channels[i].service = NULL;
+            registrar.Delete(channel->channelId, channel->service, serviceContext);
+            channel->service = nullptr;
         }
     }
 }
@@ -98,21 +102,21 @@ void ProtoDriver::OnConnected(const Endpoint& endp)
     if (SERVER_ROLE == role)
     {
         // In SERVER_ROLE only setup remote endpoints
-        for (size_t i = 0, n = channels.size(); i < n; ++i)
+        for (std::shared_ptr<Channel>& channel : channels)
         {
-            channels[i].remoteEndpoint = endp;
+            channel->remoteEndpoint = endp;
         }
     }
     else
     {
         // In CLIENT_ROLE ask server for services
-        for (size_t i = 0, n = channels.size(); i < n; ++i)
+        for (std::shared_ptr<Channel>& channel : channels)
         {
-            channels[i].remoteEndpoint = endp;
-            channels[i].service = registrar.Create(channels[i].channelId, serviceContext);
-            if (channels[i].service != NULL)
+            channel->remoteEndpoint = endp;
+            channel->service = registrar.Create(channel->channelId, serviceContext);
+            if (channel->service != nullptr)
             {
-                SendControl(TYPE_CHANNEL_QUERY, channels[i].channelId, 0);
+                SendControl(TYPE_CHANNEL_QUERY, channel->channelId, 0);
             }
         }
     }
@@ -120,12 +124,12 @@ void ProtoDriver::OnConnected(const Endpoint& endp)
 
 void ProtoDriver::OnDisconnected(const char* message)
 {
-    for (size_t i = 0, n = channels.size(); i < n; ++i)
+    for (std::shared_ptr<Channel>& channel : channels)
     {
-        if (channels[i].service != NULL && true == channels[i].confirmed)
+        if (channel->service != nullptr && true == channel->confirmed)
         {
-            channels[i].confirmed = false;
-            channels[i].service->OnChannelClosed(&channels[i], message);
+            channel->confirmed = false;
+            channel->service->OnChannelClosed(channel, message);
         }
     }
     ClearQueues();
@@ -184,7 +188,7 @@ void ProtoDriver::OnSendComplete()
         curPacket.sentLength += curPacket.chunkLength;
         if (curPacket.sentLength == curPacket.dataLength)
         {
-            Channel* ch = GetChannel(curPacket.channelId);
+            std::shared_ptr<Channel> ch = GetChannel(curPacket.channelId);
             ch->service->OnPacketSent(ch, curPacket.data, curPacket.dataLength);
             curPacket.data = NULL;
         }
@@ -217,7 +221,7 @@ bool ProtoDriver::OnTimeout()
 
 bool ProtoDriver::ProcessDataPacket(ProtoDecoder::DecodeResult* result)
 {
-    Channel* ch = GetChannel(result->channelId);
+    std::shared_ptr<Channel> ch = GetChannel(result->channelId);
     if (ch != NULL && ch->service != NULL)
     {
         // Send back delivery confirmation
@@ -233,7 +237,7 @@ bool ProtoDriver::ProcessChannelQuery(ProtoDecoder::DecodeResult* result)
 {
     DVASSERT(SERVER_ROLE == role);
 
-    Channel* ch = GetChannel(result->channelId);
+    std::shared_ptr<Channel> ch = GetChannel(result->channelId);
     if (ch != NULL)
     {
         DVASSERT(NULL == ch->service);
@@ -260,7 +264,7 @@ bool ProtoDriver::ProcessChannelAllow(ProtoDecoder::DecodeResult* result)
 {
     DVASSERT(CLIENT_ROLE == role);
 
-    Channel* ch = GetChannel(result->channelId);
+    std::shared_ptr<Channel> ch = GetChannel(result->channelId);
     if (ch != NULL && ch->service != NULL)
     {
         ch->confirmed = true;
@@ -276,7 +280,7 @@ bool ProtoDriver::ProcessChannelDeny(ProtoDecoder::DecodeResult* result)
 {
     DVASSERT(CLIENT_ROLE == role);
 
-    Channel* ch = GetChannel(result->channelId);
+    std::shared_ptr<Channel> ch = GetChannel(result->channelId);
     if (ch != NULL && ch->service != NULL)
     {
         ch->service->OnChannelClosed(ch, "Remote service is unavailable");
@@ -289,7 +293,7 @@ bool ProtoDriver::ProcessChannelDeny(ProtoDecoder::DecodeResult* result)
 
 bool ProtoDriver::ProcessDeliveryAck(ProtoDecoder::DecodeResult* result)
 {
-    Channel* ch = GetChannel(result->channelId);
+    std::shared_ptr<Channel> ch = GetChannel(result->channelId);
     DVASSERT(ch != NULL && ch->service != NULL);
     DVASSERT(false == pendingAckQueue.empty());
     if (ch != NULL && ch->service != NULL && false == pendingAckQueue.empty())
@@ -310,7 +314,7 @@ void ProtoDriver::ClearQueues()
 {
     if (curPacket.data != NULL)
     {
-        Channel* ch = GetChannel(curPacket.channelId);
+        std::shared_ptr<Channel> ch = GetChannel(curPacket.channelId);
         ch->service->OnPacketSent(ch, curPacket.data, curPacket.dataLength);
 
         curPacket.data = NULL;
@@ -318,7 +322,7 @@ void ProtoDriver::ClearQueues()
     for (Deque<Packet>::iterator i = dataQueue.begin(), e = dataQueue.end(); i != e; ++i)
     {
         Packet& packet = *i;
-        Channel* ch = GetChannel(packet.channelId);
+        std::shared_ptr<Channel> ch = GetChannel(packet.channelId);
         ch->service->OnPacketSent(ch, packet.data, packet.dataLength);
     }
     dataQueue.clear();

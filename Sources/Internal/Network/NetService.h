@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_NETSERVICE_H__
-#define __DAVAENGINE_NETSERVICE_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Network/IChannel.h"
@@ -17,11 +16,11 @@ public:
     }
 
     // IChannelListener
-    void OnChannelOpen(IChannel* aChannel) override;
-    void OnChannelClosed(IChannel* aChannel, const char8* message) override;
-    void OnPacketReceived(IChannel* aChannel, const void* buffer, size_t length) override;
-    void OnPacketSent(IChannel* aChannel, const void* buffer, size_t length) override;
-    void OnPacketDelivered(IChannel* aChannel, uint32 packetId) override;
+    void OnChannelOpen(const std::shared_ptr<IChannel>& channel) override;
+    void OnChannelClosed(const std::shared_ptr<IChannel>& channel, const char8* message) override;
+    void OnPacketReceived(const std::shared_ptr<IChannel>& channel, const void* buffer, size_t length) override;
+    void OnPacketSent(const std::shared_ptr<IChannel>& channel, const void* buffer, size_t length) override;
+    void OnPacketDelivered(const std::shared_ptr<IChannel>& channel, uint32 packetId) override;
 
     virtual void ChannelOpen()
     {
@@ -47,7 +46,7 @@ protected:
     bool Send(const T* value, uint32* packetId = NULL);
 
 protected:
-    IChannel* channel;
+    std::shared_ptr<IChannel> channel;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -69,5 +68,3 @@ inline bool NetService::Send(const T* value, uint32* packetId)
 
 } // namespace Net
 } // namespace DAVA
-
-#endif // __DAVAENGINE_NETSERVICE_H__

@@ -1,13 +1,12 @@
 #include "Base/Platform.h"
 
-#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/iOS/PlatformCoreiOS.h"
-#include "Engine/Private/iOS/CoreNativeBridgeiOS.h"
-#include "Engine/Private/iOS/Window/WindowBackendiOS.h"
-#include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
+#include "Engine/Private/Ios/PlatformCoreIos.h"
+#include "Engine/Private/Ios/CoreNativeBridgeIos.h"
+#include "Engine/Private/Ios/WindowImplIos.h"
+#include "Engine/Private/Ios/WindowNativeBridgeIos.h"
 #include "Render/Image/Image.h"
 
 #import <UIKit/UIKit.h>
@@ -21,28 +20,28 @@ namespace Ios
 void AddUIView(Window* targetWindow, UIView* uiview)
 {
     using namespace DAVA::Private;
-    WindowBackend* wb = EngineBackend::GetWindowBackend(targetWindow);
+    WindowImpl* wb = EngineBackend::GetWindowImpl(targetWindow);
     wb->bridge->AddUIView(uiview);
 }
 
 void RemoveUIView(Window* targetWindow, UIView* uiview)
 {
     using namespace DAVA::Private;
-    WindowBackend* wb = EngineBackend::GetWindowBackend(targetWindow);
+    WindowImpl* wb = EngineBackend::GetWindowImpl(targetWindow);
     wb->bridge->RemoveUIView(uiview);
 }
 
 UIView* GetUIViewFromPool(Window* targetWindow, const char8* className)
 {
     using namespace DAVA::Private;
-    WindowBackend* wb = EngineBackend::GetWindowBackend(targetWindow);
+    WindowImpl* wb = EngineBackend::GetWindowImpl(targetWindow);
     return wb->bridge->GetUIViewFromPool(className);
 }
 
 void ReturnUIViewToPool(Window* targetWindow, UIView* view)
 {
     using namespace DAVA::Private;
-    WindowBackend* wb = EngineBackend::GetWindowBackend(targetWindow);
+    WindowImpl* wb = EngineBackend::GetWindowImpl(targetWindow);
     wb->bridge->ReturnUIViewToPool(view);
 }
 
@@ -123,4 +122,3 @@ void UnregisterDVEApplicationListener(id<DVEApplicationListener> listener)
 } // namespace DAVA
 
 #endif // defined(__DAVAENGINE_IPHONE__)
-#endif // defined(__DAVAENGINE_COREV2__)

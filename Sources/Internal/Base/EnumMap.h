@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_ENUM_MAP_H__
-#define __DAVAENGINE_ENUM_MAP_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
@@ -23,5 +22,3 @@ protected:
     mutable EnumMapContainer map;
     mutable DAVA::Vector<int> indexes;
 };
-
-#endif // __DAVAENGINE_ENUM_MAP_H__

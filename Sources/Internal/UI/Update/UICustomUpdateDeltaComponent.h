@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Reflection/Reflection.h"
 #include "UI/Components/UIComponent.h"
-#include "Functional/Function.h"
 
 namespace DAVA
 {
@@ -14,7 +14,7 @@ namespace DAVA
 class UICustomUpdateDeltaComponent : public UIComponent
 {
     DAVA_VIRTUAL_REFLECTION(UICustomUpdateDeltaComponent, UIComponent);
-    IMPLEMENT_UI_COMPONENT(UICustomUpdateDeltaComponent);
+    DECLARE_UI_COMPONENT(UICustomUpdateDeltaComponent);
 
 public:
     UICustomUpdateDeltaComponent();

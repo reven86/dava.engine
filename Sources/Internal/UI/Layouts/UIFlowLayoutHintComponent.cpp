@@ -1,4 +1,6 @@
 #include "UI/Layouts/UIFlowLayoutHintComponent.h"
+#include "Engine/Engine.h"
+#include "Entity/ComponentManager.h"
 #include "Reflection/ReflectionRegistrator.h"
 
 #include "UI/UIControl.h"
@@ -8,14 +10,18 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(UIFlowLayoutHintComponent)
 {
-    ReflectionRegistrator<UIFlowLayoutHintComponent>::Begin()
+    ReflectionRegistrator<UIFlowLayoutHintComponent>::Begin()[M::DisplayName("Flow Layout Hint"), M::Group("Layout")]
     .ConstructorByPointer()
     .DestructorByPointer([](UIFlowLayoutHintComponent* o) { o->Release(); })
-    .Field("newLineBeforeThis", &UIFlowLayoutHintComponent::IsNewLineBeforeThis, &UIFlowLayoutHintComponent::SetNewLineBeforeThis)
-    .Field("newLineAfterThis", &UIFlowLayoutHintComponent::IsNewLineAfterThis, &UIFlowLayoutHintComponent::SetNewLineAfterThis)
-    .Field("contentDirection", &UIFlowLayoutHintComponent::GetContentDirection, &UIFlowLayoutHintComponent::SetContentDirection)[M::EnumT<BiDiHelper::Direction>()]
+    .Field("newLineBeforeThis", &UIFlowLayoutHintComponent::IsNewLineBeforeThis, &UIFlowLayoutHintComponent::SetNewLineBeforeThis)[M::DisplayName("New Line Before This")]
+    .Field("newLineAfterThis", &UIFlowLayoutHintComponent::IsNewLineAfterThis, &UIFlowLayoutHintComponent::SetNewLineAfterThis)[M::DisplayName("New Line After This")]
+    .Field("stickItemBeforeThis", &UIFlowLayoutHintComponent::IsStickItemBeforeThis, &UIFlowLayoutHintComponent::SetStickItemBeforeThis)[M::DisplayName("Stick Item Before This")]
+    .Field("stickItemAfterThis", &UIFlowLayoutHintComponent::IsStickItemAfterThis, &UIFlowLayoutHintComponent::SetStickItemAfterThis)[M::DisplayName("Stick Item After This")]
+    .Field("contentDirection", &UIFlowLayoutHintComponent::GetContentDirection, &UIFlowLayoutHintComponent::SetContentDirection)[M::EnumT<BiDiHelper::Direction>(), M::DisplayName("Content Direction")]
     .End();
 }
+
+IMPLEMENT_UI_COMPONENT(UIFlowLayoutHintComponent);
 
 UIFlowLayoutHintComponent::UIFlowLayoutHintComponent()
 {
@@ -54,6 +60,50 @@ bool UIFlowLayoutHintComponent::IsNewLineAfterThis() const
 void UIFlowLayoutHintComponent::SetNewLineAfterThis(bool flag)
 {
     flags.set(FLAG_NEW_LINE_AFTER_THIS, flag);
+    SetLayoutDirty();
+}
+
+bool UIFlowLayoutHintComponent::IsStickItemBeforeThis() const
+{
+    return flags.test(FLAG_STICK_ITEM_BEFORE_THIS);
+}
+
+void UIFlowLayoutHintComponent::SetStickItemBeforeThis(bool flag)
+{
+    flags.set(FLAG_STICK_ITEM_BEFORE_THIS, flag);
+    SetLayoutDirty();
+}
+
+bool UIFlowLayoutHintComponent::IsStickItemAfterThis() const
+{
+    return flags.test(FLAG_STICK_ITEM_AFTER_THIS);
+}
+
+void UIFlowLayoutHintComponent::SetStickItemAfterThis(bool flag)
+{
+    flags.set(FLAG_STICK_ITEM_AFTER_THIS, flag);
+    SetLayoutDirty();
+}
+
+bool UIFlowLayoutHintComponent::IsStickHardBeforeThis() const
+{
+    return flags.test(FLAG_STICK_HARD_BEFORE_THIS);
+}
+
+void UIFlowLayoutHintComponent::SetStickHardBeforeThis(bool flag)
+{
+    flags.set(FLAG_STICK_HARD_BEFORE_THIS, flag);
+    SetLayoutDirty();
+}
+
+bool UIFlowLayoutHintComponent::IsStickHardAfterThis() const
+{
+    return flags.test(FLAG_STICK_HARD_AFTER_THIS);
+}
+
+void UIFlowLayoutHintComponent::SetStickHardAfterThis(bool flag)
+{
+    flags.set(FLAG_STICK_HARD_AFTER_THIS, flag);
     SetLayoutDirty();
 }
 

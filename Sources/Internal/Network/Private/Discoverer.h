@@ -1,12 +1,10 @@
-#ifndef __DAVAENGINE_DISCOVERER_H__
-#define __DAVAENGINE_DISCOVERER_H__
+#pragma once
 
-#include <Network/Base/UDPSocket.h>
-#include <Network/Base/DeadlineTimer.h>
-
+#include "Concurrency/Atomic.h"
+#include "Network/Base/UDPSocket.h"
+#include "Network/Base/DeadlineTimer.h"
 #include "Network/Base/TCPSocket.h"
-
-#include <Network/IController.h>
+#include "Network/IController.h"
 
 namespace DAVA
 {
@@ -23,6 +21,7 @@ public:
     virtual ~Discoverer();
 
     // IController
+    Status GetStatus() const override;
     void Start() override;
     void Stop(Function<void(IController*)> callback) override;
     void Restart() override;
@@ -55,9 +54,14 @@ private:
     Endpoint tcpEndpoint; // IP address of remote announcer
     TCPSocket tcpSocket; // TCP socket for direct connection to remote announcer
     char tcpInbuf[4 * 1024];
+
+    Atomic<Status> status{ NOT_STARTED };
 };
+
+inline IController::Status Discoverer::GetStatus() const
+{
+    return status.Get();
+}
 
 } // namespace Net
 } // namespace DAVA
-
-#endif // __DAVAENGINE_DISCOVERER_H__

@@ -51,11 +51,6 @@ public:
 protected:
     eRenderLayerID layerID;
     uint32 sortFlags;
-
-public:
-    INTROSPECTION(RenderLayer, NULL
-                  //COLLECTION(renderBatchArray, "Render Batch Array", I_VIEW)
-                  );
 };
 
 inline RenderLayer::eRenderLayerID RenderLayer::GetRenderLayerID() const

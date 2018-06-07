@@ -2,12 +2,12 @@
 
 #include "Base/BaseTypes.h"
 #include "Sound/SoundEvent.h"
-#include "UI/UIControl.h"
 #include "UI/UISystem.h"
 
 namespace DAVA
 {
 class UIControl;
+class UIEvent;
 
 class UISoundSystem
 : public UISystem

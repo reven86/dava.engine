@@ -13,6 +13,14 @@ enum eMovieScalingMode
     scalingModeFill // Non-uniform scale. Both render dimensions will exactly match the visible bounds
 };
 
+enum eMoviePlayingState
+{
+    stateStopped = 0, // Movie is stopped
+    stateLoading, // Movie loading
+    statePaused, // Movie is paused
+    statePlaying // Movie playing
+};
+
 struct OpenMovieParams
 {
     OpenMovieParams(eMovieScalingMode mode = scalingModeNone)
@@ -50,8 +58,7 @@ public:
     virtual void Pause() = 0;
     virtual void Resume() = 0;
 
-    // Whether the movie is being played?
-    virtual bool IsPlaying() const = 0;
+    virtual eMoviePlayingState GetState() const = 0;
 
     virtual void Update()
     {

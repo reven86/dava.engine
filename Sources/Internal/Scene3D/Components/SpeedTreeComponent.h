@@ -17,8 +17,6 @@ protected:
 public:
     SpeedTreeComponent();
 
-    IMPLEMENT_COMPONENT_TYPE(SPEEDTREE_COMPONENT);
-
     Component* Clone(Entity* toEntity) override;
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
@@ -52,16 +50,6 @@ protected:
     Vector2 oscVelocity;
     Vector2 oscOffset;
     float32 leafTime;
-
-public:
-    INTROSPECTION_EXTEND(SpeedTreeComponent, Component,
-                         PROPERTY("trunkOscillationAmplitude", "trunkOscillationAmplitude", GetTrunkOscillationAmplitude, SetTrunkOscillationAmplitude, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("trunkOscillationSpring", "trunkOscillationSpring", GetTrunkOscillationSpring, SetTrunkOscillationSpring, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("trunkOscillationDamping", "trunkOscillationDamping", GetTrunkOscillationDamping, SetTrunkOscillationDamping, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("leafsOscillationAmplitude", "leafsOscillationAmplitude", GetLeafsOscillationApmlitude, SetLeafsOscillationApmlitude, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("leafsOscillationSpeed", "leafsOscillationSpeed", GetLeafsOscillationSpeed, SetLeafsOscillationSpeed, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("maxAnimatedLOD", "maxAnimatedLOD", GetMaxAnimatedLOD, SetMaxAnimatedLOD, I_SAVE | I_VIEW | I_EDIT)
-                         );
 
     DAVA_VIRTUAL_REFLECTION(SpeedTreeComponent, Component);
 

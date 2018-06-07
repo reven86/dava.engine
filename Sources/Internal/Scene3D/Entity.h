@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_SCENENODE_H__
-#define __DAVAENGINE_SCENENODE_H__
+#pragma once
 
 #include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
@@ -9,10 +8,8 @@
 #include "Scene3D/SceneNodeAnimationKey.h"
 #include "Entity/Component.h"
 #include "FileSystem/KeyedArchive.h"
-#include "Base/HashMap.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/EntityFamily.h"
-#include "Scene3D/Components/CustomPropertiesComponent.h"
 
 #include "MemoryManager/MemoryProfiler.h"
 
@@ -23,7 +20,6 @@ class SceneNodeAnimationKey;
 class SceneFileV2;
 class DataNode;
 class RenderComponent;
-class TransformComponent;
 
 /**
     \brief Base class of 3D scene hierarchy. All nodes in our scene graph is inherited from this node.
@@ -41,38 +37,39 @@ public:
     Entity();
 
     /**
-        \brief Function to set scene for node and it's children. 
-        Function goes recursively and set scene for this node, and each child. 
-        \param[in] _scene pointer to scene we want to set as holder for this node. 
-     */
-    virtual void SetScene(Scene* _scene); //TODO: Move SetScene to private
-    /**
-        \brief Function to return scene of this node. This is virtual function. For Entity's function returns it's scene value. 
-        In Scene class function is overloaded and returns self. It required to avoid dynamic casts to find a scene. 
-        \returns pointer to the scene that holds this node. 
-     */
+        Return scene of this entity or nullptr if this entity is not in scene.
+    */
     virtual Scene* GetScene();
 
+    //components
     void AddComponent(Component* component);
+
     void RemoveComponent(Component* component);
-    void RemoveComponent(uint32 componentType, uint32 index = 0);
+    void RemoveComponent(const Type* type, uint32 index = 0);
+    template <typename T>
+    void RemoveComponent(uint32 index = 0);
+
     void DetachComponent(Component* component);
 
-    Component* GetComponent(uint32 componentType, uint32 index = 0) const;
-    Component* GetOrCreateComponent(uint32 componentType, uint32 index = 0);
+    Component* GetComponent(const Type* type, uint32 index = 0) const;
+    template <typename T>
+    T* GetComponent(uint32 index = 0) const;
+
+    Component* GetOrCreateComponent(const Type* type, uint32 index = 0);
+    template <typename T>
+    T* GetOrCreateComponent(uint32 index = 0);
+
     uint32 GetComponentCount() const;
-    uint32 GetComponentCount(uint32 componentType) const;
+    uint32 GetComponentCount(const Type* type) const;
+    template <typename T>
+    uint32 GetComponentCount() const;
+    inline const ComponentMask& GetAvailableComponentMask() const;
 
-    inline uint64 GetAvailableComponentFlags();
-
-    // working with childs
+    // working with children
     virtual void AddNode(Entity* node);
-
+    virtual void RemoveNode(Entity* node);
     virtual void InsertBeforeNode(Entity* newNode, Entity* beforeNode);
 
-    virtual void RemoveNode(Entity* node);
-    virtual int32 GetChildrenCountRecursive() const;
-    virtual bool IsMyChildRecursive(const Entity* child) const;
     virtual void RemoveAllChildren();
     virtual Entity* GetNextChild(Entity* child);
 
@@ -82,45 +79,35 @@ public:
     virtual bool FindNodesByNamePart(const String& namePart, List<Entity*>& outNodeList);
 
     /**
-        \brief Function sets entity unique ID. WARNING: Almost all time this function shouldn't be used by user, because IDs are
-        generated automatically. However, it can be used in some exceptional cases, when the user exactly knows what he is doing,
-        for example in the ResourceEditor during ReloadModel operation.
+    Set entity unique ID. WARNING: Almost all time this function shouldn't be used by user, because IDs are
+    generated automatically. However, it can be used in some exceptional cases, when the user exactly knows what he is doing,
+    for example in the ResourceEditor during ReloadModel operation.
 
-        Entity ID is automatically modified in this cases:
-         - when entity with ID = 0 is added into scene, new ID will be generated
-         - when entity with ID != 0 is added from one scene into another scene, new ID will be generated
-         - cloned entity will always have ID = 0
+    Entity ID is automatically modified in this cases:
+    - when entity with ID = 0 is added into scene, new ID will be generated
+    - when entity with ID != 0 is added from one scene into another scene, new ID will be generated
+    - cloned entity will always have ID = 0
     */
     void SetID(uint32 id);
 
     /**
-        \brief Function return an entity ID, that is unique within scene. This ID is automatically generated, when entity (with empty ID = 0)
-        is added into scene. Generated entity ID will be relative to the scene in which that entity was added. 
+    Return an entity ID, that is unique within scene. This ID is automatically generated, when entity (with empty ID = 0)
+    is added into scene. Generated entity ID will be relative to the scene in which that entity was added.
     */
     uint32 GetID() const;
 
     /**
-        \brief Function reset entity ID, and IDs in all child entities. ID should be reset only for entities that aren't part of the scene.
+    Reset entity ID, and IDs for all child entities. ID should be reset only for entities that aren't part of the scene.
     */
     void ResetID();
 
     /**
-        \brief Function allows to find necessary entity by id.
-        \returns entity with given id or nullptr
+    Find necessary entity in children by id. Return entity pointer or nullptr if not found.
     */
     Entity* GetEntityByID(uint32 id);
 
-    /**
-    \brief Get string with path by indexes in scenegraph from root node to current node.
-    \returns result string.
-    */
-    DAVA_DEPRECATED(String GetPathID(Entity* root));
-
-    /**
-        \brief Get Node by pathID, generated in prev function.
-        \returns result Entity.
-     */
-    DAVA_DEPRECATED(static Entity* GetNodeByPathID(Entity* root, String pathID));
+    void SetSceneID(uint32 sceneId);
+    uint32 GetSceneID() const;
 
     /**
         \brief Find node by it's name inside this scene node.
@@ -159,85 +146,25 @@ public:
      */
     String GetFullName();
 
-    /**
-        \brief Set tag for this object.
-        Tag can be used to identify object, or find it. You can mark objects with same properies by tag, and later find them using tag criteria. 
-     */
-    inline void SetTag(int32 _tag);
+    Entity* GetParent();
 
-    /**
-        \brief Return tag for this object
-        \returns tag for this object
-     */
-    inline int32 GetTag();
-
-    // virtual updates
-    //virtual void	Update(float32 timeElapsed);
-    virtual void Draw();
-
-    // properties
-    void SetVisible(const bool& isVisible);
-    bool GetVisible();
-    inline Entity* GetParent();
-    DAVA_DEPRECATED(void SetUpdatable(bool isUpdatable));
-    DAVA_DEPRECATED(inline bool GetUpdatable(void));
-    inline bool IsLodPart(void);
-    virtual bool IsLodMain(Entity* childToCheck = NULL); //if childToCheck is NULL checks the caller node
-
-    // extract data from current node to use it in animations
-    void ExtractCurrentNodeKeyForAnimation(SceneNodeAnimationKey& resultKey);
-
-    const Matrix4& GetLocalTransform();
-
-    /**
-     \brief This method means that you always modify matrix you get. 
-        If you dont want to modify matrix call GetLocalTransform().
-     */
-    Matrix4& ModifyLocalTransform();
-    const Matrix4& GetWorldTransform() const;
-
-    void SetLocalTransform(const Matrix4& newMatrix);
-    Matrix4 AccamulateLocalTransform(Entity* fromParent);
-    Matrix4 AccamulateTransformUptoFarParent(Entity* farParent);
-
+    Matrix4 AccamulateLocalTransform(Entity* fromParent); //TODO: delete it
+    Matrix4 AccamulateTransformUptoFarParent(Entity* farParent); //TODO: delete it
     /*
-        \brief Go down by hierarchy and bake all transforms.
-        Function can be used to bake transforms to minimize amount of matrix multiplications.
-     */
+    \brief Go down by hierarchy and bake all transforms.
+    Function can be used to bake transforms to minimize amount of matrix multiplications.
+    */
     virtual void BakeTransforms();
 
-    /*
-        \brief Go down by hierarchy and propagate bool custom property to all children.
-     */
-    void PropagateBoolProperty(String name, bool value);
+    void SetVisible(const bool& isVisible);
+    bool GetVisible();
 
     enum EntityFlags
     {
-        // NODE_STATIC = 0x1,  // this flag means that node is always static and we do not need to update it's worldTransform
-        // NODE_DYNAMIC = 0x2, // node automatically become dynamic when we update it's local matrix
-        NODE_WORLD_MATRIX_ACTUAL = 1, // if this flag set this means we do not need to rebuild worldMatrix
         NODE_VISIBLE = 1 << 1, // is node and subnodes should draw
-        NODE_UPDATABLE = 1 << 2, // is node and subnodes should updates. This flag is updated by the engine and can be changed at any time. Flag is always rise up on node loading
-        NODE_IS_LOD_PART = 1 << 3, // node is part of a LOD node.
-        NODE_LOCAL_MATRIX_IDENTITY = 1 << 4, // local matrix of this node is identity. Used to avoid unnecessary computations.
-
-        BOUNDING_VOLUME_AABB = 1 << 5, // node has axial aligned bounding box.
-        BOUNDING_VOLUME_OOB = 1 << 6, // node has object oriented bounding box.
-        BOUNDING_VOLUME_SPHERE = 1 << 7, // node has bounding sphere.
-
-        NODE_CLIPPED_PREV_FRAME = 1 << 8, //
-        NODE_CLIPPED_THIS_FRAME = 1 << 9, //
-        NODE_INVALID = 1 << 10, // THIS NODE not passed some of verification stages and marked as invalid. Such nodes shouldn't be drawn.
 
         TRANSFORM_NEED_UPDATE = 1 << 11,
-        TRANSFORM_DIRTY = 1 << 12,
-        NODE_DELETED = 1 << 13,
-
-        // I decided to put scene flags here to avoid 2 variables. But probably we can create additional variable later if it'll be required.
-        SCENE_LIGHTS_MODIFIED = 1 << 14,
-
-        ENTITY_INDEX_POSITION = 16,
-        ENTITY_INDEX_MASK = 0xffff,
+        TRANSFORM_DIRTY = 1 << 12
     };
 
     inline void AddFlag(int32 flagToAdd);
@@ -245,28 +172,8 @@ public:
     inline uint32 GetFlags() const;
     void AddFlagRecursive(int32 flagToAdd);
     void RemoveFlagRecursive(int32 flagToRemove);
-    inline uint32 GetIndexInParent()
-    {
-        return (flags >> ENTITY_INDEX_POSITION) & ENTITY_INDEX_MASK;
-    }
-    inline void SetIndexInParent(uint32 index)
-    {
-        flags |= (index & ENTITY_INDEX_MASK) << ENTITY_INDEX_POSITION;
-    }
-    void SetSceneID(uint32 sceneId);
-    uint32 GetSceneID() const;
 
     virtual Entity* Clone(Entity* dstNode = NULL);
-
-    // Do we need enum, or we can use virtual functions?
-    enum eEvent
-    {
-        EVENT_CREATE_ENTITY = 1,
-        EVENT_DELETE_ENTITY,
-        EVENT_ADD_COMPONENT,
-        EVENT_DELETE_COMPONENT,
-        EVENT_NOTIFY_UPDATE,
-    };
 
     /**
         \brief function to enable or disable debug drawing for particular node.
@@ -299,7 +206,7 @@ public:
         \brief function returns maximum bounding box of scene in world coordinates.
         \returns bounding box
      */
-    virtual AABBox3 GetWTMaximumBoundingBoxSlow();
+    virtual AABBox3 GetWTMaximumBoundingBoxSlow(); //TODO: delete it
 
     /**
         \brief virtual function to save node to KeyedArchive
@@ -310,11 +217,6 @@ public:
         \brief virtual function to load node to KeyedArchive
      */
     virtual void Load(KeyedArchive* archive, SerializationContext* serializationContext);
-
-    /**
-        \brief Function to get node description for debug printing
-     */
-    virtual String GetDebugDescription();
 
     /**
         \brief This function should be implemented in each node that have data nodes inside it.
@@ -353,7 +255,7 @@ public:
         Function may work `recursively`
     */
     template <template <typename, typename> class Container, class A>
-    void GetChildEntitiesWithComponent(Container<Entity*, A>& container, Component::eType type, bool recursively = true);
+    void GetChildEntitiesWithComponent(Container<Entity*, A>& container, const Type* type, bool recursively = true);
 
     /**
         Puts into `container` all child entities
@@ -361,7 +263,7 @@ public:
         Function may work `recursively`
     */
     template <template <typename, typename> class Container, class A>
-    void GetChildEntitiesWithComponent(Container<const Entity*, A>& container, Component::eType type, bool recursively = true) const;
+    void GetChildEntitiesWithComponent(Container<const Entity*, A>& container, const Type* type, bool recursively = true) const;
 
     /**
         Puts into `container` recursively all child entities
@@ -370,7 +272,7 @@ public:
     template <template <typename, typename> class Container, class A, class Pred>
     void GetChildEntitiesWithCondition(Container<Entity*, A>& container, Pred pred);
 
-    uint32 CountChildEntitiesWithComponent(Component::eType type, bool recursive = false) const;
+    uint32 CountChildEntitiesWithComponent(const Type* type, bool recursive = false) const;
 
     /**
         \brief This function is called after scene is loaded from file.
@@ -383,66 +285,68 @@ public:
     static const char* SCENE_NODE_IS_LOCKED_PROPERTY_NAME;
     static const char* SCENE_NODE_IS_NOT_REMOVABLE_PROPERTY_NAME;
 
-    void FindComponentsByTypeRecursive(Component::eType type, List<DAVA::Entity*>& components);
+    static FastName EntityNameFieldName;
+    static const char* componentFieldString;
+
+    void FindComponentsByTypeRecursive(const Type* type, List<DAVA::Entity*>& components);
 
     Vector<Entity*> children;
-
-    void UpdateFamily();
 
     EntityFamily* GetFamily() const;
 
 protected:
+    void UpdateFamily();
     void RemoveAllComponents();
-    void LoadComponentsV6(KeyedArchive* compsArch, SerializationContext* serializationContext);
     void LoadComponentsV7(KeyedArchive* compsArch, SerializationContext* serializationContext);
 
-protected:
     String RecursiveBuildFullName(Entity* node, Entity* endNode);
 
     void SetParent(Entity* node);
 
-    Scene* scene;
-    Entity* parent;
+    Scene* scene = nullptr;
+    Entity* parent = nullptr;
     FastName name;
-    int32 tag;
-    uint32 flags;
-    uint32 id;
-    uint32 sceneId;
+    uint32 flags = NODE_VISIBLE;
+    uint32 id = 0;
+    uint32 sceneId = 0;
+
+    /**
+    \brief Function to set scene for node and it's children.
+    Function goes recursively and set scene for this node, and each child.
+    \param[in] _scene pointer to scene we want to set as holder for this node.
+    */
+    virtual void SetScene(Scene* _scene); //TODO: Move SetScene to private
 
 private:
     Vector<Component*> components;
-    EntityFamily* family;
+    EntityFamily* family = nullptr;
     void DetachComponent(Vector<Component*>::iterator& it);
     void RemoveComponent(Vector<Component*>::iterator& it);
 
     friend class Scene;
-
-public:
-    INTROSPECTION_EXTEND(Entity, BaseObject,
-                         PROPERTY("ID", "ID", GetID, SetID, I_VIEW | I_SAVE)
-                         MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
-                         MEMBER(tag, "Tag", I_SAVE | I_VIEW | I_EDIT)
-                         MEMBER(flags, "Flags", I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("visible", "Visible", GetVisible, SetVisible, I_VIEW | I_EDIT)
-                         COLLECTION(components, "components", I_VIEW)
-                         )
-
-    static const char* componentFieldString;
+    friend class SceneFileV2;
 };
 
-inline bool Entity::GetVisible()
+inline uint32 Entity::GetID() const
 {
-    return (flags & NODE_VISIBLE) != 0;
+    return id;
 }
 
-inline bool Entity::GetUpdatable(void)
+inline void Entity::SetID(uint32 id_)
 {
-    return (flags & NODE_UPDATABLE) != 0;
+    id = id_;
 }
 
-inline bool Entity::IsLodPart(void)
+inline void Entity::ResetID()
 {
-    return (flags & NODE_IS_LOD_PART) != 0;
+    DVASSERT(nullptr == GetScene() && "ID can safely be reset in entities that aren't part of scene");
+
+    id = 0;
+    sceneId = 0;
+    for (auto child : children)
+    {
+        child->ResetID();
+    }
 }
 
 inline void Entity::AddFlag(int32 flagToAdd)
@@ -470,16 +374,6 @@ inline const FastName& Entity::GetName() const
     return name;
 }
 
-inline int32 Entity::GetTag()
-{
-    return tag;
-}
-
-inline void Entity::SetTag(int32 _tag)
-{
-    tag = _tag;
-}
-
 template <template <typename, typename> class Container, class T, class A>
 void Entity::GetDataNodes(Container<T, A>& container)
 {
@@ -492,8 +386,10 @@ void Entity::GetDataNodes(Container<T, A>& container)
         DataNode* obj = *t;
 
         T res = dynamic_cast<T>(obj);
-        if (res)
+        if (res != nullptr)
+        {
             container.push_back(res);
+        }
     }
 }
 
@@ -506,15 +402,17 @@ void Entity::GetChildNodes(Container<T, A>& container)
         Entity* obj = *t;
 
         T res = dynamic_cast<T>(obj);
-        if (res)
+        if (res != nullptr)
+        {
             container.push_back(res);
+        }
 
         obj->GetChildNodes(container);
     }
 }
 
 template <template <typename, typename> class Container, class A>
-void Entity::GetChildEntitiesWithComponent(Container<Entity*, A>& container, Component::eType type, bool recursively)
+void Entity::GetChildEntitiesWithComponent(Container<Entity*, A>& container, const Type* type, bool recursively)
 {
     for (auto& child : children)
     {
@@ -531,7 +429,7 @@ void Entity::GetChildEntitiesWithComponent(Container<Entity*, A>& container, Com
 }
 
 template <template <typename, typename> class Container, class A>
-void Entity::GetChildEntitiesWithComponent(Container<const Entity*, A>& container, Component::eType type, bool recursively) const
+void Entity::GetChildEntitiesWithComponent(Container<const Entity*, A>& container, const Type* type, bool recursively) const
 {
     for (auto& child : children)
     {
@@ -561,9 +459,9 @@ void Entity::GetChildEntitiesWithCondition(Container<Entity*, A>& container, Pre
     }
 }
 
-inline uint64 Entity::GetAvailableComponentFlags()
+inline const ComponentMask& Entity::GetAvailableComponentMask() const
 {
-    return family->GetComponentsFlags();
+    return family->GetComponentsMask();
 }
 
 inline Entity* Entity::GetChild(int32 index) const
@@ -595,9 +493,9 @@ inline void Entity::RemoveAllComponents()
     }
 }
 
-inline void Entity::RemoveComponent(uint32 componentType, uint32 index)
+inline void Entity::RemoveComponent(const Type* type, uint32 index)
 {
-    Component* c = GetComponent(componentType, index);
+    Component* c = GetComponent(type, index);
     if (c)
     {
         RemoveComponent(c);
@@ -608,6 +506,24 @@ inline void Entity::RemoveComponent(Component* component)
 {
     DetachComponent(component);
     SafeDelete(component);
+}
+
+template <typename T>
+inline void Entity::RemoveComponent(uint32 index)
+{
+    RemoveComponent(Type::Instance<T>(), index);
+}
+
+template <typename T>
+inline T* Entity::GetComponent(uint32 index) const
+{
+    return DynamicTypeCheck<T*>(GetComponent(Type::Instance<T>(), index));
+}
+
+template <typename T>
+inline T* Entity::GetOrCreateComponent(uint32 index)
+{
+    return DynamicTypeCheck<T*>(GetOrCreateComponent(Type::Instance<T>(), index));
 }
 
 inline void Entity::DetachComponent(Component* component)
@@ -623,19 +539,20 @@ inline Scene* Entity::GetScene()
     return scene;
 }
 
-inline uint32 Entity::GetComponentCount(uint32 componentType) const
+inline uint32 Entity::GetComponentCount(const Type* type) const
 {
-    return family->GetComponentsCount(componentType);
+    return family->GetComponentsCount(type);
 }
 
-inline uint32 Entity::GetID() const
+template <typename T>
+inline uint32 Entity::GetComponentCount() const
 {
-    return id;
+    return GetComponentCount(Type::Instance<T>());
 }
 
-inline void Entity::SetID(uint32 id_)
+inline bool Entity::GetVisible()
 {
-    id = id_;
+    return (flags & NODE_VISIBLE) != 0;
 }
 
 inline uint32 Entity::GetSceneID() const
@@ -648,22 +565,9 @@ inline void Entity::SetSceneID(uint32 sceneId_)
     sceneId = sceneId_;
 }
 
-inline void Entity::ResetID()
-{
-    DVASSERT(nullptr == GetScene() && "ID can safely be reset in entities that aren't part of scene");
-
-    id = 0;
-    sceneId = 0;
-    for (auto child : children)
-    {
-        child->ResetID();
-    }
-}
-
 inline EntityFamily* Entity::GetFamily() const
 {
     return family;
 }
-};
 
-#endif // __DAVAENGINE_SCENENODE_H__
+} // namespace DAVA

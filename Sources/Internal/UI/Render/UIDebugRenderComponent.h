@@ -9,7 +9,7 @@ namespace DAVA
 class UIDebugRenderComponent : public UIComponent
 {
     DAVA_VIRTUAL_REFLECTION(UIDebugRenderComponent, UIComponent);
-    IMPLEMENT_UI_COMPONENT(UIDebugRenderComponent);
+    DECLARE_UI_COMPONENT(UIDebugRenderComponent);
 
 public:
     enum ePivotPointDrawMode

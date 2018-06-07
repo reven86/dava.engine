@@ -1,9 +1,10 @@
 #include "UIScrollView.h"
-#include "UI/UIScrollViewContainer.h"
-#include "UI/ScrollHelper.h"
-#include "UI/UIControlHelpers.h"
-#include "UI/Render/UIClipContentComponent.h"
 #include "Reflection/ReflectionRegistrator.h"
+#include "UI/ScrollHelper.h"
+#include "UI/Render/UIClipContentComponent.h"
+#include "UI/UIControlHelpers.h"
+#include "UI/UIScrollBar.h"
+#include "UI/UIScrollViewContainer.h"
 
 namespace DAVA
 {
@@ -11,11 +12,13 @@ static const FastName UISCROLL_VIEW_CONTAINER_NAME("scrollContainerControl");
 
 DAVA_VIRTUAL_REFLECTION_IMPL(UIScrollView)
 {
-    ReflectionRegistrator<UIScrollView>::Begin()
+    ReflectionRegistrator<UIScrollView>::Begin()[M::DisplayName("Scroll View")]
     .ConstructorByPointer()
     .DestructorByPointer([](UIScrollView* o) { o->Release(); })
-    .Field("autoUpdate", &UIScrollView::IsAutoUpdate, &UIScrollView::SetAutoUpdate)
-    .Field("centerContent", &UIScrollView::IsCenterContent, &UIScrollView::SetCenterContent)
+    .Field("autoUpdate", &UIScrollView::IsAutoUpdate, &UIScrollView::SetAutoUpdate)[M::DisplayName("Auto Update")]
+    .Field("centerContent", &UIScrollView::IsCenterContent, &UIScrollView::SetCenterContent)[M::DisplayName("Center Content")]
+    .Field("returnSpeed", &UIScrollView::GetReturnSpeed, &UIScrollView::SetReturnSpeed)[M::DisplayName("Return Speed")]
+    .Field("scrollSpeed", &UIScrollView::GetScrollSpeed, &UIScrollView::SetScrollSpeed)[M::DisplayName("Scroll Speed")]
     .End();
 }
 
@@ -89,10 +92,10 @@ void UIScrollView::RemoveControl(UIControl* control)
 void UIScrollView::PushContentToBounds(UIControl* parentControl)
 {
     // We have to shift each child of ScrollContent to fit its bounds
-    const List<UIControl*>& childslist = parentControl->GetChildren();
-    for (List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
+    const auto& childslist = parentControl->GetChildren();
+    for (auto it = childslist.begin(); it != childslist.end(); ++it)
     {
-        UIControl* childControl = (*it);
+        UIControl* childControl = it->Get();
         if (!(childControl && childControl->GetVisibilityFlag()))
             continue;
 
@@ -122,10 +125,10 @@ Vector2 UIScrollView::GetControlOffset(UIControl* parentControl, Vector2 current
 {
     Vector2 currentOffset = currentContentOffset;
     // Get control's farest position inside scrollContainer
-    const List<UIControl*>& childslist = parentControl->GetChildren();
-    for (List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
+    const auto& childslist = parentControl->GetChildren();
+    for (auto it = childslist.begin(); it != childslist.end(); ++it)
     {
-        UIControl* childControl = (*it);
+        UIControl* childControl = it->Get();
         if (!(childControl && childControl->GetVisibilityFlag()))
             continue;
 
@@ -145,10 +148,10 @@ Vector2 UIScrollView::GetMaxSize(UIControl* parentControl, Vector2 currentMaxSiz
     // Initial content max size is actual control sizes
     Vector2 maxSize = currentMaxSize;
 
-    const List<UIControl*>& childslist = parentControl->GetChildren();
-    for (List<UIControl*>::const_iterator it = childslist.begin(); it != childslist.end(); ++it)
+    const auto& childslist = parentControl->GetChildren();
+    for (auto it = childslist.begin(); it != childslist.end(); ++it)
     {
-        UIControl* childControl = (*it);
+        UIControl* childControl = it->Get();
         if (!(childControl && childControl->GetVisibilityFlag()))
             continue;
 
@@ -277,6 +280,15 @@ void UIScrollView::SetReturnSpeed(float32 speedInSeconds)
     scrollVertical->SetBorderMoveModifer(speedInSeconds);
 }
 
+float32 UIScrollView::GetReturnSpeed() const
+{
+    if (!scrollHorizontal || !scrollVertical)
+    {
+        return 0.f;
+    }
+    return scrollHorizontal->GetBorderMoveModifer();
+}
+
 void UIScrollView::SetScrollSpeed(float32 speedInSeconds)
 {
     if (!scrollHorizontal || !scrollVertical)
@@ -286,6 +298,15 @@ void UIScrollView::SetScrollSpeed(float32 speedInSeconds)
 
     scrollHorizontal->SetSlowDownTime(speedInSeconds);
     scrollVertical->SetSlowDownTime(speedInSeconds);
+}
+
+float32 UIScrollView::GetScrollSpeed() const
+{
+    if (!scrollHorizontal || !scrollVertical)
+    {
+        return 0.f;
+    }
+    return scrollHorizontal->GetSlowDownTime();
 }
 
 float32 UIScrollView::VisibleAreaSize(UIScrollBar* forScrollBar)

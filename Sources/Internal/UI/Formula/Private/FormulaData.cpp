@@ -99,6 +99,7 @@ class FormulaDataVectorStructureWrapper : public FormulaDataStructureWrapper
 public:
     FormulaDataVectorStructureWrapper()
     {
+        caps.hasRangeAccess = true;
     }
 
     bool HasFields(const ReflectedObject& object, const ValueWrapper* vw) const override

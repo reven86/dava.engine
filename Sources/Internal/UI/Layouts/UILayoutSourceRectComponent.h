@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Math/Vector.h"
 #include "UI/Components/UIComponent.h"
 #include "Reflection/Reflection.h"
 
@@ -16,7 +17,7 @@ class UIControl;
 class UILayoutSourceRectComponent : public UIComponent
 {
     DAVA_VIRTUAL_REFLECTION(UILayoutSourceRectComponent, UIComponent);
-    IMPLEMENT_UI_COMPONENT(UILayoutSourceRectComponent);
+    DECLARE_UI_COMPONENT(UILayoutSourceRectComponent);
 
 public:
     UILayoutSourceRectComponent();

@@ -18,25 +18,15 @@ class DownloadManager final : public Singleton<DownloadManager>
     friend class Downloader;
 
 public:
-#if defined(__DAVAENGINE_COREV2__)
     DownloadManager(Engine* e);
-    Engine* engine = nullptr;
-#else
-    DownloadManager() = default;
-#endif
     virtual ~DownloadManager();
 
     // Downloader for further operations
     void SetDownloader(Downloader* _downloader);
     Downloader* GetDownloader();
 
-#if defined(__DAVAENGINE_COREV2__)
     // Checks tasks status and determine current task and handles tasks queues
     void Update(float32 frameDelta = 0.0f);
-#else
-    // Checks tasks status and determine current task and handles tasks queues
-    void Update();
-#endif
 
     // Schedule download content or get content size (indicated by downloadMode)
     uint32 Download(const String& srcUrl,
@@ -141,6 +131,7 @@ private:
     void ResetRetriesCount();
     void OnCurrentTaskProgressChanged(uint64 progressDelta);
 
+    Engine* engine = nullptr;
     Thread* thisThread = nullptr;
     bool isThreadStarted = false;
 

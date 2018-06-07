@@ -6,7 +6,6 @@
 #include "Render/RHI/rhi_ShaderSource.h"
 #include "Render/UniqueStateSet.h"
 #include "Render/DynamicBindings.h"
-#include "Base/FastNameMap.h"
 
 namespace DAVA
 {
@@ -42,7 +41,7 @@ struct DynamicPropertyBinding
 class ShaderDescriptor;
 namespace ShaderDescriptorCache
 {
-ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);
+ShaderDescriptor* GetShaderDescriptor(const FastName& name, const UnorderedMap<FastName, int32>& defines);
 void ReloadShaders();
 }
 
@@ -111,9 +110,9 @@ private:
 
     //for storing and further debug simplification
     FastName sourceName;
-    HashMap<FastName, int32> defines;
+    UnorderedMap<FastName, int32> defines;
 
-    friend ShaderDescriptor* ShaderDescriptorCache::GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines);
+    friend ShaderDescriptor* ShaderDescriptorCache::GetShaderDescriptor(const FastName& name, const UnorderedMap<FastName, int32>& defines);
     friend void ShaderDescriptorCache::ReloadShaders();
 };
 

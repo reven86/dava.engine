@@ -24,7 +24,7 @@ protected:
     GameObjectManager();
     virtual ~GameObjectManager();
 
-    Sprite::DrawState drawState;
+    SpriteDrawState drawState;
 
     Vector2 cameraPosition;
     Vector2 cameraScale;

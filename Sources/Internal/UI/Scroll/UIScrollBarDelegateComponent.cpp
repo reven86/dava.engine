@@ -1,16 +1,21 @@
 #include "UI/Scroll/UIScrollBarDelegateComponent.h"
+#include "Engine/Engine.h"
+#include "Entity/ComponentManager.h"
 #include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(UIScrollBarDelegateComponent)
 {
-    ReflectionRegistrator<UIScrollBarDelegateComponent>::Begin()
+    ReflectionRegistrator<UIScrollBarDelegateComponent>::Begin()[M::DisplayName("Scroll Bar Delegate"), M::Group("Input")]
     .ConstructorByPointer()
     .DestructorByPointer([](UIScrollBarDelegateComponent* o) { o->Release(); })
-    .Field("delegate", &UIScrollBarDelegateComponent::GetPathToDelegate, &UIScrollBarDelegateComponent::SetPathToDelegate)
+    .Field("delegate", &UIScrollBarDelegateComponent::GetPathToDelegate, &UIScrollBarDelegateComponent::SetPathToDelegate)[M::DisplayName("Delegate")]
     .End();
 }
+
+IMPLEMENT_UI_COMPONENT(UIScrollBarDelegateComponent);
+
 UIScrollBarDelegateComponent::UIScrollBarDelegateComponent()
 {
 }

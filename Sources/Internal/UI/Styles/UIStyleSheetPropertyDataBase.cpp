@@ -10,7 +10,9 @@
 #include "UI/Layouts/UIIgnoreLayoutComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UIAnchorComponent.h"
+#include "UI/Layouts/UIAnchorSafeAreaComponent.h"
 #include "UI/Sound/UISoundComponent.h"
+#include "UI/Text/UITextComponent.h"
 #include "Reflection/ReflectedTypeDB.h"
 
 namespace DAVA
@@ -18,7 +20,7 @@ namespace DAVA
 UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
     : controlGroup("", nullptr, ReflectedTypeDB::Get<UIControl>())
     , bgGroup("bg", Type::Instance<UIControlBackground>(), ReflectedTypeDB::Get<UIControlBackground>())
-    , staticTextGroup("text", nullptr, ReflectedTypeDB::Get<UIStaticText>())
+    , staticTextGroup("text", Type::Instance<UITextComponent>(), ReflectedTypeDB::Get<UITextComponent>())
     , textFieldGroup("textField", nullptr, ReflectedTypeDB::Get<UITextField>())
     , particleEffectGroup("particleEffect", nullptr, ReflectedTypeDB::Get<UIParticles>())
     , linearLayoutGroup("linearLayout", Type::Instance<UILinearLayoutComponent>(), ReflectedTypeDB::Get<UILinearLayoutComponent>())
@@ -27,6 +29,7 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
     , ignoreLayoutGroup("ignoreLayout", Type::Instance<UIIgnoreLayoutComponent>(), ReflectedTypeDB::Get<UIIgnoreLayoutComponent>())
     , sizePolicyGroup("sizePolicy", Type::Instance<UISizePolicyComponent>(), ReflectedTypeDB::Get<UISizePolicyComponent>())
     , anchorGroup("anchor", Type::Instance<UIAnchorComponent>(), ReflectedTypeDB::Get<UIAnchorComponent>())
+    , anchorSafeAreaGroup("anchorSafeArea", Type::Instance<UIAnchorSafeAreaComponent>(), ReflectedTypeDB::Get<UIAnchorSafeAreaComponent>())
     , soundGroup("sound", Type::Instance<UISoundComponent>(), ReflectedTypeDB::Get<UISoundComponent>())
     , properties({ { UIStyleSheetPropertyDescriptor(&controlGroup, "angle", 0.0f),
                      UIStyleSheetPropertyDescriptor(&controlGroup, "scale", Vector2(1.0f, 1.0f)),
@@ -50,12 +53,15 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
                      UIStyleSheetPropertyDescriptor(&bgGroup, "leftRightStretchCap", 0.0f),
                      UIStyleSheetPropertyDescriptor(&bgGroup, "topBottomStretchCap", 0.0f),
 
-                     UIStyleSheetPropertyDescriptor(&staticTextGroup, "font", String("")),
-                     UIStyleSheetPropertyDescriptor(&staticTextGroup, "textColor", Color::White),
-                     UIStyleSheetPropertyDescriptor(&staticTextGroup, "textcolorInheritType", UIControlBackground::COLOR_MULTIPLY_ON_PARENT),
-                     UIStyleSheetPropertyDescriptor(&staticTextGroup, "shadowoffset", Vector2(0.0f, 0.0f)),
-                     UIStyleSheetPropertyDescriptor(&staticTextGroup, "shadowcolor", Color::White),
-                     UIStyleSheetPropertyDescriptor(&staticTextGroup, "textalign", ALIGN_HCENTER | ALIGN_VCENTER),
+                     UIStyleSheetPropertyDescriptor(&staticTextGroup, "fontName", String("")),
+                     UIStyleSheetPropertyDescriptor(&staticTextGroup, "fontPath", FilePath()),
+                     UIStyleSheetPropertyDescriptor(&staticTextGroup, "fontSize", 0.0f),
+                     UIStyleSheetPropertyDescriptor(&staticTextGroup, "color", Color::White),
+                     UIStyleSheetPropertyDescriptor(&staticTextGroup, "colorInheritType", UIControlBackground::COLOR_MULTIPLY_ON_PARENT),
+                     UIStyleSheetPropertyDescriptor(&staticTextGroup, "shadowOffset", Vector2(0.0f, 0.0f)),
+                     UIStyleSheetPropertyDescriptor(&staticTextGroup, "shadowColor", Color::White),
+                     UIStyleSheetPropertyDescriptor(&staticTextGroup, "align", ALIGN_HCENTER | ALIGN_VCENTER),
+                     UIStyleSheetPropertyDescriptor(&staticTextGroup, "multiline", UITextComponent::MULTILINE_DISABLED),
 
                      UIStyleSheetPropertyDescriptor(&particleEffectGroup, "effectPath", FilePath()),
                      UIStyleSheetPropertyDescriptor(&particleEffectGroup, "autoStart", false),
@@ -108,40 +114,50 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
                      UIStyleSheetPropertyDescriptor(&anchorGroup, "vCenterAnchorEnabled", false),
                      UIStyleSheetPropertyDescriptor(&anchorGroup, "vCenterAnchor", 0.0f),
 
+                     UIStyleSheetPropertyDescriptor(&anchorSafeAreaGroup, "leftSafeInset", UIAnchorSafeAreaComponent::eInsetType::NONE),
+                     UIStyleSheetPropertyDescriptor(&anchorSafeAreaGroup, "leftInsetCorrection", 0.0f),
+                     UIStyleSheetPropertyDescriptor(&anchorSafeAreaGroup, "topSafeInset", UIAnchorSafeAreaComponent::eInsetType::NONE),
+                     UIStyleSheetPropertyDescriptor(&anchorSafeAreaGroup, "topInsetCorrection", 0.0f),
+                     UIStyleSheetPropertyDescriptor(&anchorSafeAreaGroup, "rightSafeInset", UIAnchorSafeAreaComponent::eInsetType::NONE),
+                     UIStyleSheetPropertyDescriptor(&anchorSafeAreaGroup, "rightInsetCorrection", 0.0f),
+                     UIStyleSheetPropertyDescriptor(&anchorSafeAreaGroup, "bottomSafeInset", UIAnchorSafeAreaComponent::eInsetType::NONE),
+                     UIStyleSheetPropertyDescriptor(&anchorSafeAreaGroup, "bottomInsetCorrection", 0.0f),
+
                      UIStyleSheetPropertyDescriptor(&soundGroup, "touchDown", FastName()),
                      UIStyleSheetPropertyDescriptor(&soundGroup, "touchUpInside", FastName()),
                      UIStyleSheetPropertyDescriptor(&soundGroup, "touchUpOutside", FastName()),
                      UIStyleSheetPropertyDescriptor(&soundGroup, "valueChanged", FastName()) } })
 {
-    UnorderedMap<FastName, FastName> legacyNames;
-    legacyNames[FastName("bg-drawType")] = FastName("drawType");
-    legacyNames[FastName("bg-sprite")] = FastName("sprite");
-    legacyNames[FastName("bg-frame")] = FastName("frame");
-    legacyNames[FastName("bg-color")] = FastName("color");
-    legacyNames[FastName("bg-colorInherit")] = FastName("colorInherit");
-    legacyNames[FastName("bg-align")] = FastName("align");
-    legacyNames[FastName("bg-leftRightStretchCap")] = FastName("leftRightStretchCap");
-    legacyNames[FastName("bg-topBottomStretchCap")] = FastName("topBottomStretchCap");
+    // NewName -> OldNames
+    UnorderedMap<FastName, List<FastName>> legacyNames;
+    legacyNames[FastName("bg-drawType")] = { FastName("drawType") };
+    legacyNames[FastName("bg-sprite")] = { FastName("sprite") };
+    legacyNames[FastName("bg-frame")] = { FastName("frame") };
+    legacyNames[FastName("bg-color")] = { FastName("color") };
+    legacyNames[FastName("bg-colorInherit")] = { FastName("colorInherit") };
+    legacyNames[FastName("bg-align")] = { FastName("align") };
+    legacyNames[FastName("bg-leftRightStretchCap")] = { FastName("leftRightStretchCap") };
+    legacyNames[FastName("bg-topBottomStretchCap")] = { FastName("topBottomStretchCap") };
 
-    legacyNames[FastName("text-font")] = FastName("font");
-    legacyNames[FastName("text-textColor")] = FastName("textColor");
-    legacyNames[FastName("text-textcolorInheritType")] = FastName("textcolorInheritType");
-    legacyNames[FastName("text-shadowoffset")] = FastName("shadowoffset");
-    legacyNames[FastName("text-shadowcolor")] = FastName("shadowcolor");
-    legacyNames[FastName("text-textalign")] = FastName("textalign");
+    legacyNames[FastName("text-fontName")] = { FastName("font"), FastName("text-font") };
+    legacyNames[FastName("text-color")] = { FastName("textColor"), FastName("text-textColor") };
+    legacyNames[FastName("text-colorInheritType")] = { FastName("textcolorInheritType"), FastName("text-textcolorInheritType") };
+    legacyNames[FastName("text-shadowOffset")] = { FastName("shadowoffset"), FastName("text-shadowoffset") };
+    legacyNames[FastName("text-shadowColor")] = { FastName("shadowcolor"), FastName("text-shadowcolor") };
+    legacyNames[FastName("text-align")] = { FastName("textalign"), FastName("text-textalign") };
 
-    legacyNames[FastName("anchor-leftAnchorEnabled")] = FastName("leftAnchorEnabled");
-    legacyNames[FastName("anchor-leftAnchor")] = FastName("leftAnchor");
-    legacyNames[FastName("anchor-rightAnchorEnabled")] = FastName("rightAnchorEnabled");
-    legacyNames[FastName("anchor-rightAnchor")] = FastName("rightAnchor");
-    legacyNames[FastName("anchor-bottomAnchorEnabled")] = FastName("bottomAnchorEnabled");
-    legacyNames[FastName("anchor-bottomAnchor")] = FastName("bottomAnchor");
-    legacyNames[FastName("anchor-topAnchorEnabled")] = FastName("topAnchorEnabled");
-    legacyNames[FastName("anchor-topAnchor")] = FastName("topAnchor");
-    legacyNames[FastName("anchor-hCenterAnchorEnabled")] = FastName("hCenterAnchorEnabled");
-    legacyNames[FastName("anchor-hCenterAnchor")] = FastName("hCenterAnchor");
-    legacyNames[FastName("anchor-vCenterAnchorEnabled")] = FastName("vCenterAnchorEnabled");
-    legacyNames[FastName("anchor-vCenterAnchor")] = FastName("vCenterAnchor");
+    legacyNames[FastName("anchor-leftAnchorEnabled")] = { FastName("leftAnchorEnabled") };
+    legacyNames[FastName("anchor-leftAnchor")] = { FastName("leftAnchor") };
+    legacyNames[FastName("anchor-rightAnchorEnabled")] = { FastName("rightAnchorEnabled") };
+    legacyNames[FastName("anchor-rightAnchor")] = { FastName("rightAnchor") };
+    legacyNames[FastName("anchor-bottomAnchorEnabled")] = { FastName("bottomAnchorEnabled") };
+    legacyNames[FastName("anchor-bottomAnchor")] = { FastName("bottomAnchor") };
+    legacyNames[FastName("anchor-topAnchorEnabled")] = { FastName("topAnchorEnabled") };
+    legacyNames[FastName("anchor-topAnchor")] = { FastName("topAnchor") };
+    legacyNames[FastName("anchor-hCenterAnchorEnabled")] = { FastName("hCenterAnchorEnabled") };
+    legacyNames[FastName("anchor-hCenterAnchor")] = { FastName("hCenterAnchor") };
+    legacyNames[FastName("anchor-vCenterAnchorEnabled")] = { FastName("vCenterAnchorEnabled") };
+    legacyNames[FastName("anchor-vCenterAnchor")] = { FastName("vCenterAnchor") };
 
     for (int32 propertyIndex = 0; propertyIndex < STYLE_SHEET_PROPERTY_COUNT; propertyIndex++)
     {
@@ -152,7 +168,10 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
         auto legacyNameIt = legacyNames.find(fullName);
         if (legacyNameIt != legacyNames.end())
         {
-            propertyNameToIndexMap[legacyNameIt->second] = propertyIndex;
+            for (auto legacyName : legacyNameIt->second)
+            {
+                propertyNameToIndexMap[legacyName] = propertyIndex;
+            }
         }
     }
 

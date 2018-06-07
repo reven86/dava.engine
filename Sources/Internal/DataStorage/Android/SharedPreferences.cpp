@@ -7,7 +7,7 @@ namespace DAVA
 #if defined(__DAVAENGINE_ANDROID__)
 
 SharedPreferences::SharedPreferences()
-    : jniSharedPreferences("com/dava/framework/JNISharedPreferences")
+    : jniSharedPreferences("com/dava/engine/SharedPreferences")
 {
     getSharedPreferences = jniSharedPreferences.GetStaticMethod<jobject>("GetSharedPreferences");
 

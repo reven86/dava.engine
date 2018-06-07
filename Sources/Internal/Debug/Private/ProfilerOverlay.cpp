@@ -13,6 +13,11 @@
 #include "UI/UIEvent.h"
 #include "UI/UIControlSystem.h"
 #include "Input/InputSystem.h"
+#include "Input/Keyboard.h"
+#include "DeviceManager/DeviceManager.h"
+#include "Engine/Engine.h"
+#include "Engine/EngineContext.h"
+
 #include <ostream>
 
 namespace DAVA
@@ -210,56 +215,62 @@ bool ProfilerOverlay::OnInput(UIEvent* input)
 {
     if (inputEnabled)
     {
-        const KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-        if (keyboard.IsKeyPressed(Key::LCTRL) && input->phase == UIEvent::Phase::KEY_DOWN && input->key == Key::F12)
+        const Keyboard* keyboard = GetEngineContext()->deviceManager->GetKeyboard();
+
+        if (keyboard != nullptr)
         {
-            SetEnabled(!IsEnabled());
-        }
-        else if (overlayEnabled)
-        {
-            if (keyboard.IsKeyPressed(Key::LCTRL) && input->phase == UIEvent::Phase::KEY_DOWN)
+            const bool lctrlPressed = keyboard->GetKeyState(eInputElements::KB_LCTRL).IsPressed();
+
+            if (lctrlPressed && input->phase == UIEvent::Phase::KEY_DOWN && input->key == eInputElements::KB_F12)
             {
-                switch (input->key)
-                {
-                case Key::F9:
-                    OnButtonPressed(BUTTON_DRAW_MARKER_HISTORY);
-                    break;
-
-                case Key::F10:
-                    OnButtonPressed(BUTTON_SCALE);
-                    break;
-
-                case Key::F11:
-                    OnButtonPressed(BUTTON_PROFILERS_START_STOP);
-                    break;
-
-                case Key::LEFT:
-                    OnButtonPressed(BUTTON_HISTORY_PREV);
-                    break;
-
-                case Key::RIGHT:
-                    OnButtonPressed(BUTTON_HISTORY_NEXT);
-                    break;
-
-                case Key::UP:
-                    SelectPreviousMarker();
-                    break;
-
-                case Key::DOWN:
-                    SelectNextMarker();
-                    break;
-
-                case Key::TAB:
-                    SelectTrace((GetSelectedTrace() == ProfilerOverlay::TRACE_CPU) ? ProfilerOverlay::TRACE_GPU : ProfilerOverlay::TRACE_CPU);
-                    break;
-
-                default:
-                    break;
-                }
+                SetEnabled(!IsEnabled());
             }
-            else
+            else if (overlayEnabled)
             {
-                ProcessTouch(input);
+                if (lctrlPressed && input->phase == UIEvent::Phase::KEY_DOWN)
+                {
+                    switch (input->key)
+                    {
+                    case eInputElements::KB_F9:
+                        OnButtonPressed(BUTTON_DRAW_MARKER_HISTORY);
+                        break;
+
+                    case eInputElements::KB_F10:
+                        OnButtonPressed(BUTTON_SCALE);
+                        break;
+
+                    case eInputElements::KB_F11:
+                        OnButtonPressed(BUTTON_PROFILERS_START_STOP);
+                        break;
+
+                    case eInputElements::KB_LEFT:
+                        OnButtonPressed(BUTTON_HISTORY_PREV);
+                        break;
+
+                    case eInputElements::KB_RIGHT:
+                        OnButtonPressed(BUTTON_HISTORY_NEXT);
+                        break;
+
+                    case eInputElements::KB_UP:
+                        SelectPreviousMarker();
+                        break;
+
+                    case eInputElements::KB_DOWN:
+                        SelectNextMarker();
+                        break;
+
+                    case eInputElements::KB_TAB:
+                        SelectTrace((GetSelectedTrace() == ProfilerOverlay::TRACE_CPU) ? ProfilerOverlay::TRACE_GPU : ProfilerOverlay::TRACE_CPU);
+                        break;
+
+                    default:
+                        break;
+                    }
+                }
+                else
+                {
+                    ProcessTouch(input);
+                }
             }
         }
     }
@@ -273,7 +284,7 @@ void ProfilerOverlay::ProcessTouch(UIEvent* input)
     {
         for (int32 i = 0; i < BUTTON_COUNT; ++i)
         {
-            Vector2 physPoint = DAVA::UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(input->point);
+            Vector2 physPoint = DAVA::GetEngineContext()->uiControlSystem->vcs->ConvertVirtualToPhysical(input->point);
             Point2i point = Point2i(int32(physPoint.x / overlayScale), int32(physPoint.y / overlayScale));
             if (buttons[i].PointInside(point))
                 OnButtonPressed(eButton(i));
@@ -347,7 +358,7 @@ void ProfilerOverlay::Update()
     bool needUpdateHistory = needUpdateCPUInfo || needUpdateGPUInfo;
     if (needUpdateHistory)
     {
-        for (FastNameMap<MarkerHistory>::HashMapItem& i : markersHistory)
+        for (auto& i : markersHistory)
         {
             MarkerHistory::HistoryArray& history = i.second.values;
             MarkerHistory::HistoryInstance& value = history.next();
@@ -368,7 +379,7 @@ void ProfilerOverlay::Update()
 
     if (needUpdateHistory)
     {
-        for (FastNameMap<MarkerHistory>::HashMapItem& i : markersHistory)
+        for (auto& i : markersHistory)
         {
             MarkerHistory& history = i.second;
             ++history.updatesCount;
@@ -442,9 +453,9 @@ void ProfilerOverlay::ProcessEventsTrace(const Vector<TraceEvent>& events, Trace
             trace->maxMarkerNameLen = Max(trace->maxMarkerNameLen, uint32(strlen(e.name.c_str())));
         }
 
-        if (markersColor.count(e.name) == 0)
+        if (markersColor.find(e.name) == markersColor.end())
         {
-            markersColor.Insert(e.name, rhi::NativeColorRGBA(CIEDE2000Colors[colorIndex % CIEDE2000_COLORS_COUNT]));
+            markersColor[e.name] = rhi::NativeColorRGBA(CIEDE2000Colors[colorIndex % CIEDE2000_COLORS_COUNT]);
             ++colorIndex;
         }
 
@@ -641,7 +652,7 @@ void ProfilerOverlay::DrawTrace(const TraceData& trace, const char* traceHeader,
         DbgDraw::FilledRect2D(x0, y0, x1, y1, markersColor[element.name]);
         DbgDraw::Text2D(x1 + DbgDraw::NormalCharW, y0, textColor, element.name.c_str());
 
-        snprintf(strbuf, countof(strbuf), "[%*d mcs]", ProfilerOverlayDetails::TRACE_LIST_DURATION_TEXT_WIDTH_CHARS - 6, uint32(element.duration));
+        _snprintf(strbuf, countof(strbuf), "[%*d mcs]", ProfilerOverlayDetails::TRACE_LIST_DURATION_TEXT_WIDTH_CHARS - 6, uint32(element.duration));
         DbgDraw::Text2D(x0 + listWidth, y0, textColor, strbuf);
 
         y0 += ProfilerOverlayDetails::TRACE_LIST_ICON_SIZE + 1;
@@ -807,11 +818,11 @@ void ProfilerOverlay::DrawHistory(const FastName& name, const Rect2i& rect, bool
 
     DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + MARGIN, TEXT_COLOR, "\'%s\'", name.c_str());
 
-    snprintf(strbuf, countof(strbuf), "%lld [%.1f] mcs", history.crbegin()->accurate, history.crbegin()->filtered);
+    _snprintf(strbuf, countof(strbuf), "%lld [%.1f] mcs", history.crbegin()->accurate, history.crbegin()->filtered);
     int32 tdx = drawRect.dx - MARGIN - int32(DbgDraw::NormalCharW * strlen(strbuf));
     DbgDraw::Text2D(drawRect.x + tdx, drawRect.y + MARGIN, TEXT_COLOR, strbuf);
 
-    snprintf(strbuf, countof(strbuf), "%d mcs", int32(ceilValue));
+    _snprintf(strbuf, countof(strbuf), "%d mcs", int32(ceilValue));
     DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + MARGIN + DbgDraw::NormalCharH, TEXT_COLOR, "%*s", ProfilerOverlayDetails::HISTORY_CHART_TEXT_COLUMN_CHARS, strbuf);
     DbgDraw::Text2D(drawRect.x + MARGIN, drawRect.y + drawRect.dy - MARGIN - DbgDraw::NormalCharH, TEXT_COLOR, "%*s", ProfilerOverlayDetails::HISTORY_CHART_TEXT_COLUMN_CHARS, "0 mcs");
 }

@@ -71,7 +71,7 @@ void AnimationSystem::Process(float32 timeElapsed)
 
 void AnimationSystem::ImmediateEvent(Component* component, uint32 event)
 {
-    DVASSERT(component->GetType() == Component::ANIMATION_COMPONENT);
+    DVASSERT(component->GetType()->Is<AnimationComponent>());
     AnimationComponent* comp = static_cast<AnimationComponent*>(component);
     if (event == EventSystem::START_ANIMATION)
     {
@@ -124,5 +124,10 @@ void AnimationSystem::RemoveEntity(Entity* entity)
     {
         RemoveFromActive(comp);
     }
+}
+
+void AnimationSystem::PrepareForRemove()
+{
+    activeComponents.clear();
 }
 };

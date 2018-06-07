@@ -20,7 +20,7 @@ BillboardRenderObject::BillboardRenderObject()
 void BillboardRenderObject::RecalcBoundingBox()
 {
     bbox = AABBox3();
-    for (const IndexedRenderBatch& i : renderBatchArray)
+    for (const RenderBatchWithOptions& i : renderBatchArray)
     {
         RenderBatch* batch = i.renderBatch;
         bbox.AddAABBox(batch->GetBoundingBox());
@@ -64,9 +64,9 @@ void BillboardRenderObject::PrepareToRender(Camera* camera)
     billboardTransform.SetTranslationVector(translation);
 }
 
-void BillboardRenderObject::BindDynamicParameters(Camera* camera)
+void BillboardRenderObject::BindDynamicParameters(Camera* camera, RenderBatch* batch)
 {
-    RenderObject::BindDynamicParameters(camera);
+    RenderObject::BindDynamicParameters(camera, batch);
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WORLD, &billboardTransform, reinterpret_cast<pointer_size>(&billboardTransform));
 }
 

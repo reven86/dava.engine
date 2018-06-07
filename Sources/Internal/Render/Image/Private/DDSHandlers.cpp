@@ -1,6 +1,4 @@
 #include "Render/Image/Private/DDSHandlers.h"
-#include "Render/Image/Private/QualcommHelper.h"
-#include "Render/Image/Private/NvttHelper.h"
 
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
@@ -457,7 +455,7 @@ void DirectConvertToD3D(const uint8* srcData, uint32 w, uint32 h, uint8* dstData
 
 void UpdatePitch(dds::DDS_HEADER& mainHeader, PixelFormat format)
 {
-    if (NvttHelper::IsDxtFormat(format) || QualcommHelper::IsAtcFormat(format))
+    if (PixelFormatDescriptor::IsDxtFormat(format) || PixelFormatDescriptor::IsAtcFormat(format))
     {
         const PixelFormatDescriptor& formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(format);
         const Size2i& blockSize = formatDescriptor.blockSize;

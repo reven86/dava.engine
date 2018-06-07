@@ -2,6 +2,7 @@
 
 #include "FileSystem/File.h"
 #include "FileSystem/FilePath.h"
+#include "FileSystem/Private/PackFormatSpec.h"
 
 namespace DAVA
 {
@@ -112,6 +113,46 @@ uint32 CRC32::ForFile(const FilePath& pathName)
     while ((n = f->Read(buf, BUFSIZE)) > 0)
     {
         crc.AddData(buf, n);
+    }
+
+    return crc.Done();
+}
+
+uint32 CRC32::ForDVPLFileContent(const FilePath& pathName)
+{
+    ScopedPtr<File> f(File::Create(pathName, File::OPEN | File::READ));
+    if (!f)
+    {
+        return 0;
+    }
+
+    CRC32 crc;
+
+    const uint64 fileSize = f->GetSize();
+
+    if (fileSize >= sizeof(PackFormat::LitePack::Footer))
+    {
+        uint64 contentLeft = fileSize - sizeof(PackFormat::LitePack::Footer);
+        char buf[BUFSIZE];
+
+        uint32 n = 0;
+        while ((n = f->Read(buf, BUFSIZE)) > 0)
+        {
+            if (contentLeft > n)
+            {
+                crc.AddData(buf, n);
+                contentLeft -= n;
+            }
+            else
+            {
+                crc.AddData(buf, static_cast<size_t>(contentLeft));
+                break;
+            }
+        }
+    }
+    else
+    {
+        return 0;
     }
 
     return crc.Done();

@@ -1,6 +1,5 @@
 #include "DeviceManager/Private/Win32/DeviceManagerImplWin32.h"
 
-#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_WIN32__)
@@ -67,6 +66,9 @@ size_t DeviceManagerImpl::GetDisplays(DisplayInfoRange* range)
             range->begin[i].rawDpiY = dpiY;
         }
     }
+
+    // Make primary display to be the first in list
+    std::sort(range->begin, range->end, [](const DisplayInfo& l, const DisplayInfo& r) { return l.primary > r.primary; });
     return count;
 }
 
@@ -112,4 +114,3 @@ float32 DeviceManagerImpl::GetCpuTemperature() const
 } // namespace DAVA
 
 #endif // __DAVAENGINE_WIN32__
-#endif // __DAVAENGINE_COREV2__

@@ -20,6 +20,7 @@
 #include "Scene3D/Components/CustomPropertiesComponent.h"
 #include "Scene3D/Components/DebugRenderComponent.h"
 #include "Scene3D/Components/LightComponent.h"
+#include "Scene3D/Components/MotionComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/QualitySettingsComponent.h"
 #include "Scene3D/Components/RenderComponent.h"
@@ -33,9 +34,16 @@
 #include "Scene3D/Components/UserComponent.h"
 #include "Scene3D/Components/WaveComponent.h"
 #include "Scene3D/Components/WindComponent.h"
+#include "Scene3D/Components/GeoDecalComponent.h"
+#include "Scene3D/Components/SlotComponent.h"
+#include "Scene3D/Components/TextComponent.h"
+#include "Scene3D/Entity.h"
 #include "Scene3D/Lod/LodComponent.h"
 #include "Entity/Component.h"
 #include "Entity/ComponentManager.h"
+#include "Particles/ParticleEmitterInstance.h"
+#include "Particles/ParticleLayer.h"
+#include "Particles/ParticleForce.h"
 #include "Render/3D/PolygonGroup.h"
 #include "Render/Highlevel/LandscapeSubdivision.h"
 #include "Render/Highlevel/RenderObject.h"
@@ -46,11 +54,16 @@
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/Light.h"
 #include "Render/Highlevel/SpeedTreeObject.h"
+#include "Render/Material/NMaterial.h"
 #include "Math/Vector.h"
+#include "Math/Quaternion.h"
 #include "Math/Rect.h"
 #include "Math/AABBox3.h"
 #include "Math/Color.h"
-#include "UI/TheoraPlayer.h"
+#include "Math/Transform.h"
+#include "UI/Script/UIScriptComponent.h"
+#include "UI/Script/UIScriptComponentController.h"
+#include "UI/Script/Private/UILuaScriptComponentController.h"
 #include "UI/UI3DView.h"
 #include "UI/UIButton.h"
 #include "UI/UIControl.h"
@@ -70,14 +83,18 @@
 #include "UI/UITextField.h"
 #include "UI/UIWebView.h"
 #include "UI/Components/UIComponent.h"
+#include "UI/Events/UIEventBindingComponent.h"
+#include "UI/Events/UIMovieEventComponent.h"
+#include "UI/Events/UIInputEventComponent.h"
+#include "UI/Events/UIShortcutEventComponent.h"
 #include "UI/Focus/UIFocusComponent.h"
 #include "UI/Focus/UIFocusGroupComponent.h"
 #include "UI/Focus/UINavigationComponent.h"
 #include "UI/Focus/UITabOrderComponent.h"
-#include "UI/Input/UIActionBindingComponent.h"
-#include "UI/Input/UIActionComponent.h"
 #include "UI/Input/UIModalInputComponent.h"
+#include "UI/Joypad/UIJoypadComponent.h"
 #include "UI/Layouts/UIAnchorComponent.h"
+#include "UI/Layouts/UIAnchorSafeAreaComponent.h"
 #include "UI/Layouts/UIFlowLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutHintComponent.h"
 #include "UI/Layouts/UIIgnoreLayoutComponent.h"
@@ -85,18 +102,37 @@
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UILayoutSourceRectComponent.h"
 #include "UI/Layouts/UILayoutIsolationComponent.h"
-#include "UI/Render/UISceneComponent.h"
 #include "UI/Render/UIDebugRenderComponent.h"
 #include "UI/Render/UIClipContentComponent.h"
+#include "UI/Scene3D/UISceneComponent.h"
+#include "UI/Scene3D/UIEntityMarkerComponent.h"
+#include "UI/Scene3D/UIEntityMarkersContainerComponent.h"
 #include "UI/Scroll/UIScrollBarDelegateComponent.h"
 #include "UI/Sound/UISoundComponent.h"
 #include "UI/Sound/UISoundValueFilterComponent.h"
 #include "UI/Update/UIUpdateComponent.h"
 #include "UI/Update/UICustomUpdateDeltaComponent.h"
 #include "UI/RichContent/UIRichContentComponent.h"
-#include "UI/RichContent/UIRichContentObjectComponent.h"
 #include "UI/RichContent/UIRichContentAliasesComponent.h"
+#include "UI/Components/UIControlSourceComponent.h"
 #include "UI/Scroll/UIScrollComponent.h"
+#include "UI/DataBinding/UIDataSourceComponent.h"
+#include "UI/DataBinding/UIDataBindingComponent.h"
+#include "UI/DataBinding/UIDataListComponent.h"
+#include "UI/DataBinding/UIDataChildFactoryComponent.h"
+#include "UI/Text/UITextComponent.h"
+#include "UI/Flow/UIFlowContext.h"
+#include "UI/Flow/UIFlowController.h"
+#include "UI/Flow/UIFlowControllerComponent.h"
+#include "UI/Flow/UIFlowService.h"
+#include "UI/Flow/UIFlowStateComponent.h"
+#include "UI/Flow/UIFlowTransitionComponent.h"
+#include "UI/Flow/UIFlowViewComponent.h"
+#include "UI/Flow/Private/UIFlowLuaController.h"
+#include "UI/Flow/Services/UIFlowDataService.h"
+#include "UI/Flow/Services/UIFlowEventsService.h"
+#include "UI/Flow/Services/UIFlowEngineService.h"
+#include "UI/Flow/Services/UIFlowSystemService.h"
 
 namespace DAVA
 {
@@ -190,6 +226,18 @@ void RegisterVector4()
     .End();
 }
 
+void RegisterQuaternion()
+{
+    ReflectionRegistrator<Quaternion>::Begin()
+    .Field("X", &Quaternion::x)[M::SubProperty()]
+    .Field("Y", &Quaternion::y)[M::SubProperty()]
+    .Field("Z", &Quaternion::z)[M::SubProperty()]
+    .Field("W", &Quaternion::w)[M::SubProperty()]
+    .End();
+
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Quaternion);
+}
+
 void RegisterRect()
 {
     ReflectionRegistrator<Rect>::Begin()
@@ -222,9 +270,28 @@ void RegisterColor()
     .End();
 }
 
+void RegisterTransform()
+{
+    ReflectionRegistrator<Transform>::Begin()
+    .Field("translation", &Transform::GetTranslation, nullptr)
+    .Field("scale", &Transform::GetScale, nullptr)
+    .Field("rotation", &Transform::GetRotation, nullptr)
+    .End();
+
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Transform);
+}
+
 void RegisterPermanentNames()
 {
+    // Engine classes
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Engine);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(EngineContext);
+
+    // Common classes
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(BaseObject);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(KeyedArchive);
+
+    // 3D classes
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Component);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(RotationControllerComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(SnapToLandscapeControllerComponent);
@@ -242,10 +309,15 @@ void RegisterPermanentNames()
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(DebugRenderComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(LightComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(ParticleEffectComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(ParticleEmitterInstance);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(ParticleLayer);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(ParticleForce);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(ParticleForceSimplified);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(QualitySettingsComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(RenderComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(SkeletonComponent);
-    DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(SkeletonComponent::JointConfig, "JointConfig");
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(MotionComponent);
+    DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(SkeletonComponent::Joint, "Joint");
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(SoundComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(SoundComponentElement);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(SpeedTreeComponent);
@@ -260,10 +332,12 @@ void RegisterPermanentNames()
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(WaveComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(WindComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(LodComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(SlotComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(TextComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(ActionComponent::Action);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(PolygonGroup);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(RenderObject);
-    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(RenderObject::IndexedRenderBatch);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(RenderBatchWithOptions);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(LandscapeSubdivision);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(LandscapeSubdivision::SubdivisionMetrics);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(RenderBatch);
@@ -274,12 +348,10 @@ void RegisterPermanentNames()
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Light);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(SpeedTreeObject);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Entity);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(GeoDecalComponent);
     DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(PartilceEmitterLoadProxy, "ParticleEmitter3D");
 
-// UI controls
-#if !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_LINUX__)
-    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(TheoraPlayer);
-#endif
+    // UI controls
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UI3DView);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIButton);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIControl);
@@ -301,40 +373,73 @@ void RegisterPermanentNames()
     // UI components
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIComponent);
 
-#define DELC_UI_COMPONENT(type, string) \
-DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(type, string); \
-GetEngineContext()->componentManager->RegisterComponent<type>();
+// clang-format off
+#define DECL_UI_COMPONENT(type, string) \
+    DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(type, string); \
+    GetEngineContext()->componentManager->RegisterComponent<type>()
+    // clang-format on
 
-    DELC_UI_COMPONENT(UILinearLayoutComponent, "LinearLayout");
-    DELC_UI_COMPONENT(UIFlowLayoutComponent, "FlowLayout");
-    DELC_UI_COMPONENT(UIFlowLayoutHintComponent, "FlowLayoutHint");
-    DELC_UI_COMPONENT(UIIgnoreLayoutComponent, "IgnoreLayout");
-    DELC_UI_COMPONENT(UISizePolicyComponent, "SizePolicy");
-    DELC_UI_COMPONENT(UIAnchorComponent, "Anchor");
-    DELC_UI_COMPONENT(UILayoutSourceRectComponent, "UILayoutSourceRectComponent");
-    DELC_UI_COMPONENT(UILayoutIsolationComponent, "UILayoutIsolationComponent");
-    DELC_UI_COMPONENT(UIControlBackground, "Background");
-    DELC_UI_COMPONENT(UIModalInputComponent, "ModalInput");
-    DELC_UI_COMPONENT(UIFocusComponent, "Focus");
-    DELC_UI_COMPONENT(UIFocusGroupComponent, "FocusGroup");
-    DELC_UI_COMPONENT(UINavigationComponent, "Navigation");
-    DELC_UI_COMPONENT(UITabOrderComponent, "TabOrder");
-    DELC_UI_COMPONENT(UIActionComponent, "Action");
-    DELC_UI_COMPONENT(UIActionBindingComponent, "ActionBinding");
-    DELC_UI_COMPONENT(UIScrollBarDelegateComponent, "ScrollBarDelegate");
-    DELC_UI_COMPONENT(UIScrollComponent, "ScrollComponent");
-    DELC_UI_COMPONENT(UISoundComponent, "Sound");
-    DELC_UI_COMPONENT(UISoundValueFilterComponent, "SoundValueFilter");
-    DELC_UI_COMPONENT(UIUpdateComponent, "Update");
-    DELC_UI_COMPONENT(UICustomUpdateDeltaComponent, "CustomDeltaUpdate");
-    DELC_UI_COMPONENT(UIRichContentComponent, "RichContent");
-    DELC_UI_COMPONENT(UIRichContentAliasesComponent, "RichContentAliases");
-    DELC_UI_COMPONENT(UIRichContentObjectComponent, "RichContentObject");
-    DELC_UI_COMPONENT(UISceneComponent, "SceneComponent");
-    DELC_UI_COMPONENT(UIDebugRenderComponent, "DebugRender");
-    DELC_UI_COMPONENT(UIClipContentComponent, "ClipContent");
-    
-#undef DELC_UI_COMPONENT
+    DECL_UI_COMPONENT(UILinearLayoutComponent, "LinearLayout");
+    DECL_UI_COMPONENT(UIFlowLayoutComponent, "FlowLayout");
+    DECL_UI_COMPONENT(UIFlowLayoutHintComponent, "FlowLayoutHint");
+    DECL_UI_COMPONENT(UIIgnoreLayoutComponent, "IgnoreLayout");
+    DECL_UI_COMPONENT(UISizePolicyComponent, "SizePolicy");
+    DECL_UI_COMPONENT(UIAnchorComponent, "Anchor");
+    DECL_UI_COMPONENT(UIAnchorSafeAreaComponent, "UIAnchorSafeAreaComponent");
+    DECL_UI_COMPONENT(UILayoutSourceRectComponent, "UILayoutSourceRectComponent");
+    DECL_UI_COMPONENT(UILayoutIsolationComponent, "UILayoutIsolationComponent");
+    DECL_UI_COMPONENT(UIControlBackground, "Background");
+    DECL_UI_COMPONENT(UIModalInputComponent, "ModalInput");
+    DECL_UI_COMPONENT(UIFocusComponent, "Focus");
+    DECL_UI_COMPONENT(UIFocusGroupComponent, "FocusGroup");
+    DECL_UI_COMPONENT(UINavigationComponent, "Navigation");
+    DECL_UI_COMPONENT(UITabOrderComponent, "TabOrder");
+    DECL_UI_COMPONENT(UIEventBindingComponent, "UIEventBindingComponent");
+    DECL_UI_COMPONENT(UIInputEventComponent, "UIInputEventComponent");
+    DECL_UI_COMPONENT(UIMovieEventComponent, "UIMovieEventComponent");
+    DECL_UI_COMPONENT(UIShortcutEventComponent, "UIShortcutEventComponent");
+    DECL_UI_COMPONENT(UIScrollBarDelegateComponent, "ScrollBarDelegate");
+    DECL_UI_COMPONENT(UIScrollComponent, "ScrollComponent");
+    DECL_UI_COMPONENT(UISoundComponent, "Sound");
+    DECL_UI_COMPONENT(UISoundValueFilterComponent, "SoundValueFilter");
+    DECL_UI_COMPONENT(UIUpdateComponent, "Update");
+    DECL_UI_COMPONENT(UICustomUpdateDeltaComponent, "CustomDeltaUpdate");
+    DECL_UI_COMPONENT(UIRichContentComponent, "RichContent");
+    DECL_UI_COMPONENT(UIRichContentAliasesComponent, "RichContentAliases");
+    DECL_UI_COMPONENT(UIControlSourceComponent, "UIControlSourceComponent");
+    DECL_UI_COMPONENT(UIDebugRenderComponent, "DebugRender");
+    DECL_UI_COMPONENT(UIClipContentComponent, "ClipContent");
+    DECL_UI_COMPONENT(UISceneComponent, "SceneComponent");
+    DECL_UI_COMPONENT(UIEntityMarkerComponent, "UIEntityMarkerComponent");
+    DECL_UI_COMPONENT(UIEntityMarkersContainerComponent, "UIEntityMarkersContainerComponent");
+    DECL_UI_COMPONENT(UITextComponent, "UITextComponent");
+    DECL_UI_COMPONENT(UIDataSourceComponent, "UIDataSourceComponent");
+    DECL_UI_COMPONENT(UIDataListComponent, "UIDataListComponent");
+    DECL_UI_COMPONENT(UIDataBindingComponent, "UIDataBindingComponent");
+    DECL_UI_COMPONENT(UIDataChildFactoryComponent, "UIDataChildFactoryComponent");
+    DECL_UI_COMPONENT(UIScriptComponent, "UIScriptComponent");
+
+    DECL_UI_COMPONENT(UIFlowControllerComponent, "UIFlowControllerComponent");
+    DECL_UI_COMPONENT(UIFlowStateComponent, "UIFlowStateComponent");
+    DECL_UI_COMPONENT(UIFlowTransitionComponent, "UIFlowTransitionComponent");
+    DECL_UI_COMPONENT(UIFlowViewComponent, "UIFlowViewComponent");
+    DECL_UI_COMPONENT(UIJoypadComponent, "UIJoypadComponent");
+
+#undef DECL_UI_COMPONENT
+
+    // Script types
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIScriptComponentController);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UILuaScriptComponentController);
+    // Flow base types
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIFlowContext);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIFlowController);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIFlowLuaController);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIFlowService);
+    // Flow services
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIFlowDataService);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIFlowEngineService);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIFlowEventsService);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIFlowSystemService);
 }
 
 void RegisterReflectionForBaseTypes()
@@ -344,9 +449,11 @@ void RegisterReflectionForBaseTypes()
     RegisterVector2();
     RegisterVector3();
     RegisterVector4();
+    RegisterQuaternion();
     RegisterRect();
     RegisterAABBox3();
     RegisterColor();
+    RegisterTransform();
 
     RegisterPermanentNames();
 }

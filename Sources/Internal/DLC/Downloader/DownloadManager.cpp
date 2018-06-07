@@ -23,21 +23,17 @@ DownloadManager::CallbackData::CallbackData(uint32 _id, DownloadStatus _status)
 
 Mutex DownloadManager::currentTaskMutex;
 
-#if defined(__DAVAENGINE_COREV2__)
 DownloadManager::DownloadManager(Engine* e)
     : engine(e)
 {
     engine->update.Connect(this, &DownloadManager::Update);
     engine->backgroundUpdate.Connect(this, &DownloadManager::Update);
 }
-#endif
 
 DownloadManager::~DownloadManager()
 {
-#if defined(__DAVAENGINE_COREV2__)
     engine->update.Disconnect(this);
     engine->backgroundUpdate.Disconnect(this);
-#endif
 
     isThreadStarted = false;
 
@@ -92,11 +88,7 @@ void DownloadManager::StopProcessingThread()
     SafeRelease(thisThread);
 }
 
-#if defined(__DAVAENGINE_COREV2__)
 void DownloadManager::Update(float32 frameDelta)
-#else
-void DownloadManager::Update()
-#endif
 {
     if (!currentTask)
     {

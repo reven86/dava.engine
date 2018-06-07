@@ -20,8 +20,9 @@ public:
 
 private:
     FastNameDB()
-        : namesHash(8192 * 2)
+        : nameToIndexMap(8192 * 2)
     {
+        namesTable.reserve(512);
     }
 
     ~FastNameDB()
@@ -52,7 +53,7 @@ private:
     };
 
     Vector<const CharT*> namesTable;
-    UnorderedMap<const CharT*, int, FastNameDBHash, FastNameDBEqualTo> namesHash;
+    UnorderedMap<const CharT*, size_t, FastNameDBHash, FastNameDBEqualTo> nameToIndexMap;
 
     MutexT mutex;
     size_t sizeOfNames = 0;
@@ -65,28 +66,21 @@ public:
     explicit FastName(const char* name);
     explicit FastName(const String& name);
 
-    const char* c_str() const;
-
     bool operator<(const FastName& _name) const;
     bool operator==(const FastName& _name) const;
     bool operator!=(const FastName& _name) const;
 
     bool empty() const;
+    const char* c_str() const;
     size_t find(const char* s, size_t pos = 0) const;
     size_t find(const String& str, size_t pos = 0) const;
     size_t find(const FastName& fn, size_t pos = 0) const;
 
-    int Index() const;
     bool IsValid() const;
 
 private:
     void Init(const char* name);
-
-    int index = -1;
-    
-#ifdef __DAVAENGINE_DEBUG__
-    const char* debug_str = nullptr;
-#endif
+    const char* str = nullptr;
 };
 
 inline FastName::FastName() = default;
@@ -103,30 +97,32 @@ inline FastName::FastName(const char* name)
 
 inline bool FastName::operator==(const FastName& _name) const
 {
-    return index == _name.index;
+    return str == _name.str;
 }
 
 inline bool FastName::operator!=(const FastName& _name) const
 {
-    return index != _name.index;
+    return str != _name.str;
 }
 
 inline bool FastName::operator<(const FastName& _name) const
 {
-    return index < _name.index;
+    return str < _name.str;
 }
 
 inline bool FastName::empty() const
 {
-    return (index < 0);
+    return str == nullptr;
 }
 
 inline size_t FastName::find(const char* s, size_t pos) const
 {
-    if (c_str() && s)
+    if (nullptr != str && nullptr != s)
     {
-        const char* q = strstr(c_str() + pos, s);
-        return q ? q - c_str() : String::npos;
+        DVASSERT(pos <= strlen(str));
+
+        const char* q = strstr(str + pos, s);
+        return q ? (q - str) : String::npos;
     }
     return String::npos;
 }
@@ -141,11 +137,6 @@ inline size_t FastName::find(const FastName& fn, size_t pos) const
     return find(fn.c_str(), pos);
 }
 
-inline int FastName::Index() const
-{
-    return index;
-}
-
 inline bool FastName::IsValid() const
 {
     return !empty();
@@ -153,15 +144,7 @@ inline bool FastName::IsValid() const
 
 inline const char* FastName::c_str() const
 {
-    FastNameDB* db = FastNameDB::GetLocalDB();
-
-    DVASSERT(index >= -1 && index < static_cast<int>(db->namesTable.size()));
-    if (index >= 0)
-    {
-        return db->namesTable[index];
-    }
-
-    return nullptr;
+    return str;
 }
 
 template <>
@@ -174,9 +157,9 @@ namespace std
 template <>
 struct hash<DAVA::FastName>
 {
-    std::size_t operator()(const DAVA::FastName& k) const
+    size_t operator()(const DAVA::FastName& k) const
     {
-        return k.Index();
+        return reinterpret_cast<size_t>(k.c_str());
     }
 };
 }

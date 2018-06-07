@@ -290,6 +290,10 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
                 {
                     writer.Write("%s_texture.Sample( %s_sampler ", name, name);
                 }
+                else if (identifierExpression->expressionType.baseType == HLSLBaseType_Sampler2DShadow)
+                {
+                    writer.Write("%s_texture.SampleCmpLevelZero( %s_sampler ", name, name);
+                }
             }
             else if (mode == MODE_DX9)
             {
@@ -300,6 +304,10 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
                 else if (identifierExpression->expressionType.baseType == HLSLBaseType_SamplerCube)
                 {
                     writer.Write("texCUBE( %s", name);
+                }
+                else if (identifierExpression->expressionType.baseType == HLSLBaseType_Sampler2DShadow)
+                {
+                    DVASSERT(!"kaboom!");
                 }
             }
         }
@@ -492,8 +500,10 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
         const char* name = functionCall->function->name;
         bool sampler_call = false;
         bool sampler_lod = String_Equal(name, "tex2Dlod");
+        bool sampler_cmp = String_Equal(name, "tex2Dcmp");
+        bool sampler_prj = String_Equal(name, "tex2Dproj");
 
-        if (String_Equal(name, "tex2D") || String_Equal(name, "tex2Dlod") || String_Equal(name, "texCUBE"))
+        if (String_Equal(name, "tex2D") || String_Equal(name, "tex2Dproj") || String_Equal(name, "tex2Dcmp") || String_Equal(name, "tex2Dlod") || String_Equal(name, "texCUBE"))
         {
             sampler_call = true;
         }
@@ -541,6 +551,56 @@ void HLSLGenerator::OutputExpression(HLSLExpression* expression)
                         DVASSERT(!"notimpl");
                         writer.Write("texCUBE( %s", name);
                     }
+                }
+            }
+            else if (sampler_prj)
+            {
+                DVASSERT(functionCall->argument->nodeType == HLSLNodeType_IdentifierExpression);
+                HLSLIdentifierExpression* identifier = static_cast<HLSLIdentifierExpression*>(functionCall->argument);
+                DVASSERT(IsSamplerType(identifier->expressionType) && identifier->global);
+
+                if (mode == MODE_DX11)
+                {
+                    HLSLExpression* expr = identifier->nextExpression;
+                    writer.Write("%s_texture.Sample( %s_sampler, (", identifier->name, identifier->name);
+                    OutputExpression(expr);
+                    writer.Write(").xy / (");
+                    OutputExpression(expr);
+                    writer.Write(").w ");
+
+                    writer.Write(")");
+                }
+                else if (mode == MODE_DX9)
+                {
+                    HLSLExpression* expr = identifier->nextExpression;
+                    writer.Write("tex2Dproj( %s, ", identifier->name);
+                    OutputExpression(expr);
+                    writer.Write(")");
+                }
+            }
+            else if (sampler_cmp)
+            {
+                DVASSERT(functionCall->argument->nodeType == HLSLNodeType_IdentifierExpression);
+                HLSLIdentifierExpression* identifier = static_cast<HLSLIdentifierExpression*>(functionCall->argument);
+                DVASSERT(IsSamplerType(identifier->expressionType) && identifier->global);
+
+                if (mode == MODE_DX11)
+                {
+                    if (identifier->expressionType.baseType == HLSLBaseType_Sampler2DShadow)
+                    {
+                        HLSLExpression* expr = identifier->nextExpression;
+                        writer.Write("%s_texture.SampleCmpLevelZero( %s_sampler, ", identifier->name, identifier->name);
+                        OutputExpression(expr);
+                        writer.Write(".xy, ");
+                        OutputExpression(expr);
+                        writer.Write(".z, ");
+
+                        writer.Write(")");
+                    }
+                }
+                else if (mode == MODE_DX9)
+                {
+                    DVASSERT(!"kaboom!");
                 }
             }
             else
@@ -906,6 +966,10 @@ void HLSLGenerator::OutputDeclaration(HLSLDeclaration* declaration)
             else if (declaration->type.baseType == HLSLBaseType_SamplerCube)
             {
                 ttype = "samplerCUBE";
+            }
+            else if (declaration->type.baseType == HLSLBaseType_Sampler2DShadow)
+            {
+                ttype = "sampler2DShadow";
             }
 
             DVASSERT(ttype);

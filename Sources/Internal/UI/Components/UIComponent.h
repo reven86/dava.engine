@@ -1,8 +1,6 @@
 #pragma once
 
 #include "Base/BaseObject.h"
-#include "Engine/Engine.h"
-#include "Entity/ComponentManager.h"
 #include "Reflection/Reflection.h"
 
 namespace DAVA
@@ -21,7 +19,6 @@ public:
 
     static UIComponent* CreateByType(const Type* componentType);
     static RefPtr<UIComponent> SafeCreateByType(const Type* componentType);
-    static bool IsMultiple(const Type* componentType);
 
     void SetControl(UIControl* _control);
     UIControl* GetControl() const;
@@ -51,11 +48,17 @@ inline UIControl* UIComponent::GetControl() const
     return control;
 }
 
+// clang-format off
+#define DECLARE_UI_COMPONENT(TYPE) \
+    const DAVA::Type* GetType() const override; \
+    DAVA::int32 GetRuntimeType() const override; \
+
 #define IMPLEMENT_UI_COMPONENT(TYPE) \
-const Type* GetType() const override { return Type::Instance<TYPE>(); }; \
-int32 GetRuntimeType() const override \
-{ \
-    static int32 runtimeType = GetEngineContext()->componentManager->GetRuntimeType(GetType()); \
-    return runtimeType; \
-}
+    const DAVA::Type* TYPE::GetType() const { return DAVA::Type::Instance<TYPE>(); }; \
+    DAVA::int32 TYPE::GetRuntimeType() const \
+    { \
+        static DAVA::int32 runtimeType = DAVA::GetEngineContext()->componentManager->GetRuntimeComponentId(GetType()); \
+        return runtimeType; \
+    }
+// clang-format on
 }

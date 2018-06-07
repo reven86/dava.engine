@@ -1,9 +1,13 @@
+#include <atomic>
+
 #include "Base/Type.h"
 #include "Base/TypeInheritance.h"
 #include "Debug/DVAssert.h"
 
 namespace DAVA
 {
+static std::atomic<size_t> typeUserDataStorageIndex{ 0 };
+
 Type::Type()
     : inheritance(nullptr, [](TypeInheritance* inh) { if (nullptr != inh) delete inh; })
 {
@@ -101,6 +105,31 @@ TypeDB::Stats TypeDB::GetLocalDBStats()
     stats.totalMemory += stats.typeDBMemory;
 
     return stats;
+}
+
+uint32_t Type::AllocUserData()
+{
+    size_t i = typeUserDataStorageIndex.fetch_add(1);
+
+    DVASSERT(i < Type::userDataStorageSize);
+
+    return static_cast<uint32_t>(i);
+}
+
+void Type::SetUserData(uint32_t index, void* data) const
+{
+    size_t i = static_cast<size_t>(index);
+
+    DVASSERT(i < typeUserDataStorageIndex);
+    userDataStorage[i] = data;
+}
+
+void* Type::GetUserData(uint32_t index) const
+{
+    size_t i = static_cast<size_t>(index);
+
+    DVASSERT(i < typeUserDataStorageIndex);
+    return userDataStorage[i];
 }
 
 } // namespace DAVA

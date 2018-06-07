@@ -10,7 +10,7 @@ struct TextureDX11_t
     uint32 mipLevelCount = 0;
     uint32 lastUnit = DAVA::InvalidIndex;
     uint32 mappedLevel = 0;
-    TextureFace mappedFace = TextureFace(-1);
+    TextureFace mappedFace = TEXTURE_FACE_NONE;
     ID3D11Texture2D* tex2d = nullptr;
     ID3D11ShaderResourceView* tex2d_srv = nullptr;
     ID3D11DepthStencilView* tex2d_dsv = nullptr;
@@ -22,7 +22,7 @@ struct TextureDX11_t
     {
         ID3D11RenderTargetView* view = nullptr;
         uint32 level = 0;
-        TextureFace face = TEXTURE_FACE_NEGATIVE_X;
+        TextureFace face = TEXTURE_FACE_NONE;
         RTView(ID3D11RenderTargetView* v, uint32 l, TextureFace f);
     };
     std::vector<RTView> rt_view;
@@ -74,6 +74,8 @@ ID3D11RenderTargetView* TextureDX11_t::getRenderTargetView(uint32 level, Texture
             break;
         case TEXTURE_FACE_NEGATIVE_Z:
             desc.Texture2DArray.FirstArraySlice = 5;
+            break;
+        default:
             break;
         }
     }
@@ -398,6 +400,8 @@ static void dx11_Texture_Unmap(Handle tex)
             case TEXTURE_FACE_NEGATIVE_Z:
                 face = 5;
                 break;
+            default:
+                DVASSERT(0, "Invalid TextureFace provided");
             }
 
             rc_i = self->mappedLevel + (face * self->mipLevelCount);

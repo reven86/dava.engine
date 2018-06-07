@@ -13,6 +13,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(BulletComponent)
     .Field("bulletObject", &BulletComponent::GetBulletObject, &BulletComponent::SetBulletObject)[M::DisplayName("Bullet Objec")]
     .End();
 }
+
 BulletComponent::BulletComponent()
     : bulletObject(0)
 {

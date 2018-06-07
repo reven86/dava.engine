@@ -26,7 +26,7 @@ public:
         if (elementsCount)
         {
             elements = new T[elementsCount];
-            memcpy(elements, a.elements, elementsCount * sizeof(T));
+            std::copy(a.elements, a.elements + elementsCount, elements);
         }
         else
         {

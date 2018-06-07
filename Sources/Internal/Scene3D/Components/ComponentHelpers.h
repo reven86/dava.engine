@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_COMPONENT_HELPERS_H__
-#define __DAVAENGINE_COMPONENT_HELPERS_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Entity/Component.h"
@@ -9,6 +8,7 @@ namespace DAVA
 class ParticleEmitter;
 class ParticleEffectComponent;
 class SkeletonComponent;
+class MotionComponent;
 class Entity;
 class RenderObject;
 class Light;
@@ -36,20 +36,23 @@ class EdgeComponent;
 class SnapToLandscapeControllerComponent;
 class StaticOcclusionComponent;
 class StaticOcclusionDebugDrawComponent;
+class GeoDecalComponent;
 
-bool HasComponent(const Entity* fromEntity, const Component::eType componentType);
+bool HasComponent(const Entity* fromEntity, const Type* componentType);
 
 ParticleEffectComponent* GetEffectComponent(const Entity* fromEntity);
 AnimationComponent* GetAnimationComponent(const Entity* fromEntity);
 TransformComponent* GetTransformComponent(const Entity* fromEntity);
 RenderComponent* GetRenderComponent(const Entity* fromEntity);
 SkeletonComponent* GetSkeletonComponent(const Entity* fromEntity);
+MotionComponent* GetMotionComponent(const Entity* fromEntity);
 RenderObject* GetRenderObject(const Entity* fromEntity);
 VegetationRenderObject* GetVegetation(const Entity* fromEntity);
 SpeedTreeObject* GetSpeedTreeObject(const Entity* fromEntity);
 SnapToLandscapeControllerComponent* GetSnapToLandscapeControllerComponent(const Entity* fromEntity);
 StaticOcclusionComponent* GetStaticOcclusionComponent(const Entity* fromEntity);
 StaticOcclusionDebugDrawComponent* GetStaticOcclusionDebugDrawComponent(const Entity* fromEntity);
+GeoDecalComponent* GetGeoDecalComponent(const Entity* fromEntity);
 
 Light* GetLight(const Entity* fromEntity);
 LightComponent* GetLightComponent(const Entity* fromEntity);
@@ -87,5 +90,3 @@ VariantType* GetCustomPropertiesValueRecursive(Entity* fromEntity, const String&
 PathComponent* GetPathComponent(const Entity* fromEntity);
 WaypointComponent* GetWaypointComponent(const Entity* fromEntity);
 }
-
-#endif //__DAVAENGINE_COMPONENT_HELPERS_H__

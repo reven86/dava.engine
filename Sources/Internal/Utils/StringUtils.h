@@ -2,6 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include <cctype>
+#include <locale>
 
 namespace DAVA
 {
@@ -24,6 +25,14 @@ enum eLineBreakType
     LB_NOBREAK, /**< No break is possible */
     LB_INSIDECHAR /**< A UTF-8/16 sequence is unfinished */
 };
+
+/**
+ * \brief Gets information about UTF8 line breaks using libunibreak library.
+ * \param string The input string.
+ * \param [out] breaks The output vector of breaks.
+ * \param locale (Optional) The locale code.
+ */
+void GetLineBreaks(const String& string, Vector<uint8>& breaks, const char8* locale = 0);
 
 /**
 * \brief Gets information about line breaks using libunibreak library.
@@ -90,19 +99,19 @@ StringType TrimRight(const StringType& string)
 WideString RemoveNonPrintable(const WideString& string, const int8 tabRule = -1);
 
 /**
- * \brief Remove unicode Emoji symbols and surrogates from given string.
- * \param [in/out] string The string to clearify.
- * \return output string.
- */
-bool RemoveEmoji(WideString& string);
-
-/**
  * \brief Replaces all occurrences of a search string in the specified string with replacement string
  * \param string Original string
  * \param search Seeking value
  * \param replacement Replacement value
  */
 void ReplaceAll(WideString& string, const WideString& search, const WideString& replacement);
+
+/**
+ * \brief Substitute all param occurrences like '%(param_name)' in source string with values from replacements map.
+ * \param string Original string with params %(param_name1), %(param_name2), etc.
+ * \param replacements Map with substitutions like 'param_name' = 'ParamValue'
+ */
+String SubstituteParams(const String& string, const DAVA::UnorderedMap<DAVA::String, DAVA::String>& replacements);
 
 /**
 * \brief Query if 't' is kind of printable character.
@@ -118,9 +127,9 @@ inline bool IsPrintable(char16 t)
     case 0x200B: // Zero-width space
     case 0x200C: // Zero-width non-joiner
     case 0x200D: // Zero-width joiner
-    case 0x200E: // Zero-width Left-to-right zero-width character
-    case 0x200F: // Zero-width Right-to-left zero-width non-Arabic character
-    case 0x061C: // Arabic letter mark
+    case 0x200E: // Left-to-right zero-width character
+    case 0x200F: // Right-to-left zero-width non-Arabic character
+    case 0x061C: // Right-to-left zero-width Arabic character
         return false;
     default:
         return true;
@@ -165,9 +174,6 @@ inline bool IsWhitespace(char16 t)
     case 0x2029: // Paragraph separator
     // Additional characters are treated as spaces
     case 0x200B: // Zero-width space
-    case 0x200E: // Left-to-right zero-width character
-    case 0x200F: // Right-to-left zero-width non-Arabic character
-    case 0x061C: // Right-to-left zero-width Arabic character
         return true;
     default:
         return false;
@@ -176,7 +182,7 @@ inline bool IsWhitespace(char16 t)
 
 inline bool IsWhitespace(char8 t)
 {
-    return (std::isspace(t) != 0);
+    return (std::isspace(static_cast<unsigned char>(t)) != 0);
 }
 
 /**
@@ -208,5 +214,77 @@ inline bool EndsWith(const String& str, const String& end)
     return lineSize >= endSize &&
     0 == str.compare(lineSize - endSize, endSize, end);
 }
+
+template <typename StringType>
+bool ContainsIgnoreCase(const StringType& string, const StringType& toFind,
+                        const std::locale& locale = std::locale())
+{
+    using CharType = typename StringType::value_type;
+    auto findIt = std::search(std::begin(string), std::end(string),
+                              std::begin(toFind), std::end(toFind),
+                              [&locale](CharType char1, CharType char2)
+                              {
+                                  return std::toupper(char1, locale) == std::toupper(char2, locale);
+                              });
+    if (findIt != std::end(string))
+    {
+        return true;
+    }
+    return false;
+}
+
+/**
+* \brief Case-insensitive string comparison.
+* \return true if strings are equals; false in other case.
+*/
+template <typename StringType>
+bool CompareIgnoreCase(const StringType& a, const StringType& b,
+                       const std::locale& locale = std::locale())
+{
+    using CharType = typename StringType::value_type;
+    if (a.length() == b.length())
+    {
+        return std::equal(b.begin(), b.end(), a.begin(),
+                          [&locale](CharType char1, CharType char2) {
+                              return std::toupper(char1, locale) == std::toupper(char2, locale);
+                          });
+    }
+    return false;
+}
+
+/**
+* \brief Convert string to lower case.
+*/
+template <typename StringType>
+StringType ToLowerCase(const StringType& string,
+                       const std::locale& locale = std::locale())
+{
+    using CharType = typename StringType::value_type;
+    StringType ret;
+    ret.resize(string.length());
+    std::transform(string.begin(), string.end(), ret.begin(),
+                   [&locale](CharType char1) {
+                       return std::tolower(char1, locale);
+                   });
+    return ret;
+}
+
+/**
+* \brief Convert string to upper case.
+*/
+template <typename StringType>
+StringType ToUpperCase(const StringType& string,
+                       const std::locale& locale = std::locale())
+{
+    using CharType = typename StringType::value_type;
+    StringType ret;
+    ret.resize(string.length());
+    std::transform(string.begin(), string.end(), ret.begin(),
+                   [&locale](CharType char1) {
+                       return std::toupper(char1, locale);
+                   });
+    return ret;
+}
+
 } // end namespace StringUtils
 } // end namespace DAVA

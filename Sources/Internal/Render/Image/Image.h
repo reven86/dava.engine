@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_IMAGE_H__
-#define __DAVAENGINE_IMAGE_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
@@ -19,7 +18,7 @@ class SaveToSystemPhotoCallbackReceiver
 public:
     virtual void SaveToSystemPhotosFinished() = 0;
 };
-    
+
 #endif
 
 struct ImageInfo
@@ -236,5 +235,3 @@ PixelFormat Image::GetPixelFormat() const
     return format;
 }
 };
-
-#endif // __DAVAENGINE_IMAGE_H__

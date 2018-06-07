@@ -3,6 +3,7 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIScreenTransition.h"
+#include "Math/Polygon2.h"
 
 namespace DAVA
 {

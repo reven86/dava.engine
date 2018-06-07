@@ -1,11 +1,10 @@
 #include "Engine/Private/EngineBackend.h"
 
-#if defined(__DAVAENGINE_COREV2__)
-
+#include "Engine/AppInstanceMonitor.h"
 #include "Engine/Engine.h"
 #include "Engine/EngineContext.h"
 #include "Engine/Window.h"
-#include "Engine/Private/WindowBackend.h"
+#include "Engine/Private/WindowImpl.h"
 #include "Engine/Private/PlatformCore.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
@@ -34,14 +33,16 @@
 #include "FileSystem/LocalizationSystem.h"
 #include "Job/JobManager.h"
 #include "Input/InputSystem.h"
+#include "Input/ActionSystem.h"
+#include "Input/InputBindingListener.h"
 #include "Logger/Logger.h"
 #include "MemoryManager/MemoryManager.h"
 #include "ModuleManager/ModuleManager.h"
 #include "Network/NetCore.h"
 #include "Notification/LocalNotificationController.h"
 #include "DLCManager/Private/DLCManagerImpl.h"
+#include "Particles/ParticleForces.h"
 #include "Platform/DeviceInfo.h"
-#include "Platform/DPIHelper.h"
 #include "Platform/Steam.h"
 #include "PluginManager/PluginManager.h"
 #include "Render/2D/FontManager.h"
@@ -49,8 +50,11 @@
 #include "Render/2D/TextBlock.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/2D/Systems/DynamicAtlasSystem.h"
 #include "Render/Image/ImageSystem.h"
+#include "Render/Image/ImageConverter.h"
 #include "Render/Renderer.h"
+#include "Render/RHI/rhi_ShaderSource.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Sound/SoundEvent.h"
 #include "Sound/SoundSystem.h"
@@ -61,9 +65,10 @@
 #include "Entity/ComponentManager.h"
 #include "Reflection/ReflectedTypeDB.h"
 #include "Utils/Random.h"
+#include "Debug/DebugOverlay.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
-#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
+#include "Engine/Private/Android/AssetsManagerAndroid.h"
 #include "Engine/Private/Android/AndroidBridge.h"
 #endif
 
@@ -71,9 +76,24 @@
 
 namespace DAVA
 {
+namespace Private
+{
+EngineContext** GetEngineContextPtr()
+{
+    static EngineContext* staticPtr = nullptr;
+    return &staticPtr;
+}
+
+void SetEngineContext(EngineContext* context)
+{
+    EngineContext** contextPtr = GetEngineContextPtr();
+    *contextPtr = context;
+}
+}
+
 const EngineContext* GetEngineContext()
 {
-    return Private::EngineBackend::Instance()->GetContext();
+    return *Private::GetEngineContextPtr();
 }
 
 Window* GetPrimaryWindow()
@@ -104,6 +124,11 @@ void RunOnUIThread(const Function<void()>& task)
     GetPrimaryWindow()->RunOnUIThread(task);
 }
 
+AppInstanceMonitor* GetAppInstanceMonitor(const char* uniqueAppId)
+{
+    return Private::EngineBackend::Instance()->GetAppInstanceMonitor(uniqueAppId);
+}
+
 namespace Private
 {
 EngineBackend* EngineBackend::instance = nullptr;
@@ -114,9 +139,9 @@ EngineBackend* EngineBackend::Instance()
     return instance;
 }
 
-WindowBackend* EngineBackend::GetWindowBackend(Window* w)
+WindowImpl* EngineBackend::GetWindowImpl(Window* w)
 {
-    return w->windowBackend.get();
+    return w->windowImpl.get();
 }
 
 EngineBackend::EngineBackend(const Vector<String>& cmdargs)
@@ -128,7 +153,7 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
 {
     DVASSERT(instance == nullptr);
     instance = this;
-
+    Private::SetEngineContext(context);
     // The following subsystems should be created earlier than other:
     //  - Logger, to log messages on startup
     //  - FileSystem, to load config files with init options
@@ -220,7 +245,12 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     // Other subsystems are always created
     CreateSubsystems(modules);
 
+    context->componentManager->PreregisterAllDerivedSceneComponentsRecursively();
+
     isInitialized = true;
+
+    // TODO: find a better way
+    context->deviceManager->OnEngineInited();
 }
 
 int EngineBackend::Run()
@@ -314,6 +344,10 @@ void EngineBackend::OnGameLoopStarted()
 
     engine->gameLoopStarted.Emit();
 
+    // Intentionally clear startup activation filenames to not mess with filenames
+    // when running application was activated with file
+    activationFilenames.clear();
+
     Logger::Info("EngineBackend::OnGameLoopStarted: leave");
 }
 
@@ -353,13 +387,20 @@ void EngineBackend::OnEngineCleanup()
     if (Renderer::IsInitialized())
         Renderer::Uninitialize();
 
+    delete appInstanceMonitor;
     SafeDelete(context);
     SafeDelete(dispatcher);
     SafeDelete(platformCore);
 
     DAVA_MEMORY_PROFILER_FINISH();
+}
 
-    Logger::Info("EngineBackend::OnEngineCleanup: leave");
+void EngineBackend::OnFileActivated()
+{
+    if (!activationFilenames.empty())
+    {
+        engine->fileActivated.Emit(std::move(activationFilenames));
+    }
 }
 
 void EngineBackend::DoEvents()
@@ -418,8 +459,9 @@ int32 EngineBackend::OnFrame()
         if (drawSingleFrameWhileSuspended)
         {
             Logger::Info("EngineBackend::OnFrame, rendering single frame while suspended");
-            ResumeRenderer();
+            rhi::ResumeRendering();
             UpdateAndDrawWindows(frameDelta, true);
+            rhi::SuspendRenderingAfterFrame(); //suspends rendering at least one frame after it was resumed
         }
         BackgroundUpdate(frameDelta);
     }
@@ -450,8 +492,6 @@ void EngineBackend::Update(float32 frameDelta)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_UPDATE);
     engine->update.Emit(frameDelta);
-
-    context->localNotificationController->Update();
 }
 
 void EngineBackend::UpdateAndDrawWindows(float32 frameDelta, bool drawOnly)
@@ -478,7 +518,6 @@ void EngineBackend::UpdateAndDrawWindows(float32 frameDelta, bool drawOnly)
 void EngineBackend::EndFrame()
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_END_FRAME);
-    context->inputSystem->OnAfterUpdate();
     engine->endFrame.Emit();
     Renderer::EndFrame();
 }
@@ -553,6 +592,7 @@ void EngineBackend::OnWindowVisibilityChanged(Window* window, bool visible)
 
 void EngineBackend::EventHandler(const MainDispatcherEvent& e)
 {
+    bool isHandled = true;
     switch (e.type)
     {
     case MainDispatcherEvent::FUNCTOR:
@@ -573,28 +613,23 @@ void EngineBackend::EventHandler(const MainDispatcherEvent& e)
     case MainDispatcherEvent::APP_TERMINATE:
         HandleAppTerminate(e);
         break;
-    case MainDispatcherEvent::GAMEPAD_MOTION:
-        context->inputSystem->HandleGamepadMotion(e);
-        break;
-    case MainDispatcherEvent::GAMEPAD_BUTTON_DOWN:
-    case MainDispatcherEvent::GAMEPAD_BUTTON_UP:
-        context->inputSystem->HandleGamepadButton(e);
-        break;
-    case MainDispatcherEvent::GAMEPAD_ADDED:
-        context->inputSystem->HandleGamepadAdded(e);
-        break;
-    case MainDispatcherEvent::GAMEPAD_REMOVED:
-        context->inputSystem->HandleGamepadRemoved(e);
-        break;
-    case MainDispatcherEvent::DISPLAY_CONFIG_CHANGED:
-        context->deviceManager->HandleEvent(e);
-        break;
+    case MainDispatcherEvent::LOW_MEMORY:
+        HandleLowMemory(e);
     default:
-        if (e.window != nullptr)
-        {
-            e.window->EventHandler(e);
-        }
+        isHandled = false;
         break;
+    }
+
+    if (!isHandled && (e.window == nullptr || !e.window->EventHandler(e)))
+    {
+        for (const EventFilter& f : eventFilters)
+        {
+            if (f.filter(e))
+            {
+                isHandled = true;
+                break;
+            }
+        }
     }
 }
 
@@ -622,13 +657,13 @@ void EngineBackend::HandleAppTerminate(const MainDispatcherEvent& e)
     {
         appIsTerminating = true;
 
-        // WindowBackend::Close can lead to removing a window from aliveWindows list (inside of OnWindowDestroyed)
+        // WindowImpl::Close can lead to removing a window from aliveWindows list (inside of OnWindowDestroyed)
         // So copy the vector and iterate over the copy to avoid dealing with invalid iterators
         std::vector<Window*> aliveWindowsCopy = aliveWindows;
         for (Window* w : aliveWindowsCopy)
         {
-            // Directly call Close for WindowBackend to tell important information that application is terminating
-            GetWindowBackend(w)->Close(true);
+            // Directly call Close for WindowImpl to tell important information that application is terminating
+            GetWindowImpl(w)->Close(true);
         }
     }
     else if (!appIsTerminating)
@@ -645,7 +680,12 @@ void EngineBackend::HandleAppSuspended(const MainDispatcherEvent& e)
         Logger::Info("EngineBackend::HandleAppSuspended: enter");
 
         appIsSuspended = true;
-        SuspendRenderer();
+
+        // Warning: Application can ruin something if rendering is done in application suspended state.
+        // So we have to ensure that if application suspend|resume state is changed, render state is also immediately changed.
+        // Please NEVER add some additional `if` checks here.
+        if (Renderer::IsInitialized())
+            rhi::SuspendRendering();
         rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
         engine->suspended.Emit();
 
@@ -660,7 +700,12 @@ void EngineBackend::HandleAppResumed(const MainDispatcherEvent& e)
         Logger::Info("EngineBackend::HandleAppResumed: enter");
 
         appIsSuspended = false;
-        ResumeRenderer();
+
+        // Warning: Application can ruin something if rendering is done in application suspended state.
+        // So we have to ensure that if application suspend|resume state is changed, render state is also immediately changed.
+        // Please NEVER add some additional `if` checks here.
+        if (Renderer::IsInitialized())
+            rhi::ResumeRendering();
         engine->resumed.Emit();
 
         Logger::Info("EngineBackend::HandleAppResumed: leave");
@@ -669,13 +714,15 @@ void EngineBackend::HandleAppResumed(const MainDispatcherEvent& e)
 
 void EngineBackend::HandleBackNavigation(const MainDispatcherEvent& e)
 {
+    // TODO: Handle different windows
+    primaryWindow->backNavigation.Emit(primaryWindow);
+
     UIEvent uie;
     uie.window = primaryWindow;
-    uie.key = Key::BACK;
+    uie.key = eInputElements::BACK;
     uie.phase = UIEvent::Phase::KEY_DOWN;
     uie.device = eInputDevices::KEYBOARD;
     uie.timestamp = e.timestamp / 1000.0;
-
     context->inputSystem->HandleInputEvent(&uie);
 }
 
@@ -698,6 +745,13 @@ void EngineBackend::HandleUserCloseRequest(const MainDispatcherEvent& e)
             Quit(0);
         }
     }
+}
+
+void EngineBackend::HandleLowMemory(const MainDispatcherEvent& e)
+{
+    Logger::Info("EngineBackend::HandleLowMemory");
+
+    engine->lowMemory.Emit();
 }
 
 void EngineBackend::PostAppTerminate(bool triggeredBySystem)
@@ -797,21 +851,43 @@ void EngineBackend::UpdateDisplayConfig()
     context->deviceManager->UpdateDisplayConfig();
 }
 
+void EngineBackend::InstallEventFilter(void* token, const Function<bool(const MainDispatcherEvent&)>& filter)
+{
+    DVASSERT(token != nullptr);
+    DVASSERT(std::find_if(begin(eventFilters), end(eventFilters), [token](const EventFilter& ef) { return ef.token == token; }) == end(eventFilters));
+    eventFilters.push_back(EventFilter{ token, filter });
+}
+
+void EngineBackend::UninstallEventFilter(void* token)
+{
+    auto it = std::find_if(begin(eventFilters), end(eventFilters), [token](const EventFilter& ef) { return ef.token == token; });
+    if (it != end(eventFilters))
+    {
+        eventFilters.erase(it);
+    }
+}
+
 void EngineBackend::CreateSubsystems(const Vector<String>& modules)
 {
+    // Create subsystems
     context->allocatorFactory = new AllocatorFactory();
     context->random = new Random();
+    ParticleForcesUtils::GenerateNoise();
+    ParticleForcesUtils::GenerateSphereRandomVectors();
     context->performanceSettings = new PerformanceSettings();
     context->versionInfo = new VersionInfo();
     context->renderSystem2D = new RenderSystem2D();
 
+    context->dynamicAtlasSystem = new DynamicAtlasSystem();
     context->uiControlSystem = new UIControlSystem();
+
     context->animationManager = new AnimationManager();
     context->fontManager = new FontManager();
 
     context->typeDB = TypeDB::GetLocalDB();
     context->fastNameDB = FastNameDB::GetLocalDB();
     context->reflectedTypeDB = ReflectedTypeDB::GetLocalDB();
+    context->objectFactory = ObjectFactory::Instance();
 
 #if defined(__DAVAENGINE_ANDROID__)
     context->assetsManager = new AssetsManagerAndroid(AndroidBridge::GetApplicationPath());
@@ -868,9 +944,11 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     if (!IsConsoleMode())
     {
         context->inputSystem = new InputSystem(engine);
-        context->uiScreenManager = new UIScreenManager();
+        context->actionSystem = new ActionSystem();
+        context->uiScreenManager = new UIScreenManager(context->uiControlSystem);
         context->localNotificationController = new LocalNotificationController();
-
+        context->debugOverlay = new DebugOverlay();
+        
 #if defined(__DAVAENGINE_STEAM__)
         Steam::Init();
 #endif
@@ -880,25 +958,59 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         context->logger->EnableConsoleMode();
     }
 
-    context->moduleManager = new ModuleManager(GetEngine());
-    context->moduleManager->InitModules();
+    context->imageConverter = new ImageConverter();
 
+    context->moduleManager = new ModuleManager(GetEngine());
     context->pluginManager = new PluginManager(GetEngine());
     context->analyticsCore = new Analytics::Core;
+
+    context->inputListener = new InputBindingListener();
 
 #ifdef __DAVAENGINE_AUTOTESTING__
     context->autotestingSystem = new AutotestingSystem();
 #endif
+
+    // Register user types, components and systems
+    engine->registerUserTypes.Emit();
+
+    // Init subsystems
+    context->moduleManager->InitModules();
+    context->uiControlSystem->Init();
 }
 
 void EngineBackend::DestroySubsystems()
 {
-#ifdef __DAVAENGINE_AUTOTESTING__
-    if (context->autotestingSystem != nullptr)
+    if (context->debugOverlay != nullptr)
     {
-        context->autotestingSystem->Release();
-        context->autotestingSystem = nullptr;
+        delete context->debugOverlay; // Private destructor
+        context->debugOverlay = nullptr;
     }
+
+    // Shutdown subsystems
+    if (context->uiControlSystem != nullptr)
+    {
+        context->uiControlSystem->Shutdown();
+    }
+    if (context->moduleManager != nullptr)
+    {
+        context->moduleManager->ShutdownModules();
+    }
+    if (context->pluginManager != nullptr)
+    {
+        context->pluginManager->UnloadPlugins();
+    }
+    if (context->jobManager != nullptr)
+    {
+        // Wait job completion before releasing singletons
+        // But client should stop its jobs on response to signals Engine::gameLoopStopped or Engine::cleanup
+        context->jobManager->WaitWorkerJobs();
+        context->jobManager->WaitMainJobs();
+    }
+
+// Free subsystems
+
+#ifdef __DAVAENGINE_AUTOTESTING__
+    SafeRelease(context->autotestingSystem);
 #endif
 
     if (!IsConsoleMode())
@@ -911,44 +1023,45 @@ void EngineBackend::DestroySubsystems()
     SafeDelete(context->analyticsCore);
     SafeDelete(context->settings);
 
-    if (context->moduleManager != nullptr)
-    {
-        context->moduleManager->ShutdownModules();
-        delete context->moduleManager;
-        context->moduleManager = nullptr;
-    }
-    if (context->pluginManager != nullptr)
-    {
-        context->pluginManager->UnloadPlugins();
-        delete context->pluginManager;
-        context->pluginManager = nullptr;
-    }
-    if (context->jobManager != nullptr)
-    {
-        // Wait job completion before releasing singletons
-        // But client should stop its jobs on response to signals Engine::gameLoopStopped or Engine::cleanup
-        context->jobManager->WaitWorkerJobs();
-        context->jobManager->WaitMainJobs();
-    }
+    SafeDelete(context->moduleManager);
+    SafeDelete(context->pluginManager);
 
     SafeRelease(context->localNotificationController);
-    SafeRelease(context->uiScreenManager);
-    SafeRelease(context->uiControlSystem);
-    SafeRelease(context->fontManager);
-    SafeRelease(context->animationManager);
+    SafeDelete(context->uiScreenManager);
+    if (context->uiControlSystem)
+    {
+        delete context->uiControlSystem; // Private destructor
+        context->uiControlSystem = nullptr;
+    }
+    if (context->dynamicAtlasSystem)
+    {
+        delete context->dynamicAtlasSystem;
+        context->dynamicAtlasSystem = nullptr;
+    }
+    SafeDelete(context->fontManager);
+    SafeDelete(context->animationManager);
     SafeRelease(context->renderSystem2D);
     SafeRelease(context->performanceSettings);
     SafeRelease(context->random);
     SafeRelease(context->allocatorFactory);
     SafeRelease(context->versionInfo);
-    SafeRelease(context->jobManager);
+    SafeDelete(context->jobManager);
     SafeRelease(context->localizationSystem);
     SafeRelease(context->downloadManager);
     SafeRelease(context->soundSystem);
     SafeDelete(context->dlcManager);
+
+    if (context->actionSystem != nullptr)
+    {
+        delete context->actionSystem; // Private destructor
+        context->actionSystem = nullptr;
+    }
+
+    SafeDelete(context->inputListener);
+
     if (context->inputSystem != nullptr)
     {
-        delete context->inputSystem;
+        delete context->inputSystem; // Private destructor
         context->inputSystem = nullptr;
     }
 
@@ -961,16 +1074,13 @@ void EngineBackend::DestroySubsystems()
     SafeRelease(context->fileSystem);
     if (context->deviceManager != nullptr)
     {
-        delete context->deviceManager;
+        delete context->deviceManager; // Private destructor
         context->deviceManager = nullptr;
     }
     SafeDelete(context->componentManager);
+    SafeDelete(context->logger);
 
-    if (context->logger != nullptr)
-    {
-        delete context->logger;
-        context->logger = nullptr;
-    }
+    SafeDelete(context->imageConverter);
 }
 
 void EngineBackend::OnRenderingError(rhi::RenderingError err, void* param)
@@ -1008,30 +1118,30 @@ bool EngineBackend::IsRunning() const
     return isRunning;
 }
 
-void EngineBackend::SuspendRenderer()
-{
-    if (Renderer::IsInitialized() && !rendererSuspended)
-    {
-        rhi::SuspendRendering();
-        rendererSuspended = true;
-    }
-}
-
-void EngineBackend::ResumeRenderer()
-{
-    if (Renderer::IsInitialized() && rendererSuspended)
-    {
-        rhi::ResumeRendering();
-        rendererSuspended = false;
-    }
-}
-
 void EngineBackend::DrawSingleFrameWhileSuspended()
 {
     drawSingleFrameWhileSuspended = true;
 }
 
+void EngineBackend::AddActivationFilename(String filename)
+{
+    activationFilenames.push_back(std::move(filename));
+}
+
+Vector<String> EngineBackend::GetActivationFilenames() const
+{
+    return std::move(activationFilenames);
+}
+
+AppInstanceMonitor* EngineBackend::GetAppInstanceMonitor(const char* uniqueAppId)
+{
+    if (appInstanceMonitor == nullptr)
+    {
+        // Lazy AppInstanceMonitor instance creation only if needed by client
+        appInstanceMonitor = new AppInstanceMonitor(uniqueAppId);
+    }
+    return appInstanceMonitor;
+}
+
 } // namespace Private
 } // namespace DAVA
-
-#endif // __DAVAENGINE_COREV2__

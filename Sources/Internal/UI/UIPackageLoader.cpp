@@ -5,14 +5,18 @@
 #include "Engine/Engine.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FilePath.h"
-#include "FileSystem/YamlNode.h"
 #include "FileSystem/YamlEmitter.h"
+#include "FileSystem/YamlNode.h"
+#include "FileSystem/YamlParser.h"
+#include "FileSystem/YamlParser.h"
 #include "UI/UIControl.h"
 #include "UI/Styles/UIStyleSheet.h"
 #include "UI/UIStaticText.h"
+#include "UI/Text/UITextComponent.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/UIPackage.h"
 #include "UI/Components/UIComponent.h"
+#include "UI/DataBinding/UIDataBindingComponent.h"
 #include "UI/Layouts/UIAnchorComponent.h"
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Render/UIDebugRenderComponent.h"
@@ -55,6 +59,18 @@ UIPackageLoader::UIPackageLoader(const Map<String, DAVA::Set<FastName>>& legacyP
 
     legacyDebugDrawMap["enabled"] = "debugDraw";
     legacyDebugDrawMap["drawColor"] = "debugDrawColor";
+
+    // Map old properties from UIStaticText to UITextConponent (except "fitting" and "multiline")
+    legacyStaticTextMap["colorInheritType"] = "textcolorInheritType";
+    legacyStaticTextMap["align"] = "textalign";
+    legacyStaticTextMap["color"] = "textColor";
+    legacyStaticTextMap["fontName"] = "font";
+    legacyStaticTextMap["forceBiDiSupport"] = "forceBiDiSupport";
+    legacyStaticTextMap["perPixelAccuracyType"] = "textperPixelAccuracyType";
+    legacyStaticTextMap["shadowColor"] = "shadowcolor";
+    legacyStaticTextMap["shadowOffset"] = "shadowoffset";
+    legacyStaticTextMap["text"] = "text";
+    legacyStaticTextMap["useRtlAlign"] = "textUseRtlAlign";
 }
 
 UIPackageLoader::~UIPackageLoader()
@@ -233,10 +249,10 @@ bool UIPackageLoader::LoadControlByName(const FastName& name, AbstractUIPackageB
 
 void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractUIPackageBuilder* builder)
 {
-    const Vector<YamlNode*>& styleSheetMap = styleSheetsNode->AsVector();
+    const auto& styleSheetMap = styleSheetsNode->AsVector();
     const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
 
-    for (YamlNode* styleSheetNode : styleSheetMap)
+    for (const auto& styleSheetNode : styleSheetMap)
     {
         const YamlNode* properties = styleSheetNode->Get("properties");
 
@@ -364,6 +380,7 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
     {
         LoadControlPropertiesFromYamlNode(controlReflectedType, node, builder);
         LoadComponentPropertiesFromYamlNode(node, builder);
+        LoadBindingsFromYamlNode(node, builder);
 
         if (version <= VERSION_WITH_LEGACY_ALIGNS)
         {
@@ -384,6 +401,11 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
         {
             ProcessLegacyRichSingleAliases(node, builder);
         }
+
+        if (version <= LAST_VERSION_WITH_LEGACY_STATIC_TEXT)
+        {
+            ProcessLegacyStaticText(controlReflectedType, node, builder);
+        }
     }
 
     // load children
@@ -400,6 +422,8 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
 
 void UIPackageLoader::LoadControlPropertiesFromYamlNode(const ReflectedType* ref, const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
+    static const FastName componentsName("components");
+
     const TypeInheritance* inheritance = ref->GetType()->GetInheritance();
     if (nullptr != inheritance)
     {
@@ -452,8 +476,9 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(const YamlNode* node, 
                 Any res;
                 if (nodeDescr.type == Type::Instance<UILinearLayoutComponent>() && version <= LAST_VERSION_WITH_LINEAR_LAYOUT_LEGACY_ORIENTATION)
                 {
+                    static const FastName orientationName("orientation");
                     FastName name(field->name);
-                    if (nodeDescr.type == Type::Instance<UILinearLayoutComponent>() && name == FastName("orientation"))
+                    if (nodeDescr.type == Type::Instance<UILinearLayoutComponent>() && name == orientationName)
                     {
                         const YamlNode* valueNode = nodeDescr.node->Get(name.c_str());
                         if (valueNode)
@@ -497,6 +522,40 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(const YamlNode* node, 
         }
 
         builder->EndComponentPropertiesSection();
+    }
+}
+
+void UIPackageLoader::LoadBindingsFromYamlNode(const YamlNode* node, AbstractUIPackageBuilder* builder)
+{
+    const YamlNode* bindingsNode = node ? node->Get("bindings") : nullptr;
+
+    if (bindingsNode)
+    {
+        for (uint32 i = 0; i < bindingsNode->GetCount(); i++)
+        {
+            const YamlNode* bindingNode = bindingsNode->Get(i);
+            if (bindingNode->GetCount() == 3)
+            {
+                String fieldName = bindingNode->Get(0)->AsString();
+                String expression = bindingNode->Get(1)->AsString();
+                String modeStr = bindingNode->Get(2)->AsString();
+                int32 mode = 0;
+
+                if (GlobalEnumMap<UIDataBindingComponent::UpdateMode>::Instance()->ToValue(modeStr.c_str(), mode))
+                {
+                    builder->ProcessDataBinding(fieldName, expression, mode);
+                }
+                else
+                {
+                    Logger::Error("Unknown binding mode: %s", modeStr.c_str());
+                    DVASSERT(false);
+                }
+            }
+            else
+            {
+                DVASSERT(false);
+            }
+        }
     }
 }
 
@@ -577,7 +636,25 @@ void UIPackageLoader::ProcessLegacyClipContent(const YamlNode* node, AbstractUIP
 {
     if (node->Get("clip"))
     {
-        builder->BeginComponentPropertiesSection(Type::Instance<UIClipContentComponent>(), 0);
+        const ReflectedType* componentRef = builder->BeginComponentPropertiesSection(Type::Instance<UIClipContentComponent>(), 0);
+        if (componentRef != nullptr && componentRef->GetStructure() != nullptr)
+        {
+            const Vector<std::unique_ptr<ReflectedStructure::Field>>& fields = componentRef->GetStructure()->fields;
+            for (const std::unique_ptr<ReflectedStructure::Field>& field : fields)
+            {
+                static const FastName enabledFieldName("enabled");
+                if (field->name == enabledFieldName)
+                {
+                    Any res = ReadAnyFromYamlNode(field.get(), node, "clip");
+                    if (!res.IsEmpty())
+                    {
+                        builder->ProcessProperty(*field, res);
+                    }
+                    break;
+                }
+            }
+        }
+
         builder->EndComponentPropertiesSection();
     }
 }
@@ -624,6 +701,103 @@ void UIPackageLoader::ProcessLegacyRichSingleAliases(const YamlNode* node, Abstr
     }
 }
 
+void UIPackageLoader::ProcessLegacyStaticText(const ReflectedType* ref, const YamlNode* node, AbstractUIPackageBuilder* builder) const
+{
+    static const Type* STATIC_TEXT_TYPE = Type::Instance<UIStaticText>();
+    // Move properties from UIStaticText to component
+    if (ref && ref->GetType() == STATIC_TEXT_TYPE)
+    {
+        const ReflectedType* componentRef = builder->BeginComponentPropertiesSection(Type::Instance<UITextComponent>(), 0);
+        if (componentRef != nullptr && componentRef->GetStructure() != nullptr)
+        {
+            const Vector<std::unique_ptr<ReflectedStructure::Field>>& fields = componentRef->GetStructure()->fields;
+            for (const std::unique_ptr<ReflectedStructure::Field>& field : fields)
+            {
+                // Find all component properties in UIStaticText yaml node and copy to component
+                String name = field->name.c_str();
+                auto iter = legacyStaticTextMap.find(name);
+                if (iter != legacyStaticTextMap.end())
+                {
+                    // Copy simple properties
+                    Any res = ReadAnyFromYamlNode(field.get(), node, iter->second);
+                    builder->ProcessProperty(*field, res);
+                }
+                else if (name == "fitting")
+                {
+                    // Convert "fitting" flags
+                    const YamlNode* fittingNode = node->Get("fitting");
+                    if (fittingNode)
+                    {
+                        Any res;
+                        const auto& fittingsFlags = fittingNode->AsVector();
+                        bool enlarge = false, reduce = false, points = false;
+                        for (const auto& flag : fittingsFlags)
+                        {
+                            String flagName = flag->AsString();
+                            enlarge = enlarge || (flagName == "ENLARGE");
+                            reduce = reduce || (flagName == "REDUCE");
+                            points = points || (flagName == "POINTS");
+                        }
+                        if ((!enlarge) && (!reduce) && (!points))
+                        {
+                            res = UITextComponent::eTextFitting::FITTING_NONE;
+                        }
+                        else if (enlarge && reduce && (!points))
+                        {
+                            res = UITextComponent::eTextFitting::FITTING_FILL;
+                        }
+                        else if ((!enlarge) && (!reduce) && points)
+                        {
+                            res = UITextComponent::eTextFitting::FITTING_POINTS;
+                        }
+                        else if (enlarge && (!reduce) && (!points))
+                        {
+                            res = UITextComponent::eTextFitting::FITTING_ENLARGE;
+                        }
+                        else if ((!enlarge) && reduce && (!points))
+                        {
+                            res = UITextComponent::eTextFitting::FITTING_REDUCE;
+                        }
+                        else
+                        {
+                            if (points)
+                            {
+                                res = UITextComponent::eTextFitting::FITTING_POINTS;
+                            }
+                            Logger::Warning("[UIPackageLoader::ProcessLegacyStaticText] Invalid fitting combination!");
+                        }
+                        builder->ProcessProperty(*field, res);
+                    }
+                }
+                else if (name == "multiline")
+                {
+                    // Convert "multiline" enum
+                    const YamlNode* multilineNode = node->Get("multiline");
+                    if (multilineNode)
+                    {
+                        Any res;
+                        String multilineString = multilineNode->AsString();
+                        if (multilineString == "MULTILINE_ENABLED")
+                        {
+                            res = UITextComponent::eTextMultiline::MULTILINE_ENABLED;
+                        }
+                        else if (multilineString == "MULTILINE_ENABLED_BY_SYMBOL")
+                        {
+                            res = UITextComponent::eTextMultiline::MULTILINE_ENABLED_BY_SYMBOL;
+                        }
+                        else
+                        {
+                            res = UITextComponent::eTextMultiline::MULTILINE_DISABLED;
+                        }
+                        builder->ProcessProperty(*field, res);
+                    }
+                }
+            }
+        }
+        builder->EndComponentPropertiesSection();
+    }
+}
+
 Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(const YamlNode* node)
 {
     const YamlNode* componentsNode = node ? node->Get("components") : nullptr;
@@ -641,7 +815,7 @@ Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(co
             uint32 componentIndex = atoi(fullName.substr(lastChar + 1).c_str());
 
             const ReflectedType* reflectedType = ReflectedTypeDB::GetByPermanentName(componentName);
-            if (reflectedType && cm->IsUIComponent(reflectedType->GetType()))
+            if (reflectedType && cm->IsRegisteredUIComponent(reflectedType->GetType()))
             {
                 ComponentNode n;
                 n.node = componentsNode->Get(i);

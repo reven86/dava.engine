@@ -38,9 +38,9 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 	{
         Entity * entity = entities[i];
         
-        DebugRenderComponent * debugRenderComponent = CastIfEqual<DebugRenderComponent*>(entity->GetComponent(Component::DEBUG_RENDER_COMPONENT));
-        TransformComponent * transformComponent = CastIfEqual<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT));
-        //RenderComponent * renderComponent = CastIfEqual<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT));
+        DebugRenderComponent * debugRenderComponent = entity->GetComponent<DebugRenderComponent>(DebugRenderComponent);
+        TransformComponent * transformComponent = entity->GetComponent<TransformComponent>();
+        //RenderComponent * renderComponent = entity->GetComponent<RenderComponent>();
         
         //Matrix4 worldTransform = camera->GetMatrix();
         Renderer::GetDynamicBindings().SetDynamicParam(PARAM_VIEW, &camera->GetMatrix(), DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
@@ -51,7 +51,7 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 		// Camera debug draw
 		if(debugFlags & DebugRenderComponent::DEBUG_DRAW_CAMERA)
 		{
-			CameraComponent * entityCameraComp = (CameraComponent *) entity->GetComponent(Component::CAMERA_COMPONENT);
+			CameraComponent * entityCameraComp = entity->GetComponent<CameraComponent>();
 
 			if(NULL != entityCameraComp)
 			{
@@ -81,15 +81,15 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 		// UserNode debug draw
 		if(debugFlags & DebugRenderComponent::DEBUG_DRAW_USERNODE)
 		{
-			if(NULL != entity->GetComponent(Component::USER_COMPONENT))
+			if(NULL != entity->GetComponent<UserComponent>())
 			{
 				Color dcColor(0.0f, 0.0f, 1.0f, 1.0f);
 				AABBox3 dcBox(Vector3(), 1.0f);
 
 				//Matrix4 prevMatrix = RenderManager::Instance()->GetMatrix(RenderManager::MATRIX_MODELVIEW);
-				//Matrix4 finalMatrix = transformComponent->GetWorldTransform() * prevMatrix;
+				//Matrix4 finalMatrix = transformComponent->GetWorldMatrix() * prevMatrix;
 				
-                Renderer::GetDynamicBindings().SetDynamicParam(PARAM_WORLD, &transformComponent->GetWorldTransform(), DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
+                Renderer::GetDynamicBindings().SetDynamicParam(PARAM_WORLD, &transformComponent->GetWorldMatrix(), DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
                 Renderer::GetDynamicBindings().SetDynamicParam(PARAM_VIEW, &camera->GetMatrix(), DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 
 								
@@ -107,14 +107,14 @@ void DebugRenderSystem::Process(float32 timeElapsed)
 				RenderSystem2D::Instance()->SetColor(1.0f, 1.0f, 1.0f, 1.0f);
 				//RenderManager::Instance()->SetMatrix(RenderManager::MATRIX_MODELVIEW, prevMatrix);
 
-				dcBox.GetTransformedBox(transformComponent->GetWorldTransform(), debugBoundigBox);
+				dcBox.GetTransformedBox(transformComponent->GetWorldMatrix(), debugBoundigBox);
 			}
 		}
 
 		// LightNode debug draw
 		if (debugFlags & DebugRenderComponent::DEBUG_DRAW_LIGHT_NODE)
 		{
-			LightComponent *lightComp = (LightComponent *) entity->GetComponent(Component::LIGHT_COMPONENT);
+			LightComponent *lightComp = entity->GetComponent<LightComponent>();
 
 			if(NULL != lightComp)
 			{
@@ -174,8 +174,8 @@ void DebugRenderSystem::AddEntity(Entity* entity)
 {
     entities.push_back(entity);
 
-    //DebugRenderComponent * debugRenderComponent = static_cast<DebugRenderComponent*>(entity->GetComponent(Component::DEBUG_RENDER_COMPONENT));
-    RenderComponent* renderComponent = static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT));
+    //DebugRenderComponent * debugRenderComponent = entity->GetComponent<DebugRenderComponent>();
+    RenderComponent* renderComponent = entity->GetComponent<RenderComponent>();
     if (renderComponent)
     {
         //renderComponent->renderObject->SetDebugFlags(debugRenderComponent->GetFlags());
@@ -184,8 +184,8 @@ void DebugRenderSystem::AddEntity(Entity* entity)
 
 void DebugRenderSystem::RemoveEntity(Entity* entity)
 {
-    //DebugRenderComponent * debugRenderComponent = static_cast<DebugRenderComponent*>(entity->GetComponent(Component::DEBUG_RENDER_COMPONENT));
-    RenderComponent* renderComponent = static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT));
+    //DebugRenderComponent * debugRenderComponent = entity->GetComponent<DebugRenderComponent>();
+    RenderComponent* renderComponent = entity->GetComponent<RenderComponent>();
     if (renderComponent)
     {
         //renderComponent->renderObject->SetDebugFlags(0);
@@ -203,6 +203,11 @@ void DebugRenderSystem::RemoveEntity(Entity* entity)
     }
 
     DVASSERT(0);
+}
+
+void DebugRenderSystem::PrepareForRemove()
+{
+    entities.clear();
 }
 
 void DebugRenderSystem::SetCamera(Camera* _camera)

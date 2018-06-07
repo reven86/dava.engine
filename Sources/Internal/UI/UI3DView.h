@@ -3,6 +3,7 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
+#include "Render/RenderBase.h"
 #include "Render/RHI/rhi_Type.h"
 
 namespace DAVA
@@ -13,6 +14,7 @@ namespace DAVA
  */
 
 class Scene;
+class Texture;
 class UI3DView : public UIControl
 {
     DAVA_VIRTUAL_REFLECTION(UI3DView, UIControl);
