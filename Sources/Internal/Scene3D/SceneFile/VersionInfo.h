@@ -25,8 +25,9 @@ static const int32 OLD_MATERIAL_FLAGS_SCENE_VERSION = 21;
 static const int32 SPEED_TREE_POLYGON_GROUPS_PIVOT3_SCENE_VERSION = 22; // convert EVF_PIVOT -> EVF_PIVOT4; EVF_PIVOT depricated
 static const int32 COMPONENTS_REFLECTION_SCENE_VERSION = 23; // enum Component::eType removed, scene components serialization without "comp.type".
 static const int32 TRANSFORM_REFACTORING_SCENE_VERSION = 24; // TransformComponent has Transform instead of Matrix4
+static const int32 BLITZ_6_0_SCENE_VERSION = 25;
 
-static const int32 SCENE_FILE_CURRENT_VERSION = TRANSFORM_REFACTORING_SCENE_VERSION;
+static const int32 SCENE_FILE_CURRENT_VERSION = BLITZ_6_0_SCENE_VERSION;
 static const int32 SCENE_FILE_MINIMAL_SUPPORTED_VERSION = 9;
 
 class VersionInfo
