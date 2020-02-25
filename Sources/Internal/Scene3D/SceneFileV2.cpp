@@ -386,6 +386,17 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         return GetError();
     }
 
+
+    FilePath filenameGeom(filename);
+    filenameGeom.ReplaceExtension(".scg");
+    ScopedPtr<File> fileGeom(File::Create(filenameGeom, File::OPEN | File::READ));
+    if (!fileGeom)
+    {
+        Logger::Error("SceneFileV2::LoadScene failed to open file: %s", filenameGeom.GetAbsolutePathname().c_str());
+        SetError(ERROR_FAILED_TO_CREATE_FILE);
+        return GetError();
+    }
+
     const bool headerValid = ReadHeader(header, file);
 
     if (!headerValid)
@@ -468,7 +479,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
             const bool nodeLoaded = LoadDataNode(scene, nullptr, file);
             if (!nodeLoaded)
             {
-                Logger::Error("SceneFileV2::LoadScene LoadDataNode failed in file: %s", filename.GetAbsolutePathname().c_str());
+                Logger::Error("SceneFileV2::LoadScene LoadDataNode failed in file: %s %d", filename.GetAbsolutePathname().c_str(), k);
                 SetError(ERROR_FILE_READ_ERROR);
                 return GetError();
             }
@@ -479,6 +490,7 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         if (header.nodeCount > 0)
         {
             // try to load global material
+            file->Seek(8, File::SEEK_FROM_CURRENT);
             uint32 filePos = static_cast<uint32>(file->GetPos());
             ScopedPtr<KeyedArchive> archive(new KeyedArchive());
             const bool loaded = archive->Load(file);
@@ -515,6 +527,25 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
         scene->SetGlobalMaterial(globalMaterial);
     }
 
+    // load geometry
+    Header headerGeom;
+    fileGeom->Read(&headerGeom, sizeof(Header));
+
+    uint32 nodeCount = 0;
+    fileGeom->Read(&nodeCount, sizeof(nodeCount));
+    
+    for (int k = 0; k < nodeCount; ++k)
+    {
+        const bool nodeLoaded = LoadDataNode(scene, nullptr, fileGeom);
+        if (!nodeLoaded)
+        {
+            Logger::Error("SceneFileV2::LoadScene LoadDataNode failed in file: %s %d", filenameGeom.GetAbsolutePathname().c_str(), k);
+            SetError(ERROR_FILE_READ_ERROR);
+            return GetError();
+        }
+    }
+
+
     if (isDebugLogEnabled)
     {
         Logger::FrameworkDebug("+ load hierarchy");
@@ -533,10 +564,10 @@ SceneFileV2::eError SceneFileV2::LoadScene(const FilePath& filename, Scene* scen
     }
 
     UpdatePolygonGroupRequestedFormatRecursively(scene);
-    const bool contextLoaded = serializationContext.LoadPolygonGroupData(file);
+    const bool contextLoaded = serializationContext.LoadPolygonGroupData(fileGeom);
     if (!contextLoaded)
     {
-        Logger::Error("SceneFileV2::LoadScene LoadPolygonGroupData failed in file: %s", filename.GetAbsolutePathname().c_str());
+        Logger::Error("SceneFileV2::LoadScene LoadPolygonGroupData failed in file: %s", filenameGeom.GetAbsolutePathname().c_str());
         SetError(ERROR_FILE_READ_ERROR);
         return GetError();
     }

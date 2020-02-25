@@ -61,6 +61,7 @@ public:
     static const String TYPENAME_UINT8; // "uint8"
     static const String TYPENAME_INT16; // "int16"
     static const String TYPENAME_UINT16; // "uint16"
+    static const String TYPENAME_LIST; // "List"
 
     VariantType();
     VariantType(const VariantType& value);
@@ -122,6 +123,8 @@ public:
         TYPE_UINT8,
         TYPE_INT16,
         TYPE_UINT16,
+        TYPE_UNKNOWN1,
+        TYPE_LIST,
         TYPES_COUNT // every new type should be always added to the end for compatibility with old archives
     };
     eVariantType type = TYPE_NONE;
