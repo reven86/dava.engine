@@ -99,4 +99,57 @@ void CustomPropertiesComponent::LoadFromArchive(const KeyedArchive& srcPropertie
         properties->SetString("editor.referenceToOwner", newPath.GetAbsolutePathname());
     }
 }
+
+
+
+DAVA_VIRTUAL_REFLECTION_IMPL(MapBorderComponent)
+{
+    ReflectionRegistrator<MapBorderComponent>::Begin()[M::CantBeCreatedManualyComponent(), M::CantBeDeletedManualyComponent()]
+        .ConstructorByPointer()
+        .Field("properties", &MapBorderComponent::properties)[M::DisplayName("properties")]
+        .End();
+}
+
+MapBorderComponent::MapBorderComponent()
+{
+    properties = new KeyedArchive();
+}
+
+MapBorderComponent::MapBorderComponent(const KeyedArchive& srcProperties)
+{
+    properties = new KeyedArchive(srcProperties);
+}
+
+MapBorderComponent::~MapBorderComponent()
+{
+    SafeRelease(properties);
+}
+
+Component* MapBorderComponent::Clone(Entity* toEntity)
+{
+    MapBorderComponent* newProperties = new MapBorderComponent(*properties);
+    newProperties->SetEntity(toEntity);
+
+    return newProperties;
+}
+
+void MapBorderComponent::Serialize(KeyedArchive* archive, SerializationContext* serializationContext)
+{
+    Component::Serialize(archive, serializationContext);
+
+}
+
+void MapBorderComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
+{
+    SafeRelease(properties);
+    properties = new KeyedArchive(*archive);
+
+    Component::Deserialize(archive, serializationContext);
+}
+
+KeyedArchive* MapBorderComponent::GetArchive()
+{
+    return properties;
+}
+
 };

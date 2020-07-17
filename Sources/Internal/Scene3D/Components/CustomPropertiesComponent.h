@@ -32,4 +32,27 @@ private:
 private:
     KeyedArchive* properties;
 };
+
+class MapBorderComponent : public Component
+{
+protected:
+    virtual ~MapBorderComponent();
+
+public:
+    MapBorderComponent();
+
+    Component* Clone(Entity* toEntity) override;
+    void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
+    void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
+
+    KeyedArchive* GetArchive();
+
+    DAVA_VIRTUAL_REFLECTION(MapBorderComponent, Component);
+
+private:
+    MapBorderComponent(const KeyedArchive& srcProperties);
+
+private:
+    KeyedArchive* properties;
+};
 };
