@@ -195,6 +195,7 @@ private:
 
     void LoadVersion11(File* file);
     void LoadVersion12(File* file);
+    void LoadVersion15(File* file);
 
     uint32 ReadSourceCRC() const;
     uint32 GetConvertedCRC(eGPUFamily forGPU) const;

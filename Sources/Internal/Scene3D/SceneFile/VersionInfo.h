@@ -28,8 +28,9 @@ static const int32 TRANSFORM_REFACTORING_SCENE_VERSION = 24; // TransformCompone
 static const int32 BLITZ_6_0_SCENE_VERSION = 25;
 static const int32 BLITZ_6_8_SCENE_VERSION = 26;
 static const int32 BLITZ_7_1_SCENE_VERSION = 27;
+static const int32 BLITZ_7_5_SCENE_VERSION = 28;
 
-static const int32 SCENE_FILE_CURRENT_VERSION = BLITZ_7_1_SCENE_VERSION;
+static const int32 SCENE_FILE_CURRENT_VERSION = BLITZ_7_5_SCENE_VERSION;
 static const int32 SCENE_FILE_MINIMAL_SUPPORTED_VERSION = 9;
 
 class VersionInfo

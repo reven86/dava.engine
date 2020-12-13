@@ -376,6 +376,9 @@ bool TextureDescriptor::Load(const FilePath& filePathname)
     case 13:
         LoadVersion12(file); // same as 12, but with HDR format support, descriptor structure has not been changed
         break;
+    case 15:
+        LoadVersion15(file); // same as 12, but with HDR format support, descriptor structure has not been changed
+        break;
     default:
     {
         Logger::Error("[TextureDescriptor::Load] Version %d is not supported", version);
@@ -862,6 +865,59 @@ void TextureDescriptor::LoadVersion12(File* file)
     }
 }
 
+void TextureDescriptor::LoadVersion15(File* file)
+{
+    //draw settings
+    file->Read(&drawSettings.wrapModeS);
+    file->Read(&drawSettings.wrapModeT);
+    file->Read(&drawSettings.minFilter);
+    file->Read(&drawSettings.magFilter);
+    file->Read(&drawSettings.mipFilter);
+
+    //data settings
+    file->Read(&dataSettings.textureFlags);
+    file->Read(&dataSettings.cubefaceFlags);
+
+    int8 sourceFileFormat = 0;
+    file->Read(&sourceFileFormat);
+    dataSettings.sourceFileFormat = static_cast<ImageFormat>(sourceFileFormat);
+    dataSettings.sourceFileExtension.clear();
+    file->ReadString(dataSettings.sourceFileExtension);
+    for (int i = 0; i < Texture::CUBE_FACE_COUNT; ++i)
+    {
+        if (dataSettings.cubefaceFlags & (1 << i))
+        {
+            dataSettings.cubefaceExtensions[i].clear();
+            file->ReadString(dataSettings.cubefaceExtensions[i]);
+        }
+    }
+
+    //compression
+    uint8 compressionsCount = 0;
+    file->Read(&compressionsCount);
+    if (compressionsCount == eGPUFamily::GPU_FAMILY_COUNT)
+    {
+        for (uint8 i = 0; i < compressionsCount; ++i)
+        {
+            DescriptorFileOperation::ReadCompression12(file, compression[i]);
+        }
+    }
+    else
+    {
+        //export data
+        uint8 exportedAsGpu = eGPUFamily::GPU_INVALID;
+        uint8 exportedAsContainer = ImageFormat::IMAGE_FORMAT_UNKNOWN;
+        uint8 exportedAsFormat = PixelFormat::FORMAT_INVALID;
+        file->Read(&exportedAsGpu);
+        file->Read(&exportedAsContainer);
+        file->Read(&exportedAsFormat);
+
+        gpu = GPUFamilyDescriptor::ConvertValueToGPU(exportedAsGpu);
+        imageFormat = static_cast<ImageFormat>(exportedAsContainer);
+        format = static_cast<PixelFormat>(exportedAsFormat);
+    }
+}
+
 bool TextureDescriptor::GetGenerateMipMaps() const
 {
     return dataSettings.GetGenerateMipMaps();
@@ -1127,7 +1183,7 @@ ImageFormat TextureDescriptor::GetImageFormatForGPU(eGPUFamily forGPU) const
     }
     else
     {
-        retValue = static_cast<ImageFormat>(compression[forGPU].imageFormat);
+        retValue = IMAGE_FORMAT_DDS;// static_cast<ImageFormat>(compression[forGPU].imageFormat);
     }
 
     bool imageFormatIsValid = (ImageFormat::IMAGE_FORMAT_UNKNOWN == retValue) || ((ImageFormat::IMAGE_FORMAT_PNG <= retValue) && (retValue < ImageFormat::IMAGE_FORMAT_COUNT));
